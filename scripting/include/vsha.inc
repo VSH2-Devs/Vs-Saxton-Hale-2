@@ -159,7 +159,7 @@ public Action TimerEnableSentry(Handle hTimer, any sentryid)
 	return Plugin_Continue;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-stock bool IsVSHMap(void) //just use arena maps as vsh/ff2 maps
+stock bool IsVSHMap() //just use arena maps as vsh/ff2 maps
 {
 	if (FindEntityByClassname(-1, "tf_logic_arena") != -1) return true;
 	return false;
@@ -925,13 +925,13 @@ forward void VSHA_OnBossConditionAdded(int client); //when condition like jarate
 
 forward void VSHA_OnUberTimer(int medic, int target); //called every 0.4 seconds
 
-forward Action VSHA_OnBossDealDmg(int victim, int attacker, int weapon, int inflictor, float damage); //when a boss player deals dmg
+forward Action VSHA_OnBossDealDmg(int victim, int &attacker, int &weapon, int &inflictor, float &damage); //when a boss player deals dmg
 
-forward Action VSHA_OnBossTeleFragd(int victim, int attacker, float damage); //boss got telefragged
+forward Action VSHA_OnBossTeleFragd(int victim, int &attacker, float &damage); //boss got telefragged
 
-forward Action VSHA_OnBossTakeDmg(int victim, int attacker, int weapon, int inflictor, float damage); //boss took dmg
+forward Action VSHA_OnBossTakeDmg(int victim, int &attacker, int &weapon, int &inflictor, float &damage); //boss took dmg
 
-forward Action VSHA_OnBossStabbed(int victim, int attacker, int weapon, float damage); //boss got backstabbed
+forward Action VSHA_OnBossStabbed(int victim, int &attacker, int &weapon, float &damage); //boss got backstabbed
 
 //=================================================================================================================================
 
