@@ -2,18 +2,22 @@
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 
+#include <sourcemod>
 #include <clientprefs>
 #include <vsha>
+#include <tf2attributes>
+#include <morecolors>
+#include <sdkhooks>
 
 //#pragma semicolon		1
 #pragma newdecls		optional
 
-public Plugin:myinfo = {
+public Plugin myinfo = {
 	name = "Versus Saxton Hale Engine",
 	author = "Nergal, Chdata, Cookies, with special props to Powerlord + Flamin' Sarge",
 	description = "Es Sexy-time beyechez",
 	version = PLUGIN_VERSION,
-	url = "soon my pet, soon",
+	url = "https://bitbucket.org/assyrian/vsh-engine",
 };
 
 
@@ -80,28 +84,28 @@ int mp_forcecamera;
 float tf_scout_hype_pep_max;
 
 //cvar Handles
-Handle bEnabled = NULLHANDLE;
-Handle FirstRound = NULLHANDLE;
-Handle MedigunReset = NULLHANDLE;
-Handle AliveToEnable = NULLHANDLE;
-Handle CountDownPlayerLimit = NULLHANDLE;
-Handle CountDownHealthLimit = NULLHANDLE;
-Handle LastPlayersTimerCountDown = NULLHANDLE;
-Handle EnableEurekaEffect = NULLHANDLE;
-Handle PointDelay = NULLHANDLE;
-Handle QueueIncrement = NULLHANDLE;
-Handle FallDmgSoldier = NULLHANDLE;
-Handle DifficultyAmount = NULLHANDLE;
+Handle bEnabled = null;
+Handle FirstRound = null;
+Handle MedigunReset = null;
+Handle AliveToEnable = null;
+Handle CountDownPlayerLimit = null;
+Handle CountDownHealthLimit = null;
+Handle LastPlayersTimerCountDown = null;
+Handle EnableEurekaEffect = null;
+Handle PointDelay = null;
+Handle QueueIncrement = null;
+Handle FallDmgSoldier = null;
+Handle DifficultyAmount = null;
 
 //non-cvar Handles
 Handle hBossHUD;
 Handle hPlayerHUD;
-Handle TimeLeftHUD = NULLHANDLE;
-Handle MiscHUD = NULLHANDLE; //for various other HUD additions
-Handle hdoorchecktimer = NULLHANDLE;
-Handle PointCookie = NULLHANDLE;
-Handle MusicTimer = NULLHANDLE;
-Handle DrawGameTimer = NULLHANDLE;
+Handle TimeLeftHUD = null;
+Handle MiscHUD = null; //for various other HUD additions
+Handle hdoorchecktimer = null;
+Handle PointCookie = null;
+Handle MusicTimer = null;
+Handle DrawGameTimer = null;
 
 //Forward Handles
 Handle AddToDownloads;
@@ -171,7 +175,7 @@ public void OnClientPutInServer(int client)
 {
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 	SDKHook(client, SDKHook_PreThink, OnPreThink);
-	Storage[client] = NULLHANDLE;
+	Storage[client] = null;
 	iBoss[client] = -1;
 	iPresetBoss[client] = -1;
 	bIsBoss[client] = false;
@@ -215,7 +219,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 				Call_PushCellRef(inflictor);
 				Call_PushFloatRef(damage);
 				Call_Finish(result);
-				return Action:result;
+				return view_as<Action>(result);
 			}
 		}
 	}
@@ -225,7 +229,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 		{
 			if ( damagecustom == TF_CUSTOM_TELEFRAG )
 			{
-				if (!IsPlayerAlive(attacker))
+				if ( !IsPlayerAlive(attacker) )
 				{
 					damage = 1.0;
 					return Plugin_Changed;
@@ -238,7 +242,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 					Call_PushCellRef(attacker);
 					Call_PushFloatRef(damage);
 					Call_Finish(result);
-					return Action:result;
+					return view_as<Action>(result);
 				}
 			}
 			Function FuncBossTakeDmg = GetFunctionByName(Storage[victim], "VSHA_OnBossTakeDmg");
@@ -251,7 +255,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 				Call_PushCellRef(inflictor);
 				Call_PushFloatRef(damage);
 				Call_Finish(result);
-				return Action:result;
+				return view_as<Action>(result);
 			}
 			if (damagecustom == TF_CUSTOM_BACKSTAB)
 			{
@@ -303,7 +307,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 					Call_PushCellRef(weapon);
 					Call_PushFloatRef(damage);
 					Call_Finish(result);
-					return Action:result;
+					return view_as<Action>(result);
 				}
 			}
 			/*else
@@ -311,9 +315,9 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 				char hurt[64];
 				if (GetEdictClassname(attacker, hurt, sizeof(hurt)) && !strcmp(hurt, "trigger_hurt", false))
 				{
-					// Teleport the boss back to one of the spawns.
-					// And during the first 30 seconds, he can only teleport to his own spawn.
-					//TeleportToSpawn(victim, (bTenSecStart[1]) ? HaleTeam : 0);
+					Teleport the boss back to one of the spawns.
+					And during the first 30 seconds, he can only teleport to his own spawn.
+					TeleportToSpawn(victim, (bTenSecStart[1]) ? HaleTeam : 0);
 
 					Function FuncBossTrigger = GetFunctionByName(Storage[victim], "VSHA_OnBossTriggerHurt");
 					if (FuncBossTrigger != INVALID_FUNCTION)
@@ -325,7 +329,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 						Call_PushCell(weapon);
 						Call_PushFloat(damage);
 						Call_Finish(result);
-						return Action:result;
+						return view_as<Action>(result);
 					}
 
 					else if (damage >= 250.0) TeleportToSpawn(victim, (bTenSecStart[1]) ? HaleTeam : 0);
@@ -400,16 +404,16 @@ public void OnClientDisconnect(int client)
 			}
 			bIsBoss[client] = false;
 			CPrintToChatAll("{olive}[VSH Engine]{default} Boss just disconnected!");
-			Storage[client] = NULLHANDLE;
+			Storage[client] = null;
 		}
 		else
 		{
-			if (IsClientInGame(client))
+			if ( IsClientInGame(client) )
 			{
-				if (IsPlayerAlive(client)) CreateTimer(0.0, CheckAlivePlayers);
-				if (client == FindNextBoss(bIsBoss)) CreateTimer(1.0, Timer_SkipHalePanel, _, TIMER_FLAG_NO_MAPCHANGE);
+				if ( IsPlayerAlive(client) ) CreateTimer(0.0, CheckAlivePlayers);
+				if ( client == FindNextBoss(bIsBoss) ) CreateTimer(1.0, Timer_SkipHalePanel, _, TIMER_FLAG_NO_MAPCHANGE);
 			}
-			if (client == iNextBossPlayer) iNextBossPlayer = -1;
+			if ( client == iNextBossPlayer ) iNextBossPlayer = -1;
 		}
 	}
 }
@@ -433,14 +437,13 @@ public void OnMapStart()
 			Steam_SetGameDescription(gameDesc);
 		}
 #endif
-
 		SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
 		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), GetConVarBool(FirstRound) ? 0 : 1);
 		SetConVarInt(FindConVar("tf_arena_first_blood"), 0);
 		SetConVarInt(FindConVar("mp_forcecamera"), 0);
 		SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), 100.0);
 	}
-	else Enabled = false;
+	else Enabled = false; //enforcing strict arena only
 }
 public void OnMapEnd()
 {
@@ -672,7 +675,7 @@ public Action PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 			else iPlayerKilled[attacker][1] = 0;
 
 			Function FuncPlayerKilled = GetFunctionByName(Storage[attacker], "VSHA_OnPlayerKilled");
-			if (FuncPlayerKilled != INVALID_FUNCTION)
+			if (FuncPlayerKilled != INVALID_FUNCTION) /*purpose of this forward is for kill specific mechanics*/
 			{
 				Call_StartFunction(Storage[attacker], FuncPlayerKilled);
 				Call_PushCell(attacker);
@@ -683,7 +686,7 @@ public Action PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 			if ( iPlayerKilled[attacker][1] >= GetRandomInt(2, 3) )
 			{
 				Function FuncKillSpree = GetFunctionByName(Storage[attacker], "VSHA_OnKillingSpree");
-				if (FuncKillSpree != INVALID_FUNCTION)
+				if (FuncKillSpree != INVALID_FUNCTION) /*purpose of this forward is for killing spree specific mechanics like killing spree boss sound clips*/
 				{
 					Call_StartFunction(Storage[attacker], FuncKillSpree);
 					Call_PushCell(attacker);
@@ -692,7 +695,7 @@ public Action PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 				}
 				iPlayerKilled[attacker][1] = 0;
 			}
-			else flKillStreak[attacker] = GetGameTime() + 7.0;
+			else flKillStreak[attacker] = GetGameTime() + 5.0;
 			iPlayerKilled[attacker][0]++;
 		}
 		if (TF2_GetPlayerClass(client) == TFClass_Engineer) //Destroys sentry gun when Engineer dies before it.
@@ -738,12 +741,13 @@ public Action RoundEnd(Handle event, const char[] name, bool dontBroadcast)
 	TeamRoundCounter++;
 	RoundCount++;
 	int i;
+	bool playedwinsound = false;
 	for (i = 1; i <= MaxClients; i++)
 	{
 		if (!IsValidClient(i)) continue;
 		if (bIsBoss[i])
 		{
-			if (GetEventInt(event, "team") == HaleTeam)
+			if (GetEventInt(event, "team") == HaleTeam && !playedwinsound)
 			{
 				Function FuncBossWon = GetFunctionByName(Storage[i], "VSHA_OnBossWin");
 				if (FuncBossWon != INVALID_FUNCTION)
@@ -751,6 +755,7 @@ public Action RoundEnd(Handle event, const char[] name, bool dontBroadcast)
 					Call_StartFunction(Storage[i], FuncBossWon);
 					Call_Finish();
 				} //stop music here, put win sound
+				playedwinsound = true;
 			}
 			SetEntProp(i, Prop_Send, "m_bGlowEnabled", 0);
 			flGlowTimer[i] = 0.0;
@@ -944,25 +949,22 @@ public Action TimerNineThousand(Handle timer)
 	EmitSoundToAll("saxton_hale/9000.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, false, 0.0);
 	return Plugin_Continue;
 }
-void SetClientOverlay(int client, char[] strOverlay)
+public void SetClientOverlay(int client, char[] strOverlay)
 {
 	int iFlags = GetCommandFlags("r_screenoverlay") & (~FCVAR_CHEAT);
 	SetCommandFlags("r_screenoverlay", iFlags);
 	ClientCommand(client, "r_screenoverlay \"%s\"", strOverlay);
 }
-int GetClientQueuePoints(int client)
+public int GetClientQueuePoints(int client)
 {
-	if (!IsValidClient(client)) return -1;
-	if (!AreClientCookiesCached(client)) return -1;
+	if ( !IsValidClient(client) || !AreClientCookiesCached(client) ) return -1;
 	char strPoints[32];
 	GetClientCookie(client, PointCookie, strPoints, sizeof(strPoints));
 	return StringToInt(strPoints);
 }
-void SetClientQueuePoints(int client, int points)
+public void SetClientQueuePoints(int client, int points)
 {
-	if (!IsValidClient(client)) return;
-	if (IsFakeClient(client)) return;
-	if (!AreClientCookiesCached(client)) return;
+	if ( !IsValidClient(client) || IsFakeClient(client) || !AreClientCookiesCached(client) ) return;
 	char strPoints[32];
 	IntToString(points, strPoints, sizeof(strPoints));
 	SetClientCookie(client, PointCookie, strPoints);
@@ -990,7 +992,7 @@ public Action MessageTimer(Handle hTimer)
 		AcceptEntityInput(entity, "Open");
 		AcceptEntityInput(entity, "Unlock");
 	}
-	if ( hdoorchecktimer == NULLHANDLE )
+	if ( hdoorchecktimer == null )
 	{
 		hdoorchecktimer = CreateTimer(5.0, Timer_CheckDoors, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 	}
@@ -1063,7 +1065,7 @@ public Action PickBossMenu(int client, int args)
 		}
 		classpick.Display(client, MENU_TIME_FOREVER);
 	}
-	return Action:0;
+	return view_as<Action>(0);
 }
 public int MenuHandler_PickBoss(Menu menu, MenuAction action, int param1, int param2)
 {
@@ -1289,7 +1291,7 @@ public Action BossTimer(Handle timer)
 	UpdateHealthBar();
 	return Plugin_Continue;
 }
-public Action TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefinitionIndex, &Handle:hItem)
+public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDefinitionIndex, Handle &hItem)
 {
 	if (!Enabled) return Plugin_Continue;
 	switch (iItemDefinitionIndex)
@@ -1297,7 +1299,7 @@ public Action TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		case 40: //backburner
 		{
 			Handle hItemOverride = PrepareItemHandle(hItem, _, _, "165 ; 1.0");
-			if (hItemOverride != NULLHANDLE)
+			if (hItemOverride != null)
 			{
 				hItem = hItemOverride;
 				return Plugin_Changed;
@@ -1306,7 +1308,7 @@ public Action TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		case 349: //sun on a stick
 		{
 			Handle hItemOverride = PrepareItemHandle(hItem, _, _, "208 ; 1");
-			if (hItemOverride != NULLHANDLE)
+			if (hItemOverride != null)
 			{
 				hItem = hItemOverride;
 				return Plugin_Changed;
@@ -1315,7 +1317,7 @@ public Action TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		case 648: //wrap assassin
 		{
 			Handle hItemOverride = PrepareItemHandle(hItem, _, _, "279 ; 2.0");
-			if (hItemOverride != NULLHANDLE)
+			if (hItemOverride != null)
 			{
 				hItem = hItemOverride;
 				return Plugin_Changed;
@@ -1324,7 +1326,7 @@ public Action TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		case 224: //Letranger
 		{
 			Handle hItemOverride = PrepareItemHandle(hItem, _, _, "166 ; 15 ; 1 ; 0.8", true);
-			if (hItemOverride != NULLHANDLE)
+			if (hItemOverride != null)
 			{
 				hItem = hItemOverride;
 				return Plugin_Changed;
@@ -1333,7 +1335,7 @@ public Action TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		case 225, 574: //YER
 		{
 			Handle hItemOverride = PrepareItemHandle(hItem, _, _, "155 ; 1 ; 160 ; 1", true);
-			if (hItemOverride != NULLHANDLE)
+			if (hItemOverride != null)
 			{
 				hItem = hItemOverride;
 				return Plugin_Changed;
@@ -1342,7 +1344,7 @@ public Action TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		case 232, 401: // Bushwacka + Shahanshah
 		{
 			Handle hItemOverride = PrepareItemHandle(hItem, _, _, "236 ; 1");
-			if (hItemOverride != NULLHANDLE)
+			if (hItemOverride != null)
 			{
 				hItem = hItemOverride;
 				return Plugin_Changed;
@@ -1351,7 +1353,7 @@ public Action TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		case 226: // The Battalion's Backup
 		{
 			Handle hItemOverride = PrepareItemHandle(hItem, _, _, "252 ; 0.25 ; 125 -20"); //125 ; -10
-			if (hItemOverride != NULLHANDLE)
+			if (hItemOverride != null)
 			{
 				hItem = hItemOverride;
 				return Plugin_Changed;
@@ -1360,7 +1362,7 @@ public Action TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		case 305, 1079: // Medic Xbow
 		{
 			Handle hItemOverride = PrepareItemHandle(hItem, _, _, "17 ; 0.12 ; 2 ; 1.45 ; 6 ; 1.5"); // ; 266 ; 1.0");
-			if (hItemOverride != NULLHANDLE)
+			if (hItemOverride != null)
 			{
 				hItem = hItemOverride;
 				return Plugin_Changed;
@@ -1369,7 +1371,7 @@ public Action TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		case 56, 1005, 1092: // Huntsman
 		{
 			Handle hItemOverride = PrepareItemHandle(hItem, _, _, "2 ; 1.5 ; 76 ; 2.0");
-			if (hItemOverride != NULLHANDLE)
+			if (hItemOverride != null)
 			{
 				hItem = hItemOverride;
 				return Plugin_Changed;
@@ -1378,7 +1380,7 @@ public Action TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		case 38, 457: // Axetinguisher
 		{
 			Handle hItemOverride = PrepareItemHandle(hItem, _, _, "", true);
-			if (hItemOverride != NULLHANDLE)
+			if (hItemOverride != null)
 			{
 				hItem = hItemOverride;
 				return Plugin_Changed;
@@ -1387,7 +1389,7 @@ public Action TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		case 43, 239, 1084, 1100: //gru
 		{
 			Handle hItemOverride = PrepareItemHandle(hItem, _, _, "107 ; 1.65 ; 1 ; 0.5 ; 128 ; 1 ; 191 ; -7", true);
-			if (hItemOverride != NULLHANDLE)
+			if (hItemOverride != null)
 			{
 				hItem = hItemOverride;
 				return Plugin_Changed;
@@ -1396,7 +1398,7 @@ public Action TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		case 415: //reserve shooter
 		{
 			Handle hItemOverride = PrepareItemHandle(hItem, _, _, "179 ; 1 ; 265 ; 999.0 ; 178 ; 0.6 ; 2 ; 1.1 ; 3 ; 0.66", true);
-			if (hItemOverride != NULLHANDLE)
+			if (hItemOverride != null)
 			{
 				hItem = hItemOverride;
 				return Plugin_Changed;
@@ -1414,7 +1416,7 @@ public Action TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				default: hItemOverride = PrepareItemHandle(hItem, _, _, "265 ; 999.0");
 			}
 		}
-		if (hItemOverride != NULLHANDLE)
+		if (hItemOverride != null)
 		{
 			hItem = hItemOverride;
 			return Plugin_Changed;
@@ -2289,6 +2291,7 @@ stock bool GetRJFlag(int client)
 stock void SetRJFlag(int client, bool bState)
 {
 	if (IsValidClient(client, false)) bInJump[client] = bState;
+	return
 }
 stock int GetSingleBoss()
 {
