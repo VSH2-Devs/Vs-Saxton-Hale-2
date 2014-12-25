@@ -3,16 +3,11 @@
 #endif
 #define _vsha_included
 
-#include <sourcemod>
-#include <sdkhooks>
 #include <tf2_stocks>
 #include <sdktools_gamerules>
 //#include <nextmap>
 #include <tf2items>
-//#include <clientprefs>
-#include <morecolors>
 #include <adt>
-#include <tf2attributes>
 
 //#pragma semicolon			1
 #pragma newdecls			optional
@@ -22,10 +17,9 @@
 #define PLUGIN_VERSION			"1.0"
 #define PATH				64
 #define PATHX				PLATFORM_MAX_PATH
-#define NULLHANDLE			INVALID_HANDLE //easier to copypaste
 
 /*
-methodmap CBoss //soon my pet, soon...
+class CBoss //Mr. Bailopan, I demandz muh classes!
 {
 	property int UserID
 	{
@@ -78,8 +72,8 @@ enum VSHAError
 	Error_SubpluginAlreadyRegistered,	// The plugin registering a game mode already has a game mode registered
 }
 
-Handle hArrayBossSubplugins = NULLHANDLE;	// List <Subplugin>
-Handle hTrieBossSubplugins = NULLHANDLE;	// Map <Boss Name, Subplugin Handle>
+Handle hArrayBossSubplugins = null;	// List <Subplugin>
+Handle hTrieBossSubplugins = null;	// Map <Boss Name, Subplugin Handle>
 
 
 stock void IntMain()
@@ -372,7 +366,7 @@ stock void SetMediCharge(int medigun, float val)
 }
 stock Handle PrepareItemHandle(Handle hdlItem, char[] name = "", int index = -1, const char[] att = "", bool dontpreserve = false)
 {
-	Handle hWeapon;
+	Handle hWeapon = null;
 	int addattribs = 0;
 
 	char weaponAttribsArray[32][32];
@@ -380,10 +374,10 @@ stock Handle PrepareItemHandle(Handle hdlItem, char[] name = "", int index = -1,
 
 	int flags = OVERRIDE_ATTRIBUTES;
 	if (!dontpreserve) flags |= PRESERVE_ATTRIBUTES;
-	if (hWeapon == NULLHANDLE) hWeapon = TF2Items_CreateItem(flags);
+	if (hWeapon == null) hWeapon = TF2Items_CreateItem(flags);
 	else TF2Items_SetFlags(hWeapon, flags);
-	//  new Handle:hWeapon = TF2Items_CreateItem(flags);    //NULLHANDLE;
-	if (hdlItem != NULLHANDLE)
+	//  new Handle:hWeapon = TF2Items_CreateItem(flags);    //null;
+	if (hdlItem != null)
 	{
 		addattribs = TF2Items_GetNumAttributes(hdlItem);
 		if (addattribs > 0)
@@ -438,24 +432,24 @@ stock Handle PrepareItemHandle(Handle hdlItem, char[] name = "", int index = -1,
 stock int SpawnWeapon(int client, char[] name, int index, int level, int qual, char[] att)
 {
 	Handle hWeapon = TF2Items_CreateItem(OVERRIDE_ALL|FORCE_GENERATION);
-	if (hWeapon == NULLHANDLE) return -1;
 	TF2Items_SetClassname(hWeapon, name);
 	TF2Items_SetItemIndex(hWeapon, index);
 	TF2Items_SetLevel(hWeapon, level);
 	TF2Items_SetQuality(hWeapon, qual);
 	char atts[32][32];
 	int count = ExplodeString(att, " ; ", atts, 32, 32);
-	if (count > 1)
+	if (count > 0)
 	{
 		TF2Items_SetNumAttributes(hWeapon, count/2);
 		int i2 = 0;
-		for (int i = 0; i < count; i += 2)
+		for (int i = 0; i < count; i+= 2)
 		{
 			TF2Items_SetAttribute(hWeapon, i2, StringToInt(atts[i]), StringToFloat(atts[i+1]));
 			i2++;
 		}
 	}
 	else TF2Items_SetNumAttributes(hWeapon, 0);
+	if (hWeapon == null) return -1;
 	int entity = TF2Items_GiveNamedItem(client, hWeapon);
 	delete hWeapon;
 	EquipPlayerWeapon(client, entity);
@@ -578,10 +572,10 @@ stock void SetClientGlow(int client, float time1, float clampfl = -1.0)
 }
 stock void ClearTimer(Handle Timer)
 {
-	if (Timer != NULLHANDLE)
+	if (Timer != null)
 	{
 		CloseHandle(Timer);
-		Timer = NULLHANDLE;
+		Timer = null;
 	}
 	return;
 }
@@ -749,20 +743,20 @@ stock Handle FindBossBySubPlugin(Handle plugin)
 		Handle bossub = GetArrayCell(hArrayBossSubplugins, i);
 		if (GetBossSubPlugin(bossub) == plugin) return bossub;
 	}
-	return NULLHANDLE;
+	return null;
 }
 stock Handle GetBossSubPlugin(Handle hndl)
 {
 	Handle plugin;
 	if (GetTrieValue(hndl, "Subplugin", plugin)) return plugin;
 	// Shouldn't actually get here, but we keep it just incase
-	return NULLHANDLE;
+	return null;
 }
 stock Handle FindBossName(const char[] name)
 {
 	Handle GotBossName;
 	if (GetTrieValueCaseInsensitive(hTrieBossSubplugins, name, GotBossName)) return GotBossName;
-	return NULLHANDLE;
+	return null;
 }
 stock Handle RegisterBoss(Handle pluginhndl, const char[] name, VSHAError error)
 {
@@ -770,19 +764,19 @@ stock Handle RegisterBoss(Handle pluginhndl, const char[] name, VSHAError error)
 	{
 		LogError("**** RegisterBoss - Invalid Name ****");
 		error = Error_InvalidName;
-		return NULLHANDLE;
+		return null;
 	}
-	if (FindBossBySubPlugin(pluginhndl) != NULLHANDLE)
+	if (FindBossBySubPlugin(pluginhndl) != null)
 	{
 		LogError("**** RegisterBoss - Boss Subplugin Already Registered ****");
 		error = Error_SubpluginAlreadyRegistered;
-		return NULLHANDLE;
+		return null;
 	}
-	if (FindBossName(name) != NULLHANDLE)
+	if (FindBossName(name) != null)
 	{
 		LogError("**** RegisterBoss - Boss Name Already Exists ****");
 		error = Error_AlreadyExists;
-		return NULLHANDLE;
+		return null;
 	}
 	// Create the trie to hold the data about the boss
 	Handle BossSubplug = CreateTrie();
@@ -901,23 +895,23 @@ forward void VSHA_OnBossKillBuilding(int attacker, int building); // also self e
 
 forward void VSHA_OnBossAirblasted(int client, int airblaster); /* when boss is airblasted, client is the airblasted boss */
 
-forward void VSHA_OnBossSelected(int client); //when a boss is selected, the client is the player that is assigned the boss
+forward void VSHA_OnBossSelected(int client); //when a boss is selected, the client is the player that is assigned to be the boss
 
 forward void VSHA_OnBossIntroTalk(); //play boss intro response sound clip in this forward
 
-forward void VSHA_OnBossSetHP(int client); //self explanatory, when boss has their hp set and client is the individual boss
+forward void VSHA_OnBossSetHP(int client); /* self explanatory, when boss has their hp set and client is the individual boss */
 
 forward void VSHA_OnLastSurvivor(int target); //target = lucky survivor
 
 forward void VSHA_OnBossTimer(int client); //called every 0.2 seconds on each boss, health is set automatically though
 
-forward void VSHA_OnPrepBoss(int client); /* called during MakeBoss timer; in this forward, the boss is disarmed and stripped of all equipment. Equip them or whatever in this forward*/
+forward void VSHA_OnPrepBoss(int client); /* called during MakeBoss timer; in this forward, the boss is disarmed and stripped of all equipment. Equip them or whatever in this forward ok?*/
 
-forward void VSHA_OnMusic(char[] BossTheme, float time); //sets the boss theme music
+forward void VSHA_OnMusic(char[] BossTheme, float time); //sets the boss theme music, no shitty earrape music ok?
 
-forward void VSHA_OnModelTimer(int client, char[] modelpath); //YOU NEED THIS TIMER FOR EVERY BOSS OR ELSE PLUGIN WILL BITCH @ U
+forward void VSHA_OnModelTimer(int client, char[] modelpath); //YOU NEED THIS TIMER FOR EVERY BOSS + MINION OR ELSE PLUGIN WILL BITCH @ U
 
-forward void VSHA_BossPreThink(int client); /* runs on PreThink aka runs every frame. When unused, this defaults to a default boss HUD. When this forward is used, it overrides EVERYTHING in PreThink for the Boss, so you HAVE to make a custom HUD if you want to use this forward or else your boss won't have a HUD. */
+forward void VSHA_BossPreThink(int client); /* runs on PreThink aka runs every frame. When unused, this defaults to a default boss HUD. When this forward is used. This forward overrides EVERYTHING in PreThink for the Boss, so you HAVE to make a Custom HUD for the Boss(es) if you want to use this forward or else your Boss(es) won't have a HUD. */
 
 forward void VSHA_OnBossRage(int client); //when boss does taunt or medic call rage
 
