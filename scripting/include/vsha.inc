@@ -7,10 +7,11 @@
 #include <sdktools_gamerules>
 //#include <nextmap>
 #include <tf2items>
-#include <adt>
+#include <adt_array>
+#include <adt_trie>
 
-//#pragma semicolon			1
-#pragma newdecls			optional
+#pragma semicolon			1
+#pragma newdecls			required
 
 #define MaxEntities			2048
 #define PLYR				MAXPLAYERS+1
@@ -69,17 +70,17 @@ enum VSHAError
 	Error_None,				// All-Clear :>
 	Error_InvalidName,			// Invalid name for Boss
 	Error_AlreadyExists,			// Boss Already Exists....
-	Error_SubpluginAlreadyRegistered,	// The plugin registering a game mode already has a game mode registered
+	Error_SubpluginAlreadyRegistered,	// The plugin registering a boss already has a boss registered
 }
 
-Handle hArrayBossSubplugins = null;	// List <Subplugin>
-Handle hTrieBossSubplugins = null;	// Map <Boss Name, Subplugin Handle>
+ArrayList hArrayBossSubplugins;	// List <Subplugin>
+StringMap hTrieBossSubplugins;	// Map <Boss Name, Subplugin Handle>
 
-
-stock void IntMain()
+public void IntMain()
 {
-	hArrayBossSubplugins = CreateArray();
-	hTrieBossSubplugins = CreateTrie();
+	hArrayBossSubplugins = new ArrayList();
+	hTrieBossSubplugins = new StringMap();
+	//hTrieBossSubplugins = CreateTrie();
 }
 
 //=================================================== [ S T O C K S ] ========================================================
@@ -193,7 +194,7 @@ stock int FindNextBoss(bool[] array) //why force specs to Boss? They're prob AFK
 	int inBoss = -1, tBossPoints = -99999;
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		if ( IsValidClient(i) && GetClientTeam(i) > _:TFTeam_Spectator )
+		if ( IsValidClient(i) && GetClientTeam(i) > view_as<int>(TFTeam_Spectator) )
 		{
 			int points = GetClientQueuePoints(i);
 			if (points >= tBossPoints && !array[i])
@@ -340,13 +341,13 @@ stock int FindPlayerBack(int client, int[] indices, int len)
 	edict = MaxClients+1;
 	while ((edict = FindEntityByClassname2(edict, "tf_powerup_bottle")) != -1)
 	{
-		decl String:netclass[32];
+		char netclass[32];
 		if (GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFPowerupBottle"))
 		{
 			int idx = GetItemIndex(edict);
 			if (GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
 			{
-				for (new i = 0; i < len; i++)
+				for (int i = 0; i < len; i++)
 				{
 					if (idx == indices[i]) return edict;
 				}
@@ -488,7 +489,7 @@ stock bool IsNearSpencer(int client)
 		}
 	}
 	return (healers > medics) ? true : false; 
-} 
+}
 
 stock int FindSentry(int client)
 {
@@ -553,7 +554,7 @@ stock int FindTeleOwner(int client)
 }
 stock int GetOwner(int ent)
 {
-	if (IsValidEdict(ent) && IsValidEntity(ent)) return GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity");
+	if ( IsValidEdict(ent) && IsValidEntity(ent) ) return GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity");
 	return -1;
 }
 stock void SetClientGlow(int client, float time1, float clampfl = -1.0)
@@ -561,8 +562,8 @@ stock void SetClientGlow(int client, float time1, float clampfl = -1.0)
 	if (IsValidClient(client))
 	{
 		flGlowTimer[client] += time1;
-		if (clampfl >= 0) flGlowTimer[client] = clampfl;
-		if (flGlowTimer[client] <= 0.0)
+		if (clampfl >= 0.0) flGlowTimer[client] = clampfl;
+		if (flGlowTimer[client] < 0.0)
 		{
 			flGlowTimer[client] = 0.0;
 			SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
@@ -656,8 +657,8 @@ stock bool TF2_IsPlayerCritBuffed(int client)
 {
     return (TF2_IsPlayerInCondition(client, TFCond_Kritzkrieged)
             || TF2_IsPlayerInCondition(client, TFCond_HalloweenCritCandy)
-            || TF2_IsPlayerInCondition(client, TFCond:34)
-            || TF2_IsPlayerInCondition(client, TFCond:35)
+            || TF2_IsPlayerInCondition(client, view_as<TFCond>(34))
+            || TF2_IsPlayerInCondition(client, view_as<TFCond>(35))
             || TF2_IsPlayerInCondition(client, TFCond_CritOnFirstBlood)
             || TF2_IsPlayerInCondition(client, TFCond_CritOnWin)
             || TF2_IsPlayerInCondition(client, TFCond_CritOnFlagCapture)
@@ -709,19 +710,19 @@ stock void StringToLower(const char[] input, char[] output, int size)
 		else output[i] = input[i];
 	}
 }
-stock bool GetTrieValueCaseInsensitive(Handle trie, const char[] key, any &value)
+stock bool GetTrieValueCaseInsensitive(StringMap trie, const char[] key, any &value)
 {
 	int length = strlen(key)+1;
 	char[] trieKey = new char[length]; //you've got to be fucking me.
 	StringToLower(key, trieKey, length);
-	return GetTrieValue(trie, trieKey, value);
+	return trie.GetValue(trieKey, value);
 }
-stock bool SetTrieValueCaseInsensitive(Handle trie, const char[] key, any value)
+stock bool SetTrieValueCaseInsensitive(StringMap trie, const char[] key, any value)
 {
 	int length = strlen(key)+1;
 	char[] trieKey = new char[length];
 	StringToLower(key, trieKey, length);
-	return SetTrieValue(trie, trieKey, value);
+	return trie.SetValue(trieKey, value);
 }
 stock bool ValidateName(const char[] name)
 {
@@ -737,25 +738,25 @@ stock bool ValidateName(const char[] name)
 }
 stock Handle FindBossBySubPlugin(Handle plugin)
 {
-	int count = GetArraySize(hArrayBossSubplugins);
+	int count = hArrayBossSubplugins.Length; //GetArraySize(hArrayBossSubplugins);
 	for (int i = 0; i < count; i++)
 	{
-		Handle bossub = GetArrayCell(hArrayBossSubplugins, i);
+		StringMap bossub = hArrayBossSubplugins.Get(i); //GetArrayCell(hArrayBossSubplugins, i);
 		if (GetBossSubPlugin(bossub) == plugin) return bossub;
 	}
 	return null;
 }
-stock Handle GetBossSubPlugin(Handle hndl)
+stock Handle GetBossSubPlugin(StringMap hndl)
 {
 	Handle plugin;
-	if (GetTrieValue(hndl, "Subplugin", plugin)) return plugin;
+	if (hndl.GetValue("Subplugin", plugin)) return plugin;
 	// Shouldn't actually get here, but we keep it just incase
 	return null;
 }
 stock Handle FindBossName(const char[] name)
 {
 	Handle GotBossName;
-	if (GetTrieValueCaseInsensitive(hTrieBossSubplugins, name, GotBossName)) return GotBossName;
+	if ( GetTrieValueCaseInsensitive(hTrieBossSubplugins, name, GotBossName) ) return GotBossName;
 	return null;
 }
 stock Handle RegisterBoss(Handle pluginhndl, const char[] name, VSHAError error)
@@ -779,13 +780,13 @@ stock Handle RegisterBoss(Handle pluginhndl, const char[] name, VSHAError error)
 		return null;
 	}
 	// Create the trie to hold the data about the boss
-	Handle BossSubplug = CreateTrie();
-	SetTrieValue(BossSubplug, "Subplugin", pluginhndl);
-	SetTrieString(BossSubplug, "BossName", name);
+	StringMap BossSubplug = new StringMap(); //Handle BossSubplug = CreateTrie();
+	BossSubplug.SetValue("Subplugin", pluginhndl); //SetTrieValue(BossSubplug, "Subplugin", pluginhndl);
+	BossSubplug.SetString("BossName", name); //SetTrieString(BossSubplug, "BossName", name);
 
 	// Then push it to the global array and trie
 	// Don't forget to convert the string to lower cases!
-	PushArrayCell(hArrayBossSubplugins, BossSubplug);
+	hArrayBossSubplugins.Push(BossSubplug); //PushArrayCell(hArrayBossSubplugins, BossSubplug);
 	SetTrieValueCaseInsensitive(hTrieBossSubplugins, name, BossSubplug);
 
 	error = Error_None;
@@ -795,7 +796,7 @@ stock Handle RegisterBoss(Handle pluginhndl, const char[] name, VSHAError error)
 
 //=================================================== [ N A T I V E ] =========================================================
 
-native int VSHA_RegisterBoss(char[] BossName); //EVERY BOSS NEEDS THIS, PREFERABLY USE IN ONPLUGINSTART OK?
+native Handle VSHA_RegisterBoss(char[] BossName); //EVERY BOSS NEEDS THIS, PREFERABLY USE IN ONPLUGINSTART OK?
 
 native int VSHA_GetBossUserID(int client); //gets boss' userid
 native int VSHA_SetBossUserID(int client, int userid);
@@ -929,7 +930,7 @@ forward Action VSHA_OnBossStabbed(int victim, int &attacker, int &weapon, float 
 
 //=================================================================================================================================
 
-public SharedPlugin:__pl_VSHA = 
+public SharedPlugin __pl_VSHA = 
 {
 	name = "vsha",
 	file = "vsha.smx",
