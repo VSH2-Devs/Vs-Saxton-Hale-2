@@ -9,8 +9,8 @@
 #include <morecolors>
 #include <sdkhooks>
 
-//#pragma semicolon		1
-#pragma newdecls		optional
+#pragma semicolon		1
+#pragma newdecls		required
 
 public Plugin myinfo = {
 	name = "Versus Saxton Hale Engine",
@@ -229,7 +229,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 		{
 			if ( damagecustom == TF_CUSTOM_TELEFRAG )
 			{
-				if ( !IsPlayerAlive(attacker) )
+				if (!IsPlayerAlive(attacker))
 				{
 					damage = 1.0;
 					return Plugin_Changed;
@@ -302,7 +302,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 				if (FuncBossStabbed != INVALID_FUNCTION)
 				{
 					Call_StartFunction(Storage[victim], FuncBossStabbed);
-					Call_PushCell(victim)
+					Call_PushCell(victim);
 					Call_PushCellRef(attacker);
 					Call_PushCellRef(weapon);
 					Call_PushFloatRef(damage);
@@ -315,9 +315,9 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 				char hurt[64];
 				if (GetEdictClassname(attacker, hurt, sizeof(hurt)) && !strcmp(hurt, "trigger_hurt", false))
 				{
-					Teleport the boss back to one of the spawns.
-					And during the first 30 seconds, he can only teleport to his own spawn.
-					TeleportToSpawn(victim, (bTenSecStart[1]) ? HaleTeam : 0);
+					// Teleport the boss back to one of the spawns.
+					// And during the first 30 seconds, he can only teleport to his own spawn.
+					//TeleportToSpawn(victim, (bTenSecStart[1]) ? HaleTeam : 0);
 
 					Function FuncBossTrigger = GetFunctionByName(Storage[victim], "VSHA_OnBossTriggerHurt");
 					if (FuncBossTrigger != INVALID_FUNCTION)
@@ -396,7 +396,7 @@ public void OnClientDisconnect(int client)
 					Storage[tHale] = Storage[client];
 					if ( IsValidClient(tHale) )
 					{
-						if (GetClientTeam(tHale) != HaleTeam) ForceTeamChange(tHale, HaleTeam)
+						if (GetClientTeam(tHale) != HaleTeam) ForceTeamChange(tHale, HaleTeam);
 						CreateTimer(0.1, MakeBoss, iBossUserID[tHale]);
 						CPrintToChat(tHale, "{olive}[VSH Engine]{default} Surprise! You're on NOW!");
 					}
@@ -410,7 +410,7 @@ public void OnClientDisconnect(int client)
 		{
 			if ( IsClientInGame(client) )
 			{
-				if ( IsPlayerAlive(client) ) CreateTimer(0.0, CheckAlivePlayers);
+				if ( IsPlayerAlive(client) ) CreateTimer(0.1, CheckAlivePlayers);
 				if ( client == FindNextBoss(bIsBoss) ) CreateTimer(1.0, Timer_SkipHalePanel, _, TIMER_FLAG_NO_MAPCHANGE);
 			}
 			if ( client == iNextBossPlayer ) iNextBossPlayer = -1;
@@ -511,7 +511,7 @@ public Action RoundStart(Handle event, const char[] name, bool dontBroadcast)
 	iPlaying = 0;
 	for (i = 1; i <= MaxClients; i++)
 	{
-		if (IsValidClient(i) && GetClientTeam(i) > _:TFTeam_Spectator)
+		if (IsValidClient(i) && GetClientTeam(i) > view_as<int>(TFTeam_Spectator))
 		{
 			if (bIsBoss[i] || bIsMinion[i]) ForceTeamChange(i, HaleTeam);
 			else if (!bIsBoss[i] && !bIsMinion[i])
@@ -533,7 +533,7 @@ public Action RoundStart(Handle event, const char[] name, bool dontBroadcast)
 	{
 		for (i = 1; i <= MaxClients; i++)
 		{
-			if (IsValidClient(i) && GetClientTeam(i) > _:TFTeam_Spectator)
+			if ( IsValidClient(i) && GetClientTeam(i) > view_as<int>(TFTeam_Spectator) )
 			{
 				if (bIsBoss[i]) ForceTeamChange(i, HaleTeam);
 				else ForceTeamChange(i, OtherTeam);
@@ -706,10 +706,12 @@ public Action PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 			{
 				SetVariantInt(GetEntPropEnt(KillSentry, Prop_Send, "m_iMaxHealth")+1);
 				AcceptEntityInput(KillSentry, "RemoveHealth");
-				Handle engieevent = CreateEvent("object_removed", true);
-				SetEventInt(engieevent, "userid", GetClientUserId(client));
-				SetEventInt(engieevent, "index", KillSentry);
-				FireEvent(engieevent);
+
+				Event engieevent = CreateEvent("object_removed", true);
+				engieevent.SetInt("userid", GetClientUserId(client));
+				engieevent.SetInt("index", KillSentry);
+				engieevent.Fire();
+
 				AcceptEntityInput(KillSentry, "Kill");
 			}
 		}
@@ -735,7 +737,7 @@ public Action PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 	}
 	return Plugin_Continue;
 }
-public Action RoundEnd(Handle event, const char[] name, bool dontBroadcast)
+public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	if (!Enabled) return Plugin_Continue;
 	TeamRoundCounter++;
@@ -830,7 +832,7 @@ public Action RoundEnd(Handle event, const char[] name, bool dontBroadcast)
         }
 	return Plugin_Continue;
 }
-public Action UberDeployed(Handle event, const char[] name, bool dontBroadcast)
+public Action UberDeployed(Event event, const char[] name, bool dontBroadcast)
 {
 	if (!Enabled) return Plugin_Continue;
 	int client = GetClientOfUserId(GetEventInt(event, "userid"));
@@ -899,7 +901,7 @@ public Action Timer_ResetUberCharge(Handle timer, any medigunid)
 	if ( IsValidEntity(medigun) ) SetMediCharge(medigun, GetMediCharge(medigun)+GetConVarFloat(MedigunReset)); //40.0
 	return Plugin_Continue;
 }
-public Action Destroyed(Handle event, const char[] name, bool dontBroadcast)
+public Action Destroyed(Event event, const char[] name, bool dontBroadcast)
 {
 	if (Enabled)
 	{
@@ -920,7 +922,7 @@ public Action Destroyed(Handle event, const char[] name, bool dontBroadcast)
 	}
 	return Plugin_Continue;
 }
-public Action Deflected(Handle event, const char[] name, bool dontBroadcast)
+public Action Deflected(Event event, const char[] name, bool dontBroadcast)
 {
 	if (!Enabled || GetEventInt(event, "weaponid")) return Plugin_Continue;
 	int client = GetClientOfUserId(GetEventInt(event, "ownerid"));
@@ -939,7 +941,7 @@ public Action Deflected(Handle event, const char[] name, bool dontBroadcast)
 	}
 	return Plugin_Continue;
 }
-public Action OnHookedEvent(Handle event, const char[] name, bool dontBroadcast)
+public Action OnHookedEvent(Event event, const char[] name, bool dontBroadcast)
 {
 	SetRJFlag(GetClientOfUserId(GetEventInt(event, "userid")), StrEqual(name, "rocket_jump", false));
 	return Plugin_Continue;
@@ -949,22 +951,25 @@ public Action TimerNineThousand(Handle timer)
 	EmitSoundToAll("saxton_hale/9000.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, false, 0.0);
 	return Plugin_Continue;
 }
-public void SetClientOverlay(int client, char[] strOverlay)
+void SetClientOverlay(int client, char[] strOverlay)
 {
 	int iFlags = GetCommandFlags("r_screenoverlay") & (~FCVAR_CHEAT);
 	SetCommandFlags("r_screenoverlay", iFlags);
 	ClientCommand(client, "r_screenoverlay \"%s\"", strOverlay);
 }
-public int GetClientQueuePoints(int client)
+int GetClientQueuePoints(int client)
 {
-	if ( !IsValidClient(client) || !AreClientCookiesCached(client) ) return -1;
+	if (!IsValidClient(client)) return -1;
+	if (!AreClientCookiesCached(client)) return -1;
 	char strPoints[32];
 	GetClientCookie(client, PointCookie, strPoints, sizeof(strPoints));
 	return StringToInt(strPoints);
 }
-public void SetClientQueuePoints(int client, int points)
+void SetClientQueuePoints(int client, int points)
 {
-	if ( !IsValidClient(client) || IsFakeClient(client) || !AreClientCookiesCached(client) ) return;
+	if (!IsValidClient(client)) return;
+	if (IsFakeClient(client)) return;
+	if (!AreClientCookiesCached(client)) return;
 	char strPoints[32];
 	IntToString(points, strPoints, sizeof(strPoints));
 	SetClientCookie(client, PointCookie, strPoints);
@@ -1036,10 +1041,10 @@ public Action CommandMakeNextSpecial(int client, int args)
 	}
 	GetCmdArgString(arg, sizeof(arg));
 
-	int count = GetArraySize(hArrayBossSubplugins);
+	int count = hArrayBossSubplugins.Length; //GetArraySize(hArrayBossSubplugins);
 	for (int i = 0; i < count; i++)
 	{
-		GetTrieString(GetArrayCell(hArrayBossSubplugins, i), "BossName", name, sizeof(name));
+		GetTrieString(hArrayBossSubplugins.Get(i), "BossName", name, sizeof(name));
 		if (StrContains(arg, name, false) != -1)
 		{
 			iPresetBoss[FindNextBoss(bIsBoss)] = i;
@@ -1057,10 +1062,10 @@ public Action PickBossMenu(int client, int args)
 		Menu classpick = new Menu(MenuHandler_PickBoss);
 		//Handle MainMenu = CreateMenu(MenuHandler_Perks);
 		classpick.SetTitle("[VSH Engine] Choose A Boss");
-		int count = GetArraySize(hArrayBossSubplugins);
+		int count = hArrayBossSubplugins.Length; //GetArraySize(hArrayBossSubplugins);
 		for (int i = 0; i < count; i++)
 		{
-			GetTrieString(GetArrayCell(hArrayBossSubplugins, i), "BossName", bossnameholder, sizeof(bossnameholder));
+			GetTrieString(hArrayBossSubplugins.Get(i), "BossName", bossnameholder, sizeof(bossnameholder));
 			classpick.AddItem("pickclass", bossnameholder);
 		}
 		classpick.Display(client, MENU_TIME_FOREVER);
@@ -1074,7 +1079,7 @@ public int MenuHandler_PickBoss(Menu menu, MenuAction action, int param1, int pa
 	if (action == MenuAction_Select)
         {
 		char bossnameholder[32];
-		GetTrieString(GetArrayCell(hArrayBossSubplugins, param2), "BossName", bossnameholder, sizeof(bossnameholder));
+		GetTrieString(hArrayBossSubplugins.Get(param2), "BossName", bossnameholder, sizeof(bossnameholder));
 		ReplyToCommand(param1, "[VSH Engine] You selected %s as your boss!", bossnameholder);
 		iPresetBoss[param1] = param2;
         }
@@ -1082,13 +1087,13 @@ public int MenuHandler_PickBoss(Menu menu, MenuAction action, int param1, int pa
 }
 stock void PickBossSpecial(int client)
 {
-	if (iPresetBoss[client] != -1) iBoss[client] = GetRandomInt(0, GetArraySize(hArrayBossSubplugins));
+	if (iPresetBoss[client] != -1) iBoss[client] = GetRandomInt(0, hArrayBossSubplugins.Length);
 	else
 	{
 		iBoss[client] = iPresetBoss[client];
 		iPresetBoss[client] = -1;
 	}
-	Storage[client] = GetBossSubPlugin(GetArrayCell(hArrayBossSubplugins, iBoss[client]));
+	Storage[client] = GetBossSubPlugin(hArrayBossSubplugins.Get(iBoss[client]));
 
 	Function FuncBossSelect = GetFunctionByName(Storage[client], "VSHA_OnBossSelected");
 	if (FuncBossSelect != INVALID_FUNCTION)
@@ -1242,6 +1247,7 @@ public Action Timer_DrawGame(Handle timer)
 	}
 	switch (time)
 	{
+		case 300: EmitSoundToAll("vo/announcer_ends_5min.wav");
 		case 120: EmitSoundToAll("vo/announcer_ends_2min.wav");
 		case 60: EmitSoundToAll("vo/announcer_ends_60sec.wav");
 		case 30: EmitSoundToAll("vo/announcer_ends_30sec.wav");
@@ -1407,7 +1413,7 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 	}
 	if (TF2_GetPlayerClass(client) == TFClass_Soldier)
 	{
-		Handle hItemOverride;
+		Handle hItemOverride = null;
 		if ( !strncmp(classname, "tf_weapon_rocketlauncher", 24, false) )
 		{
 			switch (iItemDefinitionIndex)
@@ -2258,14 +2264,16 @@ public void CalcScores()
 	int j, damage;
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		if (IsValidClient(i) && GetClientTeam(i) > _:TFTeam_Spectator)
+		if ( IsValidClient(i) && GetClientTeam(i) > view_as<int>(TFTeam_Spectator) )
 		{
 			damage = iDamage[i];
-			Handle aevent = CreateEvent("player_escort_score", true);
-			SetEventInt(aevent, "player", i);
+
+			Event aevent = CreateEvent("player_escort_score", true);
+			aevent.SetInt("player", i);
 			for (j = 0; damage-600 > 0; damage -= 600, j++){}
-			SetEventInt(aevent, "points", j);
-			FireEvent(aevent);
+			aevent.SetInt("points", j);
+			aevent.Fire();
+
 			if ( bIsBoss[i] ) SetClientQueuePoints(i, 0);
 			else
 			{
@@ -2291,7 +2299,6 @@ stock bool GetRJFlag(int client)
 stock void SetRJFlag(int client, bool bState)
 {
 	if (IsValidClient(client, false)) bInJump[client] = bState;
-	return
 }
 stock int GetSingleBoss()
 {
@@ -2423,7 +2430,7 @@ public int Native_RegisterBossSubplugin(Handle plugin, int numParams)
 	GetNativeString(1, BossSubPluginName, sizeof(BossSubPluginName));
 	VSHAError erroar;
 	Handle BossHandle = RegisterBoss(plugin, BossSubPluginName, erroar); //ALL PROPS TO COOKIES.NET AKA COOKIES.IO
-	return _:BossHandle;
+	return view_as<int>(BossHandle);
 }
 
 public int Native_GetBossUserID(Handle plugin, int numParams)
@@ -2587,7 +2594,7 @@ public int Native_GetAliveBluePlayers(Handle plugin, int numParams)
 
 public int Native_GetBossRage(Handle plugin, int numParams)
 {
-	return _:flCharge[GetNativeCell(1)];
+	return view_as<int>(flCharge[GetNativeCell(1)]);
 }
 public int Native_SetBossRage(Handle plugin, int numParams)
 {
@@ -2597,7 +2604,7 @@ public int Native_SetBossRage(Handle plugin, int numParams)
 
 public int Native_GetGlowTimer(Handle plugin, int numParams)
 {
-	return _:flGlowTimer[GetNativeCell(1)];
+	return view_as<int>(flGlowTimer[GetNativeCell(1)]);
 }
 public int Native_SetGlowTimer(Handle plugin, int numParams)
 {
