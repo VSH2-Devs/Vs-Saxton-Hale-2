@@ -7,63 +7,24 @@
 #include <sdktools_gamerules>
 //#include <nextmap>
 #include <tf2items>
-#include <adt_array>
-#include <adt_trie>
+#include <adt>
 
 #pragma semicolon			1
 #pragma newdecls			required
 
 #define MaxEntities			2048
 #define PLYR				MAXPLAYERS+1
-#define PLUGIN_VERSION			"1.0"
 #define PATH				64
 #define PATHX				PLATFORM_MAX_PATH
 
-/*
-class CBoss //Mr. Bailopan, I demandz muh classes!
+Handle hArrayBossSubplugins = null;	// List <Subplugin>
+Handle hTrieBossSubplugins = null;	// Map <Boss Name, Subplugin Handle>
+
+stock void SetHandles()
 {
-	property int UserID
-	{
-		public get() {
-			if (IsValidClient(_:this)) return GetClientUserId(_:this);
-		}
-	}
-	property int Index
-	{
-		public get() { return GetClientOfUserId(this.UserID); }
-	}
-	property int Health
-	{
-		public get() { return iBossHealth[this.Index]; }
-		public set(int val) { iBossHealth[this.Index] = val; }
-	}
-	property int MaxHealth
-	{
-		public get() { return iBossMaxHealth[this.Index]; }
-		public set(int val) { iBossMaxHealth[this.Index] = val; }
-	}
-	property int Difficulty
-	{
-		public get() { return iDifficulty[this.Index]; }
-		public set(int val) { iDifficulty[this.Index] = val; }
-	}
-	property float MoveSpeed
-	{
-		public get() { return flMoveSpeed[this.Index]; }
-		public set(float val) { flMoveSpeed[this.Index] = val; }
-	}
-	property float Rage
-	{
-		public get() { return flRage[this.Index]; }
-		public set(float val) { flRage[this.Index] = val; }
-	}
-	property float RageDistance
-	{
-		public get() { return flRageDist[this.Index]; }
-		public set(float val) { flRageDist[this.Index] = val; }
-	}
+	hArrayBossSubplugins = CreateArray();
+	hTrieBossSubplugins = CreateTrie();
 }
-*/
 
 enum VSHAError
 {
@@ -73,20 +34,10 @@ enum VSHAError
 	Error_SubpluginAlreadyRegistered,	// The plugin registering a boss already has a boss registered
 }
 
-ArrayList hArrayBossSubplugins;	// List <Subplugin>
-StringMap hTrieBossSubplugins;	// Map <Boss Name, Subplugin Handle>
-
-public void IntMain()
-{
-	hArrayBossSubplugins = new ArrayList();
-	hTrieBossSubplugins = new StringMap();
-	//hTrieBossSubplugins = CreateTrie();
-}
-
 //=================================================== [ S T O C K S ] ========================================================
 
 //============= [ D E F A U L T  A B I L I T I E S ] ===================
-stock void SuperJump(int client, float charge, float JumpAngle)
+stock bool SuperJump(int client, float &charge, float JumpAngle, float subtractCharge)
 {
 	float ang[3];
 	GetClientEyeAngles(client, ang);
@@ -99,10 +50,12 @@ stock void SuperJump(int client, float charge, float JumpAngle)
 		vel[0] *= (1+Sine(charge * FLOAT_PI / 50));
 		vel[1] *= (1+Sine(charge * FLOAT_PI / 50));
 		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, vel);
-		charge = -120;
+		charge = subtractCharge;
+		return true;
 	}
+	return false;
 }
-stock void Weighdown(int client, float weighdowntime, float AngleForWayDown)
+stock bool Weighdown(int client, float &weighdowntime, float AngleForWayDown, float SetWeighdown)
 {
 	if ( weighdowntime >= 1.0 && /*(GetClientButtons(bossplayer) & IN_DUCK)*/ (GetEntityGravity(client) != 6.0) )
 	{
@@ -116,9 +69,11 @@ stock void Weighdown(int client, float weighdowntime, float AngleForWayDown)
 			TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, fVelocity);
 			SetEntityGravity(client, 6.0);
 			CreateTimer(2.0, TimerGravityCat, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-			weighdowntime = 0.0;
+			weighdowntime = SetWeighdown;
+			return true;
 		}
 	}
+	return false;
 }
 public Action TimerGravityCat(Handle timer, any userid)
 {
@@ -126,7 +81,7 @@ public Action TimerGravityCat(Handle timer, any userid)
 	if (IsValidClient(client)) SetEntityGravity(client, 1.0);
 	return Plugin_Continue;
 }
-stock void StunSentry(int client, float dist, float duration = 6.0)
+stock void StunSentry(int client, float dist, float duration = 6.0, float Removehealth)
 {
 	float bossPosition[3], sentryPosition[3];
 	GetEntPropVector(client, Prop_Send, "m_vecOrigin", bossPosition);
@@ -139,6 +94,11 @@ stock void StunSentry(int client, float dist, float duration = 6.0)
 			SetEntProp(sentry, Prop_Send, "m_bDisabled", 1);
 			CreateTimer( duration, RemoveEnt, EntIndexToEntRef(AttachParticle(sentry, "yikes_fx", 75.0)) );
 			CreateTimer( duration, TimerEnableSentry, EntIndexToEntRef(sentry) );
+		}
+		if (Removehealth > 0.0)
+		{
+			SetVariantInt(view_as<int>(Removehealth));
+			AcceptEntityInput(sentry, "RemoveHealth");
 		}
 	}
 }
@@ -505,10 +465,10 @@ stock void IncrementHeadCount(int client)
 	if (!TF2_IsPlayerInCondition(client, TFCond_DemoBuff)) TF2_AddCondition(client, TFCond_DemoBuff, -1.0);
 	int decapitations = GetEntProp(client, Prop_Send, "m_iDecapitations");
 	SetEntProp(client, Prop_Send, "m_iDecapitations", decapitations+1);
-	int health = GetClientHealth(client);
-	if (health < 300) health += 15;
-	SetEntProp(client, Prop_Data, "m_iHealth", health);
-	SetEntProp(client, Prop_Send, "m_iHealth", health);
+	int boosthealth = GetClientHealth(client);
+	if (boosthealth < 300) boosthealth += 15;
+	SetEntProp(client, Prop_Data, "m_iHealth", boosthealth);
+	SetEntProp(client, Prop_Send, "m_iHealth", boosthealth);
 	TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);   //recalc their speed
 }
 stock void SpawnSmallHealthPackAt(int client, int ownerteam = 0)
@@ -557,28 +517,13 @@ stock int GetOwner(int ent)
 	if ( IsValidEdict(ent) && IsValidEntity(ent) ) return GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity");
 	return -1;
 }
-stock void SetClientGlow(int client, float time1, float clampfl = -1.0)
-{
-	if (IsValidClient(client))
-	{
-		flGlowTimer[client] += time1;
-		if (clampfl >= 0.0) flGlowTimer[client] = clampfl;
-		if (flGlowTimer[client] < 0.0)
-		{
-			flGlowTimer[client] = 0.0;
-			SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
-		}
-		else SetEntProp(client, Prop_Send, "m_bGlowEnabled", 1);
-	}
-}
-stock void ClearTimer(Handle Timer)
+stock void ClearTimer(Handle &Timer)
 {
 	if (Timer != null)
 	{
 		CloseHandle(Timer);
 		Timer = null;
 	}
-	return;
 }
 stock void ForceTeamChange(int client, int iTeam)
 {
@@ -596,53 +541,53 @@ stock int GetTeamPlayerCount(int team)
 	}
 	return count;
 }
-stock int GetWeaponAmmo(int weapon)
+stock int GetWeaponAmmo(int armament)
 {
-	int owner = GetEntPropEnt(weapon, Prop_Send, "m_hOwnerEntity");
+	int owner = GetEntPropEnt(armament, Prop_Send, "m_hOwnerEntity");
 	if (owner <= 0) return 0;
-	if (IsValidEntity(weapon))
+	if (IsValidEntity(armament))
 	{
-		int iOffset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
+		int iOffset = GetEntProp(armament, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
 		int iAmmoTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
 		return GetEntData(owner, iAmmoTable+iOffset, 4);
 	}
 	return 0;
 }
-stock int GetWeaponClip(int weapon)
+stock int GetWeaponClip(int armament)
 {
-	if (IsValidEntity(weapon))
+	if (IsValidEntity(armament))
 	{
 		int AmmoClipTable = FindSendPropInfo("CTFWeaponBase", "m_iClip1");
-		return GetEntData(weapon, AmmoClipTable);
+		return GetEntData(armament, AmmoClipTable);
 	}
 	return 0;
 }
-stock void SetWeaponAmmo(int weapon, int ammo)
+stock void SetWeaponAmmo(int armament, int ammo)
 {
-	int owner = GetEntPropEnt(weapon, Prop_Send, "m_hOwnerEntity");
+	int owner = GetEntPropEnt(armament, Prop_Send, "m_hOwnerEntity");
 	if (owner == -1) return;
-	if (IsValidEntity(weapon))
+	if (IsValidEntity(armament))
 	{
-		int iOffset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
+		int iOffset = GetEntProp(armament, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
 		int iAmmoTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
 		SetEntData(owner, iAmmoTable+iOffset, ammo, 4, true);
 	}
 	return;
 }
-stock void SetWeaponClip(int weapon, int ammo)
+stock void SetWeaponClip(int armament, int ammo)
 {
-	if (IsValidEntity(weapon))
+	if (IsValidEntity(armament))
 	{
 		int iAmmoTable = FindSendPropInfo("CTFWeaponBase", "m_iClip1");
-		SetEntData(weapon, iAmmoTable, ammo, 4, true);
+		SetEntData(armament, iAmmoTable, ammo, 4, true);
 	}
 	return;
 }
 stock int GetMaxAmmo(int client, int slot)
 {
 	if (!IsValidClient(client)) return 0;
-	int weapon = GetPlayerWeaponSlot(client, slot);
-	if (IsValidEntity(weapon))
+	int armament = GetPlayerWeaponSlot(client, slot);
+	if (IsValidEntity(armament))
 	{
 		switch (slot)
 		{
@@ -678,17 +623,17 @@ stock void TeleportToSpawn(int iClient, int iTeam = 0)
 	int iEnt = -1;
 	float vPos[3];
 	float vAng[3];
-	Handle hArray = CreateArray();
+	ArrayList hArray = new ArrayList(); //Handle hArray = CreateArray();
 	while ((iEnt = FindEntityByClassname2(iEnt, "info_player_teamspawn")) != -1)
 	{
-		if (iTeam <= 1) PushArrayCell(hArray, iEnt); // Not RED (2) nor BLu (3)
+		if (iTeam <= 1) hArray.Push(iEnt); //PushArrayCell(hArray, iEnt); // Not RED (2) nor BLu (3)
 		else
 		{
 			int iSpawnTeam = GetEntProp(iEnt, Prop_Send, "m_iTeamNum");
-			if (iSpawnTeam == iTeam) PushArrayCell(hArray, iEnt);
+			if (iSpawnTeam == iTeam) hArray.Push(iEnt);
 		}
 	}
-	iEnt = GetArrayCell(hArray, GetRandomInt(0, GetArraySize(hArray) - 1));
+	iEnt = hArray.Get(GetRandomInt(0, hArray.Length - 1)); //GetArrayCell(hArray, GetRandomInt(0, GetArraySize(hArray) - 1));
 	CloseHandle(hArray);
 
 	//Technically you'll never find a map without a spawn point. Not a good map at least.
@@ -710,19 +655,19 @@ stock void StringToLower(const char[] input, char[] output, int size)
 		else output[i] = input[i];
 	}
 }
-stock bool GetTrieValueCaseInsensitive(StringMap trie, const char[] key, any &value)
+stock bool GetTrieValueCaseInsensitive(Handle trie, const char[] key, any &value)
 {
 	int length = strlen(key)+1;
 	char[] trieKey = new char[length]; //you've got to be fucking me.
 	StringToLower(key, trieKey, length);
-	return trie.GetValue(trieKey, value);
+	return GetTrieValue(trie, trieKey, value);
 }
-stock bool SetTrieValueCaseInsensitive(StringMap trie, const char[] key, any value)
+stock bool SetTrieValueCaseInsensitive(Handle trie, const char[] key, any value)
 {
 	int length = strlen(key)+1;
 	char[] trieKey = new char[length];
 	StringToLower(key, trieKey, length);
-	return trie.SetValue(trieKey, value);
+	return SetTrieValue(trie, trieKey, value);
 }
 stock bool ValidateName(const char[] name)
 {
@@ -732,24 +677,23 @@ stock bool ValidateName(const char[] name)
 		int holder = name[i];
 		// Invalid name, names may only contains numbers, underscores and normal letters
 		if (!(IsCharAlpha(holder) || IsCharNumeric(holder) || holder == '_')) return false;
-	}
-	// A name is, of course, only valid if it's 1 or more chars long, though longer is recommended
+	} // A name is, of course, only valid if it's 1 or more chars long, though longer is recommended
 	return (length > 0);
 }
 stock Handle FindBossBySubPlugin(Handle plugin)
 {
-	int count = hArrayBossSubplugins.Length; //GetArraySize(hArrayBossSubplugins);
+	int count = GetArraySize(hArrayBossSubplugins);
 	for (int i = 0; i < count; i++)
 	{
-		StringMap bossub = hArrayBossSubplugins.Get(i); //GetArrayCell(hArrayBossSubplugins, i);
+		Handle bossub = GetArrayCell(hArrayBossSubplugins, i);
 		if (GetBossSubPlugin(bossub) == plugin) return bossub;
 	}
 	return null;
 }
-stock Handle GetBossSubPlugin(StringMap hndl)
+stock Handle GetBossSubPlugin(Handle hndl)
 {
 	Handle plugin;
-	if (hndl.GetValue("Subplugin", plugin)) return plugin;
+	if (GetTrieValue(hndl, "Subplugin", plugin)) return plugin;
 	// Shouldn't actually get here, but we keep it just incase
 	return null;
 }
@@ -780,13 +724,13 @@ stock Handle RegisterBoss(Handle pluginhndl, const char[] name, VSHAError error)
 		return null;
 	}
 	// Create the trie to hold the data about the boss
-	StringMap BossSubplug = new StringMap(); //Handle BossSubplug = CreateTrie();
-	BossSubplug.SetValue("Subplugin", pluginhndl); //SetTrieValue(BossSubplug, "Subplugin", pluginhndl);
-	BossSubplug.SetString("BossName", name); //SetTrieString(BossSubplug, "BossName", name);
+	Handle BossSubplug = CreateTrie();
+	SetTrieValue(BossSubplug, "Subplugin", pluginhndl);
+	SetTrieString(BossSubplug, "BossName", name);
 
 	// Then push it to the global array and trie
 	// Don't forget to convert the string to lower cases!
-	hArrayBossSubplugins.Push(BossSubplug); //PushArrayCell(hArrayBossSubplugins, BossSubplug);
+	PushArrayCell(hArrayBossSubplugins, BossSubplug);
 	SetTrieValueCaseInsensitive(hTrieBossSubplugins, name, BossSubplug);
 
 	error = Error_None;
@@ -794,63 +738,66 @@ stock Handle RegisterBoss(Handle pluginhndl, const char[] name, VSHAError error)
 }
 //=================================================================================================================================
 
-//=================================================== [ N A T I V E ] =========================================================
+//=================================================== [ N A T I V E ] =============================================================
 
-native Handle VSHA_RegisterBoss(char[] BossName); //EVERY BOSS NEEDS THIS, PREFERABLY USE IN ONPLUGINSTART OK?
+native int VSHA_RegisterBoss(char[] BossName); //EVERY DAMN BOSS SUBPLUGIN REQUIRES THIS TO WORK; PREFERABLY USE IN ONPLUGINSTART OK?
 
 native int VSHA_GetBossUserID(int client); //gets boss' userid
-native int VSHA_SetBossUserID(int client, int userid);
+native void VSHA_SetBossUserID(int client, int userid);
 
 native int VSHA_GetDifficulty(int client); /* this is to modify bosses based on what difficulty level the player wants his boss to be, doesn't do anything by itself but this API should help with it. */
-native int VSHA_SetDifficulty(int client, int difficultylevel);
+native void VSHA_SetDifficulty(int client, int difficultylevel);
 
 native int VSHA_GetLives(int client); /* gets the player's lives, you can get/set lives for both players and bosses */
-native int VSHA_SetLives(int client, int lives);
+native void VSHA_SetLives(int client, int lives);
 
 native int VSHA_GetPresetBoss(int client); //this gets the preset boss special ID, similar to VSH Special or FF2 Get special
-native int VSHA_SetPresetBoss(int client, int presetboss);
+native void VSHA_SetPresetBoss(int client, int presetboss);
 
 native int VSHA_GetBossHealth(int client);
-native int VSHA_SetBossHealth(int client, int health);
+native void VSHA_SetBossHealth(int client, int health);
 
 native int VSHA_GetBossMaxHealth(int client);
-native int VSHA_SetBossMaxHealth(int client, int maxhealth);
+native void VSHA_SetBossMaxHealth(int client, int maxhealth);
 
 native int VSHA_GetBossPlayerKills(int client); //how many players a boss killed in the entire round
-native int VSHA_SetBossPlayerKills(int client, int kills);
+native void VSHA_SetBossPlayerKills(int client, int kills);
 
 native int VSHA_GetBossKillstreak(int client); //how many people boss killed in a certain amount of time
-native int VSHA_SetBossKillstreak(int client, int killspree);
+native void VSHA_SetBossKillstreak(int client, int killspree);
 
 native int VSHA_GetPlayerBossKills(int client); //how many times a player has killed a boss in entire map time
-native int VSHA_SetPlayerBossKills(int client, int bosseskilled);
+native void VSHA_SetPlayerBossKills(int client, int bosseskilled);
 
 native int VSHA_GetDamage(int client); //this can also get the boss' damage.
-native int VSHA_SetDamage(int client, int dmg);
+native void VSHA_SetDamage(int client, int dmg);
 
 native int VSHA_GetBossMarkets(int client); /* how many times a boss was market-gardened. THIS DOES NOT AUTO INCREMENT IN CORE PLUGIN. If you want your boss to take Market-Garden Backstab-like damage, you should use this. */
-native int VSHA_SetBossMarkets(int client, int markets);
+native void VSHA_SetBossMarkets(int client, int markets);
 
 native int VSHA_GetBossStabs(int client); //how many times a boss was backstabbed
-native int VSHA_SetBossStabs(int client, int stabs);
+native void VSHA_SetBossStabs(int client, int stabs);
+
+native int VSHA_GetHits(int client); //how many times a client was hit aka took dmg.
+native void VSHA_SetHits(int client, int hits);
 
 native int VSHA_GetMaxWepAmmo(int wepentity);
-native int VSHA_SetMaxWepAmmo(int wepentity, int maxammo);
+native void VSHA_SetMaxWepAmmo(int wepentity, int maxammo);
 
 native int VSHA_GetMaxWepClip(int wepentity);
-native int VSHA_SetMaxWepClip(int wepentity, int maxclip);
+native void VSHA_SetMaxWepClip(int wepentity, int maxclip);
 
 native int VSHA_GetPresetBossPlayer(); //Get when or which player will be forced as the next boss
-native int VSHA_SetPresetBossPlayer(int client);
+native void VSHA_SetPresetBossPlayer(int client);
 
 native int VSHA_GetAliveRedPlayers();
 native int VSHA_GetAliveBluPlayers();
 
 native float VSHA_GetBossRage(int client); /* gets the charge of the hardcoded, built-in rage charge. You can create multiple rage charges or make the default one charge up from different things than just taking damage. */
-native int VSHA_SetBossRage(int client, float rage);
+native void VSHA_SetBossRage(int client, float rage);
 
 native float VSHA_GetGlowTimer(int client); //used to set glow timers on players, use in boss subplugins plz
-native int VSHA_SetGlowTimer(int client, float glowtime);
+native void VSHA_SetGlowTimer(int client, float glowtime);
 
 native bool VSHA_IsBossPlayer(int client); //is client a boss?
 native bool VSHA_IsPlayerInJump(int client); //did player rocket/sticky jump?
@@ -862,7 +809,7 @@ native int VSHA_PickBossSpecial(int client); /* picks the special for the player
 
 /* Used to get/set minions/zombies for bosses. When using these natives, you need to set the minion bool to true on a player before respawning them as a minion. When a player is spawned as a minion, the forward "VSHA_OnPrepBoss" is called on the minion, so don't forget to specify what minions and bosses each get. Please note that Minions do not get their own HUDs so you need to create one for them in the forward "VSHA_BossPreThink" */
 native bool VSHA_IsMinion(int client);
-native int VSHA_SetMinion(int client, bool set);
+native void VSHA_SetMinion(int client, bool set);
 
 /*
 Initial is the health that is autogiven to the boss, playing is how many players are playing, exponent is how much power is added to the calculation, and additional is how much additional health given to the final calculation. All of it is auto rounded to int and automatically divided according to the number of bosses :)
@@ -908,23 +855,23 @@ forward void VSHA_OnBossTimer(int client); //called every 0.2 seconds on each bo
 
 forward void VSHA_OnPrepBoss(int client); /* called during MakeBoss timer; in this forward, the boss is disarmed and stripped of all equipment. Equip them or whatever in this forward ok?*/
 
-forward void VSHA_OnMusic(char[] BossTheme, float time); //sets the boss theme music, no shitty earrape music ok?
+forward void VSHA_OnMusic(char BossTheme[256], float &time); //sets the boss theme music, no shitty earrape music ok?
 
-forward void VSHA_OnModelTimer(int client, char[] modelpath); //YOU NEED THIS TIMER FOR EVERY BOSS + MINION OR ELSE PLUGIN WILL BITCH @ U
+forward Action VSHA_OnModelTimer(int client, char modelpath[64]); //YOU NEED THIS TIMER FOR EVERY BOSS + MINION OR ELSE PLUGIN WILL BITCH @ U
 
 forward void VSHA_BossPreThink(int client); /* runs on PreThink aka runs every frame. When unused, this defaults to a default boss HUD. When this forward is used. This forward overrides EVERYTHING in PreThink for the Boss, so you HAVE to make a Custom HUD for the Boss(es) if you want to use this forward or else your Boss(es) won't have a HUD. */
 
 forward void VSHA_OnBossRage(int client); //when boss does taunt or medic call rage
 
-forward void VSHA_OnBossConditionAdded(int client); //when condition like jarate is added
+forward void VSHA_OnBossConditionAdded(int client, TFCond condition); //when condition like jarate is added
 
 forward void VSHA_OnUberTimer(int medic, int target); //called every 0.4 seconds
 
-forward Action VSHA_OnBossDealDmg(int victim, int &attacker, int &weapon, int &inflictor, float &damage); //when a boss player deals dmg
+forward Action VSHA_OnBossDealDmg(int victim, int &attacker, int &weapon, int &inflictor, float &damage, int &damagetype, int damagecustom); //when a boss player deals dmg
 
 forward Action VSHA_OnBossTeleFragd(int victim, int &attacker, float &damage); //boss got telefragged
 
-forward Action VSHA_OnBossTakeDmg(int victim, int &attacker, int &weapon, int &inflictor, float &damage); //boss took dmg
+forward Action VSHA_OnBossTakeDmg(int victim, int &attacker, int &weapon, int &inflictor, float &damage, int &damagetype, int damagecustom); //boss took dmg
 
 forward Action VSHA_OnBossStabbed(int victim, int &attacker, int &weapon, float &damage); //boss got backstabbed
 
@@ -981,6 +928,9 @@ public __pl_VSHA_SetNTVOptional()
 
 	MarkNativeAsOptional("VSHA_GetBossStabs");
 	MarkNativeAsOptional("VSHA_SetBossStabs");
+
+	MarkNativeAsOptional("VSHA_GetHits");
+	MarkNativeAsOptional("VSHA_SetHits");
 
 	MarkNativeAsOptional("VSHA_GetMaxWepAmmo");
 	MarkNativeAsOptional("VSHA_SetMaxWepAmmo");
