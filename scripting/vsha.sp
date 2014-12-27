@@ -11,6 +11,7 @@
 
 #pragma semicolon		1
 #pragma newdecls		required
+#define PLUGIN_VERSION		"1.0"
 
 public Plugin myinfo = {
 	name = "Versus Saxton Hale Engine",
@@ -27,20 +28,21 @@ public Plugin myinfo = {
 Handle Storage[PLYR];
 
 //ints
-int iBossUserID[PLYR]; //USERID NUM OVER CLIENT INT
-int iBoss[PLYR]; //THIS IS NOT THE USER, IT'S THE SPECIAL BOSS IDs
+int iBossUserID[PLYR];		//USERID NUM OVER CLIENT INT
+int iBoss[PLYR];		//THIS IS NOT THE USER, IT'S THE SPECIAL BOSS IDs
 int iDifficulty[PLYR];
 int iPresetBoss[PLYR];
 int iBossHealth[PLYR];
 int iBossMaxHealth[PLYR];
-int iPlayerKilled[PLYR][2]; //0 - kill count, 1 - killing spree
+int iPlayerKilled[PLYR][2];	//0 - kill count, 1 - killing spree
 int iBossesKilled[PLYR];
 int iDamage[PLYR];
 int iAirDamage[PLYR];
 int iMarketed[PLYR];
 int iStabbed[PLYR];
 int iUberedTarget[PLYR];
-int iLives[PLYR];
+int iLives[PLYR];		//lives can work for BOTH Bosses & for players, get creative!
+int iHits[PLYR];		//How many times a player has been hit lol
 int AmmoTable[2049];
 int ClipTable[2049];
 int HaleTeam = 3;
@@ -84,24 +86,25 @@ int mp_forcecamera;
 float tf_scout_hype_pep_max;
 
 //cvar Handles
-Handle bEnabled = null;
-Handle FirstRound = null;
-Handle MedigunReset = null;
-Handle AliveToEnable = null;
-Handle CountDownPlayerLimit = null;
-Handle CountDownHealthLimit = null;
-Handle LastPlayersTimerCountDown = null;
-Handle EnableEurekaEffect = null;
-Handle PointDelay = null;
-Handle QueueIncrement = null;
-Handle FallDmgSoldier = null;
-Handle DifficultyAmount = null;
+ConVar bEnabled = null;
+ConVar FirstRound = null;
+ConVar MedigunReset = null;
+ConVar AliveToEnable = null;
+ConVar CountDownPlayerLimit = null;
+ConVar CountDownHealthLimit = null;
+ConVar LastPlayersTimerCountDown = null;
+ConVar EnableEurekaEffect = null;
+ConVar PointDelay = null;
+ConVar QueueIncrement = null;
+ConVar FallDmgSoldier = null;
+//ConVar DifficultyAmount = null;
 
 //non-cvar Handles
 Handle hBossHUD;
 Handle hPlayerHUD;
 Handle TimeLeftHUD = null;
 Handle MiscHUD = null; //for various other HUD additions
+//Handle CustomHUD = null;
 Handle hdoorchecktimer = null;
 Handle PointCookie = null;
 Handle MusicTimer = null;
@@ -112,7 +115,21 @@ Handle AddToDownloads;
 
 public void OnPluginStart()
 {
-	IntMain();
+	SetHandles();
+
+	bEnabled = CreateConVar("vshe_enabled", "1", "Enable the VSH Engine", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	FirstRound = CreateConVar("vshe_firstround", "1", "Enable first round for VSH Engine", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	MedigunReset = CreateConVar("vshe_medigunreset", "0.40", "default ubercharge for when mediguns reset", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	AliveToEnable = CreateConVar("vshe_alivetoenable", "3", "how many players left to enable cap", FCVAR_PLUGIN, true, 0.0, true, 16.0);
+	CountDownPlayerLimit = CreateConVar("vshe_countdownplayerlimit", "3", "how many players must be left to start the final countdown timer", FCVAR_PLUGIN, true, 0.0, true, 16.0);
+	CountDownHealthLimit = CreateConVar("vshe_countdownbosshealth", "5000", "how low boss health must be to start the final countdown timer", FCVAR_PLUGIN, true, 0.0, true, 999999.0);
+	LastPlayersTimerCountDown = CreateConVar("vshe_finalcountdowntimer", "120", "how long the final countdown timer is", FCVAR_PLUGIN, true, 0.0, true, 99999.0);
+	EnableEurekaEffect = CreateConVar("vshe_alloweureka", "1", "(dis)allows the eureka wrench from being used", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	PointDelay = CreateConVar("vshe_capturepointdelay", "10", "time in seconds the cap is delayed from enabling", FCVAR_PLUGIN, true, 0.0, true, 999.0);
+	QueueIncrement = CreateConVar("vshe_queueincrement", "10", "by how much queue increments", FCVAR_PLUGIN, true, 1.0, true, 999.0);
+	FallDmgSoldier = CreateConVar("vshe_soldierfalldamage", "20.0", "divides fall damage by this number", FCVAR_PLUGIN, true, 0.0, true, 999.0);
+	//DifficultyAmount = CreateConVar("vshe_difficultyamount", "3", "how many difficulty settings you want available for bosses to choose", FCVAR_PLUGIN, true, 0.0, true, 999.0);
+
 	AddCommandListener(DoTaunt, "taunt");
 	AddCommandListener(DoTaunt, "+taunt");
 	AddCommandListener(CallMedVoiceMenu, "voicemenu");
@@ -137,18 +154,12 @@ public void OnPluginStart()
 	HookEvent("player_death", OnHookedEvent);
 	//HookEvent("player_changeclass", ChangeClass);
 
-	bEnabled = CreateConVar("vshe_enabled", "1", "Enable the VSH Engine", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	FirstRound = CreateConVar("vshe_firstround", "1", "Enable first round for VSH Engine", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	MedigunReset = CreateConVar("vshe_medigunreset", "0.40", "default ubercharge for when mediguns reset", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	AliveToEnable = CreateConVar("vshe_alivetoenable", "3", "how many players left to enable cap", FCVAR_PLUGIN, true, 0.0, true, 16.0);
-	CountDownPlayerLimit = CreateConVar("vshe_countdownplayerlimit", "3", "how many players must be left to start the final countdown timer", FCVAR_PLUGIN, true, 0.0, true, 16.0);
-	CountDownHealthLimit = CreateConVar("vshe_countdownbosshealth", "5000", "how low boss health must be to start the final countdown timer", FCVAR_PLUGIN, true, 0.0, true, 999999.0);
-	LastPlayersTimerCountDown = CreateConVar("vshe_finalcountdowntimer", "120", "how long the final countdown timer is", FCVAR_PLUGIN, true, 0.0, true, 99999.0);
-	EnableEurekaEffect = CreateConVar("vshe_alloweureka", "1", "(dis)allows the eureka wrench from being used", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	PointDelay = CreateConVar("vshe_capturepointdelay", "10", "time in seconds the cap is delayed from enabling", FCVAR_PLUGIN, true, 0.0, true, 999.0);
-	QueueIncrement = CreateConVar("vshe_queueincrement", "10", "by how much queue increments", FCVAR_PLUGIN, true, 1.0, true, 999.0);
-	FallDmgSoldier = CreateConVar("vshe_soldierfalldamage", "20.0", "divides fall damage by this number", FCVAR_PLUGIN, true, 0.0, true, 999.0);
-	DifficultyAmount = CreateConVar("vshe_difficultyamount", "3", "how many difficulty settings you want available for bosses to choose", FCVAR_PLUGIN, true, 0.0, true, 999.0);
+	RegConsoleCmd("sm_vsha_special", CommandMakeNextSpecial);
+
+	RegConsoleCmd("sm_setboss", PickBossMenu);
+	RegConsoleCmd("sm_haleboss", PickBossMenu);
+	RegConsoleCmd("sm_vshaboss", PickBossMenu);
+	RegConsoleCmd("sm_vsheboss", PickBossMenu);
 
 	hBossHUD = CreateHudSynchronizer();
 	hPlayerHUD = CreateHudSynchronizer();
@@ -156,6 +167,8 @@ public void OnPluginStart()
 	MiscHUD = CreateHudSynchronizer();
 
 	PointCookie = RegClientCookie("vshe_queuepoints", "Amount of VSH Engine Queue points, the player has", CookieAccess_Protected);
+
+	LoadSubPlugins();
 
 	AutoExecConfig(true, "VSH-Engine");
 
@@ -185,6 +198,7 @@ public void OnClientPutInServer(int client)
 	iBossesKilled[client] = 0;
 	iPlayerKilled[client][0] = 0;
 	iPlayerKilled[client][1] = 1;
+	iHits[client] = 0;
 }
 public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
@@ -202,9 +216,9 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 	}
 
 	float AttackerPos[3];
-	int result;
+	Action result;
 	GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", AttackerPos); //Spot of attacker
-
+	iHits[victim]++;
 	if (bIsBoss[attacker])
 	{
 		if (!bIsBoss[victim] && !TF2_IsPlayerInCondition(victim, TFCond_Bonked) && !TF2_IsPlayerInCondition(victim, TFCond_Ubercharged))
@@ -218,8 +232,10 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 				Call_PushCellRef(weapon);
 				Call_PushCellRef(inflictor);
 				Call_PushFloatRef(damage);
+				Call_PushCellRef(damagetype);
+				Call_PushCell(damagecustom);
 				Call_Finish(result);
-				return view_as<Action>(result);
+				return result;
 			}
 		}
 	}
@@ -242,7 +258,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 					Call_PushCellRef(attacker);
 					Call_PushFloatRef(damage);
 					Call_Finish(result);
-					return view_as<Action>(result);
+					return result;
 				}
 			}
 			Function FuncBossTakeDmg = GetFunctionByName(Storage[victim], "VSHA_OnBossTakeDmg");
@@ -254,8 +270,10 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 				Call_PushCellRef(weapon);
 				Call_PushCellRef(inflictor);
 				Call_PushFloatRef(damage);
+				Call_PushCellRef(damagetype);
+				Call_PushCell(damagecustom);
 				Call_Finish(result);
-				return view_as<Action>(result);
+				return result;
 			}
 			if (damagecustom == TF_CUSTOM_BACKSTAB)
 			{
@@ -307,7 +325,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 					Call_PushCellRef(weapon);
 					Call_PushFloatRef(damage);
 					Call_Finish(result);
-					return view_as<Action>(result);
+					return result;
 				}
 			}
 			/*else
@@ -329,7 +347,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 						Call_PushCell(weapon);
 						Call_PushFloat(damage);
 						Call_Finish(result);
-						return view_as<Action>(result);
+						return result;
 					}
 
 					else if (damage >= 250.0) TeleportToSpawn(victim, (bTenSecStart[1]) ? HaleTeam : 0);
@@ -354,7 +372,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 					int secondary = GetPlayerWeaponSlot(victim, TFWeaponSlot_Secondary);
 					if ( !IsValidEntity(secondary) )
 					{
-						damage /= GetConVarFloat(FallDmgSoldier);
+						damage /= FallDmgSoldier.FloatValue; //GetConVarFloat(FallDmgSoldier);
 						return Plugin_Changed;
 					}
 				}
@@ -371,9 +389,8 @@ public void OnClientDisconnect(int client)
 	iPresetBoss[client] = -1;
 	iDamage[client] = 0;
 	iBossUserID[client] = -1;
-#if defined _tf2attributes_included
+	iHits[client] = 0;
 	TF2Attrib_RemoveAll(client);
-#endif
 	if (Enabled)
 	{
 		if (bIsBoss[client])
@@ -394,12 +411,9 @@ public void OnClientDisconnect(int client)
 					bIsBoss[tHale] = true;
 					iBossUserID[tHale] = GetClientUserId(tHale);
 					Storage[tHale] = Storage[client];
-					if ( IsValidClient(tHale) )
-					{
-						if (GetClientTeam(tHale) != HaleTeam) ForceTeamChange(tHale, HaleTeam);
-						CreateTimer(0.1, MakeBoss, iBossUserID[tHale]);
-						CPrintToChat(tHale, "{olive}[VSH Engine]{default} Surprise! You're on NOW!");
-					}
+					if (GetClientTeam(tHale) != HaleTeam) ForceTeamChange(tHale, HaleTeam);
+					CreateTimer(0.1, MakeBoss, iBossUserID[tHale]);
+					CPrintToChat(tHale, "{olive}[VSH Engine]{default} Surprise! You're on NOW!");
 				}
 			}
 			bIsBoss[client] = false;
@@ -415,6 +429,20 @@ public void OnClientDisconnect(int client)
 			}
 			if ( client == iNextBossPlayer ) iNextBossPlayer = -1;
 		}
+	}
+}
+stock void SetClientGlow(int client, float time1, float clampfl = -1.0)
+{
+	if (IsValidClient(client))
+	{
+		flGlowTimer[client] += time1;
+		if (clampfl > 0.0) flGlowTimer[client] = clampfl;
+		if (flGlowTimer[client] <= 0.0)
+		{
+			flGlowTimer[client] = 0.0;
+			SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
+		}
+		else SetEntProp(client, Prop_Send, "m_bGlowEnabled", 1);
 	}
 }
 public void OnMapStart()
@@ -438,7 +466,7 @@ public void OnMapStart()
 		}
 #endif
 		SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
-		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), GetConVarBool(FirstRound) ? 0 : 1);
+		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), FirstRound.BoolValue ? 0 : 1); //GetConVarBool(FirstRound)
 		SetConVarInt(FindConVar("tf_arena_first_blood"), 0);
 		SetConVarInt(FindConVar("mp_forcecamera"), 0);
 		SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), 100.0);
@@ -496,7 +524,7 @@ public void FindHealthBar()
 		if (iHealthBar != -1) DispatchSpawn(iHealthBar);
 	}
 }
-public Action RoundStart(Handle event, const char[] name, bool dontBroadcast)
+public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	if (!Enabled)
 	{
@@ -580,10 +608,10 @@ public Action tTenSecStart(Handle hTimer, any ofs)
 	bTenSecStart[ofs] = false;
 	return Plugin_Continue;
 }
-public Action PlayerSpawn(Handle event, const char[] name, bool dontBroadcast)
+public Action PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
 	if (!Enabled) return Plugin_Continue;
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
+	int client = GetClientOfUserId(event.GetInt("userid"));
 	SetVariantString("");
 	AcceptEntityInput(client, "SetCustomModel");
 	if (client && IsClientInGame(client) && (CheckRoundState() > -1 && CheckRoundState() < 2))
@@ -599,10 +627,10 @@ public Action PlayerSpawn(Handle event, const char[] name, bool dontBroadcast)
 	if ( CheckRoundState() == 1 ) CreateTimer(0.5, CheckAlivePlayers);
 	return Plugin_Continue;
 }
-public Action Resupply(Handle hEvent, const char[] name, bool dontBroadcast)
+public Action Resupply(Event event, const char[] name, bool dontBroadcast)
 {
 	if (!Enabled) return Plugin_Continue;
-	int client = GetClientOfUserId(GetEventInt(hEvent, "userid"));
+	int client = GetClientOfUserId(event.GetInt("userid"));
 	if (client && IsClientInGame(client) && (CheckRoundState() > -1 && CheckRoundState() < 2))
 	{
 		if (bIsBoss[client] || bIsMinion[client]) CreateTimer(0.1, MakeBoss, GetClientUserId(client));
@@ -615,17 +643,17 @@ public Action Resupply(Handle hEvent, const char[] name, bool dontBroadcast)
 	}
 	return Plugin_Continue;
 }
-public Action PlayerHurt(Handle event, const char[] name, bool dontBroadcast)
+public Action PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 {
 	if ( !Enabled ) return Plugin_Continue;
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
-	int damage = GetEventInt(event, "damageamount");
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	int attacker = GetClientOfUserId(event.GetInt("attacker"));
+	int damage = event.GetInt("damageamount");
 
 	if (bIsBoss[client])
 	{
 		if (client == attacker) return Plugin_Continue;
-		if (GetEventBool(event, "minicrit") && GetEventBool(event, "allseecrit")) SetEventBool(event, "allseecrit", false);
+		if (event.GetBool("minicrit") && event.GetBool("allseecrit")) event.SetBool("allseecrit", false);
 		iBossHealth[client] -= damage;
 		iDamage[attacker] += damage;
 
@@ -658,12 +686,12 @@ public Action PlayerHurt(Handle event, const char[] name, bool dontBroadcast)
 	else iDamage[attacker] += damage; //increment boss' dmg
 	return Plugin_Continue;
 }
-public Action PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
+public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	if ( CheckRoundState() != 1 || !Enabled || (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER) ) return Plugin_Continue;
+	if ( CheckRoundState() != 1 || !Enabled || (event.GetInt("death_flags") & TF_DEATHFLAG_DEADRINGER) ) return Plugin_Continue;
 
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	int attacker = GetClientOfUserId(event.GetInt("attacker"));
 	CreateTimer(0.1, CheckAlivePlayers);
 	SetClientOverlay(client, "");
 	if (!bIsBoss[client])
@@ -711,7 +739,6 @@ public Action PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 				engieevent.SetInt("userid", GetClientUserId(client));
 				engieevent.SetInt("index", KillSentry);
 				engieevent.Fire();
-
 				AcceptEntityInput(KillSentry, "Kill");
 			}
 		}
@@ -749,7 +776,7 @@ public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 		if (!IsValidClient(i)) continue;
 		if (bIsBoss[i])
 		{
-			if (GetEventInt(event, "team") == HaleTeam && !playedwinsound)
+			if (event.GetInt("team") == HaleTeam && !playedwinsound)
 			{
 				Function FuncBossWon = GetFunctionByName(Storage[i], "VSHA_OnBossWin");
 				if (FuncBossWon != INVALID_FUNCTION)
@@ -835,8 +862,8 @@ public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 public Action UberDeployed(Event event, const char[] name, bool dontBroadcast)
 {
 	if (!Enabled) return Plugin_Continue;
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	//int target = GetClientOfUserId(GetEventInt(event, "targetid"));
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	//int target = GetClientOfUserId(event.GetInt("targetid"));
 	if (IsPlayerAlive(client) )
 	{
 		int medigun = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
@@ -867,7 +894,7 @@ public Action Timer_Uber(Handle timer, any medigunid)
 			int target = GetHealingTarget(medic);
 			if ( GetMediCharge(medigun) > 0.05 )
 			{
-	//TF2_AddCondition(medic, TFCond_HalloweenCritCandy, 0.5); // what's the point in giving the ubering medic crits?
+			//TF2_AddCondition(medic, TFCond_HalloweenCritCandy, 0.5); // what's the point in giving the ubering medic crits?
 				if (IsValidClient(target) && IsPlayerAlive(target))
 				{
 					TF2_AddCondition(target, TFCond_HalloweenCritCandy, 0.5);
@@ -898,17 +925,17 @@ public Action Timer_Uber(Handle timer, any medigunid)
 public Action Timer_ResetUberCharge(Handle timer, any medigunid)
 {
 	int medigun = EntRefToEntIndex(medigunid);
-	if ( IsValidEntity(medigun) ) SetMediCharge(medigun, GetMediCharge(medigun)+GetConVarFloat(MedigunReset)); //40.0
+	if ( IsValidEntity(medigun) ) SetMediCharge(medigun, GetMediCharge(medigun)+MedigunReset.FloatValue);//GetConVarFloat(MedigunReset)); //40.0
 	return Plugin_Continue;
 }
 public Action Destroyed(Event event, const char[] name, bool dontBroadcast)
 {
 	if (Enabled)
 	{
-		int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+		int attacker = GetClientOfUserId(event.GetInt("attacker"));
 		if ( bIsBoss[attacker] ) //&& !GetRandomInt(0, 2) )
 		{
-			int building = GetEventInt(event, "index");
+			int building = event.GetInt("index");
 
 			Function FuncBossKillToy = GetFunctionByName(Storage[attacker], "VSHA_OnBossKillBuilding");
 			if (FuncBossKillToy != INVALID_FUNCTION)
@@ -924,11 +951,11 @@ public Action Destroyed(Event event, const char[] name, bool dontBroadcast)
 }
 public Action Deflected(Event event, const char[] name, bool dontBroadcast)
 {
-	if (!Enabled || GetEventInt(event, "weaponid")) return Plugin_Continue;
-	int client = GetClientOfUserId(GetEventInt(event, "ownerid"));
+	if (!Enabled || event.GetInt("weaponid")) return Plugin_Continue;
+	int client = GetClientOfUserId(event.GetInt("ownerid"));
 	if ( bIsBoss[client] )
 	{
-		int airblaster = GetClientOfUserId(GetEventInt(event, "userid"));
+		int airblaster = GetClientOfUserId(event.GetInt("userid"));
 
 		Function FuncBossAirBlst = GetFunctionByName(Storage[client], "VSHA_OnBossAirblasted");
 		if (FuncBossAirBlst != INVALID_FUNCTION)
@@ -943,7 +970,7 @@ public Action Deflected(Event event, const char[] name, bool dontBroadcast)
 }
 public Action OnHookedEvent(Event event, const char[] name, bool dontBroadcast)
 {
-	SetRJFlag(GetClientOfUserId(GetEventInt(event, "userid")), StrEqual(name, "rocket_jump", false));
+	SetRJFlag(GetClientOfUserId(event.GetInt("userid")), StrEqual(name, "rocket_jump", false));
 	return Plugin_Continue;
 }
 public Action TimerNineThousand(Handle timer)
@@ -992,7 +1019,7 @@ public Action MessageTimer(Handle hTimer)
 {
 	if (CheckRoundState() != 0) return Plugin_Continue;
 	int entity = -1;
-	while ( (entity=FindEntityByClassname2(entity, "func_door")) != -1 )
+	while ( (entity = FindEntityByClassname2(entity, "func_door")) != -1 )
 	{
 		AcceptEntityInput(entity, "Open");
 		AcceptEntityInput(entity, "Unlock");
@@ -1023,7 +1050,7 @@ public Action Timer_CheckDoors(Handle hTimer)
 		return Plugin_Stop;
 	}
 	int ent = -1;
-	while ((ent = FindEntityByClassname2(ent, "func_door")) != -1)
+	while ( (ent = FindEntityByClassname2(ent, "func_door")) != -1 )
 	{
 		AcceptEntityInput(ent, "Open");
 		AcceptEntityInput(ent, "Unlock");
@@ -1041,10 +1068,11 @@ public Action CommandMakeNextSpecial(int client, int args)
 	}
 	GetCmdArgString(arg, sizeof(arg));
 
-	int count = hArrayBossSubplugins.Length; //GetArraySize(hArrayBossSubplugins);
+	if (GetArraySize(hArrayBossSubplugins) < 1) return Plugin_Handled;
+	int count = GetArraySize(hArrayBossSubplugins);
 	for (int i = 0; i < count; i++)
 	{
-		GetTrieString(hArrayBossSubplugins.Get(i), "BossName", name, sizeof(name));
+		GetTrieString(GetArrayCell(hArrayBossSubplugins, i), "BossName", name, sizeof(name));
 		if (StrContains(arg, name, false) != -1)
 		{
 			iPresetBoss[FindNextBoss(bIsBoss)] = i;
@@ -1058,14 +1086,15 @@ public Action PickBossMenu(int client, int args)
 {
 	if (Enabled && IsClientInGame(client))
 	{
+		if (GetArraySize(hArrayBossSubplugins) < 1) return Plugin_Handled;
 		char bossnameholder[32];
 		Menu classpick = new Menu(MenuHandler_PickBoss);
 		//Handle MainMenu = CreateMenu(MenuHandler_Perks);
 		classpick.SetTitle("[VSH Engine] Choose A Boss");
-		int count = hArrayBossSubplugins.Length; //GetArraySize(hArrayBossSubplugins);
+		int count = GetArraySize(hArrayBossSubplugins);
 		for (int i = 0; i < count; i++)
 		{
-			GetTrieString(hArrayBossSubplugins.Get(i), "BossName", bossnameholder, sizeof(bossnameholder));
+			GetTrieString(GetArrayCell(hArrayBossSubplugins, i), "BossName", bossnameholder, sizeof(bossnameholder));
 			classpick.AddItem("pickclass", bossnameholder);
 		}
 		classpick.Display(client, MENU_TIME_FOREVER);
@@ -1079,7 +1108,7 @@ public int MenuHandler_PickBoss(Menu menu, MenuAction action, int param1, int pa
 	if (action == MenuAction_Select)
         {
 		char bossnameholder[32];
-		GetTrieString(hArrayBossSubplugins.Get(param2), "BossName", bossnameholder, sizeof(bossnameholder));
+		GetTrieString(GetArrayCell(hArrayBossSubplugins, param2), "BossName", bossnameholder, sizeof(bossnameholder));
 		ReplyToCommand(param1, "[VSH Engine] You selected %s as your boss!", bossnameholder);
 		iPresetBoss[param1] = param2;
         }
@@ -1087,13 +1116,18 @@ public int MenuHandler_PickBoss(Menu menu, MenuAction action, int param1, int pa
 }
 stock void PickBossSpecial(int client)
 {
-	if (iPresetBoss[client] != -1) iBoss[client] = GetRandomInt(0, hArrayBossSubplugins.Length);
+	if (GetArraySize(hArrayBossSubplugins) < 1)
+	{
+		LogError("**** PickBossSpecial: There are no Boss subplugins registered! ****");
+		return;
+	}
+	if (iPresetBoss[client] != -1) iBoss[client] = GetRandomInt( 0, GetArraySize(hArrayBossSubplugins) );
 	else
 	{
 		iBoss[client] = iPresetBoss[client];
 		iPresetBoss[client] = -1;
 	}
-	Storage[client] = GetBossSubPlugin(hArrayBossSubplugins.Get(iBoss[client]));
+	Storage[client] = GetBossSubPlugin(GetArrayCell(hArrayBossSubplugins, iBoss[client]));
 
 	Function FuncBossSelect = GetFunctionByName(Storage[client], "VSHA_OnBossSelected");
 	if (FuncBossSelect != INVALID_FUNCTION)
@@ -1161,7 +1195,7 @@ public Action TimerBossStart(Handle hTimer)
 	}
 	CreateTimer(0.2, ClientTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(0.2, BossTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-	if ( !PointType && iPlaying > GetConVarInt(AliveToEnable) ) SetControlPoint(false);
+	if ( !PointType && iPlaying > AliveToEnable.IntValue ) SetControlPoint(false); //GetConVarInt(AliveToEnable)
 	if ( CheckRoundState() == 0 ) CreateTimer(2.0, TimerMusicPlay, _, TIMER_FLAG_NO_MAPCHANGE);
 	return Plugin_Continue;
 }
@@ -1197,9 +1231,9 @@ public Action CheckAlivePlayers(Handle timer)
 			EmitSoundToAll(sound);
 		}*/
 	}
-	else if ( !PointType && (iRedAlivePlayers <= GetConVarInt(AliveToEnable)) && !PointReady )
+	else if ( !PointType && (iRedAlivePlayers <= AliveToEnable.IntValue) && !PointReady ) //GetConVarInt(AliveToEnable)
 	{
-		if (iRedAlivePlayers == GetConVarInt(AliveToEnable))
+		if (iRedAlivePlayers == AliveToEnable.IntValue) //GetConVarInt(AliveToEnable))
 		{
 			char sound[PATH];
 			if (GetRandomInt(0, 1))
@@ -1218,11 +1252,11 @@ public Action CheckAlivePlayers(Handle timer)
 		SetControlPoint(true);
 		PointReady = true; //:>
 	}
-	if (iRedAlivePlayers <= GetConVarInt(CountDownPlayerLimit) && iTotalBossHP > GetConVarInt(CountDownHealthLimit) && GetConVarInt(LastPlayersTimerCountDown) > 1 && !DrawGameTimer)
+	if (iRedAlivePlayers <= CountDownPlayerLimit.IntValue && iTotalBossHP > CountDownHealthLimit.IntValue && LastPlayersTimerCountDown.IntValue > 1 && !DrawGameTimer) //GetConVarInt(CountDownPlayerLimit) GetConVarInt(CountDownHealthLimit) GetConVarInt(LastPlayersTimerCountDown)
 	{
 		if (FindEntityByClassname2(-1, "team_control_point") != -1)
 		{
-			timeleft = GetConVarInt(LastPlayersTimerCountDown);
+			timeleft = LastPlayersTimerCountDown.IntValue; //GetConVarInt(LastPlayersTimerCountDown);
 			DrawGameTimer = CreateTimer(1.0, Timer_DrawGame, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
@@ -1230,7 +1264,8 @@ public Action CheckAlivePlayers(Handle timer)
 }
 public Action Timer_DrawGame(Handle timer)
 {
-	if (iTotalBossHP < GetConVarInt(CountDownHealthLimit) || CheckRoundState() != 1) return Plugin_Stop;
+	if (iTotalBossHP < CountDownHealthLimit.IntValue || CheckRoundState() != 1) return Plugin_Stop;
+	//GetConVarInt(CountDownHealthLimit)
 	int time = timeleft;
 	timeleft--;
 	char timeDisplay[6];
@@ -1278,6 +1313,8 @@ public Action BossTimer(Handle timer)
 	{
 		if ( !IsValidClient(client) || !IsPlayerAlive(client) || !bIsBoss[client] ) continue;
 
+		SetEntityHealth(client, iBossHealth[client]);
+
 		Function FuncBossTimer = GetFunctionByName(Storage[client], "VSHA_OnBossTimer");
 		if (FuncBossTimer != INVALID_FUNCTION)
 		{
@@ -1285,8 +1322,7 @@ public Action BossTimer(Handle timer)
 			Call_PushCell(client);
 			Call_Finish();
 		}
-		SetEntityHealth(client, iBossHealth[client]);
-		//SetClientGlow(client, -0.2);
+		SetClientGlow(client, -0.2);
 
 		/*if ( flCharge[client] < 100.0 add convar here)
 		{
@@ -1518,7 +1554,7 @@ public Action TimerEquipPlayers(Handle hTimer, any clientid)
 			case 357: CreateTimer(1.0, Timer_RemoveHonorBound, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 			case 589:
 			{
-				if (!GetConVarBool(EnableEurekaEffect))
+				if ( !EnableEurekaEffect.BoolValue ) //!GetConVarBool(EnableEurekaEffect))
 				{
 					TF2_RemoveWeaponSlot2(client, TFWeaponSlot_Melee);
 					weapon = SpawnWeapon(client, "tf_weapon_wrench", 7, 1, 0, "");
@@ -1720,16 +1756,6 @@ public Action MakeBoss(Handle hTimer, any userid)
 	int client = GetClientOfUserId(userid);
 	if ( client <= 0 || !IsClientInGame(client) || !bIsBoss[client] || !bIsMinion[client]) return Plugin_Continue;
 
-	TF2_RemoveAllWeapons2(client);
-	Function FuncPrepBossTimer = GetFunctionByName(Storage[client], "VSHA_OnPrepBoss");
-	if (FuncPrepBossTimer != INVALID_FUNCTION)
-	{
-		Call_StartFunction(Storage[client], FuncPrepBossTimer);
-		Call_PushCell(client);
-		Call_Finish();
-	}
-
-	TF2_RemovePlayerDisguise(client);
 	if (GetClientTeam(client) != HaleTeam) ForceTeamChange(client, HaleTeam);
 	if (!IsPlayerAlive(client))
 	{
@@ -1759,6 +1785,16 @@ public Action MakeBoss(Handle hTimer, any userid)
 	{
 		if (GetOwner(ent) == client) TF2_RemoveWearable(client, ent);
 	}
+	TF2_RemoveAllWeapons2(client);
+	TF2_RemovePlayerDisguise(client);
+
+	Function FuncPrepBossTimer = GetFunctionByName(Storage[client], "VSHA_OnPrepBoss");
+	if (FuncPrepBossTimer != INVALID_FUNCTION)
+	{
+		Call_StartFunction(Storage[client], FuncPrepBossTimer);
+		Call_PushCell(client);
+		Call_Finish();
+	}
 
 	CreateTimer(0.0, TimerCleanScreen, iBossUserID[client]);
 	CreateTimer(0.2, MakeModelTimer, iBossUserID[client]);
@@ -1779,7 +1815,7 @@ public Action TimerMusicPlay(Handle timer)
 	{
 		Call_StartFunction(Storage[client], FuncMusicTimer);
 		Call_PushStringEx(sound, sizeof(sound), 0, SM_PARAM_COPYBACK);
-		Call_PushFloat(time);
+		Call_PushFloatRef(time);
 		Call_Finish();
 	}
 	if (sound[0] != '\0')
@@ -1827,7 +1863,7 @@ public Action MakeModelTimer(Handle hTimer, any userid)
 	{
 		return Plugin_Stop;
 	}
-
+	Action result;
 	Function FuncModelTimer = GetFunctionByName(Storage[client], "VSHA_OnModelTimer");
 	if (FuncModelTimer != INVALID_FUNCTION)
 	{
@@ -1835,11 +1871,12 @@ public Action MakeModelTimer(Handle hTimer, any userid)
 		Call_PushCell(client);
 		char model[PATH];
 		Call_PushStringEx(model, sizeof(model), 0, SM_PARAM_COPYBACK);
-		Call_Finish();
+		Call_Finish(result);
 
 		SetVariantString(model);
 		AcceptEntityInput(client, "SetCustomModel");
 		SetEntProp(client, Prop_Send, "m_bUseClassAnimations", 1);
+		return result;
 	}
 	else LogError("**** VSH Engine Error: Cannot find 'VSHA_OnModelTimer' Function ****");
 	return Plugin_Continue;
@@ -1911,8 +1948,8 @@ public void UpdateHealthBar()
 }
 public void CheckArena()
 {
-	if (PointType) SetArenaCapEnableTime(float(45+GetConVarInt(PointDelay)*(iPlaying-1)));
-	else
+	if (PointType) SetArenaCapEnableTime(view_as<float>(45+PointDelay.IntValue*(iPlaying-1)));
+	else //GetConVarInt(PointDelay)
 	{
 		SetArenaCapEnableTime(0.0);
 		SetControlPoint(false);
@@ -2199,7 +2236,7 @@ public Action DoTaunt(int client, const char[] command, int argc)
 	if ( !Enabled || !bIsBoss[client] ) return Plugin_Continue;
 	if (bNoTaunt[client]) return Plugin_Handled;
 	//TF2_AddCondition(client, TFCond:42, 4.0); //use this in the forward
-	if (flCharge[client] == 100.0)
+	if (flCharge[client] >= 100.0)
 	{
 		Function FuncBossRage = GetFunctionByName(Storage[client], "VSHA_OnBossRage");
 		if (FuncBossRage != INVALID_FUNCTION)
@@ -2240,17 +2277,18 @@ public Action OnWeaponSpawned(Handle timer, any ref)
 }
 public void OnConfigsExecuted()
 {
-	Enabled = GetConVarBool(bEnabled);
+	Enabled = bEnabled.BoolValue;
 }
 public void TF2_OnConditionAdded(int client, TFCond condition)
 {
-	if (Enabled && bIsBoss[client])
+	if ( Enabled && IsValidClient(client) && (bIsBoss[client] || bIsMinion[client]) )
 	{
 		Function FuncBossConditioned = GetFunctionByName(Storage[client], "VSHA_OnBossConditionAdded");
 		if (FuncBossConditioned != INVALID_FUNCTION)
 		{
 			Call_StartFunction(Storage[client], FuncBossConditioned);
 			Call_PushCell(client);
+			Call_PushCell(condition);
 			Call_Finish();
 		}
 	}
@@ -2270,6 +2308,7 @@ public void CalcScores()
 
 			Event aevent = CreateEvent("player_escort_score", true);
 			aevent.SetInt("player", i);
+
 			for (j = 0; damage-600 > 0; damage -= 600, j++){}
 			aevent.SetInt("points", j);
 			aevent.Fire();
@@ -2277,8 +2316,8 @@ public void CalcScores()
 			if ( bIsBoss[i] ) SetClientQueuePoints(i, 0);
 			else
 			{
-				CPrintToChat(i, "{olive}[VSH Engine]{default} You get %i queue points.", GetConVarInt(QueueIncrement));
-				SetClientQueuePoints( i, (GetClientQueuePoints(i)+GetConVarInt(QueueIncrement)) );
+				CPrintToChat(i, "{olive}[VSH Engine]{default} You get %i queue points.", QueueIncrement.IntValue); //GetConVarInt(QueueIncrement));
+				SetClientQueuePoints( i, (GetClientQueuePoints(i)+QueueIncrement.IntValue) );
 			}
 		}
 	}
@@ -2334,6 +2373,20 @@ stock int CountScoutsLeft()
 	}
 	return scunts;
 }
+public void LoadSubPlugins() //"stolen" from ff2 lol
+{
+	char path[PATHX], filename[PATHX];
+	BuildPath(Path_SM, path, PATHX, "plugins/");
+	FileType filetype;
+	DirectoryListing directory = OpenDirectory(path);
+	while ( ReadDirEntry(directory, filename, PATHX, filetype) )
+	{
+		if ( filetype == FileType_File && StrContains(filename, ".smx", false) != -1 )
+		{
+			ServerCommand("sm plugins load %s", filename);
+		}
+	}
+}
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////// N A T I V E S  &  F O R W A R D S //////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2381,6 +2434,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 	CreateNative("VSHA_GetBossStabs", Native_GetBossStabs);
 	CreateNative("VSHA_SetBossStabs", Native_SetBossStabs);
+
+	CreateNative("VSHA_GetHits", Native_GetHits);
+	CreateNative("VSHA_SetHits", Native_SetHits);
 
 	CreateNative("VSHA_GetMaxWepAmmo", Native_GetMaxWepAmmo);
 	CreateNative("VSHA_SetMaxWepAmmo", Native_SetMaxWepAmmo);
@@ -2550,6 +2606,16 @@ public int Native_GetBossStabs(Handle plugin, int numParams)
 public int Native_SetBossStabs(Handle plugin, int numParams)
 {
 	iStabbed[GetNativeCell(1)] = GetNativeCell(2);
+	return 0;
+}
+
+public int Native_GetHits(Handle plugin, int numParams)
+{
+	return iHits[GetNativeCell(1)];
+}
+public int Native_SetHits(Handle plugin, int numParams)
+{
+	iHits[GetNativeCell(1)] = GetNativeCell(2);
 	return 0;
 }
 
