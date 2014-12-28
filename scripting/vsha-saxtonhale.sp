@@ -1,839 +1,874 @@
-#pragma semicolon 1
-#include <sourcemod>
-#include <vsha>
+#include <tf2>
 #include <sdkhooks>
+#include <morecolors>
+#include <ccm>
 
+#define PLUGIN_VERSION "1.5"
 public Plugin myinfo = 
 {
-	name 			= "Saxton Hale",
-	author 			= "Valve",
-	description 		= "Saxton Haaaaaaaaaaaaale",
-	version 		= "1.0",
-	url 			= "http://wiki.teamfortress.com/wiki/Saxton_Hale"
+	name 			= "Be A Muffican Tank",
+	author 			= "nergal/assyrian",
+	description 		= "Allows Players to be a damn Tank!!!",
+	version 		= PLUGIN_VERSION,
+	url 			= "hue" //will fill later
 }
 
-#define HALE_JUMPCHARGETIME		1
-#define HALE_JUMPCHARGE			(25 * HALE_JUMPCHARGETIME)
+//defines
+#define TankModel		"models/custom/panzer/panzer.mdl" //thx to Friagram for saving teh day!
+#define TankModelPrefix		"models/custom/panzer/panzer"
+#define TankShoot		"acvshtank/fire"
+#define TankDeath		"acvshtank/dead"
+#define TankReload		"acvshtank/reload.mp3"
+#define TankCrush		"acvshtank/vehicle_hit_person.mp3"
+#define TankMove		"acvshtank/tankdrive.mp3"
+#define TankIdle		"acvshtank/tankidle.mp3"
 
-#define HaleModel			"models/player/saxtonhale.mdl"
-#define HaleModelPrefix			"models/player/saxtonhale"
+//cvar handles
+Handle bEnabled = INVALID_HANDLE;
+Handle bGasPowered = INVALID_HANDLE;
+Handle iHealth = INVALID_HANDLE;
+Handle BluLimit = INVALID_HANDLE;
+Handle RedLimit = INVALID_HANDLE;
+Handle HealthFromMetal = INVALID_HANDLE;
+Handle HealthFromMetalMult = INVALID_HANDLE;
+Handle HealthFromEngies = INVALID_HANDLE;
+Handle NoFallOffRockets = INVALID_HANDLE;
+Handle NoFallOffTurret = INVALID_HANDLE;
+Handle RocketBaseDamage = INVALID_HANDLE;
+Handle iAmmo = INVALID_HANDLE;
+Handle RocketSpeed = INVALID_HANDLE;
+Handle InitialTankSpeed = INVALID_HANDLE;
+Handle MaxForwardSpeed = INVALID_HANDLE;
+Handle MaxReverseSpeed = INVALID_HANDLE;
+Handle CrushDmg = INVALID_HANDLE;
+Handle RocketCooldown = INVALID_HANDLE;
+Handle TankAcceleration = INVALID_HANDLE;
+Handle TurretDamage = INVALID_HANDLE;
+Handle NoTankRocketJump = INVALID_HANDLE;
+Handle AllowTankTeleport = INVALID_HANDLE;
+Handle StartingFuel = INVALID_HANDLE;
+Handle AdminFlagByPass = INVALID_HANDLE;
+Handle bSelfDamage = INVALID_HANDLE;
+Handle HUDX = INVALID_HANDLE;
+Handle HUDY = INVALID_HANDLE;
 
-#define HaleTheme1			"saxton_hale/saxtonhale.mp3"
-#define HaleTheme2			"saxton_hale/haletheme2.mp3"
-#define HaleTheme3			"saxton_hale/haletheme3.mp3"
+Handle hHudText;
 
-//Saxton Hale voicelines
-#define HaleComicArmsFallSound		"saxton_hale/saxton_hale_responce_2.wav"
-#define HaleLastB			"vo/announcer_am_lastmanalive"
-#define HaleKSpree			"saxton_hale/saxton_hale_responce_3.wav"
-#define HaleKSpree2			"saxton_hale/saxton_hale_responce_4.wav" //this line is broken and unused
-#define HaleRoundStart			"saxton_hale/saxton_hale_responce_start" //1-5
-#define HaleJump			"saxton_hale/saxton_hale_responce_jump"            //1-2
-#define HaleRageSound			"saxton_hale/saxton_hale_responce_rage"           //1-4
-#define HaleKillMedic			"saxton_hale/saxton_hale_responce_kill_medic.wav"
-#define HaleKillSniper1			"saxton_hale/saxton_hale_responce_kill_sniper1.wav"
-#define HaleKillSniper2			"saxton_hale/saxton_hale_responce_kill_sniper2.wav"
-#define HaleKillSpy1			"saxton_hale/saxton_hale_responce_kill_spy1.wav"
-#define HaleKillSpy2			"saxton_hale/saxton_hale_responce_kill_spy2.wav"
-#define HaleKillEngie1			"saxton_hale/saxton_hale_responce_kill_eggineer1.wav"
-#define HaleKillEngie2			"saxton_hale/saxton_hale_responce_kill_eggineer2.wav"
-#define HaleKSpreeNew			"saxton_hale/saxton_hale_responce_spree"  //1-5
-#define HaleWin				"saxton_hale/saxton_hale_responce_win" //1-2
-#define HaleLastMan			"saxton_hale/saxton_hale_responce_lastman"  //1-5
-#define HaleFail			"saxton_hale/saxton_hale_responce_fail"            //1-3
-#define HaleJump132			"saxton_hale/saxton_hale_132_jump_" //1-2
-#define HaleStart132			"saxton_hale/saxton_hale_132_start_"   //1-5
-#define HaleKillDemo132			"saxton_hale/saxton_hale_132_kill_demo.wav"
-#define HaleKillEngie132		"saxton_hale/saxton_hale_132_kill_engie_" //1-2
-#define HaleKillHeavy132		"saxton_hale/saxton_hale_132_kill_heavy.wav"
-#define HaleKillScout132		"saxton_hale/saxton_hale_132_kill_scout.wav"
-#define HaleKillSpy132			"saxton_hale/saxton_hale_132_kill_spie.wav"
-#define HaleKillPyro132			"saxton_hale/saxton_hale_132_kill_w_and_m1.wav"
-#define HaleSappinMahSentry132		"saxton_hale/saxton_hale_132_kill_toy.wav"
-#define HaleKillKSpree132		"saxton_hale/saxton_hale_132_kspree_"    //1-2
-#define HaleKillLast132			"saxton_hale/saxton_hale_132_last.wav"
-#define HaleStubbed132			"saxton_hale/saxton_hale_132_stub_"  //1-4
+Handle ThisPluginHandle = INVALID_HANDLE;
 
-Handle ThisPluginHandle; //DO NOT TOUCH THIS, THIS IS JUST USED AS HOLDING DATA.
+//bools
+bool bIsTank[PLYR];
+bool bSetTank[PLYR];
 
-//make defines, handles, variables heer lololol
-int HaleCharge;
+//floats
+float flLastFire[PLYR];
+float flLastHit[PLYR];
+float flGasMeter[PLYR];
 
-float WeighDownTimer = 0.0;
-float RageDist = 800.0;
+float flSpeedup[PLYR] = { 0.0, ... };
+float flSoundDelay[PLYR];
+float flIdleSound[PLYR];
 
-char playsound[PATHX];
+//ints
+int iTankHealth[PLYR]; //works very similar to VSH/FF2 but this is designed as a playable class rather than a boss
+int iTankMaxHealth;
 
 public void OnPluginStart()
 {
-	ThisPluginHandle = view_as<Handle>( VSHA_RegisterBoss("saxtonhale") );
-	//AutoExecConfig(true, "VSHA-Boss-SaxtonHale");
-}
+	ThisPluginHandle = Handle:CCM_RegisterClass("MilitaryTank");
 
-public void VSHA_AddToDownloads()
+	RegAdminCmd("sm_reloadtankcfg", CmdReloadCFG, ADMFLAG_GENERIC);
+
+	hHudText = CreateHudSynchronizer();
+
+	bEnabled = CreateConVar("sm_betank_enabled", "1", "Enable Player-Tank plugin", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	
+	bGasPowered = CreateConVar("sm_betank_gaspowered", "1", "Enable Tanks to be powered via 'gas' which is replenishable by dispensers+mediguns", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+
+	iHealth = CreateConVar("sm_betank_health", "1000", "how much health Tanks will start with", FCVAR_PLUGIN, true, 1.0, true, 99999.0);
+
+	iAmmo = CreateConVar("sm_betank_ammo", "1000", "how much ammo Tanks will start with", FCVAR_PLUGIN, true, 0.0, true, 99999.0);
+
+
+	BluLimit = CreateConVar("sm_betank_blu_limit", "0", "how many Tanks blu team can have, '-1' for unlimited tanks", FCVAR_PLUGIN, true, 0.0, true, 16.0);
+
+	RedLimit = CreateConVar("sm_betank_red_limit", "1", "how many Tanks red team can have, '-1' for unlimited tanks", FCVAR_PLUGIN, true, 0.0, true, 16.0);
+
+	HealthFromMetal = CreateConVar("sm_betank_healthfrommetal", "25", "how much metal to heal/arm Tanks by Engineers", FCVAR_PLUGIN, true, 0.0, true, 999.0);
+
+	HealthFromMetalMult = CreateConVar("sm_betank_healthfrommetal_mult", "4", "how much metal to heal/arm Tanks by Engineers mult", FCVAR_PLUGIN, true, 0.0, true, 999.0);
+
+	HealthFromEngies = CreateConVar("sm_betank_hpfromengies", "1", "(Dis)Allow Engies to be able to repair+arm Tanks via wrench", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+
+	NoFallOffRockets = CreateConVar("sm_betank_nofalloffrockets", "1", "(Dis)Allow Tank Rockets to have no Damage Fall-Off and no Damage Ramp-up", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+
+	NoTankRocketJump = CreateConVar("sm_betank_norocketjump", "1", "(Dis)Allow Tanks from being able to rocket jump from MOUSE2 rockets", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+
+	NoFallOffTurret = CreateConVar("sm_betank_nofalloffturret", "1", "(Dis)Allow Tank Turret to have no Damage Fall-Off and no Damage Ramp-up", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+
+	bSelfDamage = CreateConVar("sm_betank_selfdamage", "0", "(Dis)Allow Tanks to damage their health when they hurt themselves", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+
+	RocketBaseDamage = CreateConVar("sm_betank_rocketdamage", "100.0", "Base Damage for Rockets shot by Player-Tank", FCVAR_PLUGIN, true, 0.0, true, 9999.0);
+
+	TurretDamage = CreateConVar("sm_betank_turretdamage", "1.0", "Base Damage for the SMG Turret shot by the Player-Tank", FCVAR_PLUGIN, true, 0.0, true, 9999.0);
+
+	RocketSpeed = CreateConVar("sm_betank_rocketspeed", "4000.0", "Speed of Rockets shot by Player-Tank", FCVAR_PLUGIN, true, 0.0, true, 9999.0);
+
+	RocketCooldown = CreateConVar("sm_betank_rocketcooldown", "4.0", "Time in seconds for Rocket Gun to be able to shoot another rocket, set to 4 by default to match with reload sound", FCVAR_PLUGIN, true, 0.0, true, 9999.0);
+
+	InitialTankSpeed = CreateConVar("sm_betank_initialspeed", "40.0", "Initial Speed (in Hammer Units/second) of Tank", FCVAR_PLUGIN, true, 0.0, true, 9999.0);
+
+	MaxForwardSpeed = CreateConVar("sm_betank_maxspeed", "100.0", "Max Forward Speed (in Hammer Units/second) of Tank", FCVAR_PLUGIN, true, 0.0, true, 9999.0);
+
+	MaxReverseSpeed = CreateConVar("sm_betank_reversespeed", "80.0", "Max Backwards Speed (in Hammer Units/second) of Tank", FCVAR_PLUGIN, true, 0.0, true, 9999.0);
+
+	TankAcceleration = CreateConVar("sm_betank_acceleration", "3.0", "Acceleration in speed every 0.2 seconds (in Hammer Units/second) of Tank", FCVAR_PLUGIN, true, 0.0, true, 9999.0);
+
+	CrushDmg = CreateConVar("sm_betank_crushdamage", "30.0", "Crush Damage (ignores uber) done by Tank while it's moving", FCVAR_PLUGIN, true, 0.0, true, 9999.0);
+	
+	AllowTankTeleport = CreateConVar("sm_betank_allowtele", "1", "(Dis)Allow Tank to be able to use Engineer teleporters", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+
+	HUDX = CreateConVar("sm_betank_hudx", "2.0", "x coordinate for the Gas Meter HUD", FCVAR_PLUGIN);
+
+	HUDY = CreateConVar("sm_betank_hudy", "2.0", "y coordinate for the Gas Meter HUD", FCVAR_PLUGIN);
+
+	StartingFuel = CreateConVar("sm_betank_startingfuel", "500.0", "If tanks are gas powered, how much gas they will start with", FCVAR_PLUGIN, true, 0.0, true, 9999.0);
+
+	AdminFlagByPass = CreateConVar("sm_betank_adminflag_bypass", "a", "what flag admins need to bypass the tank class limit", FCVAR_PLUGIN);
+
+	HookEvent("player_death", PlayerDeath, EventHookMode_Pre);
+
+	AutoExecConfig(true, "CCM-TankClass");
+}
+public void OnClientPutInServer(int client)
 {
-	char s[PATHX];
+	iTankHealth[client] = 0;
+	flLastFire[client] = 0.0;
+}
+public void OnClientDisconnect(int client)
+{
+	iTankHealth[client] = 0;
+	flLastFire[client] = 0.0;
+	bIsTank[client] = false;
+}
+public void CCM_OnClassSelected(int client)
+{
+	bSetTank[client] = true;
+	iTankHealth[client] = 0;
+	flLastFire[client] = 0.0;
+	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
+	SDKHook(client, SDKHook_TraceAttack, TraceAttack);
+	SDKHook(client, SDKHook_Touch, OnTouch);
+	SDKHook(client, SDKHook_PreThink, OnPreThink);
+}
+public void CCM_OnClassDeselected(int client)
+{
+	bSetTank[client] = false;
+	iTankHealth[client] = 0;
+	flLastFire[client] = 0.0;
+	SDKUnhook(client, SDKHook_OnTakeDamage, OnTakeDamage);
+	SDKUnhook(client, SDKHook_TraceAttack, TraceAttack);
+	SDKUnhook(client, SDKHook_Touch, OnTouch);
+	SDKUnhook(client, SDKHook_PreThink, OnPreThink);
+}
+public Action PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
+{
+	if (!GetConVarBool(bEnabled)) return Plugin_Continue;
+	int client = GetClientOfUserId(GetEventInt(event, "userid"));
+	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+
+	if (bIsTank[client]) //if victim is a tank, kill him off and remove overlay
+	{
+		TF2_IgnitePlayer(client, attacker);
+		CreateTimer(0.1, TimerTankDeath, GetEventInt(event, "userid"));
+	}
+	if (bIsTank[attacker] && !bIsTank[client]) //if tank is killer and victim is not a tank, check if player was crushed
+	{
+		if (flLastHit[client] != 0.0) //set kill icon to crush
+		{
+			if (GetGameTime()-flLastHit[client] <= 0.10)
+			{
+				int iDamageBits = GetEventInt(event, "damagebits");
+				SetEventInt(event, "damagebits",  iDamageBits |= DMG_CRUSH);
+				SetEventString(event, "weapon_logclassname", "tank_crush");
+				SetEventString(event, "weapon", "mantreads"); // something environmental ??!! 
+				SetEventInt(event, "customkill", TF_CUSTOM_TRIGGER_HURT);
+				SetEventInt(event, "playerpenetratecount", 0);
+				char s[PLATFORM_MAX_PATH];
+				strcopy(s, PLATFORM_MAX_PATH, TankCrush);
+				EmitSoundToAll(s, client);
+				return Plugin_Continue;
+			}
+			flLastHit[client] = 0.0;
+		}
+	}
+	return Plugin_Continue;
+}
+public Action CCM_OnClassTeleport(int client, int teleporter, bool &result)
+{
+	CPrintToChat(client, "{red}[CCM]{default} Test CCM_OnClassTeleport");
+	if (!GetConVarBool(AllowTankTeleport))
+	{
+		result = false;
+		return Plugin_Changed;
+	}
+	return Plugin_Continue;
+}
+public void CCM_AddToDownloads()
+{
+	char s[PLATFORM_MAX_PATH];
 	char extensions[][] = { ".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd", ".phy" };
-	char extensionsb[][] = { ".vtf", ".vmt" };
+	//char extensionsb[][] = { ".vtf", ".vmt" };
 	int i;
 	for (i = 0; i < sizeof(extensions); i++)
 	{
-		Format(s, PATHX, "%s%s", HaleModelPrefix, extensions[i]);
+		Format(s, PLATFORM_MAX_PATH, "%s%s", TankModelPrefix, extensions[i]);
 		if (FileExists(s, true)) AddFileToDownloadsTable(s);
 	}
-	PrecacheModel(HaleModel, true);
-	for (i = 0; i < sizeof(extensionsb); i++)
-	{
-		Format(s, PATHX, "materials/models/player/saxton_hale/eye%s", extensionsb[i]);
-		AddFileToDownloadsTable(s);
-		Format(s, PATHX, "materials/models/player/saxton_hale/hale_head%s", extensionsb[i]);
-		AddFileToDownloadsTable(s);
-		Format(s, PATHX, "materials/models/player/saxton_hale/hale_body%s", extensionsb[i]);
-		AddFileToDownloadsTable(s);
-		Format(s, PATHX, "materials/models/player/saxton_hale/hale_misc%s", extensionsb[i]);
-		AddFileToDownloadsTable(s);
-		Format(s, PATHX, "materials/models/player/saxton_hale/sniper_red%s", extensionsb[i]);
-		AddFileToDownloadsTable(s);
-		Format(s, PATHX, "materials/models/player/saxton_hale/sniper_lens%s", extensionsb[i]);
-		AddFileToDownloadsTable(s);
-	}
-	PrecacheSound(HaleComicArmsFallSound, true);
-	Format(s, PATHX, "sound/%s", HaleComicArmsFallSound);
-	AddFileToDownloadsTable(s);
-	Format(s, PATHX, "sound/%s", HaleKSpree);
-	PrecacheSound(HaleKSpree, true);
-	AddFileToDownloadsTable(s);
-
-	Format(s, PATHX, "sound/%s", HaleTheme1);
-	AddFileToDownloadsTable(s);
-	PrecacheSound(HaleTheme1, true);
-	Format(s, PATHX, "sound/%s", HaleTheme2);
-	AddFileToDownloadsTable(s);
-	PrecacheSound(HaleTheme2, true);
-	Format(s, PATHX, "sound/%s", HaleTheme3);
-	AddFileToDownloadsTable(s);
-	PrecacheSound(HaleTheme3, true);
-	for (i = 1; i <= 4; i++)
-	{
-		Format(s, PATHX, "%s0%i.wav", HaleLastB, i);
-		PrecacheSound(s, true);
-	}
-	PrecacheSound(HaleKillMedic, true);
-	Format(s, PATHX, "sound/%s", HaleKillMedic);
-	AddFileToDownloadsTable(s);
-	PrecacheSound(HaleKillSniper1, true);
-	Format(s, PATHX, "sound/%s", HaleKillSniper1);
-	AddFileToDownloadsTable(s);
-	PrecacheSound(HaleKillSniper2, true);
-	Format(s, PATHX, "sound/%s", HaleKillSniper2);
-	AddFileToDownloadsTable(s);
-	PrecacheSound(HaleKillSpy1, true);
-	Format(s, PATHX, "sound/%s", HaleKillSpy1);
-	AddFileToDownloadsTable(s);
-	PrecacheSound(HaleKillSpy2, true);
-	Format(s, PATHX, "sound/%s", HaleKillSpy2);
-	AddFileToDownloadsTable(s);
-	PrecacheSound(HaleKillEngie1, true);
-	Format(s, PATHX, "sound/%s", HaleKillEngie1);
-	AddFileToDownloadsTable(s);
-	PrecacheSound(HaleKillEngie2, true);
-	Format(s, PATHX, "sound/%s", HaleKillEngie2);
-	AddFileToDownloadsTable(s);
-	PrecacheSound(HaleKillDemo132, true);
-	Format(s, PATHX, "sound/%s", HaleKillDemo132);
-	AddFileToDownloadsTable(s);
-	PrecacheSound(HaleKillHeavy132, true);
-	Format(s, PATHX, "sound/%s", HaleKillHeavy132);
-	AddFileToDownloadsTable(s);
-	PrecacheSound(HaleKillScout132, true);
-	Format(s, PATHX, "sound/%s", HaleKillScout132);
-	AddFileToDownloadsTable(s);
-	PrecacheSound(HaleKillSpy132, true);
-	Format(s, PATHX, "sound/%s", HaleKillSpy132);
-	AddFileToDownloadsTable(s);
-	PrecacheSound(HaleKillPyro132, true);
-	Format(s, PATHX, "sound/%s", HaleKillPyro132);
-	AddFileToDownloadsTable(s);
-	PrecacheSound(HaleSappinMahSentry132, true);
-	Format(s, PATHX, "sound/%s", HaleSappinMahSentry132);
-	AddFileToDownloadsTable(s);
-	PrecacheSound(HaleKillLast132, true);
-	Format(s, PATHX, "sound/%s", HaleKillLast132);
-	AddFileToDownloadsTable(s);
-	PrecacheSound("vo/announcer_am_capincite01.wav", true);
-	PrecacheSound("vo/announcer_am_capincite03.wav", true);
-	PrecacheSound("vo/announcer_am_capenabled02.wav", true);
-	for (i = 1; i <= 5; i++)
+	for (i = 1; i <= 3; i++)
 	{
 		if (i <= 2)
 		{
-			Format(s, PATHX, "%s%i.wav", HaleJump, i);
+			Format(s, PLATFORM_MAX_PATH, "%s%i.mp3", TankDeath, i);
 			PrecacheSound(s, true);
-			Format(s, PATHX, "sound/%s", s);
-			AddFileToDownloadsTable(s);
-			Format(s, PATHX, "%s%i.wav", HaleWin, i);
-			PrecacheSound(s, true);
-			Format(s, PATHX, "sound/%s", s);
-			AddFileToDownloadsTable(s);
-			Format(s, PATHX, "%s%i.wav", HaleJump132, i);
-			PrecacheSound(s, true);
-			Format(s, PATHX, "sound/%s", s);
-			AddFileToDownloadsTable(s);
-			Format(s, PATHX, "%s%i.wav", HaleKillEngie132, i);
-			PrecacheSound(s, true);
-			Format(s, PATHX, "sound/%s", s);
-			AddFileToDownloadsTable(s);
-			Format(s, PATHX, "%s%i.wav", HaleKillKSpree132, i);
-			PrecacheSound(s, true);
-			Format(s, PATHX, "sound/%s", s);
-			AddFileToDownloadsTable(s);
+			Format(s, PLATFORM_MAX_PATH, "sound/%s", s);
 		}
-		if (i <= 3)
-		{
-			Format(s, PATHX, "%s%i.wav", HaleFail, i);
-			PrecacheSound(s, true);
-			Format(s, PATHX, "sound/%s", s);
-			AddFileToDownloadsTable(s);
-		}
-		if (i <= 4)
-		{
-			Format(s, PATHX, "%s%i.wav", HaleRageSound, i);
-			PrecacheSound(s, true);
-			Format(s, PATHX, "sound/%s", s);
-			AddFileToDownloadsTable(s);
-			Format(s, PATHX, "%s%i.wav", HaleStubbed132, i);
-			PrecacheSound(s, true);
-			Format(s, PATHX, "sound/%s", s);
-			AddFileToDownloadsTable(s);
-		}
-		Format(s, PATHX, "%s%i.wav", HaleRoundStart, i);
+		Format(s, PLATFORM_MAX_PATH, "%s%i.mp3", TankShoot, i);
 		PrecacheSound(s, true);
-		Format(s, PATHX, "sound/%s", s);
-		AddFileToDownloadsTable(s);
-		Format(s, PATHX, "%s%i.wav", HaleKSpreeNew, i);
-		PrecacheSound(s, true);
-		Format(s, PATHX, "sound/%s", s);
-		AddFileToDownloadsTable(s);
-		Format(s, PATHX, "%s%i.wav", HaleLastMan, i);
-		PrecacheSound(s, true);
-		Format(s, PATHX, "sound/%s", s);
-		AddFileToDownloadsTable(s);
-		Format(s, PATHX, "%s%i.wav", HaleStart132, i);
-		PrecacheSound(s, true);
-		Format(s, PATHX, "sound/%s", s);
-		AddFileToDownloadsTable(s);
+		Format(s, PLATFORM_MAX_PATH, "sound/%s", s);
 	}
+	AddFileToDownloadsTable("materials/models/custom/panzer/panzer.vmt");
+	AddFileToDownloadsTable("materials/models/custom/panzer/panzer.vtf");
+	AddFileToDownloadsTable("materials/models/custom/panzer/panzer_blue.vmt");
+	AddFileToDownloadsTable("materials/models/custom/panzer/panzer_blue.vtf");
+	AddFileToDownloadsTable("materials/models/custom/panzer/panzer_NM.vtf");
+	AddFileToDownloadsTable("materials/models/custom/panzer/panzer_SM.vtf");
+	AddFileToDownloadsTable("materials/models/custom/panzer/panzer_track.vmt");
+	AddFileToDownloadsTable("materials/models/custom/panzer/panzer_track.vtf");
+	AddFileToDownloadsTable("materials/models/custom/panzer/panzer_track_NM.vtf");
+	AddFileToDownloadsTable("materials/models/custom/panzer/panzer_track_SM.vtf");
+
+	PrecacheModel(TankModel, true);
+	AddFileToDownloadsTable("sound/acvshtank/reload.mp3");
+	AddFileToDownloadsTable("sound/acvshtank/vehicle_hit_person.mp3");
+	AddFileToDownloadsTable("sound/acvshtank/tankidle.mp3");
+	AddFileToDownloadsTable("sound/acvshtank/tankdrive.mp3");
+	PrecacheSound(TankReload, true);
+	PrecacheSound(TankCrush, true);
+	PrecacheSound(TankMove, true);
+	PrecacheSound(TankIdle, true);
 }
-public void VSHA_OnPlayerKilled(int attacker, int client)
+public void CCM_OnClassResupply(int client)
 {
-	if (!GetRandomInt(0, 2) && VSHA_GetAliveRedPlayers() != 1)
-	{
-		strcopy(playsound, PLATFORM_MAX_PATH, "");
-		TFClassType playerclass = TF2_GetPlayerClass(client);
-		switch (playerclass)
-		{
-			case TFClass_Scout:     strcopy(playsound, PLATFORM_MAX_PATH, HaleKillScout132);
-			case TFClass_Pyro:      strcopy(playsound, PLATFORM_MAX_PATH, HaleKillPyro132);
-			case TFClass_DemoMan:   strcopy(playsound, PLATFORM_MAX_PATH, HaleKillDemo132);
-			case TFClass_Heavy:     strcopy(playsound, PLATFORM_MAX_PATH, HaleKillHeavy132);
-			case TFClass_Medic:     strcopy(playsound, PLATFORM_MAX_PATH, HaleKillMedic);
-			case TFClass_Sniper:
-			{
-				if (GetRandomInt(0, 1)) strcopy(playsound, PLATFORM_MAX_PATH, HaleKillSniper1);
-				else strcopy(playsound, PLATFORM_MAX_PATH, HaleKillSniper2);
-			}
-			case TFClass_Spy:
-			{
-				int see = GetRandomInt(0, 2);
-				if (!see) strcopy(playsound, PLATFORM_MAX_PATH, HaleKillSpy1);
-				else if (see == 1) strcopy(playsound, PLATFORM_MAX_PATH, HaleKillSpy2);
-				else strcopy(playsound, PLATFORM_MAX_PATH, HaleKillSpy132);
-			}
-			case TFClass_Engineer:
-			{
-				int see = GetRandomInt(0, 3);
-				if (!see) strcopy(playsound, PLATFORM_MAX_PATH, HaleKillEngie1);
-				else if (see == 1) strcopy(playsound, PLATFORM_MAX_PATH, HaleKillEngie2);
-				else Format(playsound, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillEngie132, GetRandomInt(1, 2));
-			}
-		}
-		if ( !StrEqual(playsound, "") ) EmitSoundToAll(playsound, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, attacker, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-	}
-}
-public void VSHA_OnKillingSpree(int attacker, int client)
-{
-	int see = GetRandomInt(0, 7);
-	strcopy(playsound, PLATFORM_MAX_PATH, "");
-	if (!see || see == 1) strcopy(playsound, PLATFORM_MAX_PATH, HaleKSpree);
-	else if (see < 5 && see > 1) Format(playsound, PLATFORM_MAX_PATH, "%s%i.wav", HaleKSpreeNew, GetRandomInt(1, 5));
-	else Format(playsound, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillKSpree132, GetRandomInt(1, 2));
-	EmitSoundToAll(playsound, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, attacker, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-	EmitSoundToAll(playsound, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, attacker, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-}
-public void VSHA_OnBossKilled(int client, int attacker) //client is boss
-{
-	strcopy(playsound, PLATFORM_MAX_PATH, "");
-	Format(playsound, PLATFORM_MAX_PATH, "%s%i.wav", HaleFail, GetRandomInt(1, 3));
-	EmitSoundToAll(playsound, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-}
-public void VSHA_OnBossWin()
-{
-	strcopy(playsound, PLATFORM_MAX_PATH, "");
-	Format(playsound, PLATFORM_MAX_PATH, "%s%i.wav", HaleWin, GetRandomInt(1, 2));
-	EmitSoundToAll(playsound, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-}
-public void VSHA_OnBossKillBuilding(int attacker, int building)
-{
-	if ( !GetRandomInt(0, 4) )
-	{
-		strcopy(playsound, PLATFORM_MAX_PATH, "");
-		strcopy(playsound, PLATFORM_MAX_PATH, HaleSappinMahSentry132);
-		EmitSoundToAll(playsound, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, attacker, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-		EmitSoundToAll(playsound, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, attacker, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-	}
-}
-public void VSHA_OnBossAirblasted(int client, int airblaster)
-{
-	//float rage = 0.04*RageDMG;
-	//HaleRage += RoundToCeil(rage);
-	//if (HaleRage > RageDMG) HaleRage = RageDMG;
-	VSHA_SetBossRage(client, VSHA_GetBossRage(client)+4.0); //make this a convar/cvar!
-}
-public void VSHA_OnBossSelected(int client)
-{
+	CPrintToChat(client, "{red}[CCM]{default} Test CCM_OnClassResupply");
+	iTankHealth[client] = ( iTankMaxHealth = GetConVarInt(iHealth) );
+	if (GetConVarBool(bGasPowered)) flGasMeter[client] = GetConVarFloat(StartingFuel);
 	return;
 }
-public void VSHA_OnBossIntroTalk()
+public Action CCM_OnMakeClass(int client)
 {
-	strcopy(playsound, PLATFORM_MAX_PATH, "");
-	if (!GetRandomInt(0, 1)) Format(playsound, PLATFORM_MAX_PATH, "%s%i.wav", HaleRoundStart, GetRandomInt(1, 5));
-	else Format(playsound, PLATFORM_MAX_PATH, "%s%i.wav", HaleStart132, GetRandomInt(1, 5));
-	EmitSoundToAll(playsound, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-	EmitSoundToAll(playsound, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+	CPrintToChat(client, "{red}[CCM]{default} Test CCM_OnMakeClass");
+	bIsTank[client] = true;
+	iTankHealth[client] = ( iTankMaxHealth = GetConVarInt(iHealth) );
+	CreateTimer(0.1, TimerTankFunction, GetClientUserId(client), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+	if (GetConVarBool(bGasPowered)) flGasMeter[client] = GetConVarFloat(StartingFuel);
+	return Action:0;
 }
-public void VSHA_OnBossSetHP(int client)
+public void CCM_OnClassEquip(int client)
 {
-	int BossMax = VSHA_CalcBossHealth(760.8, view_as<float>(VSHA_GetAliveRedPlayers()), -1.0, 1.0341, 2046.0);
-	VSHA_SetBossMaxHealth(client, BossMax);
+	CPrintToChat(client, "{red}[CCM]{default} Test CCM_OnClassEquip");
+	int Turret, maxhp = GetEntProp(client, Prop_Data, "m_iMaxHealth");
+	char attribs[64];
+	Format( attribs, sizeof(attribs), "2 ; %f ; 125 ; %i ; 6 ; 0.5 ; 326 ; 0.0 ; 252 ; 0.0 ; 25 ; 0.0 ; 402 ; 1.0 ; 53 ; 1 ; 59 ; 0.0", GetConVarFloat(TurretDamage), (1-maxhp) );
+	Turret = SpawnWeapon(client, "tf_weapon_smg", 16, 1, 0, attribs);
+	SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", Turret);
+	SetWeaponClip(Turret, GetConVarInt(iAmmo));
+	SetWeaponAmmo(Turret, 0);
+
+	SetWeaponInvis( client, 1 ); //makes SMG 99.67% transparent to simulate machine-gun turret
+	SetClientOverlay( client, "effects/combine_binocoverlay" );
+	return;
 }
-public void VSHA_OnLastSurvivor(int target)
+public void CCM_OnClassChangeClass(int client)
 {
-	strcopy(playsound, PLATFORM_MAX_PATH, "");
-	int see = GetRandomInt(0, 5);
-	switch (see)
+	CPrintToChat(client, "{red}[CCM]{default} Test CCM_OnClassChangeClass");
+	if (!bSetTank[client]) //if player doesn't wanna be tank anymore, take him off tank
 	{
-		case 0: strcopy(playsound, PLATFORM_MAX_PATH, HaleComicArmsFallSound);
-		case 1: Format(playsound, PLATFORM_MAX_PATH, "%s0%i.wav", HaleLastB, GetRandomInt(1, 4));
-		case 2: strcopy(playsound, PLATFORM_MAX_PATH, HaleKillLast132);
-		default: Format(playsound, PLATFORM_MAX_PATH, "%s%i.wav", HaleLastMan, GetRandomInt(1, 5));
+		bIsTank[client] = false;
+		SetVariantString("");
+		AcceptEntityInput(client, "SetCustomModel");
+		SetClientOverlay(client, "0");
+		TF2_RegeneratePlayer(client);
 	}
-	EmitSoundToAll(playsound, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-	EmitSoundToAll(playsound, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-}
-public void VSHA_OnBossTimer(int client)
-{
-	float speed;
-	int curHealth = VSHA_GetBossHealth(client), curMaxHp = VSHA_GetBossMaxHealth(client);
-	if (curHealth <= curMaxHp) speed = 340.0 + 0.7 * (100-curHealth*100/curMaxHp); //convar/cvar for speed here!
-	SetEntPropFloat(client, Prop_Send, "m_flMaxspeed", speed);
-
-	int buttons = GetClientButtons(client);
-	if ( ((buttons & IN_DUCK) || (buttons & IN_ATTACK2)) && HaleCharge >= 0 )
-	{
-		if (HaleCharge + 5 < HALE_JUMPCHARGE) HaleCharge += 5;
-		else HaleCharge = HALE_JUMPCHARGE;
-		if (!(buttons & IN_SCORE))
-		{
-			ShowHudText(client, -1, "Jump Charge: %i%", HaleCharge*4);
-		}
-	}
-	else if (HaleCharge < 0)
-	{
-		HaleCharge += 5;
-		if (!(buttons & IN_SCORE)) ShowHudText(client, -1, "Super Jump will be ready again in: %i", -HaleCharge/20);
-	}
-	else
-	{
-		if ( HaleCharge > 1 && SuperJump(client, view_as<float>(HaleCharge), -15.0, -120.0) ) //put convar/cvar for jump sensitivity here!
-		{
-			strcopy(playsound, PLATFORM_MAX_PATH, "");
-			Format(playsound, PLATFORM_MAX_PATH, "%s%i.wav", GetRandomInt(0, 1) ? HaleJump : HaleJump132, GetRandomInt(1, 2));
-			EmitSoundToAll(playsound, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-		}
-	}
-
-	if (VSHA_GetAliveRedPlayers() == 1) PrintCenterTextAll("Saxton Hale's Current Health is: %i of %i", curHealth, curMaxHp);
-	if ( OnlyScoutsLeft() ) VSHA_SetBossRage(client, VSHA_GetBossRage(client)+0.5);
-
-	if ( !(GetEntityFlags(client) & FL_ONGROUND) ) WeighDownTimer += 0.2;
-	else WeighDownTimer = 0.0;
-
-	if ( (buttons & IN_DUCK) && Weighdown(client, WeighDownTimer, 60.0, 0.0) )
-	{
-		//CPrintToChat(client, "{olive}[VSHE]{default} You just used your weighdown!");
-		//all this just to do a cprint? It's not like weighdown has a limit...
-	}
-}
-public void VSHA_OnPrepBoss(int client)
-{
-	HaleCharge = 0;
-
-	bool pri = IsValidEntity(GetPlayerWeaponSlot(client, TFWeaponSlot_Primary));
-	bool sec = IsValidEntity(GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary));
-	bool mel = IsValidEntity(GetPlayerWeaponSlot(client, TFWeaponSlot_Melee));
-
-	if (pri || sec || !mel)
+	else //refresh tank's supplies
 	{
 		TF2_RemoveAllWeapons2(client);
-
-		char attribs[PATH];
-		Format(attribs, sizeof(attribs), "68 ; 2.0 ; 2 ; 3.0 ; 259 ; 1.0 ; 252 ; 0.6 ; 214 ; %d", GetRandomInt(999, 9999));
-		int SaxtonWeapon = SpawnWeapon(client, "tf_weapon_shovel", 5, 100, 4, attribs);
-		SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
+		CCM_OnClassEquip(client);
+		iTankHealth[client] = ( iTankMaxHealth = GetConVarInt(iHealth) );
+		if (GetConVarBool(bGasPowered)) flGasMeter[client] = GetConVarFloat(StartingFuel);
 	}
+	return;
 }
-public void VSHA_OnMusic(char BossTheme[256], float &time)
-{
-	switch ( GetRandomInt(0, 2) )
-	{
-		case 0:
-		{
-			BossTheme = HaleTheme1;
-			time = 150.0;
-		}
-		case 1:
-		{
-			BossTheme = HaleTheme2;
-			time = 150.0;
-		}
-		case 2:
-		{
-			BossTheme = HaleTheme3;
-			time = 220.0;
-		}
-	}
-}
-public Action VSHA_OnModelTimer(int client, char modelpath[64])
-{
-	modelpath = HaleModel;
-	return Plugin_Continue;
-}
-public void VSHA_OnBossRage(int client)
-{
-	float pos[3];
-	GetEntPropVector(client, Prop_Send, "m_vecOrigin", pos);
-	pos[2] += 20.0;
-	TF2_AddCondition(client, view_as<TFCond>(42), 4.0);
-	strcopy(playsound, PLATFORM_MAX_PATH, "");
-	Format(playsound, PLATFORM_MAX_PATH, "%s%i.wav", HaleRageSound, GetRandomInt(1, 4));
-	EmitSoundToAll(playsound, client, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, pos, NULL_VECTOR, true, 0.0);
-	EmitSoundToAll(playsound, client, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, pos, NULL_VECTOR, true, 0.0);
-	CreateTimer(0.6, UseRage, client);
-}
-public void VSHA_OnBossConditionAdded(int client, TFCond condition)
-{
-	switch (condition)
-	{
-		case TFCond_Jarated:
-		{
-			VSHA_SetBossRage(client, VSHA_GetBossRage(client)-8.0);
-			TF2_RemoveCondition(client, condition);
-		}
-		case TFCond_MarkedForDeath:
-		{
-			VSHA_SetBossRage(client, VSHA_GetBossRage(client)-5.0);
-			TF2_RemoveCondition(client, condition);
-		}
-		case TFCond_Disguised: TF2_RemoveCondition(client, condition);
-	}
-	if (TF2_IsPlayerInCondition(client, view_as<TFCond>(42)) && TF2_IsPlayerInCondition(client, TFCond_Dazed)) TF2_RemoveCondition(client, TFCond_Dazed);
-}
-public Action VSHA_OnBossDealDmg(int victim, int &attacker, int &weapon, int &inflictor, float &damage, int &damagetype, int damagecustom)
-{
-	if (TF2_IsPlayerInCondition(victim, TFCond_DefenseBuffed))
-	{
-		damage *= 9;
-		TF2_AddCondition(victim, TFCond_Bonked, 0.1);
-		return Plugin_Changed;
-	}
-	if (TF2_IsPlayerInCondition(victim, TFCond_DefenseBuffMmmph))
-	{
-		damage *= 9;
-		TF2_AddCondition(victim, TFCond_Bonked, 0.1);
-		return Plugin_Changed;
-	}
-	if (TF2_IsPlayerInCondition(victim, TFCond_CritMmmph))
-	{
-		damage *= 0.25;
-		return Plugin_Changed;
-	}
-	if (TF2_GetPlayerClass(victim) == TFClass_Spy)  //eggs probably do melee damage to spies, then? That's not ideal, but eh.
-	{
-		if (GetEntProp(victim, Prop_Send, "m_bFeignDeathReady") && !TF2_IsPlayerInCondition(victim, TFCond_Cloaked))
-		{
-			if (damagetype & DMG_CRIT) damagetype &= ~DMG_CRIT;
-			damage = 600.0; //make convar/cvar heer
-			return Plugin_Changed;
-		}
-		if (TF2_IsPlayerInCondition(victim, TFCond_Cloaked) && TF2_IsPlayerInCondition(victim, TFCond_DeadRingered))
-		{
-			if (damagetype & DMG_CRIT) damagetype &= ~DMG_CRIT;
-			damage = 850.0; //make convar/cvar heer!
-			return Plugin_Changed;
-		}
-	}
-	int ent = -1;
-	while ((ent = FindEntityByClassname2(ent, "tf_wearable_demoshield")) != -1)
-	{
-		if (GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity") == victim && !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable") && weapon == GetPlayerWeaponSlot(attacker, 2))
-		{
-			//int HitsTaken = VSHA_GetHits(victim);
-			//int HitsRequired = 0;
-			/*int index = GetItemIndex(ent);
-			switch (index)
-			{
-				case 131: HitsRequired = 2;
-				case 406: HitsRequired = 1;
-			}*/
-			TF2_AddCondition(victim, TFCond_Bonked, 0.1);
-			//if (HitsRequired <= HitsTaken)
-			//{
-			TF2_RemoveWearable(victim, ent);
-			float Pos[3];
-			GetEntPropVector(victim, Prop_Send, "m_vecOrigin", Pos);
-			EmitSoundToClient(victim, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
-			EmitSoundToClient(victim, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
-			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
-			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
-			//}
-			return Plugin_Continue;
-		}
-	}
-	return Plugin_Continue;
-}
-public Action VSHA_OnBossTeleFragd(int victim, int &attacker, float &damage)
-{
-	if (!IsPlayerAlive(attacker))
-	{
-		damage = 1.0;
-		return Plugin_Changed;
-	}
-
-	damage = view_as<float>( VSHA_GetBossHealth(victim) ); //(HaleHealth > 9001 ? 15.0:float(GetEntProp(Hale, Prop_Send, "m_iHealth")) + 90.0);
-	int teleowner = FindTeleOwner(attacker);
-	if (IsValidClient(teleowner) && teleowner != attacker)
-	{
-		VSHA_SetDamage(teleowner, VSHA_GetDamage(teleowner)+9001);
-		//Damage[teleowner] += 9001; //RoundFloat(9001.0 * 3 / 5);
-		PrintCenterText(teleowner, "TELEFRAG ASSIST! Nice job setting up!");
-	}
-
-	PrintCenterText(attacker, "TELEFRAG! You are a Pro!");
-	PrintCenterText(victim, "TELEFRAG! Be careful around quantum tunneling devices!");
-	return Plugin_Changed;
-}
-public Action VSHA_OnBossTakeDmg(int victim, int &attacker, int &weapon, int &inflictor, float &damage, int &damagetype, int damagecustom)
-{
-	int iFlags = GetEntityFlags(victim);
-	if ( (iFlags & (FL_ONGROUND|FL_DUCKING)) == (FL_ONGROUND|FL_DUCKING) )    
-	{
-		damage *= 0.2;
-		return Plugin_Changed;
-	}
-	if (damagecustom == TF_CUSTOM_BOOTS_STOMP)
-	{
-		damage = 1024.0;
-		return Plugin_Changed;
-	}
-
-	int heavyhealth = GetClientHealth(attacker);
-	char classname[32];
-	if (IsValidEdict(weapon)) GetEdictClassname(weapon, classname, sizeof(classname));
-	if ( !strcmp(classname, "tf_weapon_shotgun_hwg", false) && heavyhealth < 451 )
-	{
-		SetEntityHealth(attacker, heavyhealth+(RoundFloat(damage)/2));
-	}
-
-	int weapindex = GetItemIndex(weapon);
-	switch (weapindex)
-	{
-		case 593:       //Third Degree
-		{
-			int healers[MAXPLAYERS];
-			int healercount = 0;
-			for (int i = 1; i <= MaxClients; i++)
-			{
-				if (IsValidClient(i) && IsPlayerAlive(i) && (GetHealingTarget(i) == attacker))
-				{
-					healers[healercount] = i;
-					healercount++;
-				}
-			}
-			for (int i = 0; i < healercount; i++)
-			{
-				if (IsValidClient(healers[i]) && IsPlayerAlive(healers[i]))
-				{
-					int medigun = GetPlayerWeaponSlot(healers[i], TFWeaponSlot_Secondary);
-					if (IsValidEntity(medigun))
-					{
-						char cls[64];
-						GetEdictClassname(medigun, cls, sizeof(cls));
-						if (strcmp(cls, "tf_weapon_medigun", false) == 0)
-						{
-							float uber = GetMediCharge(medigun) + (0.1 / healercount);
-							float max = 1.0;
-							if (GetEntProp(medigun, Prop_Send, "m_bChargeRelease")) max = 1.5;
-							if (uber > max) uber = max;
-							SetMediCharge(medigun, uber);
-						}
-					}
-				}
-			}
-		}
-		case 14, 201, 230, 402, 526, 664, 752, 792, 801, 851, 881, 890, 899, 908, 957, 966, 1098:
-		{
-			switch (weapindex)
-			{
-				case 14, 201, 664, 792, 801, 851, 881, 890, 899, 908, 957, 966:
-				{
-					if (CheckRoundState() != 2)
-					{
-						float chargelevel = (IsValidEntity(weapon) && weapon > MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
-						float curGlow = VSHA_GetGlowTimer(victim);
-						float time = (curGlow > 10 ? 1.0 : 2.0);
-						time += (curGlow > 10 ? (curGlow > 20 ? 1 : 2) : 4)*(chargelevel/100);
-						VSHA_SetGlowTimer(victim, curGlow+time);
-						if (curGlow+time > 30.0) VSHA_SetGlowTimer(victim, 30.0); //convar/cvar heer
-						//SetEntProp(victim, Prop_Send, "m_bGlowEnabled", 1);
-						//GlowTimer += RoundToCeil(time);
-						//if (GlowTimer > 30.0) GlowTimer = 30.0;
-					}
-				}
-			}
-			if (weapindex == 752 && CheckRoundState() != 2)
-			{
-				float chargelevel = (IsValidEntity(weapon) && weapon > MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
-				float add = 10 + (chargelevel / 10);
-				if ( TF2_IsPlayerInCondition(attacker, view_as<TFCond>(46)) ) add /= 3.0;
-				float rage = GetEntPropFloat(attacker, Prop_Send, "m_flRageMeter");
-				SetEntPropFloat(attacker, Prop_Send, "m_flRageMeter", (rage + add > 100) ? 100.0 : rage + add);
-			}
-			if ( !(damagetype & DMG_CRIT) )
-			{
-				bool ministatus = (TF2_IsPlayerInCondition(attacker, TFCond_CritCola) || TF2_IsPlayerInCondition(attacker, TFCond_Buffed) || TF2_IsPlayerInCondition(attacker, TFCond_CritHype));
-
-				damage *= (ministatus) ? 2.222222 : 3.0;
-				if (weapindex == 230) VSHA_SetBossRage( victim, VSHA_GetBossRage(victim)-(damage/2.0/10.0) ); //make this a convar/cvar!
-				//{
-					//HaleRage -= RoundFloat(damage/2.0);
-					//if (HaleRage < 0) HaleRage = 0;
-				//}
-				return Plugin_Changed;
-			}
-			else if (weapindex == 230) VSHA_SetBossRage( victim, VSHA_GetBossRage(victim)-(damage*3.0/2.0/10.0) );
-			//{
-				//HaleRage -= RoundFloat(damage*3.0/2.0);
-				//if (HaleRage < 0) HaleRage = 0;
-			//}
-		}
-		case 132, 266, 482, 1082: IncrementHeadCount(attacker);
-		case 416: // Chdata's Market Gardener backstab
-		{
-			if (VSHA_IsPlayerInJump(attacker))
-			{
-				float curMaxHelth = view_as<float>(VSHA_GetBossMaxHealth(victim));
-				int markethits = VSHA_GetBossMarkets(victim);
-				damage = ( Pow(curMaxHelth, (0.74074)) + 512.0 - (markethits/128*curMaxHelth) )/3.0;
-				//divide by 3 because this is basedamage and lolcrits (0.714286)) + 1024.0)
-				damagetype |= DMG_CRIT;
-
-				//if (Marketed < 5) Marketed++;
-				if (markethits < 5) VSHA_SetBossMarkets(victim, markethits+1);
-
-				PrintCenterText(attacker, "You market gardened him!");
-				PrintCenterText(victim, "You were just market gardened!");
-
-				float Pos[3];
-				GetEntPropVector(victim, Prop_Send, "m_vecOrigin", Pos);
-				EmitSoundToClient(victim, "player/doubledonk.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.6, 100, _, Pos, NULL_VECTOR, false, 0.0);
-				EmitSoundToClient(attacker, "player/doubledonk.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.6, 100, _, Pos, NULL_VECTOR, false, 0.0);
-				return Plugin_Changed;
-			}
-		}
-		case 317: SpawnSmallHealthPackAt(victim, GetClientTeam(attacker));
-		case 214:
-		{
-			int health = GetClientHealth(attacker);
-			int max = GetEntProp(attacker, Prop_Data, "m_iMaxHealth");
-			int newhealth = health+25;
-			if (health < max+50)
-			{
-				if (newhealth > max+50) newhealth = max+50;
-				SetEntProp(attacker, Prop_Data, "m_iHealth", newhealth);
-				SetEntProp(attacker, Prop_Send, "m_iHealth", newhealth);
-			}
-			if (TF2_IsPlayerInCondition(attacker, TFCond_OnFire)) TF2_RemoveCondition(attacker, TFCond_OnFire);
-		}
-		case 594: // Phlog
-		{
-			if (!TF2_IsPlayerInCondition(attacker, TFCond_CritMmmph))
-			{
-				damage /= 2.0;
-				return Plugin_Changed;
-			}
-		}
-		case 357:
-		{
-			SetEntProp(weapon, Prop_Send, "m_bIsBloody", 1);
-			if (GetEntProp(attacker, Prop_Send, "m_iKillCountSinceLastDeploy") < 1)
-			SetEntProp(attacker, Prop_Send, "m_iKillCountSinceLastDeploy", 1);
-			int health = GetClientHealth(attacker);
-			int max = GetEntProp(attacker, Prop_Data, "m_iMaxHealth");
-			int newhealth = health+35;
-			if (health < max+25)
-			{
-				if (newhealth > max+25) newhealth = max+25;
-				SetEntProp(attacker, Prop_Data, "m_iHealth", newhealth);
-				SetEntProp(attacker, Prop_Send, "m_iHealth", newhealth);
-			}
-			if (TF2_IsPlayerInCondition(attacker, TFCond_OnFire)) TF2_RemoveCondition(attacker, TFCond_OnFire);
-		}
-		case 61, 1006:  //Ambassador does 2.5x damage on headshot
-		{
-			if (damagecustom == TF_CUSTOM_HEADSHOT)
-			{
-				damage = 100.0;
-				return Plugin_Changed;
-			}
-		}
-		case 525, 595:
-		{
-			int iCrits = GetEntProp(attacker, Prop_Send, "m_iRevengeCrits");
-			if (iCrits > 0) //If a revenge crit was used, give a damage bonus
-			{
-				damage = 85.0;
-				return Plugin_Changed;
-			}
-		}
-		case 656:
-		{
-			CreateTimer(3.0, Timer_StopTickle, GetClientUserId(victim), TIMER_FLAG_NO_MAPCHANGE);
-			if (TF2_IsPlayerInCondition(attacker, TFCond_Dazed)) TF2_RemoveCondition(attacker, TFCond_Dazed);
-		}
-	}
-	return Plugin_Continue;
-}
-public Action VSHA_OnBossStabbed(int victim, int &attacker, int &weapon, float &damage)
-{
-	float curMaxHelth = view_as<float>(VSHA_GetBossMaxHealth(victim));
-	int stabamounts = VSHA_GetBossStabs(victim);
-	float changedamage = ( (Pow(curMaxHelth*0.0014, 2.0) + 899.0) - (curMaxHelth*(stabamounts/100)) );
-
-	if (stabamounts > 4) VSHA_SetBossStabs(victim, 4);
-
-	damage = changedamage/3; // You can level "damage dealt" with backstabs
-
-	SetEntPropFloat(weapon, Prop_Send, "m_flNextPrimaryAttack", GetGameTime() + 2.0);
-	SetEntPropFloat(attacker, Prop_Send, "m_flNextAttack", GetGameTime() + 2.0);
-	SetEntPropFloat(attacker, Prop_Send, "m_flStealthNextChangeTime", GetGameTime() + 1.0);
-
-	TF2_AddCondition(attacker, TFCond_SpeedBuffAlly, 1.5);
-	TF2_AddCondition(attacker, TFCond_Ubercharged, 2.0);
-
-	int pistol = GetIndexOfWeaponSlot(attacker, TFWeaponSlot_Primary);
-	if (pistol == 525) //Diamondback gives 3 crits on backstab
-	{
-		int iCrits = GetEntProp(attacker, Prop_Send, "m_iRevengeCrits");
-		SetEntProp(attacker, Prop_Send, "m_iRevengeCrits", iCrits+2);
-	}
-
-	int weapindex = GetItemIndex(weapon);
-	if (weapindex == 356)
-	{
-		int health = GetClientHealth(attacker) + 180;
-		if (health > 195) health = 390;
-		SetEntProp(attacker, Prop_Data, "m_iHealth", health);
-		SetEntProp(attacker, Prop_Send, "m_iHealth", health);
-	}
-	if (weapindex == 461) SetEntPropFloat(attacker, Prop_Send, "m_flCloakMeter", 100.0); //Big Earner gives full cloak on backstab
-
-	strcopy(playsound, PLATFORM_MAX_PATH, "");
-	Format(playsound, PLATFORM_MAX_PATH, "%s%i.wav", HaleStubbed132, GetRandomInt(1, 4));
-	EmitSoundToAll(playsound, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, victim, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-	EmitSoundToAll(playsound, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, victim, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-
-	return Plugin_Changed;
-}
-
-
-public Action UseRage(Handle hTimer, any client)
-{
-	float pos[3], pos2[3];
-	int i;
-	float distance;
-	if (!IsValidClient(client)) return Plugin_Continue;
-	if (!GetEntProp(client, Prop_Send, "m_bIsReadyToHighFive") && !IsValidEntity(GetEntPropEnt(client, Prop_Send, "m_hHighFivePartner")))
-	{
-		TF2_RemoveCondition(client, TFCond_Taunting);
-	}
-	GetEntPropVector(client, Prop_Send, "m_vecOrigin", pos);
-	for (i = 1; i <= MaxClients; i++)
-	{
-		if (IsValidClient(i) && IsPlayerAlive(i) && i != client)
-		{
-			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
-			distance = GetVectorDistance(pos, pos2);
-			if (!TF2_IsPlayerInCondition(i, TFCond_Ubercharged) && distance < RageDist)
-			{
-				int flags = TF_STUNFLAGS_GHOSTSCARE;
-				flags |= TF_STUNFLAG_NOSOUNDOREFFECT;
-				CreateTimer(5.0, RemoveEnt, EntIndexToEntRef(AttachParticle(i, "yikes_fx", 75.0)));
-				if (CheckRoundState() != 0) TF2_StunPlayer(i, 5.0, _, flags, client);
-			}
-		}
-	}
-	StunSentry( client, RageDist, 6.0, view_as<float>(GetEntProp(i, Prop_Send, "m_iHealth")/2) );
-	i = -1;
-	while ((i = FindEntityByClassname2(i, "obj_dispenser")) != -1)
-	{
-		GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
-		distance = GetVectorDistance(pos, pos2);
-		if (distance < RageDist)    //(!mode && (distance < RageDist)) || (mode && (distance < RageDist/2)))
-		{
-			SetVariantInt(1);
-			AcceptEntityInput(i, "RemoveHealth");
-		}
-	}
-	i = -1;
-	while ((i = FindEntityByClassname2(i, "obj_teleporter")) != -1)
-	{
-		GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
-		distance = GetVectorDistance(pos, pos2);
-		if (distance < RageDist)    //(!mode && (distance < RageDist)) || (mode && (distance < RageDist/2)))
-		{
-			SetVariantInt(1);
-			AcceptEntityInput(i, "RemoveHealth");
-		}
-	}
-	return Plugin_Continue;
-}
-public Action Timer_StopTickle(Handle timer, any userid)
+public Action TimerTankDeath(Handle timer, any userid)
 {
 	int client = GetClientOfUserId(userid);
-	if (!IsValidClient(client) || !IsPlayerAlive(client)) return Plugin_Continue;
-	if (!GetEntProp(client, Prop_Send, "m_bIsReadyToHighFive") && !IsValidEntity(GetEntPropEnt(client, Prop_Send, "m_hHighFivePartner"))) TF2_RemoveCondition(client, TFCond_Taunting);
-	return Plugin_Continue;
-}
-// stocks
-stock bool OnlyScoutsLeft()
-{
-	for (int client; client <= MaxClients; client++)
+	if (client && IsClientInGame(client))
 	{
-		if (IsValidClient(client) && IsPlayerAlive(client) && GetClientTeam(client) == 2)
+		if (iTankHealth[client] <= 0) iTankHealth[client] = 0; //ded, not big soup rice!
+		StopSound(client, SNDCHAN_AUTO, TankIdle);
+		StopSound(client, SNDCHAN_AUTO, TankMove);
+		char s[PLATFORM_MAX_PATH];
+		Format(s, PLATFORM_MAX_PATH, "%s%i.mp3", TankDeath, GetRandomInt(1, 2)); //sounds from Call of duty 1
+		EmitSoundToAll(s, client);
+		AttachParticle(client, "buildingdamage_dispenser_fire1", 1.0);
+		SetClientOverlay(client, "0");
+	}
+	return Action:0;
+}
+public void CCM_OnClassKilled(int client, int attacker)
+{
+	CPrintToChat(client, "{red}[CCM]{default} Test CCM_OnClassKilled");
+	TF2_IgnitePlayer(client, attacker);
+	CreateTimer(0.1, TimerTankDeath, GetClientUserId(client));
+	return;
+}
+
+public Action RoundStart(Handle event, const char[] name, bool dontBroadcast)
+{
+	if (!GetConVarBool(bEnabled)) return Plugin_Continue;
+	for (int client = 1; client <= MaxClients; client++)
+	{
+		if ( IsValidClient(client, false) && bIsTank[client] )
 		{
-			if (TF2_GetPlayerClass(client) != TFClass_Scout) break;
-			return true;
+			TF2_RemoveAllWeapons2(client);
+			CCM_OnClassEquip(client); //this code for VSH/FF2 replacing weapons
 		}
 	}
-	return false;
+	return Plugin_Continue;
+}
+public Action CCM_OnModelTimer(int client, char ClassModel[64])
+{
+	CPrintToChat(client, "{red}[CCM]{default} Test CCM_OnModelTimer");
+	ClassModel = TankModel;
+	return Plugin_Continue;
+}
+
+public Action TimerTankFunction(Handle hTimer, any userid) //main 'mechanics' of tank
+{
+	int client = GetClientOfUserId(userid);
+	if (client <= 0) return Plugin_Stop;
+	if (client && IsClientInGame(client) && IsPlayerAlive(client))
+	{
+		if (bIsTank[client])
+		{
+			char s[PLATFORM_MAX_PATH];
+			int buttons = GetClientButtons(client);
+			if ( (buttons & IN_FORWARD) || ( (buttons & IN_FORWARD) && ( ( buttons & (IN_MOVELEFT|IN_MOVERIGHT) ) ) ) )
+			{
+				flSpeedup[client] += GetConVarFloat(TankAcceleration); /*simulates vehicular physics; not as good as Valve does with vehicle entities*/
+				if (flSpeedup[client] > GetConVarFloat(MaxForwardSpeed)) flSpeedup[client] = GetConVarFloat(MaxForwardSpeed);
+				StopSound(client, SNDCHAN_AUTO, TankIdle);
+				flIdleSound[client] = 0.0;
+				if (flSoundDelay[client] < GetGameTime())
+				{
+					strcopy(s, PLATFORM_MAX_PATH, TankMove);
+					EmitSoundToAll(s, client);
+					flSoundDelay[client] = GetGameTime()+31.0;
+				}
+				if (GetConVarBool(bGasPowered))
+				{
+					flGasMeter[client] -= 0.1;
+					if (flGasMeter[client] <= 0.0) flGasMeter[client] = 0.0;
+				}
+			}
+			else if ( buttons & (IN_MOVELEFT|IN_MOVERIGHT) )
+			{
+				flSpeedup[client] += GetConVarFloat(TankAcceleration);
+				if (flSpeedup[client] > GetConVarFloat(MaxForwardSpeed)) flSpeedup[client] = GetConVarFloat(MaxForwardSpeed);
+				StopSound(client, SNDCHAN_AUTO, TankIdle);
+				flIdleSound[client] = 0.0;
+				if (flSoundDelay[client] < GetGameTime())
+				{
+					strcopy(s, PLATFORM_MAX_PATH, TankMove);
+					EmitSoundToAll(s, client);
+					flSoundDelay[client] = GetGameTime()+31.0;
+				}
+				if (GetConVarBool(bGasPowered))
+				{
+					flGasMeter[client] -= 0.1;
+					if (flGasMeter[client] <= 0.0) flGasMeter[client] = 0.0;
+				}
+			}
+			else if ( (buttons & IN_BACK) || ( (buttons & IN_BACK) && ( buttons & (IN_MOVELEFT|IN_MOVERIGHT) ) ) )
+			{
+				flSpeedup[client] += GetConVarFloat(TankAcceleration);
+				if (flSpeedup[client] > GetConVarFloat(MaxReverseSpeed)) flSpeedup[client] = GetConVarFloat(MaxReverseSpeed);
+				StopSound(client, SNDCHAN_AUTO, TankIdle);
+				flIdleSound[client] = 0.0;
+				if (flSoundDelay[client] < GetGameTime())
+				{
+					strcopy(s, PLATFORM_MAX_PATH, TankMove);
+					EmitSoundToAll(s, client);
+					flSoundDelay[client] = GetGameTime()+31.0;
+				}
+				if (GetConVarBool(bGasPowered))
+				{
+					flGasMeter[client] -= 0.1;
+					if (flGasMeter[client] <= 0.0) flGasMeter[client] = 0.0;
+				}
+			}
+			else
+			{
+				StopSound(client, SNDCHAN_AUTO, TankMove);
+				flSoundDelay[client] = 0.0;
+				flGasMeter[client] += 0.001;
+				if (flIdleSound[client] < GetGameTime())
+				{
+					strcopy(s, PLATFORM_MAX_PATH, TankIdle);
+					EmitSoundToAll(s, client);
+					flIdleSound[client] = GetGameTime()+5.0;
+				}
+				flSpeedup[client] = GetConVarFloat(InitialTankSpeed);
+			}
+
+			if (GetConVarBool(bGasPowered) && flGasMeter[client] <= 0.0) flSpeedup[client] = 1.0;
+			SetEntPropFloat(client, Prop_Send, "m_flMaxspeed", flSpeedup[client]);
+
+			if (IsPlayerAlive(client) && (buttons & IN_ATTACK2) && !(buttons & IN_JUMP) ) //MOUSE2 Rocket firing mechanic
+			{
+				if ( flLastFire[client] <= GetGameTime() )
+				{
+					float vAngles[3], vPosition[3];
+					GetClientEyeAngles(client, vAngles);
+					GetClientEyePosition(client, vPosition);
+					//vPosition[2] = vPosition[2]+11.0;
+					ShootRocket(client, vPosition, vAngles, GetConVarFloat(RocketSpeed), GetConVarFloat(RocketBaseDamage));
+					Format(s, PLATFORM_MAX_PATH, "%s%i.mp3", TankShoot, GetRandomInt(1, 3)); //sounds from Call of duty 1
+					EmitSoundToAll(s, client);
+					CreateTimer(1.0, TimerReloadTank, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE); //useless, only plays a 'reload' sound
+					flLastFire[client] = GetGameTime() + GetConVarFloat(RocketCooldown);
+				}
+			}
+			//CreateTimer(0.1, Timer_TankCrush, client);
+			TF2_AddCondition(client, TFCond_MegaHeal, 0.2); /*prevent tanks from being airblasted and gives a team colored aura to allow teams to tell who's on what side */
+		}
+		else return Plugin_Stop;
+	}
+	return Plugin_Continue;
+}
+public Action TimerReloadTank(Handle hTimer, any userid)
+{
+	int client = GetClientOfUserId(userid);
+	if (!bIsTank[client]) return Plugin_Stop;
+	if (client && IsClientInGame(client))
+	{
+		char s[PLATFORM_MAX_PATH];
+		strcopy(s, PLATFORM_MAX_PATH, TankReload);
+		EmitSoundToAll(s, client);
+	}
+	return Plugin_Continue;
+}
+/*public void TankInitialize(int userid)
+{
+	if (!GetConVarBool(bEnabled)) return;
+	int client = GetClientOfUserId(userid);
+	if ( client <= 0 ) return;
+	int iTeam = GetClientTeam(client);
+	if ( (!GetConVarBool(AllowBlu) && (iTeam == 3)) || (!GetConVarBool(AllowRed) && (iTeam == 2)) )
+	{
+		switch (iTeam)
+		{
+			case 2: ReplyToCommand(client, "RED players are not allowed to play the Tank class");
+			case 3: ReplyToCommand(client, "BLU players are not allowed to play the Tank class");
+		}
+		return;
+	}
+	int TankLimit, iCount = 0;
+	switch (iTeam)
+	{
+		case 0, 1: TankLimit = -2;
+		case 2: TankLimit = GetConVarInt(RedLimit);
+		case 3: TankLimit = GetConVarInt(BluLimit);
+	}
+	if (TankLimit == -1)
+	{
+		bSetTank[client] = true;
+		ReplyToCommand(client, "You will be a Tank the next time you respawn/touch a resupply locker");
+		return;
+	}
+	else if (TankLimit == 0)
+	{
+		if (IsImmune(client))
+		{
+			bSetTank[client] = true;
+			ReplyToCommand(client, "You will be a Tank the next time you respawn/touch a resupply locker");
+		}
+		else ReplyToCommand(client, "****Tank Class is Blocked for your team");
+		return;
+	}
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsValidClient(i))
+		{	
+			if ( (GetClientTeam(i) == 1 || GetClientTeam(i) == 0) && bSetTank[i] ) //remove players who played as tank then went spec
+				bSetTank[i] = false;
+			if ( ( (!GetConVarBool(AllowBlu) && GetClientTeam(i) == 3) || (!GetConVarBool(AllowRed) && GetClientTeam(i) == 2) ) && bSetTank[i] ) //remove players who were forced to switch teams while dead
+				bSetTank[i] = false;
+			if (GetClientTeam(i) == iTeam && bSetTank[i] && i != client) //get amount of tanks on team
+				iCount++;
+		}
+	}
+	if (iCount < TankLimit)
+	{
+		bSetTank[client] = true;
+		ReplyToCommand(client, "You will be a Tank the next time you respawn/touch a resupply locker");
+	}
+	else if (iCount >= TankLimit)
+	{
+		if (IsImmune(client))
+		{
+			bSetTank[client] = true;
+			ReplyToCommand(client, "You will be a Tank the next time you respawn/touch a resupply locker");
+		}
+		else ReplyToCommand(client, "****Tank Limit is Reached");
+	}
+	return;
+}*/
+public bool IsImmune(int iClient)
+{
+	if (!IsValidClient(iClient, false)) return false;
+	char sFlags[32];
+	GetConVarString(AdminFlagByPass, sFlags, sizeof(sFlags));
+	// If flags are specified and client has generic or root flag, client is immune
+	return !StrEqual(sFlags, "") && GetUserFlagBits(iClient) & (ReadFlagString(sFlags)|ADMFLAG_ROOT);
+}
+public Action CmdReloadCFG(int client, int iAction)
+{
+	ServerCommand("sm_rcon exec sourcemod/CCM-TankClass.cfg");
+	ReplyToCommand(client, "**** Reloading CCM-TankClass Config ****");
+	return Plugin_Handled;
+}
+public void UpdateGasHUD(int client)
+{
+	if (bIsTank[client] && GetConVarBool(bEnabled) && GetConVarBool(bGasPowered))
+	{
+		if (GetConVarBool(bGasPowered))
+		{
+			if (!IsClientObserver(client))
+			{
+				float x = GetConVarFloat(HUDX), y = GetConVarFloat(HUDY);
+				int rounder = RoundFloat( flGasMeter[client] );
+				if (rounder > 60)
+				{
+					SetHudTextParams(x, y, 1.0, 0, 255, 0, 255);
+					ShowSyncHudText(client, hHudText, "Gas: %i", rounder);
+				}
+				if ( 30 < rounder < 60 )
+				{
+					SetHudTextParams(x, y, 1.0, 255, 255, 0, 255);
+					ShowSyncHudText(client, hHudText, "Gas: %i", rounder);
+				}
+				if (rounder < 30)
+				{
+					SetHudTextParams(x, y, 1.0, 255, 0, 0, 255);
+					ShowSyncHudText(client, hHudText, "Gas: %i", rounder);
+				}
+			}
+		}
+	}
+	return;
+}
+public Action TraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &ammotype, int hitbox, int hitgroup)
+{
+	if ( GetConVarBool(bEnabled) && IsValidClient(attacker) && IsValidClient(victim))
+	{
+		if (GetClientTeam(attacker) == GetClientTeam(victim) && bIsTank[victim]) /*this is basically the same code from my Advanced armor plugin but with the difference of making it work for the Tank class*/
+		{
+			if (GetConVarBool(HealthFromEngies) && TF2_GetPlayerClass(attacker) == TFClass_Engineer)
+			{
+				int iCurrentMetal = GetEntProp(attacker, Prop_Data, "m_iAmmo", 4, 3);
+				int repairamount = GetConVarInt(HealthFromMetal); //default 10
+				int mult = GetConVarInt(HealthFromMetalMult); //default 10
+				int m_nMaxTurretMunitions = GetConVarInt(iAmmo);
+
+				int hClientWeapon = GetEntPropEnt(attacker, Prop_Send, "m_hActiveWeapon");
+				int TankTurret = GetEntPropEnt(victim, Prop_Send, "m_hActiveWeapon");
+				//new wepindex = (IsValidEdict(hClientWeapon) && GetEntProp(hClientWeapon, Prop_Send, "m_iItemDefinitionIndex"));
+				char classname[64];
+				if (IsValidEdict(hClientWeapon)) GetEdictClassname(hClientWeapon, classname, sizeof(classname));
+				
+				if (StrEqual(classname, "tf_weapon_wrench", false) || StrEqual(classname, "tf_weapon_robot_arm", false))
+				{
+					if (iTankHealth[victim] > 0 && iTankHealth[victim] < iTankMaxHealth)
+					{
+						if (iCurrentMetal < repairamount) repairamount = iCurrentMetal;
+
+						if ((iTankMaxHealth-iTankHealth[victim] < repairamount*mult))
+						{
+							repairamount = RoundToCeil(float((iTankMaxHealth-iTankHealth[victim])/mult));
+						}
+
+						if (repairamount < 1 && iCurrentMetal > 0) repairamount = 1;
+
+						iTankHealth[victim] += repairamount*mult;
+
+						if (iTankHealth[victim] > iTankMaxHealth) iTankHealth[victim] = iTankMaxHealth;
+
+						iCurrentMetal -= repairamount;
+						SetEntProp(attacker, Prop_Data, "m_iAmmo", iCurrentMetal, 4, 3);
+					}
+					if (GetWeaponClip(TankTurret) >= 0 && GetWeaponClip(TankTurret) < m_nMaxTurretMunitions)
+					{
+						if (iCurrentMetal < repairamount) repairamount = iCurrentMetal;
+						if ((m_nMaxTurretMunitions-GetWeaponClip(TankTurret) < repairamount*mult))
+						{
+							repairamount = RoundToCeil(float((m_nMaxTurretMunitions-GetWeaponClip(TankTurret))/mult));
+						}
+						if (repairamount < 1 && iCurrentMetal > 0) repairamount = 1;
+
+						SetWeaponClip(TankTurret, GetWeaponClip(TankTurret)+repairamount*mult);
+
+						if (GetWeaponClip(TankTurret) > m_nMaxTurretMunitions)
+							SetWeaponClip(TankTurret, m_nMaxTurretMunitions);
+
+						iCurrentMetal -= repairamount;
+						SetEntProp(attacker, Prop_Data, "m_iAmmo", iCurrentMetal, 4, 3);
+					}
+				}
+			}
+		}
+		else return Plugin_Continue;
+	}
+	return Plugin_Continue;
+}
+
+///////////////////////
+/////////stocks////////
+///////////////////////
+stock int GetHealingTarget(int client)
+{
+	char s[64];
+	int medigun = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
+	if (!IsValidEdict(medigun) || !IsValidEntity(medigun)) return -1;
+	GetEdictClassname(medigun, s, sizeof(s));
+	if (strcmp(s, "tf_weapon_medigun", false) == 0)
+	{
+		if (GetEntProp(medigun, Prop_Send, "m_bHealing"))
+			return GetEntPropEnt(medigun, Prop_Send, "m_hHealingTarget");
+	}
+	return -1;
+}
+stock bool IsNearSpencer(int client)
+{
+	int medics = 0, healers = GetEntProp(client, Prop_Send, "m_nNumHealers");
+	if (healers > 0)
+	{
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			if (IsValidClient(i) && IsPlayerAlive(i) && GetHealingTarget(i) == client)
+				medics++;
+		}
+	}
+	return ( (healers > medics) ? true : false );
+}
+stock int AttachParticle(int ent, char[] particleType, float offset = 0.0, bool battach = true)
+{
+	int particle = CreateEntityByName("info_particle_system");
+	char tName[128];
+	float pos[3];
+	GetEntPropVector(ent, Prop_Send, "m_vecOrigin", pos);
+	pos[2] += offset;
+	TeleportEntity(particle, pos, NULL_VECTOR, NULL_VECTOR);
+	Format(tName, sizeof(tName), "target%i", ent);
+	DispatchKeyValue(ent, "targetname", tName);
+	DispatchKeyValue(particle, "targetname", "tf2particle");
+	DispatchKeyValue(particle, "parentname", tName);
+	DispatchKeyValue(particle, "effect_name", particleType);
+	DispatchSpawn(particle);
+	SetVariantString(tName);
+	if (battach)
+	{
+		AcceptEntityInput(particle, "SetParent", particle, particle, 0);
+		SetEntPropEnt(particle, Prop_Send, "m_hOwnerEntity", ent);
+	}
+	ActivateEntity(particle);
+	AcceptEntityInput(particle, "start");
+	CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(particle));
+	return particle;
+}
+stock int ShootRocket(int client, float vPosition[3], float vAngles[3] = NULL_VECTOR, float flSpeed, float dmg)
+{
+	//new String:strEntname[45] = "tf_projectile_spellfireball";
+	/*switch (spell)
+	{
+		case FIREBALL: 		strEntname = "tf_projectile_spellfireball";
+		case LIGHTNING: 	strEntname = "tf_projectile_lightningorb";
+		case PUMPKIN: 		strEntname = "tf_projectile_spellmirv";
+		case PUMPKIN2: 		strEntname = "tf_projectile_spellpumpkin";
+		case BATS: 			strEntname = "tf_projectile_spellbats";
+		case METEOR: 		strEntname = "tf_projectile_spellmeteorshower";
+		case TELE: 			strEntname = "tf_projectile_spelltransposeteleport";
+		case BOSS:			strEntname = "tf_projectile_spellspawnboss";
+		case ZOMBIEH:		strEntname = "tf_projectile_spellspawnhorde";
+		case ZOMBIE:		strEntname = "tf_projectile_spellspawnzombie";
+	}
+	switch(spell)
+	{
+		//These spells have arcs.
+		case BATS, METEOR, TELE:
+		{
+			vVelocity[2] += 32.0;
+		}
+	}
+
+CTFGrenadePipebombProjectile m_bCritical
+CTFProjectile_Rocket m_bCritical
+CTFProjectile_SentryRocket m_bCritical
+CTFWeaponBaseGrenadeProj m_bCritical
+CTFMinigun m_bCritShot
+CTFFlameThrower m_bCritFire
+CTFProjectile_Syringe
+CTFPlayer m_iCritMult
+SetEntPropFloat(iProjectile, Prop_Send, "m_flDamage", dmg);
+	}*/
+	int iTeam = GetClientTeam(client);
+	int iProjectile = CreateEntityByName("tf_projectile_rocket");
+	
+	if (!IsValidEdict(iProjectile)) return -1;
+
+	float vVelocity[3];
+	GetAngleVectors(vAngles, vVelocity, NULL_VECTOR, NULL_VECTOR);
+	NormalizeVector(vVelocity, vVelocity);
+	ScaleVector(vVelocity, flSpeed);
+	
+	SetEntPropEnt(iProjectile, Prop_Send, "m_hOwnerEntity", client);
+	SetEntProp(iProjectile,    Prop_Send, "m_bCritical", 0);
+	SetEntProp(iProjectile,    Prop_Send, "m_iTeamNum", iTeam, 1);
+	SetEntProp(iProjectile,    Prop_Send, "m_nSkin", (iTeam-2));
+
+	SetVariantInt(iTeam);
+	AcceptEntityInput(iProjectile, "TeamNum", -1, -1, 0);
+	SetVariantInt(iTeam);
+	AcceptEntityInput(iProjectile, "SetTeam", -1, -1, 0);
+	SetEntDataFloat(iProjectile, FindSendPropInfo("CTFProjectile_Rocket", "m_iDeflected")+4, dmg, true);
+	TeleportEntity(iProjectile, vPosition, vAngles, vVelocity); 
+	DispatchSpawn(iProjectile);
+	return iProjectile;
+}
+
+public int OnPreThink(int client) //powers the HUD
+{
+	if (bIsTank[client])
+	{
+		if ( IsPlayerAlive(client) ) SetEntityHealth(client, iTankHealth[client]);
+		if ( GetConVarBool(bGasPowered) )
+		{
+			if ( IsNearSpencer(client) )
+			{
+				flGasMeter[client] += 0.1;
+				if (flGasMeter[client] > GetConVarFloat(StartingFuel)) flGasMeter[client] = GetConVarFloat(StartingFuel);
+			}
+			for (int i = 1; i <= MaxClients; i++)
+			{
+				if (IsValidClient(i) && client == GetHealingTarget(i))
+				{
+					flGasMeter[client] += 0.1;
+					if (flGasMeter[client] > GetConVarFloat(StartingFuel)) flGasMeter[client] = GetConVarFloat(StartingFuel);
+				}
+			}
+			UpdateGasHUD(client);
+		}
+		//SetEntPropVector(client, Prop_Send, "m_vecMaxs", Float:{24.0,24.0,10.0} );
+		//SetEntPropVector(client, Prop_Send, "m_vecSpecifiedSurroundingMins", Float:{-30.0,-30.0,0.0} ); // nullify bounding box
+        	//SetEntPropVector(client, Prop_Send, "m_vecSpecifiedSurroundingMaxs", Float:{30.0,30.0,37.5} );
+		//GetEntProp(client, Prop_Send, "m_iMaxHealth");
+	}
+	return;
+}
+public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	if ( !GetConVarBool(bEnabled) || (damagetype & DMG_CRIT) ) return Plugin_Continue;
+
+	float Pos[3], Pos2[3];
+	GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", Pos);//Spot of attacker
+	GetEntPropVector(victim, Prop_Send, "m_vecOrigin", Pos2); //Spot of victim
+	float dist = GetVectorDistance(Pos, Pos2, false); //Calculate dist between target and attacker
+	float min = 512.0;
+	char classname[64], strEntname[32];
+
+	if (IsValidEdict(inflictor)) GetEntityClassname(inflictor, strEntname, sizeof(strEntname));
+	if (IsValidEdict(weapon)) GetEdictClassname(weapon, classname, sizeof(classname));
+
+	if (bIsTank[victim])
+	{
+		if ( (victim == attacker && GetConVarBool(NoTankRocketJump)) || damagecustom == TF_CUSTOM_BACKSTAB )
+		{
+			damage = 0.0;
+			return Plugin_Changed;
+		}
+		if (attacker > MaxClients || attacker <= 0)
+		{
+			char stringmap[64];
+			if (GetEdictClassname(attacker, stringmap, sizeof(stringmap)) && strcmp(stringmap, "trigger_hurt", false) == 0)
+			{
+				iTankHealth[victim] = 0;
+				TF2_IgnitePlayer(victim, attacker);
+				CreateTimer(0.1, TimerTankDeath, GetClientUserId(victim));
+			}
+		}
+	}
+	else if (bIsTank[attacker])
+	{
+		if (victim != attacker && GetClientTeam(victim) != GetClientTeam(attacker))
+		{
+			if (strcmp(strEntname, "tf_projectile_rocket", false) == 0 && GetConVarBool(NoFallOffRockets))
+			{
+				if (dist > 966) dist = 966.0;
+				if (dist < 409) dist = 409.6;
+				damage *= dist/min;
+				return Plugin_Changed;
+			}
+			if (strcmp(classname, "tf_weapon_smg", false) == 0 && GetConVarBool(NoFallOffTurret))
+			{
+				if (dist > 1024) dist = 1024.0;
+				if (dist < 341) dist = 341.33;
+				damage *= dist/min;
+				return Plugin_Changed;
+			}
+		}
+	}
+	return Plugin_Continue;
+}
+public Action OnTouch(int client, int other) //simulates "crush" damage
+{
+	if (bIsTank[client])
+	{
+		if (other > 0 && other <= MaxClients)
+		{
+			int buttons = GetClientButtons(client);
+			if ( buttons & (IN_FORWARD|IN_BACK|IN_MOVELEFT|IN_MOVERIGHT) )
+			{
+				flLastHit[other] = GetGameTime();
+				SDKHooks_TakeDamage(other, client, client, GetConVarFloat(CrushDmg), DMG_CRUSH|DMG_ALWAYSGIB);
+			}
+		}
+		else if (other > MaxClients)
+		{
+			if (IsValidEntity(other))
+			{
+				char ent[5];
+				GetEdictClassname(other, ent, sizeof(ent));
+				if (GetEntityClassname(other, ent, sizeof(ent)), StrContains(ent, "obj_") == 0)
+				{
+					//SetVariantInt(GetEntProp(other, Prop_Send, "m_iMaxHealth")+1);
+					if (GetEntProp(other, Prop_Send, "m_iTeamNum") != GetClientTeam(client))
+					{
+						SetVariantInt(RoundToCeil(GetConVarFloat(CrushDmg)));
+						AcceptEntityInput(other, "RemoveHealth");
+					}
+				}
+			}
+		}
+	}
+	return Plugin_Continue;
 }
