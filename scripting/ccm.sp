@@ -1,558 +1,507 @@
-#include <ccm>
+#include <sdktools>
+#include <sourcemod>
+#include <sdkhooks>
+//#undef REQUIRE_PLUGIN
+//#tryinclude <updater>
 
-#pragma semicolon 1
-#pragma newdecls optional
+#define GAME_TF2
+#include <thelpers>
 
-#define PLUGIN_VERSION		"1.0 BETA"
+#pragma semicolon		1
+#pragma newdecls		required
 
-//bools
-bool bIsCustomClass[PLYR];
-bool bSetCustomClass[PLYR];
-bool bHasLoadout[MAXCLASSES]; //set if custom class has a customizable loadout
-
-//ints
-Handle hClassIndex[PLYR];
-int iClassIndex[PLYR];
-
+#define PLUGIN_VERSION		"1.0"
 public Plugin myinfo = 
 {
-	name 			= "Custom Class Maker",
-	author 			= "Nergal/Assyrian, props to RSWallen, Friagram, Chdata, Powerlord, and everyone else on AM",
-	description 		= "Make your Own Classes!",
+	name 			= "Custom Structures",
+	author 			= "nergal/assyrian",
+	description 		= "Allows Players to take their resupply lockers with them anywhere!",
 	version 		= PLUGIN_VERSION,
-	url 			= "hue" //will fill later
+	url 			= "hue"
 }
 
-//cvar handles
-Handle bEnabled = INVALID_HANDLE;
-Handle AllowBlu = INVALID_HANDLE;
-Handle AllowRed = INVALID_HANDLE;
-Handle AdminFlagByPass = INVALID_HANDLE;
+//defines
+#define IsValidClient(%1)	( 0 < %1.Index && %1.Index <= MaxClients && %1.IsInGame )
+#define PLYR			MAXPLAYERS+1
+#define nullvec			NULL_VECTOR
 
-Handle OnAddToDownloads;
+//cvar handles
+ConVar bEnabled = null;
+ConVar AllowBlu = null;
+ConVar AllowRed = null;
+
+//float flTimer[MAXPLAYERS+1];
+
+enum //Structures
+{
+	Bridge = 0,
+	Sandbags,
+	Bunker,
+	SentryNest,
+	MedStation,
+	AmmoStation
+}
+/*
+methodmap CBaseStructure < CBaseAnimating
+{
+	public CBaseStructure( int entIndex )
+	{
+		return view_as<CBaseStructure>( new CBaseAnimating( entIndex ) );
+	}
+};
+*/
+
+CBaseAnimating Structures[PLYR][6];
 
 public void OnPluginStart()
 {
-	SetHandles();
-	RegConsoleCmd("sm_ccm", MakeClassMenu);
-	RegConsoleCmd("sm_noccm", MakeNotClass); //need more creative commands
-	RegConsoleCmd("sm_offccm", MakeNotClass);
-	RegConsoleCmd("sm_offclass", MakeNotClass);
-	RegAdminCmd("sm_reloadccm", CmdReloadCFG, ADMFLAG_GENERIC);
+	bEnabled = CreateConVar("sm_structures_enabled", "1", "Enable Structures plugin", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	AllowBlu = CreateConVar("sm_structures_blu", "1", "(Dis)Allow Structures for BLU team", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	AllowRed = CreateConVar("sm_structures_red", "1", "(Dis)Allow Structures for RED team", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
-	bEnabled = CreateConVar("sm_ccm_enabled", "1", "Enable Custom Class Maker plugin", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	//AddCommandListener(Listener_Voice, "voicemenu");
+	//RegAdminCmd("sm_portableresupply", CreatePortableResupply, ADMFLAG_KICK);
+	RegConsoleCmd("sm_bstructs", CommandBuildings);
+	RegConsoleCmd("sm_structs", CommandBuildings);
+	RegConsoleCmd("sm_structures", CommandBuildings);
+	RegConsoleCmd("sm_structure", CommandBuildings);
 
-	AllowBlu = CreateConVar("sm_ccm_blu", "0", "(Dis)Allow Custom Classes to be playable for BLU team", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 1.0);
-
-	AllowRed = CreateConVar("sm_ccm_red", "1", "(Dis)Allow Custom Classes to be playable for RED team", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 1.0);
-
-	AdminFlagByPass = CreateConVar("sm_ccm_flagbypass", "a", "what flag admins need to bypass the tank class limit", FCVAR_PLUGIN);
-
-	AutoExecConfig(true, "CustomClassMaker");
-	HookEvent("player_death", PlayerDeath, EventHookMode_Pre);
-	HookEvent("player_spawn", PlayerSpawn);
-	HookEvent("player_hurt", PlayerHurt, EventHookMode_Pre);
-	HookEvent("player_changeclass", ChangeClass);
-	HookEvent("player_chargedeployed", ChargeDeployed);
-	HookEvent("post_inventory_application", Resupply);
-	HookEvent("object_deflected", Deflected, EventHookMode_Pre);
-	HookEvent("object_destroyed", Destroyed, EventHookMode_Pre);
-
-	HookEvent("teamplay_round_start", RoundStart);
-
+	CTFPlayer player;
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		if (!IsValidClient(i)) continue;
+		if ( (player = new CTFPlayer(i)) == null ) continue;
+		if ( !IsValidClient(player) ) continue;
 		OnClientPutInServer(i);
 	}
 }
 public void OnClientPutInServer(int client)
 {
-	bIsCustomClass[client] = false;
-	bSetCustomClass[client] = false;
-	hClassIndex[client] = INVALID_HANDLE;
-	iClassIndex[client] = -1;
+	for (int i = 0; i < 6; i++)
+	{
+		Structures[client][i] = null;
+	}
 }
 public void OnClientDisconnect(int client)
 {
-	bIsCustomClass[client] = false;
-	bSetCustomClass[client] = false;
-	hClassIndex[client] = INVALID_HANDLE;
-	iClassIndex[client] = -1;
-}
-public Action TF2_OnPlayerTeleport(int client, int teleporter, bool &result)
-{
-	if (bIsCustomClass[client])
+	for (int i = 0; i < 6; i++)
 	{
-		Function FuncClassTele = GetFunctionByName(hClassIndex[client], "CCM_OnClassTeleport");
-		if (FuncClassTele != INVALID_FUNCTION)
+		if ( Structures[client][i] != null && Structures[client][i].IsValid )
 		{
-			int endresult;
-			Call_StartFunction(hClassIndex[client], FuncClassTele);
-			Call_PushCell(client);
-			Call_PushCell(teleporter);
-			Call_PushCellRef(result);
-			Call_Finish(endresult);
-			return Action:endresult;
+			CreateTimer( 0.1, RemoveEnt, Structures[client][i].Ref );
+			Structures[client][i] = null;
 		}
-		else return Action:0;
 	}
-	return Action:0;
 }
 public void OnMapStart()
 {
-	Call_StartForward(OnAddToDownloads);
-	Call_Finish();
-}
-public Action Resupply(Handle hEvent, const char[] name, bool dontBroadcast)
-{
-	if (!GetConVarBool(bEnabled)) return Action:0;
-	int client = GetClientOfUserId(GetEventInt(hEvent, "userid"));
-	if (client && IsClientInGame(client))
+	char extensions[][] = { ".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd", ".phy" };
+	char extensionsb[][] = { ".vtf", ".vmt" };
+	char s[PLATFORM_MAX_PATH];
+	int i;
+	for (i = 0; i < sizeof(extensions); i++)
 	{
-		if (bIsCustomClass[client])
-		{
-			Function FuncClassResupply = GetFunctionByName(hClassIndex[client], "CCM_OnClassResupply");
-			if (FuncClassResupply != INVALID_FUNCTION)
-			{
-				Call_StartFunction(hClassIndex[client], FuncClassResupply);
-				Call_PushCell(client);
-				Call_Finish();
-			}
-			CreateTimer(0.1, TimerEquipClass, GetClientUserId(client));
-		}
+		Format(s, PLATFORM_MAX_PATH, "models/mrmof/sandbags01%s", extensions[i]);
+		Format(s, PLATFORM_MAX_PATH, "models/bunker/shelter%s", extensions[i]);
+		CheckDownload(s);
 	}
-	return Action:0;
-}
-public Action PlayerSpawn(Handle event, const char[] name, bool dontBroadcast)
-{
-	if (!GetConVarBool(bEnabled)) return Action:0;
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	if ( client && IsClientInGame(client) )
+	for (i = 0; i < sizeof(extensionsb); i++)
 	{
-		SetVariantString("");
-		AcceptEntityInput(client, "SetCustomModel");
-		if ( (!GetConVarBool(AllowBlu) && (GetClientTeam(client) == 3)) || (!GetConVarBool(AllowRed) && (GetClientTeam(client) == 2)) )
-		{
-			bSetCustomClass[client] = false; //block the blocked teams from being able to become custom classes
-		}
-		bIsCustomClass[client] = (bSetCustomClass[client] ? true : false); //get class set
-		if (bIsCustomClass[client]) MakeClass(GetClientUserId(client));
+		Format(s, PLATFORM_MAX_PATH, "materials/models/mrmof/sandbags01%s", extensionsb[i]);
+		CheckDownload(s);
+		Format(s, PLATFORM_MAX_PATH, "materials/models/mrmof/sandbags01_normal%s", extensionsb[i]);
+		CheckDownload(s);
 	}
-	return Action:0;
 }
-public Action MakeClass(int userid) //set class attributes here like Think timers.
+stock CBaseAnimating CreateStructure(CTFPlayer pPlayer, char[] szModel, float flOrigin[3], float flAngles[3] = NULL_VECTOR)
 {
-	int client = GetClientOfUserId(userid);
-	if ( client && IsClientInGame(client) )
+	CBaseAnimating pNewStruct = view_as<CBaseAnimating>( CBaseEntity.CreateByName("prop_dynamic_override") );
+	if ( pNewStruct != null && pNewStruct.IsValid )
 	{
-		CreateTimer(0.2, MakeModelTimer, userid);
-		//CreateTimer(0.0, TimerClassThink, userid, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-		CreateTimer(0.1, TimerEquipClass, userid);
-		CreateTimer(10.0, MakeModelTimer, userid, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+		PrecacheModel(szModel, true);
+		//pNewStruct.OwnerEntity = pPlayer;
+		pNewStruct.SolidType = SOLID_VPHYSICS;
+		pNewStruct.SetModel(szModel);
+		int iTeam = view_as<int>( pPlayer.Team );
+		pNewStruct.Team = iTeam;
+		//pNewStruct.Health = 500;
+		pNewStruct.Spawn();
 
-		Function FuncInitTimer = GetFunctionByName(hClassIndex[client], "CCM_OnMakeClass");
-		if (FuncInitTimer != INVALID_FUNCTION)
-		{
-			int result;
-			Call_StartFunction(hClassIndex[client], FuncInitTimer);
-			Call_PushCell(client);
-			Call_Finish(result);
-			return Action:result;
-		}
+		pNewStruct.SetProp(Prop_Data, "m_takedamage", 2);
+		pNewStruct.SetProp(Prop_Data, "m_iHealth", 500);
+		//DispatchKeyValue(resupplier, "targetname", "portable_resupply");
+		//CreateTimer(0.1, MyDearWatson, pResupply.Ref, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+		pNewStruct.Teleport(flOrigin, flAngles, NULL_VECTOR);
+		return pNewStruct;
 	}
-	return Action:0;
+	return null;
 }
-public Action TimerEquipClass(Handle timer, any userid)
+public Action CommandBuildings(int client, int args)
 {
-	int client = GetClientOfUserId(userid);
-	if (client && IsClientInGame(client) && IsPlayerAlive(client))
-	{
-		if (!bIsCustomClass[client]) return Action:0;
-		TF2_RemoveAllWeapons2(client);
+	if (!bEnabled.BoolValue) return Plugin_Handled;
 
-		Function FuncEquip = GetFunctionByName(hClassIndex[client], "CCM_OnClassEquip");
-		if (FuncEquip != INVALID_FUNCTION)
-		{
-			Call_StartFunction(hClassIndex[client], FuncEquip);
-			Call_PushCell(client);
-			Call_Finish();
-		}
-	}
-	return Action:0;
-}
-public Action Deflected(Handle event, const char[] name, bool dontBroadcast)
-{
-	if (!GetConVarBool(bEnabled) || GetEventInt(event, "weaponid")) return Action:0;
-	int airblaster = GetClientOfUserId(GetEventInt(event, "userid"));
-	int client = GetClientOfUserId(GetEventInt(event, "ownerid"));
-	if ( bIsCustomClass[client] )
-	{
-		Function FuncAirblasted = GetFunctionByName(hClassIndex[client], "CCM_OnClassAirblasted");
-		if (FuncAirblasted != INVALID_FUNCTION)
-		{
-			Call_StartFunction(hClassIndex[client], FuncAirblasted);
-			Call_PushCell(client);
-			Call_PushCell(airblaster);
-			Call_Finish();
-		}
-	}
-	else if ( bIsCustomClass[airblaster] ) 
-	{
-		Function FuncAirblastee = GetFunctionByName(hClassIndex[airblaster], "CCM_OnClassDoAirblast");
-		if (FuncAirblastee != INVALID_FUNCTION)
-		{
-			Call_StartFunction(hClassIndex[airblaster], FuncAirblastee);
-			Call_PushCell(airblaster);
-			Call_PushCell(client);
-			Call_Finish();
-		}
-	}
-	return Action:0;
-}
-public Action Destroyed(Handle event, const char[] name, bool dontBroadcast)
-{
-	if (!GetConVarBool(bEnabled)) return Action:0;
-	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
-	int building = GetEventInt(event, "index");
-	if ( bIsCustomClass[attacker] )
-	{
-		Function FuncKillToys = GetFunctionByName(hClassIndex[attacker], "CCM_OnClassKillBuilding");
-		if (FuncKillToys != INVALID_FUNCTION)
-		{
-			Call_StartFunction(hClassIndex[attacker], FuncKillToys);
-			Call_PushCell(attacker);
-			Call_PushCell(building);
-			Call_Finish();
-		}
-	}
-	return Action:0;
-}
-public Action ChangeClass(Handle event, const char[] name, bool dontBroadcast)
-{
-	if (!GetConVarBool(bEnabled)) return Action:0;
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	if (client && IsClientInGame(client))
-	{
-		if ( (!GetConVarBool(AllowBlu) && GetClientTeam(client) == 3) || (!GetConVarBool(AllowRed) && GetClientTeam(client) == 2) )
-			return Action:0;
+	CTFPlayer pCreator = new CTFPlayer(client);
+	if ( !pCreator ) return Plugin_Handled;
+	if ( !pCreator.IsAlive ) { PrintToChat(pCreator.Index, "You need to be alive to build"); return Plugin_Handled; }
 
-		if (bIsCustomClass[client])
-		{
-			Function FuncChangeClass = GetFunctionByName(hClassIndex[client], "CCM_OnClassChangeClass");
-			if (FuncChangeClass != INVALID_FUNCTION)
-			{
-				Call_StartFunction(hClassIndex[client], FuncChangeClass);
-				Call_PushCell(client);
-				Call_Finish();
-			}
-		}
-		else
-		{
-			if (bSetCustomClass[client]) bIsCustomClass[client] = true;
-		}
-	}
-	return Action:0;
-}
-public Action PlayerDeath(Handle event, const char[] name, bool dontBroadcast)
-{
-	if (!GetConVarBool(bEnabled)) return Action:0;
-	int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
-	int deathflags = GetEventInt(event, "death_flags");
+	int team = view_as<int>(pCreator.Team);
+	if ( (!AllowBlu.BoolValue && (team == 3)) || (!AllowRed.BoolValue && (team == 2)) )
+		return Plugin_Handled;
 
-	if (bIsCustomClass[attacker])
-	{
-		Function FuncClassKill = GetFunctionByName(hClassIndex[attacker], "CCM_OnClassKill");
-		if (FuncClassKill != INVALID_FUNCTION)
-		{
-			Call_StartFunction(hClassIndex[attacker], FuncClassKill);
-			Call_PushCell(attacker);
-			Call_PushCell(client);
-			Call_Finish();
-		}
-		if (deathflags & (TF_DEATHFLAG_KILLERDOMINATION|TF_DEATHFLAG_ASSISTERDOMINATION))
-		{
-			Function FuncClassKillDom = GetFunctionByName(hClassIndex[attacker], "CCM_OnClassKillDomination");
-			if (FuncClassKillDom != INVALID_FUNCTION)
-			{
-				Call_StartFunction(hClassIndex[attacker], FuncClassKillDom);
-				Call_PushCell(attacker);
-				Call_PushCell(client);
-				Call_Finish();
-			}
-		}
-		else if ((deathflags & (TF_DEATHFLAG_KILLERREVENGE|TF_DEATHFLAG_ASSISTERREVENGE)))
-		{
-			Function FuncClassKillRev = GetFunctionByName(hClassIndex[attacker], "CCM_OnClassKillRevenge");
-			if (FuncClassKillRev != INVALID_FUNCTION)
-			{
-				Call_StartFunction(hClassIndex[attacker], FuncClassKillRev);
-				Call_PushCell(attacker);
-				Call_PushCell(client);
-				Call_Finish();
-			}
-		}
-	}
-	else if (bIsCustomClass[client])
-	{
-		Function FuncClassKilled = GetFunctionByName(hClassIndex[client], "CCM_OnClassKilled");
-		if (FuncClassKilled != INVALID_FUNCTION)
-		{
-			Call_StartFunction(hClassIndex[client], FuncClassKilled);
-			Call_PushCell(client);
-			Call_PushCell(attacker);
-			Call_Finish();
-		}
-	}
-	return Action:0;
+	Menu pStructs = new Menu(MenuHandlerStructures);
+	pStructs.SetTitle("[Structs] Main Menu");
+	pStructs.AddItem("tier1", "Build Defensive Structure");
+	//pStructs.AddItem("tier2", "Build Base Structure");
+	//pStructs.AddItem("tier3", "Rotate a Structure");
+	pStructs.AddItem("tier4", "Destroy a Structure");
+	pStructs.AddItem("tier4", "Destroy All Built Structures");
+	pStructs.Display(client, MENU_TIME_FOREVER);
+	return Plugin_Handled;
 }
-public Action PlayerHurt(Handle event, const char[] name, bool dontBroadcast) //does this even need to be used?
+public int MenuHandlerStructures(Menu menu, MenuAction action, int client, int selection)
 {
-	if (!GetConVarBool(bEnabled)) return Action:0;
-	//int client = GetClientOfUserId(GetEventInt(event, "userid"));
-	//int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
-	//int damage = GetEventInt(event, "damageamount");
-	return Action:0;
-}
-public Action ChargeDeployed(Handle event, const char[] name, bool dontBroadcast)
-{
-	if (!GetConVarBool(bEnabled)) return Action:0;
-	int medic = GetClientOfUserId(GetEventInt(event, "userid"));
-	int ubered = GetClientOfUserId(GetEventInt(event, "targetid"));
-	if (bIsCustomClass[ubered])
-	{
-		Function FuncClassUbered = GetFunctionByName(hClassIndex[ubered], "CCM_OnClassUbered");
-		if (FuncClassUbered != INVALID_FUNCTION)
-		{
-			Call_StartFunction(hClassIndex[ubered], FuncClassUbered);
-			Call_PushCell(ubered);
-			Call_PushCell(medic);
-			Call_Finish();
-		}
-	}
-	else if (bIsCustomClass[medic])
-	{
-		Function FuncClassDidUber = GetFunctionByName(hClassIndex[medic], "CCM_OnClassDeployUber");
-		if (FuncClassDidUber != INVALID_FUNCTION)
-		{
-			Call_StartFunction(hClassIndex[medic], FuncClassDidUber);
-			Call_PushCell(medic);
-			Call_PushCell(ubered);
-			Call_Finish();
-		}
-	}
-	return Action:0;
-}
-public Action RoundStart(Handle event, const char[] name, bool dontBroadcast)
-{
-	if (!GetConVarBool(bEnabled)) return Action:0;
-	for (int client = 1; client <= MaxClients; client++)
-	{
-		if ( IsValidClient(client, false) && bIsCustomClass[client] )
-		{
-			CreateTimer(10.0, TimerEquipClass, GetClientUserId(client));
-		}
-	}
-	return Action:0;
-}
-public Action MakeModelTimer(Handle hTimer, any userid)
-{
-	int client = GetClientOfUserId(userid);
-	if (client <= 0) return Action:4;
-	if (client && IsClientInGame(client) && IsPlayerAlive(client))
-	{
-		if (bIsCustomClass[client])
-		{
-			Function FuncModelTimer = GetFunctionByName(hClassIndex[client], "CCM_OnModelTimer");
-			if (FuncModelTimer != INVALID_FUNCTION)
-			{
-				int result;
-				Call_StartFunction(hClassIndex[client], FuncModelTimer);
-				Call_PushCell(client);
-				char model[64];
-				Call_PushStringEx(model, sizeof(model), 0, SM_PARAM_COPYBACK);
-				Call_Finish(result);
-
-				SetVariantString(model);
-				AcceptEntityInput(client, "SetCustomModel");
-				SetEntProp(client, Prop_Send, "m_bUseClassAnimations", 1);
-				return Action:result;
-			}
-			else LogError("**** CCM Error: Cannot find 'CCM_OnModelTimer' Function ****");
-			//SetEntPropFloat(client, Prop_Send, "m_flModelScale", 1.25);
-		}
-		else
-		{
-			SetVariantString("");
-			AcceptEntityInput(client, "SetCustomModel");
-			return Action:4;
-		}
-	}
-	return Action:0;
-}
-public Action MakeClassMenu(int client, int args)
-{
-	if (GetConVarBool(bEnabled) && IsClientInGame(client))
-	{
-		char classnameholder[32];
-		Menu classpick = Menu(MenuHandler_PickClass);
-		//Handle MainMenu = CreateMenu(MenuHandler_Perks);
-		classpick.SetTitle("[Custom Class Maker] Choose A Custom Class");
-		int count = GetArraySize(hArrayClass);
-		for (int i = 0; i < count; i++)
-		{
-			GetTrieString(GetArrayCell(hArrayClass, i), "ClassName", classnameholder, sizeof(classnameholder));
-			classpick.AddItem("pickclass", classnameholder);
-		}
-		classpick.Display(client, MENU_TIME_FOREVER);
-	}
-	return Action:0;
-}
-public int MenuHandler_PickClass(Menu menu, MenuAction action, int client, int selection)
-{  
-	char blahblah[32];
-	menu.GetItem(selection, blahblah, sizeof(blahblah));
+	char info[32];
+	menu.GetItem( selection, info, sizeof(info) );
 	if (action == MenuAction_Select)
         {
-		hClassIndex[client] = GetClassSubPlugin(GetArrayCell(hArrayClass, selection));
-		char classnameholder[32];
-		GetTrieString(GetArrayCell(hArrayClass, selection), "ClassName", classnameholder, sizeof(classnameholder));
-		ReplyToCommand(client, "[CCM] You selected %s as your class!", classnameholder);
-		iClassIndex[client] = selection;
-
-		Function FuncPickClass = GetFunctionByName(hClassIndex[client], "CCM_OnClassSelected");
-		if (FuncPickClass != INVALID_FUNCTION)
+		switch (selection)
 		{
-			Call_StartFunction(hClassIndex[client], FuncPickClass);
-			Call_PushCell(client);
-			Call_Finish();
+			case 0: DefensiveMenu(client);
+			case 1: DestroyMenu(client);
+			case 2:
+			{
+				for (int i = 0; i < 6; i++)
+				{
+					if ( Structures[client][i] != null && Structures[client][i].IsValid )
+					{
+						CreateTimer( 0.1, RemoveEnt, Structures[client][i].Ref );
+						Structures[client][i] = null;
+					}
+				}
+				CommandBuildings(client, -1);
+			}
 		}
-		bSetCustomClass[client] = true;
         }
 	else if (action == MenuAction_End) delete menu;	
 }
-public Action MakeNotClass(int client, int args)
+public void DestroyMenu(int client)
 {
-	if (GetConVarBool(bEnabled))
-	{
-		bSetCustomClass[client] = false;
-		char classnameholder[32];
-		Handle holderhndl = GetArrayCell(hArrayClass, iClassIndex[client]);
-		GetTrieString(holderhndl, "ClassName", classnameholder, sizeof(classnameholder));
-		ReplyToCommand(client, "You will no longer be the %s class next time you respawn", classnameholder);
-
-		Function FuncOffClass = GetFunctionByName(hClassIndex[client], "CCM_OnClassDeselected");
-		if (FuncOffClass != INVALID_FUNCTION)
-		{
-			Call_StartFunction(hClassIndex[client], FuncOffClass); //get the func off :)
-			Call_PushCell(client);
-			Call_Finish();
-		}
-	}
-	return Action:0;
+	Menu pStructs = new Menu(MenuHandlerDestroyStructures);
+	pStructs.SetTitle("[Structs] Destroy a Structure");
+	pStructs.AddItem("tier1", "Small Bridge");
+	pStructs.AddItem("tier1", "Sandbag Wall");
+	pStructs.Display(client, MENU_TIME_FOREVER);
 }
-/*public void ClassInitialize(int userid, int ClassID)
+public int MenuHandlerDestroyStructures(Menu menu, MenuAction action, int client, int selection)
 {
-	if (!GetConVarBool(bEnabled)) return;
-	int client = GetClientOfUserId(userid);
-	if ( client <= 0 ) return;
-	int iTeam = GetClientTeam(client);
-	if ( (!GetConVarBool(AllowBlu) && (iTeam == 3)) || (!GetConVarBool(AllowRed) && (iTeam == 2)) )
-	{
-		switch (iTeam)
+	char info[32];
+	menu.GetItem(selection, info, sizeof(info));
+	if (action == MenuAction_Select)
+        {
+		if ( Structures[client][selection] != null && Structures[client][selection].IsValid )
 		{
-			case 2: ReplyToCommand(client, "RED players are not allowed to play this Class");
-			case 3: ReplyToCommand(client, "BLU players are not allowed to play this Class");
+			CreateTimer( 0.1, RemoveEnt, Structures[client][selection].Ref );
+			Structures[client][selection] = null;
 		}
-		return;
-	}
-	int ClassLimit, iCount = 0;
-	switch (iTeam)
+		else Structures[client][selection] = null;
+		CommandBuildings(client, -1);
+        }
+	else if (action == MenuAction_End) delete menu;	
+}
+public void DefensiveMenu(int client)
+{
+	Menu pStructs = new Menu(MenuHandlerDefensiveStructures);
+	pStructs.SetTitle("[Structs] Defensive Structures");
+	pStructs.AddItem("tier1", "Small Bridge");
+	pStructs.AddItem("tier1", "Sandbag Wall");
+	pStructs.Display(client, MENU_TIME_FOREVER);
+}
+public int MenuHandlerDefensiveStructures(Menu menu, MenuAction action, int client, int selection)
+{
+	char info[32];
+	menu.GetItem(selection, info, sizeof(info));
+	if (action == MenuAction_Select)
+        {
+		GetBuilding(client, selection);
+		CommandBuildings(client, -1);
+        }
+	else if (action == MenuAction_End) delete menu;	
+}
+public void GetBuilding(int client, int type)
+{
+	CTFPlayer pCreator = new CTFPlayer(client);
+	if ( pCreator != null && pCreator.IsAlive )
 	{
-		case 0, 1: ClassLimit = -2;
-		case 2: ClassLimit = GetConVarInt(RedLimit);
-		case 3: ClassLimit = GetConVarInt(BluLimit);
-	}
-	if (ClassLimit == -1)
-	{
-		bSetCustomClass[client] = true;
-		ReplyToCommand(client, "You will be the Class the next time you respawn/touch a resupply locker");
-		return;
-	}
-	else if (ClassLimit == 0)
-	{
-		if (IsImmune(client))
+		float flEyePos[3], flAng[3];
+		pCreator.GetEyePosition(flEyePos);
+		pCreator.GetEyeAngles(flAng);
+		int iClient = pCreator.Index;
+
+		TR_TraceRayFilter(flEyePos, flAng, MASK_PLAYERSOLID_BRUSHONLY, RayType_Infinite, TraceFilterIgnorePlayers, iClient);
+		//float StructAng[3]; TR_GetPlaneNormal(StructAng);
+		if ( TR_GetFraction() < 1.0 )
 		{
-			bSetCustomClass[client] = true;
-			ReplyToCommand(client, "You will be the Class the next time you respawn/touch a resupply locker");
+			float flEndPos[3]; TR_GetEndPosition(flEndPos);
+			float mins[3], maxs[3];
+
+			switch (type)
+			{
+				case Bridge:
+				{
+					flEndPos[2] += 10.0;
+					mins[0] = -48.25, mins[1] = -220.0, mins[2] = -21.0;
+					maxs[0] = 52.02, maxs[1] = 252.0, maxs[2] = 8.0;
+					//mins[0] = 0.0, mins[1] = 0.0, mins[2] = 0.0;
+					//maxs[0] = 100.27, maxs[1] = 472.0, maxs[2] = 29.0;
+				}
+				case Sandbags:
+				{
+					flEndPos[2] += 2.0;
+					//mins[0] = 0.0, mins[1] = 0.0, mins[2] = 0.0;
+					//maxs[0] = 100.27, maxs[1] = 472.0, maxs[2] = 29.0;
+					mins[0] = 0.0, mins[1] = 0.0, mins[2] = 0.0;
+					maxs[0] = 192.1, maxs[1] = 29.0, maxs[2] = 50.0;
+				}
+			}
+			if ( CanBuildHere(flEndPos, mins, maxs) )
+			{
+				CBaseAnimating pStruct;
+				pCreator.GetAbsAngles(flAng);
+				switch (type)
+				{
+					case Bridge:
+					{
+						flAng[1] += 90.0;
+						pStruct = CreateStructure(pCreator, "models/props_forest/sawmill_bridge.mdl", flEndPos, flAng);
+					}
+					case Sandbags:
+					{
+						flAng[1] += 90.0;
+						pStruct = CreateStructure(pCreator, "models/mrmof/sandbags01.mdl", flEndPos, flAng);
+					}
+				}
+				if ( pStruct != null && pStruct.IsValid )
+				{
+					if (Structures[iClient][type] != null)
+					{
+						CreateTimer( 0.1, RemoveEnt, Structures[client][type].Ref );
+						Structures[iClient][type] = null;
+					}
+					Structures[iClient][type] = pStruct;
+					PrintStructureSize(pCreator, pStruct);
+				}
+			}
+			else PrintToChat(iClient, "Can't build structure there");
 		}
-		else ReplyToCommand(client, "**** That Custom Class is Blocked for your Team ****");
-		return;
-	}
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		if (IsValidClient(i))
-		{	
-			if ( (GetClientTeam(i) < 2) && bSetCustomClass[i] ) //remove players who played as custom then went spec
-				bSetCustomClass[i] = false;
-			if ( ( (!GetConVarBool(AllowBlu) && GetClientTeam(i) == 3) || (!GetConVarBool(AllowRed) && GetClientTeam(i) == 2) ) && bSetCustomClass[i] ) //remove players who were forced to switch teams while dead
-				bSetCustomClass[i] = false;
-			if (GetClientTeam(i) == iTeam && bSetCustomClass[i] && i != client) //get amount of customs on team
-				iCount++;
-		}
-	}
-	if (iCount < ClassLimit)
-	{
-		bSetCustomClass[client] = true;
-		ReplyToCommand(client, "You will be the Class the next time you respawn/touch a resupply locker");
-	}
-	else if (iCount >= ClassLimit)
-	{
-		if ( IsImmune(client) )
-		{
-			bSetCustomClass[client] = true;
-			ReplyToCommand(client, "You will be the Class the next time you respawn/touch a resupply locker");
-		}
-		else ReplyToCommand(client, "**** Custom Class Limit is Reached ****");
 	}
 	return;
-} MAKE YOUR OWN DAMN CLASS LIMITS*/
-public bool IsImmune(int iClient)
-{
-	if (!IsValidClient(iClient, false)) return false;
-	char sFlags[32];
-	GetConVarString(AdminFlagByPass, sFlags, sizeof(sFlags));
-	// If flags are specified and client has generic or root flag, client is immune
-	return ( !StrEqual(sFlags, "") && GetUserFlagBits(iClient) & (ReadFlagString(sFlags)|ADMFLAG_ROOT) );
 }
-public Action CmdReloadCFG(int client, int iAction)
-{
-	ServerCommand("sm_rcon exec sourcemod/CustomClassMaker.cfg");
-	ReplyToCommand(client, "**** Reloading CustomClassMaker Config ****");
-	return Action:3;
-}
-public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
-{
-	// F O R W A R D S ==============================================================================================
-	OnAddToDownloads = CreateGlobalForward("CCM_OnAddToDownloads", ET_Ignore);
-	//===========================================================================================================================
 
-	// N A T I V E S ============================================================================================================
-	CreateNative("CCM_RegisterClass", Native_RegisterClassSubplugin);
-	//===========================================================================================================================
-
-	RegPluginLibrary("ccm");
-#if defined _steamtools_included
-	MarkNativeAsOptional("Steam_SetGameDescription");
-#endif
-	return APLRes_Success;
-}
-public int Native_RegisterClassSubplugin(Handle plugin, int numParams)
+//stocks
+stock void PrintStructureSize(CTFPlayer pOwner, CBaseEntity pEnt)
 {
-	char ClassSubPluginName[32];
-	GetNativeString(1, ClassSubPluginName, sizeof(ClassSubPluginName));
-	CCMError erroar;
-	Handle ClassHandle = RegisterClass(plugin, ClassSubPluginName, erroar); //ALL PROPS TO COOKIES.NET AKA COOKIES.IO
-	return _:ClassHandle;
+	if ( !pEnt || !pEnt.IsValid ) return;
+	else if ( !pOwner || !pOwner.IsValid ) return;
+
+	float mins[3], maxs[3];
+
+	pEnt.GetPropVector(Prop_Send, "m_vecMins", mins );
+	pEnt.GetPropVector(Prop_Send, "m_vecMaxs", maxs );
+	PrintToConsole(pOwner.Index, "Bridge Vec Mins %f x, %f y, %f z", mins[0], mins[1], mins[2]);
+	PrintToConsole(pOwner.Index, "Bridge Vec Maxs %f x, %f y, %f z", maxs[0], maxs[1], maxs[2]);
 }
+stock bool IsInRange( CBaseEntity pEnt, CBaseEntity pTarget, float dist, bool bTrace )
+{
+	float entitypos[3]; pEnt.GetAbsOrigin( entitypos );
+	float targetpos[3]; pTarget.GetAbsOrigin( targetpos );
+
+	if ( GetVectorDistance(entitypos, targetpos) <= dist )
+	{
+		if (!bTrace) return true;
+		else {
+			TR_TraceRayFilter( entitypos, targetpos, MASK_SHOT, RayType_EndPoint, TraceRayDontHitSelf, pEnt.Index );
+			if ( TR_GetFraction() > 0.98 ) return true;
+			//I have no fucking clue how but above code works more accurately than the commented...
+			//if ( TR_DidHit() && TR_GetEntityIndex() == target ) return true;
+		}
+	}
+	return false;
+}
+public bool TraceRayDontHitSelf(int entity, int contentsMask, any data)
+{
+	return ( entity != data );
+}
+stock bool CanBuildHere(float flPos[3], float flMins[3], float flMaxs[3])
+{
+	TR_TraceHull(flPos, flPos, flMins, flMaxs, MASK_PLAYERSOLID);
+
+	int beamcolor[4];
+	beamcolor[0] = 0, beamcolor[1] = 255, beamcolor[2] = 90, beamcolor[3] = 255;
+	int lasermodel = PrecacheModel("sprites/laser.vmt", true);
+
+	float vecMins[3]; vecMins = flPos; SubtractVectors(vecMins, flMins, vecMins);
+	TE_SetupBeamPoints( flPos, vecMins, lasermodel, lasermodel, 1, 1, 5.0, 8.0, 8.0, 5, 2.0, beamcolor, 0 );
+	TE_SendToAll();
+
+	float vecMaxs[3]; vecMaxs = flPos; AddVectors(vecMaxs, flMins, vecMaxs);
+	TE_SetupBeamPoints( flPos, vecMaxs, lasermodel, lasermodel, 1, 1, 5.0, 8.0, 8.0, 5, 2.0, beamcolor, 0 );
+	TE_SendToAll();
+
+	return ( TR_GetFraction() > 0.98 );
+}
+public bool TraceFilterIgnorePlayers(int entity, int contentsMask, any client)
+{
+	return ( !(entity > 0 && entity <= MaxClients) );
+}
+public Action RemoveEnt(Handle timer, any entid)
+{
+	CBaseEntity pEnt = new CBaseEntity( EntRefToEntIndex(entid) );
+	if ( pEnt != null && pEnt.IsValid ) pEnt.AcceptInput("Kill");
+	return Plugin_Continue;
+}
+stock void CheckDownload(char[] dlpath)
+{
+	if ( FileExists(dlpath) ) AddFileToDownloadsTable(dlpath);
+}
+stock float Vector2DLength( const float vec[2] )
+{
+	return SquareRoot(vec[0]*vec[0] + vec[1]*vec[1]);		
+}
+stock float fMax(float a, float b) { return (a > b) ? a : b; }
+stock float fMin(float a, float b) { return (a < b) ? a : b; }
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+							Legacy testing code
+*/
+
+/*public Action MyDearWatson(Handle timer, any entid)
+{
+	CBaseAnimating pEnt = new CBaseAnimating( EntRefToEntIndex(entid) );
+	if ( !pEnt || !pEnt.IsValid ) return Plugin_Stop;
+
+	CTFPlayer player;
+	for (int i = 1; i <= MaxClients; ++i)
+	{
+		if ( (player = new CTFPlayer(i)) == null ) continue;
+		if ( !IsValidClient(player) ) continue;
+
+		if ( (!AllowBlu.BoolValue && player.Team == TFTeam_Blue) || (!AllowRed.BoolValue && player.Team == TFTeam_Red) )
+			continue;
+
+		if ( IsInRange(player, pEnt, 100.0, false) && flTimer[player.Index] <= GetGameTime() )
+		{
+			SetVariantString("open");
+			pEnt.AcceptInput("SetAnimation");
+			ResupplyPlayer(player.UserID);
+		}
+		else
+		{
+			SetVariantString("close");
+			pEnt.AcceptInput("SetAnimation");
+		}
+	}
+	return Plugin_Continue;
+}
+public void ResupplyPlayer(int userid)
+{
+	CTFPlayer pUser = view_as<CTFPlayer>( Player_FromUserId(userid) );
+	if ( IsValidClient(pUser) && pUser.IsAlive )
+	{
+		float cooldown = Cooldown.FloatValue;
+
+		if (!ArenaMode.BoolValue) pUser.Regenerate();
+		else
+		{
+			pUser.Health = pUser.GetProp(Prop_Data, "m_iMaxHealth");
+		}
+
+		EmitSoundToClient(pUser.Index, "items/regenerate.wav");
+		if (bAllOrNone.BoolValue)
+		{
+			CTFPlayer player;
+			for (int i = 1; i <= MaxClients; i++)
+			{
+				if ( (player = new CTFPlayer(i)) == null ) continue;
+				if ( !IsValidClient(player) ) continue;
+
+				if (player.Team == pUser.Team) {
+					flTimer[player.Index] = GetGameTime()+cooldown;
+				}
+			}
+		}
+		else flTimer[pUser.Index] = GetGameTime()+cooldown;
+	}
+	return;
+}
+
+public Action CreatePortableResupply(int client, int args)
+{
+	if (bEnabled.BoolValue)
+	{
+		CTFPlayer pCreator = new CTFPlayer(client);
+		if ( !pCreator || !pCreator.IsAlive ) return Plugin_Continue;
+
+		int team = view_as<int>(pCreator.Team);
+		if ( (!AllowBlu.BoolValue && (team == 3)) || (!AllowRed.BoolValue && (team == 2)) )
+			return Plugin_Continue;
+
+		if (iResuppliesBuilt[team-2] <= 0)
+		{
+			float flPos[3], flAng[3];
+			pCreator.GetEyePosition(flPos);
+			pCreator.GetEyeAngles(flAng);
+
+			TR_TraceRayFilter(flPos, flAng, MASK_SHOT, RayType_Infinite, TraceFilterIgnorePlayers, pCreator.Index);
+			if ( TR_DidHit() )
+			{
+				float flEndPos[3]; TR_GetEndPosition(flEndPos);
+				flEndPos[2] += 5.0;
+
+				float mins[3] = {-24.0, -24.0, 0.0};
+				float maxs[3] = {24.0, 24.0, 55.0};
+
+				if ( CanBuildHere(flEndPos, mins, maxs) )
+				{
+					pCreator.GetAbsAngles(flAng);
+					CBaseAnimating pResupply = CreateResupply(pCreator, flEndPos, flAng);
+
+					switch (pCreator.Team)
+					{
+						case TFTeam_Red: pRedSupply = pResupply;
+						case TFTeam_Blue: pBluSupply = pResupply;
+					}
+					//CreateTimer(0.1, MyDearWatson, pResupply.Ref, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+					PrintToConsole(pCreator.Index, "built resupply");
+				}
+				else PrintToChat(pCreator.Index, "Can't build Resupply there");
+			}
+		}
+		else
+		{
+			CBaseAnimating pEnt = null;
+			switch (pCreator.Team)
+			{
+				case TFTeam_Red:	pEnt = pRedSupply;
+				case TFTeam_Blue:	pEnt = pBluSupply;
+			}
+			PrintToConsole(pCreator.Index, "got ent");
+
+			if ( pEnt != null && pEnt.IsValid ) CreateTimer( 0.1, RemoveEnt, pEnt.Ref );
+			else PrintToConsole(pCreator.Index, "entity wasn't valid, resetting");
+
+			iResuppliesBuilt[team-2]--;
+			CreatePortableResupply(pCreator.Index, -1);
+		}
+	}
+	return Plugin_Handled;
+}*/
