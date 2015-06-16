@@ -42,8 +42,7 @@ enum //Structures
 	AmmoStation
 }
 /*
-methodmap CBaseStructure < CBaseAnimating
-{
+methodmap CBaseStructure < CBaseAnimating {
 	public CBaseStructure( int entIndex )
 	{
 		return view_as<CBaseStructure>( new CBaseAnimating( entIndex ) );
@@ -112,36 +111,13 @@ public void OnMapStart()
 		CheckDownload(s);
 	}
 }
-stock CBaseAnimating CreateStructure(CTFPlayer pPlayer, char[] szModel, float flOrigin[3], float flAngles[3] = NULL_VECTOR)
-{
-	CBaseAnimating pNewStruct = view_as<CBaseAnimating>( CBaseEntity.CreateByName("prop_dynamic_override") );
-	if ( pNewStruct != null && pNewStruct.IsValid )
-	{
-		PrecacheModel(szModel, true);
-		//pNewStruct.OwnerEntity = pPlayer;
-		pNewStruct.SolidType = SOLID_VPHYSICS;
-		pNewStruct.SetModel(szModel);
-		int iTeam = view_as<int>( pPlayer.Team );
-		pNewStruct.Team = iTeam;
-		//pNewStruct.Health = 500;
-		pNewStruct.Spawn();
-
-		pNewStruct.SetProp(Prop_Data, "m_takedamage", 2);
-		pNewStruct.SetProp(Prop_Data, "m_iHealth", 500);
-		//DispatchKeyValue(resupplier, "targetname", "portable_resupply");
-		//CreateTimer(0.1, MyDearWatson, pResupply.Ref, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-		pNewStruct.Teleport(flOrigin, flAngles, NULL_VECTOR);
-		return pNewStruct;
-	}
-	return null;
-}
 public Action CommandBuildings(int client, int args)
 {
 	if (!bEnabled.BoolValue) return Plugin_Handled;
 
 	CTFPlayer pCreator = new CTFPlayer(client);
 	if ( !pCreator ) return Plugin_Handled;
-	if ( !pCreator.IsAlive ) { PrintToChat(pCreator.Index, "You need to be alive to build"); return Plugin_Handled; }
+	else if ( !pCreator.IsAlive ) { PrintToChat(pCreator.Index, "You need to be alive to build"); return Plugin_Handled; }
 
 	int team = view_as<int>(pCreator.Team);
 	if ( (!AllowBlu.BoolValue && (team == 3)) || (!AllowRed.BoolValue && (team == 2)) )
@@ -231,52 +207,77 @@ public void GetBuilding(int client, int type)
 	CTFPlayer pCreator = new CTFPlayer(client);
 	if ( pCreator != null && pCreator.IsAlive )
 	{
+		char szModelPath[64];
+		int iClient = pCreator.Index;
+		CBaseAnimating pStruct;
+
 		float flEyePos[3], flAng[3];
 		pCreator.GetEyePosition(flEyePos);
 		pCreator.GetEyeAngles(flAng);
-		int iClient = pCreator.Index;
 
-		TR_TraceRayFilter(flEyePos, flAng, MASK_PLAYERSOLID_BRUSHONLY, RayType_Infinite, TraceFilterIgnorePlayers, iClient);
+		TR_TraceRayFilter(flEyePos, flAng, MASK_PLAYERSOLID, RayType_Infinite, TraceFilterIgnorePlayers, iClient);
 		//float StructAng[3]; TR_GetPlaneNormal(StructAng);
+
 		if ( TR_GetFraction() < 1.0 )
 		{
 			float flEndPos[3]; TR_GetEndPosition(flEndPos);
-			float mins[3], maxs[3];
+
+			pCreator.GetAbsAngles(flAng);
+			flAng[1] += 90.0;
+
+			pStruct = view_as<CBaseAnimating>( CBaseEntity.CreateByName("prop_dynamic") );
+			if ( !pStruct || !pStruct.IsValid ) return;
+
+			pStruct.Team = view_as<int>( pCreator.Team );
 
 			switch (type)
 			{
 				case Bridge:
 				{
-					flEndPos[2] += 10.0;
-					mins[0] = -48.25, mins[1] = -220.0, mins[2] = -21.0;
-					maxs[0] = 52.02, maxs[1] = 252.0, maxs[2] = 8.0;
-					//mins[0] = 0.0, mins[1] = 0.0, mins[2] = 0.0;
-					//maxs[0] = 100.27, maxs[1] = 472.0, maxs[2] = 29.0;
+					szModelPath = "models/props_forest/sawmill_bridge.mdl";
+					flEndPos[2] += 20.0;
 				}
 				case Sandbags:
 				{
+					szModelPath = "models/mrmof/sandbags01.mdl";
 					flEndPos[2] += 2.0;
-					//mins[0] = 0.0, mins[1] = 0.0, mins[2] = 0.0;
-					//maxs[0] = 100.27, maxs[1] = 472.0, maxs[2] = 29.0;
-					mins[0] = 0.0, mins[1] = 0.0, mins[2] = 0.0;
-					maxs[0] = 192.1, maxs[1] = 29.0, maxs[2] = 50.0;
 				}
 			}
+			PrecacheModel(szModelPath, true);
+			pStruct.SetModel(szModelPath);
+			pStruct.SolidType = SOLID_VPHYSICS;
+			//pStruct.SetProp(Prop_Send, "m_CollisionGroup", 22);
+			//pStruct.SetProp(Prop_Data, "m_CollisionGroup", 22);
+
+			float mins[3], maxs[3];
+			pStruct.GetPropVector(Prop_Send, "m_vecMins", mins );
+			pStruct.GetPropVector(Prop_Send, "m_vecMaxs", maxs );
 			if ( CanBuildHere(flEndPos, mins, maxs) )
 			{
-				CBaseAnimating pStruct;
-				pCreator.GetAbsAngles(flAng);
+				pStruct.Spawn();
+				pStruct.SetProp(Prop_Data, "m_takedamage", 2);
+				SDKHook(pStruct.Index, SDKHook_OnTakeDamage, OnStructureDamaged);
+				SDKHook(pStruct.Index, SDKHook_ShouldCollide, OnStructureCollide);
+				pStruct.Teleport(flEndPos, flAng, nullvec);
+
+				int beamcolor[4]; beamcolor[0] = 0, beamcolor[1] = 255, beamcolor[2] = 90, beamcolor[3] = 255;
+
+				float vecMins[3], vecMaxs[3];
+				pStruct.GetPropVector(Prop_Send, "m_vecMins", mins );
+				pStruct.GetPropVector(Prop_Send, "m_vecMaxs", maxs );
+				AddVectors(flEndPos, mins, vecMins);
+				AddVectors(flEndPos, maxs, vecMaxs);
+				TE_SendBeamBoxToAll( vecMaxs, vecMins, PrecacheModel("sprites/laser.vmt", true), PrecacheModel("sprites/laser.vmt", true), 1, 1, 5.0, 8.0, 8.0, 5, 2.0, beamcolor, 0 );
+
 				switch (type)
 				{
 					case Bridge:
 					{
-						flAng[1] += 90.0;
-						pStruct = CreateStructure(pCreator, "models/props_forest/sawmill_bridge.mdl", flEndPos, flAng);
+						pStruct.SetProp(Prop_Data, "m_iHealth", 300);
 					}
 					case Sandbags:
 					{
-						flAng[1] += 90.0;
-						pStruct = CreateStructure(pCreator, "models/mrmof/sandbags01.mdl", flEndPos, flAng);
+						pStruct.SetProp(Prop_Data, "m_iHealth", 500);
 					}
 				}
 				if ( pStruct != null && pStruct.IsValid )
@@ -290,14 +291,55 @@ public void GetBuilding(int client, int type)
 					PrintStructureSize(pCreator, pStruct);
 				}
 			}
-			else PrintToChat(iClient, "Can't build structure there");
+			else
+			{
+				PrintToChat(iClient, "Can't build structure there");
+				CreateTimer( 0.1, RemoveEnt, pStruct.Ref );
+			}
 		}
 	}
 	return;
 }
 
+public Action OnStructureDamaged(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
+{
+	CBaseAnimating pStruct = new CBaseAnimating(victim);
+	if ( pStruct != null && pStruct.IsValid )
+	{
+		CBasePlayer pAttacker = new CBasePlayer(attacker);
+		if ( pAttacker != null && IsValidClient(pAttacker) )
+		{
+			if (pStruct.Team == pAttacker.Team)
+			{
+				damage = 0.0;
+				return Plugin_Changed;
+			}
+		}
+	}
+	return Plugin_Continue;
+}
+public bool OnStructureCollide(int entity, int collisiongroup, int contentsmask, bool originalResult)
+{
+	CBaseAnimating pStruct = new CBaseAnimating(entity);
+	if ( pStruct != null && pStruct.IsValid )
+	{
+		if ( pStruct.Team == 0 ) return false;
+
+		if ( collisiongroup == 8 ) //COLLISION_GROUP_PLAYER_MOVEMENT
+		{
+			switch (pStruct.Team) //do collisions by team
+			{
+				case 2: if ( !(contentsmask & 0x800) ) return false; //CONTENTS_REDTEAM
+				case 3: if ( !(contentsmask & 0x1000) ) return false; //CONTENTS_BLUETEAM
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
 //stocks
-stock void PrintStructureSize(CTFPlayer pOwner, CBaseEntity pEnt)
+stock void PrintStructureSize(CBasePlayer pOwner, CBaseEntity pEnt)
 {
 	if ( !pEnt || !pEnt.IsValid ) return;
 	else if ( !pOwner || !pOwner.IsValid ) return;
@@ -332,21 +374,17 @@ public bool TraceRayDontHitSelf(int entity, int contentsMask, any data)
 }
 stock bool CanBuildHere(float flPos[3], float flMins[3], float flMaxs[3])
 {
-	TR_TraceHull(flPos, flPos, flMins, flMaxs, MASK_PLAYERSOLID);
-
+	TR_TraceHull( flPos, flPos, flMins, flMaxs, MASK_PLAYERSOLID );
+/*
 	int beamcolor[4];
 	beamcolor[0] = 0, beamcolor[1] = 255, beamcolor[2] = 90, beamcolor[3] = 255;
-	int lasermodel = PrecacheModel("sprites/laser.vmt", true);
 
-	float vecMins[3]; vecMins = flPos; SubtractVectors(vecMins, flMins, vecMins);
-	TE_SetupBeamPoints( flPos, vecMins, lasermodel, lasermodel, 1, 1, 5.0, 8.0, 8.0, 5, 2.0, beamcolor, 0 );
-	TE_SendToAll();
-
-	float vecMaxs[3]; vecMaxs = flPos; AddVectors(vecMaxs, flMins, vecMaxs);
-	TE_SetupBeamPoints( flPos, vecMaxs, lasermodel, lasermodel, 1, 1, 5.0, 8.0, 8.0, 5, 2.0, beamcolor, 0 );
-	TE_SendToAll();
-
-	return ( TR_GetFraction() > 0.98 );
+	float vecMins[3], vecMaxs[3];
+	AddVectors(flPos, flMins, vecMins);
+	AddVectors(flPos, flMaxs, vecMaxs);
+	TE_SendBeamBoxToAll( vecMaxs, vecMins, PrecacheModel("sprites/laser.vmt", true), PrecacheModel("sprites/laser.vmt", true), 1, 1, 5.0, 8.0, 8.0, 5, 2.0, beamcolor, 0 );
+*/
+	return (TR_GetFraction() > 0.98);
 }
 public bool TraceFilterIgnorePlayers(int entity, int contentsMask, any client)
 {
@@ -370,7 +408,56 @@ stock float fMax(float a, float b) { return (a > b) ? a : b; }
 stock float fMin(float a, float b) { return (a < b) ? a : b; }
 
 
+stock void TE_SendBeamBoxToAll(const float upc[3], const float btc[3], int ModelIndex, int HaloIndex, int StartFrame, int FrameRate, const float Life, const float Width, const float EndWidth, int FadeLength, const float Amplitude, const int Color[4], int Speed)
+{
+	// Create the additional corners of the box
+	float tc1[] = {0.0, 0.0, 0.0};
+	float tc2[] = {0.0, 0.0, 0.0};
+	float tc3[] = {0.0, 0.0, 0.0};
+	float tc4[] = {0.0, 0.0, 0.0};
+	float tc5[] = {0.0, 0.0, 0.0};
+	float tc6[] = {0.0, 0.0, 0.0};
 
+	AddVectors(tc1, upc, tc1);
+	AddVectors(tc2, upc, tc2);
+	AddVectors(tc3, upc, tc3);
+	AddVectors(tc4, btc, tc4);
+	AddVectors(tc5, btc, tc5);
+	AddVectors(tc6, btc, tc6);
+
+	tc1[0] = btc[0];
+	tc2[1] = btc[1];
+	tc3[2] = btc[2];
+	tc4[0] = upc[0];
+	tc5[1] = upc[1];
+	tc6[2] = upc[2];
+
+	// Draw all the edges
+	TE_SetupBeamPoints(upc, tc1, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+	TE_SendToAll();
+	TE_SetupBeamPoints(upc, tc2, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+	TE_SendToAll();
+	TE_SetupBeamPoints(upc, tc3, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+	TE_SendToAll();
+	TE_SetupBeamPoints(tc6, tc1, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+	TE_SendToAll();
+	TE_SetupBeamPoints(tc6, tc2, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+	TE_SendToAll();
+	TE_SetupBeamPoints(tc6, btc, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+	TE_SendToAll();
+	TE_SetupBeamPoints(tc4, btc, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+	TE_SendToAll();
+	TE_SetupBeamPoints(tc5, btc, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+	TE_SendToAll();
+	TE_SetupBeamPoints(tc5, tc1, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+	TE_SendToAll();
+	TE_SetupBeamPoints(tc5, tc3, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+	TE_SendToAll();
+	TE_SetupBeamPoints(tc4, tc3, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+	TE_SendToAll();
+	TE_SetupBeamPoints(tc4, tc2, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
+	TE_SendToAll();
+}
 
 
 
