@@ -30,9 +30,7 @@ ConVar bEnabled = null;
 ConVar AllowBlu = null;
 ConVar AllowRed = null;
 
-//float flTimer[MAXPLAYERS+1];
-
-enum //Structures
+enum Structure
 {
 	Bridge = 0,
 	Sandbags,
@@ -41,6 +39,7 @@ enum //Structures
 	MedStation,
 	AmmoStation
 }
+
 /*
 methodmap CBaseStructure < CBaseAnimating {
 	public CBaseStructure( int entIndex )
@@ -50,7 +49,10 @@ methodmap CBaseStructure < CBaseAnimating {
 };
 */
 
-CBaseAnimating Structures[PLYR][6];
+CBaseAnimating Structures[PLYR][Structure]; //yay a singleton!
+
+//float GlobalVecMins[6][3];
+//float GlobalVecMaxs[6][3];
 
 public void OnPluginStart()
 {
@@ -75,8 +77,7 @@ public void OnPluginStart()
 }
 public void OnClientPutInServer(int client)
 {
-	for (int i = 0; i < 6; i++)
-	{
+	for (int i = 0; i < 6; i++) {
 		Structures[client][i] = null;
 	}
 }
@@ -197,105 +198,92 @@ public int MenuHandlerDefensiveStructures(Menu menu, MenuAction action, int clie
 	menu.GetItem(selection, info, sizeof(info));
 	if (action == MenuAction_Select)
         {
-		GetBuilding(client, selection);
+		GetBuilding(client, view_as<Structure>(selection));
 		CommandBuildings(client, -1);
         }
 	else if (action == MenuAction_End) delete menu;	
 }
-public void GetBuilding(int client, int type)
+public void GetBuilding(int client, Structure type)
 {
-	CTFPlayer pCreator = new CTFPlayer(client);
-	if ( pCreator != null && pCreator.IsAlive )
+	CTFPlayer pPlayer = new CTFPlayer(client);
+
+	if ( !pPlayer || !pPlayer.IsAlive ) return;
+
+	char szModelPath[64];
+	int iClient = pPlayer.Index;
+	CBaseAnimating pStruct;
+
+	float flEyePos[3], flAng[3];
+	pPlayer.GetEyePosition(flEyePos);
+	pPlayer.GetEyeAngles(flAng);
+
+	TR_TraceRayFilter(flEyePos, flAng, MASK_PLAYERSOLID, RayType_Infinite, TraceFilterIgnorePlayers, iClient);
+	//float StructAng[3]; TR_GetPlaneNormal(StructAng);
+
+	if ( TR_GetFraction() < 1.0 )
 	{
-		char szModelPath[64];
-		int iClient = pCreator.Index;
-		CBaseAnimating pStruct;
+		float flEndPos[3]; TR_GetEndPosition(flEndPos);
 
-		float flEyePos[3], flAng[3];
-		pCreator.GetEyePosition(flEyePos);
-		pCreator.GetEyeAngles(flAng);
+		pPlayer.GetAbsAngles(flAng);
+		flAng[1] += 90.0;
 
-		TR_TraceRayFilter(flEyePos, flAng, MASK_PLAYERSOLID, RayType_Infinite, TraceFilterIgnorePlayers, iClient);
-		//float StructAng[3]; TR_GetPlaneNormal(StructAng);
+		pStruct = view_as<CBaseAnimating>( CBaseEntity.CreateByName("prop_dynamic") );
+		if ( !pStruct || !pStruct.IsValid ) return;
 
-		if ( TR_GetFraction() < 1.0 )
+		pStruct.Team = view_as<int>( pPlayer.Team );
+
+		switch (type)
 		{
-			float flEndPos[3]; TR_GetEndPosition(flEndPos);
+			case Bridge: szModelPath = "models/props_forest/sawmill_bridge.mdl";
+			case Sandbags: szModelPath = "models/mrmof/sandbags01.mdl";
+		}
+		PrecacheModel(szModelPath, true);
+		pStruct.SetModel(szModelPath);
+		pStruct.SolidType = SOLID_VPHYSICS;
 
-			pCreator.GetAbsAngles(flAng);
-			flAng[1] += 90.0;
+		float mins[3], maxs[3];
+		pStruct.GetPropVector(Prop_Send, "m_vecMins", mins );
+		pStruct.GetPropVector(Prop_Send, "m_vecMaxs", maxs );
+		if ( CanBuildHere(flEndPos, mins, maxs) )
+		{
+			pStruct.Spawn();
+			pStruct.SetProp(Prop_Data, "m_takedamage", 2);
+			SDKHook(pStruct.Index, SDKHook_OnTakeDamage, OnStructureDamaged);
+			pStruct.Teleport(flEndPos, flAng, nullvec);
 
-			pStruct = view_as<CBaseAnimating>( CBaseEntity.CreateByName("prop_dynamic") );
-			if ( !pStruct || !pStruct.IsValid ) return;
+			int beamcolor[4]; beamcolor[0] = 0, beamcolor[1] = 255, beamcolor[2] = 90, beamcolor[3] = 255;
 
-			pStruct.Team = view_as<int>( pCreator.Team );
+			float vecMins[3], vecMaxs[3];
+			pStruct.GetPropVector(Prop_Send, "m_vecMins", mins );
+			pStruct.GetPropVector(Prop_Send, "m_vecMaxs", maxs );
+			AddVectors(flEndPos, mins, vecMins);
+			AddVectors(flEndPos, maxs, vecMaxs);
+			TE_SendBeamBoxToAll( vecMaxs, vecMins, PrecacheModel("sprites/laser.vmt", true), PrecacheModel("sprites/laser.vmt", true), 1, 1, 5.0, 8.0, 8.0, 5, 2.0, beamcolor, 0 );
 
 			switch (type)
 			{
-				case Bridge:
-				{
-					szModelPath = "models/props_forest/sawmill_bridge.mdl";
-					flEndPos[2] += 20.0;
-				}
+				case Bridge: pStruct.SetProp(Prop_Data, "m_iHealth", 300);
 				case Sandbags:
 				{
-					szModelPath = "models/mrmof/sandbags01.mdl";
-					flEndPos[2] += 2.0;
+					SDKHook(pStruct.Index, SDKHook_ShouldCollide, OnStructureCollide);
+					pStruct.SetProp(Prop_Data, "m_iHealth", 500);
 				}
 			}
-			PrecacheModel(szModelPath, true);
-			pStruct.SetModel(szModelPath);
-			pStruct.SolidType = SOLID_VPHYSICS;
-			//pStruct.SetProp(Prop_Send, "m_CollisionGroup", 22);
-			//pStruct.SetProp(Prop_Data, "m_CollisionGroup", 22);
-
-			float mins[3], maxs[3];
-			pStruct.GetPropVector(Prop_Send, "m_vecMins", mins );
-			pStruct.GetPropVector(Prop_Send, "m_vecMaxs", maxs );
-			if ( CanBuildHere(flEndPos, mins, maxs) )
+			if ( pStruct != null && pStruct.IsValid )
 			{
-				pStruct.Spawn();
-				pStruct.SetProp(Prop_Data, "m_takedamage", 2);
-				SDKHook(pStruct.Index, SDKHook_OnTakeDamage, OnStructureDamaged);
-				SDKHook(pStruct.Index, SDKHook_ShouldCollide, OnStructureCollide);
-				pStruct.Teleport(flEndPos, flAng, nullvec);
-
-				int beamcolor[4]; beamcolor[0] = 0, beamcolor[1] = 255, beamcolor[2] = 90, beamcolor[3] = 255;
-
-				float vecMins[3], vecMaxs[3];
-				pStruct.GetPropVector(Prop_Send, "m_vecMins", mins );
-				pStruct.GetPropVector(Prop_Send, "m_vecMaxs", maxs );
-				AddVectors(flEndPos, mins, vecMins);
-				AddVectors(flEndPos, maxs, vecMaxs);
-				TE_SendBeamBoxToAll( vecMaxs, vecMins, PrecacheModel("sprites/laser.vmt", true), PrecacheModel("sprites/laser.vmt", true), 1, 1, 5.0, 8.0, 8.0, 5, 2.0, beamcolor, 0 );
-
-				switch (type)
+				if (Structures[iClient][type] != null)
 				{
-					case Bridge:
-					{
-						pStruct.SetProp(Prop_Data, "m_iHealth", 300);
-					}
-					case Sandbags:
-					{
-						pStruct.SetProp(Prop_Data, "m_iHealth", 500);
-					}
+					CreateTimer( 0.1, RemoveEnt, Structures[client][type].Ref );
+					Structures[iClient][type] = null;
 				}
-				if ( pStruct != null && pStruct.IsValid )
-				{
-					if (Structures[iClient][type] != null)
-					{
-						CreateTimer( 0.1, RemoveEnt, Structures[client][type].Ref );
-						Structures[iClient][type] = null;
-					}
-					Structures[iClient][type] = pStruct;
-					PrintStructureSize(pCreator, pStruct);
-				}
+				Structures[iClient][type] = pStruct;
+				PrintStructureSize(pPlayer, pStruct);
 			}
-			else
-			{
-				PrintToChat(iClient, "Can't build structure there");
-				CreateTimer( 0.1, RemoveEnt, pStruct.Ref );
-			}
+		}
+		else
+		{
+			PrintToChat(iClient, "Can't build structure there");
+			CreateTimer( 0.1, RemoveEnt, pStruct.Ref );
 		}
 	}
 	return;
@@ -374,17 +362,16 @@ public bool TraceRayDontHitSelf(int entity, int contentsMask, any data)
 }
 stock bool CanBuildHere(float flPos[3], float flMins[3], float flMaxs[3])
 {
-	TR_TraceHull( flPos, flPos, flMins, flMaxs, MASK_PLAYERSOLID );
-/*
-	int beamcolor[4];
-	beamcolor[0] = 0, beamcolor[1] = 255, beamcolor[2] = 90, beamcolor[3] = 255;
-
-	float vecMins[3], vecMaxs[3];
-	AddVectors(flPos, flMins, vecMins);
-	AddVectors(flPos, flMaxs, vecMaxs);
-	TE_SendBeamBoxToAll( vecMaxs, vecMins, PrecacheModel("sprites/laser.vmt", true), PrecacheModel("sprites/laser.vmt", true), 1, 1, 5.0, 8.0, 8.0, 5, 2.0, beamcolor, 0 );
-*/
-	return (TR_GetFraction() > 0.98);
+	bool bSuccess = false;
+	int iterations = 0;
+	while ( iterations < 8 )
+	{
+		TR_TraceHull( flPos, flPos, flMins, flMaxs, MASK_PLAYERSOLID );
+		if (TR_GetFraction() > 0.98) bSuccess = true;
+		iterations++;
+		flPos[2] += 1.0;
+	}
+	return bSuccess;
 }
 public bool TraceFilterIgnorePlayers(int entity, int contentsMask, any client)
 {
