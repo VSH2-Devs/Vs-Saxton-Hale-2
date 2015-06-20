@@ -118,7 +118,6 @@ public Action CommandBuildings(int client, int args)
 
 	CTFPlayer pCreator = new CTFPlayer(client);
 	if ( !pCreator ) return Plugin_Handled;
-	else if ( !pCreator.IsAlive ) { PrintToChat(pCreator.Index, "You need to be alive to build"); return Plugin_Handled; }
 
 	int team = view_as<int>(pCreator.Team);
 	if ( (!AllowBlu.BoolValue && (team == 3)) || (!AllowRed.BoolValue && (team == 2)) )
@@ -199,14 +198,13 @@ public int MenuHandlerDefensiveStructures(Menu menu, MenuAction action, int clie
 	if (action == MenuAction_Select)
         {
 		GetBuilding(client, view_as<Structure>(selection));
-		CommandBuildings(client, -1);
+		DefensiveMenu(client);
         }
 	else if (action == MenuAction_End) delete menu;	
 }
 public void GetBuilding(int client, Structure type)
 {
 	CTFPlayer pPlayer = new CTFPlayer(client);
-
 	if ( !pPlayer || !pPlayer.IsAlive ) return;
 
 	char szModelPath[64];
@@ -288,7 +286,12 @@ public void GetBuilding(int client, Structure type)
 	}
 	return;
 }
-
+/*
+void CreateBuilding(int client, Structure type, CBaseAnimating pBuild)
+{
+	
+}
+*/
 public Action OnStructureDamaged(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
 {
 	CBaseAnimating pStruct = new CBaseAnimating(victim);
@@ -363,13 +366,12 @@ public bool TraceRayDontHitSelf(int entity, int contentsMask, any data)
 stock bool CanBuildHere(float flPos[3], float flMins[3], float flMaxs[3])
 {
 	bool bSuccess = false;
-	int iterations = 0;
-	while ( iterations < 8 )
+	int iIterations = 4;
+	for ( int i = 0; ( i < iIterations ) && !bSuccess; i++ )
 	{
 		TR_TraceHull( flPos, flPos, flMins, flMaxs, MASK_PLAYERSOLID );
 		if (TR_GetFraction() > 0.98) bSuccess = true;
-		iterations++;
-		flPos[2] += 1.0;
+		flPos[2] += 2.0;
 	}
 	return bSuccess;
 }
@@ -394,6 +396,12 @@ stock float Vector2DLength( const float vec[2] )
 stock float fMax(float a, float b) { return (a > b) ? a : b; }
 stock float fMin(float a, float b) { return (a < b) ? a : b; }
 
+stock void EyeVectors(CBasePlayer pPlayer, float vecForw[3] = nullvec, float vecRite[3] = nullvec, float vecUp[3] = nullvec)
+{
+	float flEyeAngs[3];
+	pPlayer.GetEyeAngles(flEyeAngs);
+	GetAngleVectors( flEyeAngs, vecForw, vecRite, vecUp );
+}
 
 stock void TE_SendBeamBoxToAll(const float upc[3], const float btc[3], int ModelIndex, int HaloIndex, int StartFrame, int FrameRate, const float Life, const float Width, const float EndWidth, int FadeLength, const float Amplitude, const int Color[4], int Speed)
 {
