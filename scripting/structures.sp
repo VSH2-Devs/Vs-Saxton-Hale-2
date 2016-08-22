@@ -1,589 +1,803 @@
-#include <sdktools>
 #include <sourcemod>
+#include <sdktools>
+#include <clientprefs>
+#include <tf2_stocks>
+#include <tf2items>
 #include <sdkhooks>
-//#undef REQUIRE_PLUGIN
-//#tryinclude <updater>
+#include <morecolors>
 
-#define GAME_TF2
-#include <thelpers>
+#undef REQUIRE_PLUGIN
+#tryinclude <tf2attributes>
+#define REQUIRE_PLUGIN
 
-#pragma semicolon		1
-#pragma newdecls		required
+#undef REQUIRE_EXTENSIONS
+#tryinclude <steamtools>
+#define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION		"1.0"
-public Plugin myinfo = 
-{
-	name 			= "Custom Structures",
-	author 			= "nergal/assyrian",
-	description 		= "Allows Players to take their resupply lockers with them anywhere!",
+#pragma semicolon			1
+#pragma newdecls			required
+
+#define PLUGIN_VERSION			"1.0 BETA"
+#define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
+#define CODEFRAMES			(1.0/30.0)	/* 30 frames per second means 0.03333 seconds or 33.33 ms */
+
+#define IsClientValid(%1)		( 0 < %1 and %1 <= MaxClients and IsClientInGame(%1) )
+#define PLYR				MAXPLAYERS+1
+
+#define	RED	2
+#define BLU	3
+
+//Python style operators
+#define and				&&
+#define and_eq				&=
+#define bitand				&
+#define bitor				|
+#define compl				~
+#define not				!
+#define not_eq				!=
+#define or				||
+#define or_eq				|=
+#define xor				^
+#define xor_eq				^=
+#define bitl				<<
+#define bitr				>>
+#define is				==
+#define equals				==
+
+//functional-style typecasting
+#define int(%1)				view_as<int>(%1)
+#define Handle(%1)			view_as<Handle>(%1)
+
+//misc.
+#define nullfunc			INVALID_FUNCTION
+#define nullvec				NULL_VECTOR
+#define nullstr				NULL_STRING
+#define toggle(%1)			%1 = not %1
+
+#define _buffer(%1)			%1, sizeof(%1)
+#define _strbuffer(%1)			%1, sizeof(%1)
+#define PLYR				MAXPLAYERS+1
+#define PATH				64
+#define FULLPATH			PLATFORM_MAX_PATH
+#define SPNULL				view_as< any >(0)	// stands for SourcePawn NULL
+
+
+public Plugin myinfo = {
+	name 			= "TF2Bosses Mod",
+	author 			= "nergal/assyrian, props to Flamin' Sarge, Chdata, & Buzzkillington",
+	description 		= "Allows Players to play as various bosses of TF2",
 	version 		= PLUGIN_VERSION,
-	url 			= "hue"
-}
-
-//defines
-#define IsValidClient(%1)	( 0 < %1.Index && %1.Index <= MaxClients && %1.IsInGame )
-#define PLYR			MAXPLAYERS+1
-#define nullvec			NULL_VECTOR
-
-//cvar handles
-ConVar bEnabled = null;
-ConVar AllowBlu = null;
-ConVar AllowRed = null;
-
-enum Structure
-{
-	Bridge = 0,
-	Sandbags,
-	Bunker,
-	SentryNest,
-	MedStation,
-	AmmoStation
-}
-
-/*
-methodmap CBaseStructure < CBaseAnimating {
-	public CBaseStructure( int entIndex )
-	{
-		return view_as<CBaseStructure>( new CBaseAnimating( entIndex ) );
-	}
+	url 			= "hue" //will fill later
 };
-*/
 
-CBaseAnimating Structures[PLYR][Structure]; //yay a singleton!
+enum /*CvarName*/
+{
+	PointType = 0,
+	PointDelay,
+	AliveToEnable,
+	FirstRound,
+	DamagePoints,
+	DamageForQueue,
+	QueueGained,
+	EnableMusic,
+	MusicVolume,
+	HealthPercentForLastGuy,
+	HealthRegenForPlayers,
+	HealthRegenAmount,
+	MedigunReset,
+	StopTickleTime,
+	AirStrikeDamage,
+	AirblastRage,
+	JarateRage,
+	FanoWarRage,
+	LastPlayerTime,
+};
 
-//float GlobalVecMins[6][3];
-//float GlobalVecMaxs[6][3];
+// cvar + handles
+ConVar
+	bEnabled = null
+;
+
+ConVar cvarVSH2[LastPlayerTime+1];
+
+Handle
+	hHudText,
+	jumpHUD,
+	rageHUD,
+	timeleftHUD,
+	PointCookie,
+	BossCookie,
+	MusicCookie
+;
+
+methodmap TF2Item < Handle
+{
+	/* [*C*O*N*S*T*R*U*C*T*O*R*] */
+
+	public TF2Item(int iFlags)
+	{
+		return view_as<TF2Item>( TF2Items_CreateItem(iFlags) );
+	}
+	/////////////////////////////// 
+
+	/* [ P R O P E R T I E S ] */
+
+	property int iFlags
+	{
+		public get()			{ return TF2Items_GetFlags(this); }
+		public set( int iVal )		{ TF2Items_SetFlags(this, iVal); }
+	}
+
+	property int iItemIndex
+	{
+		public get()			{return TF2Items_GetItemIndex(this);}
+		public set( int iVal )		{TF2Items_SetItemIndex(this, iVal);}
+	}
+
+	property int iQuality
+	{
+		public get()			{return TF2Items_GetQuality(this);}
+		public set( int iVal )		{TF2Items_SetQuality(this, iVal);}
+	}
+
+	property int iLevel
+	{
+		public get()			{return TF2Items_GetLevel(this);}
+		public set( int iVal )		{TF2Items_SetLevel(this, iVal);}
+	}
+
+	property int iNumAttribs
+	{
+		public get()			{return TF2Items_GetNumAttributes(this);}
+		public set( int iVal )		{TF2Items_SetNumAttributes(this, iVal);}
+	}
+	///////////////////////////////
+
+	/* [ M E T H O D S ] */
+
+	public int GiveNamedItem(int iClient)
+	{
+		return TF2Items_GiveNamedItem(iClient, this);
+	}
+
+	public void SetClassname(char[] strClassName)
+	{
+		TF2Items_SetClassname(this, strClassName);
+	}
+
+	public void GetClassname(char[] strDest, int iDestSize)
+	{
+		TF2Items_GetClassname(this, strDest, iDestSize);
+	}
+
+	public void SetAttribute(int iSlotIndex, int iAttribDefIndex, float flValue)
+	{
+		TF2Items_SetAttribute(this, iSlotIndex, iAttribDefIndex, flValue);
+	}
+
+	public int GetAttribID(int iSlotIndex)
+	{
+		return TF2Items_GetAttributeId(this, iSlotIndex);
+	}
+
+	public float GetAttribValue(int iSlotIndex)
+	{
+		return TF2Items_GetAttributeValue(this, iSlotIndex);
+	}
+	/**************************************************************/
+};
+
+#include "modules/stocks.inc"
+#include "modules/handler.sp"	// Contains the game mode logic as well
+#include "modules/events.sp"
+#include "modules/commands.sp"
 
 public void OnPluginStart()
 {
-	bEnabled = CreateConVar("sm_structures_enabled", "1", "Enable Structures plugin", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	AllowBlu = CreateConVar("sm_structures_blu", "1", "(Dis)Allow Structures for BLU team", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	AllowRed = CreateConVar("sm_structures_red", "1", "(Dis)Allow Structures for RED team", FCVAR_PLUGIN|FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	RegAdminCmd("sm_setspecial", SetNextSpecial, ADMFLAG_GENERIC);
+	RegAdminCmd("sm_halespecial", SetNextSpecial, ADMFLAG_GENERIC);
+	RegAdminCmd("sm_hale_special", SetNextSpecial, ADMFLAG_GENERIC);
+	RegAdminCmd("sm_bossspecial", SetNextSpecial, ADMFLAG_GENERIC);
+	RegAdminCmd("sm_boss_special", SetNextSpecial, ADMFLAG_GENERIC);
+	RegAdminCmd("sm_ff2special", SetNextSpecial, ADMFLAG_GENERIC);
+	RegAdminCmd("sm_ff2_special", SetNextSpecial, ADMFLAG_GENERIC);
+	
+	RegConsoleCmd("sm_hale_next", QueuePanelCmd);
+	RegConsoleCmd("sm_halenext", QueuePanelCmd);
+	RegConsoleCmd("sm_boss_next", QueuePanelCmd);
+	RegConsoleCmd("sm_bossnext", QueuePanelCmd);
+	RegConsoleCmd("sm_ff2_next", QueuePanelCmd);
+	RegConsoleCmd("sm_ff2next", QueuePanelCmd);
+	
+	RegConsoleCmd("sm_hale_hp", Command_GetHPCmd);
+	RegConsoleCmd("sm_halehp", Command_GetHPCmd);
+	RegConsoleCmd("sm_boss_hp", Command_GetHPCmd);
+	RegConsoleCmd("sm_bosshp", Command_GetHPCmd);
+	RegConsoleCmd("sm_ff2_hp", Command_GetHPCmd);
+	RegConsoleCmd("sm_ff2hp", Command_GetHPCmd);
+	
+	RegConsoleCmd("sm_setboss", SetBossMenu, "sets your boss");
+	RegConsoleCmd("sm_sethale", SetBossMenu, "sets your boss");
+	RegConsoleCmd("sm_ff2boss", SetBossMenu, "sets your boss");
+	RegConsoleCmd("sm_haleboss", SetBossMenu, "sets your boss");
+	
+	RegConsoleCmd("sm_halemusic", MusicTogglePanelCmd);
+	RegConsoleCmd("sm_hale_music", MusicTogglePanelCmd);
+	RegConsoleCmd("sm_bossmusic", MusicTogglePanelCmd);
+	RegConsoleCmd("sm_boss_music", MusicTogglePanelCmd);
+	RegConsoleCmd("sm_ff2music", MusicTogglePanelCmd);
+	RegConsoleCmd("sm_ff2_music", MusicTogglePanelCmd);
+	
+	RegConsoleCmd("sm_halehelp", HelpPanelCmd);
+	RegConsoleCmd("sm_hale_help", HelpPanelCmd);
+	RegConsoleCmd("sm_bosshelp", HelpPanelCmd);
+	RegConsoleCmd("sm_boss_help", HelpPanelCmd);
+	RegConsoleCmd("sm_ff2help", HelpPanelCmd);
+	RegConsoleCmd("sm_ff2_help", HelpPanelCmd);
+	
+	RegAdminCmd("sm_reloadbosscfg", CmdReloadCFG, ADMFLAG_GENERIC);
+	RegAdminCmd("sm_hale_select", CommandBossSelect, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss");
+	RegAdminCmd("sm_ff2_select", CommandBossSelect, ADMFLAG_VOTE, "ff2_select <target> - Select a player to be next boss");
+	RegAdminCmd("sm_boss_select", CommandBossSelect, ADMFLAG_VOTE, "boss_select <target> - Select a player to be next boss");
+	RegAdminCmd("sm_healthbarcolor", ChangeHealthBarColor, ADMFLAG_GENERIC);
+	
+	RegAdminCmd("sm_hale_force", ForceBossRealtime, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss");
+	RegAdminCmd("sm_boss_force", ForceBossRealtime, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss");
+	RegAdminCmd("sm_ff2_force", ForceBossRealtime, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss");
 
-	//AddCommandListener(Listener_Voice, "voicemenu");
-	//RegAdminCmd("sm_portableresupply", CreatePortableResupply, ADMFLAG_KICK);
-	RegConsoleCmd("sm_bstructs", CommandBuildings);
-	RegConsoleCmd("sm_structs", CommandBuildings);
-	RegConsoleCmd("sm_structures", CommandBuildings);
-	RegConsoleCmd("sm_structure", CommandBuildings);
+	hHudText = CreateHudSynchronizer();
+	jumpHUD = CreateHudSynchronizer();
+	rageHUD = CreateHudSynchronizer();
+	timeleftHUD = CreateHudSynchronizer();
 
-	CTFPlayer player;
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		if ( (player = new CTFPlayer(i)) == null ) continue;
-		if ( !IsValidClient(player) ) continue;
+	bEnabled = CreateConVar("sm_vsh2_enabled", "1", "Enable VSH 2 plugin", FCVAR_NONE, true, 0.0, true, 1.0);
+	cvarVSH2[PointType] = CreateConVar("sm_vsh2_point_type", "0", "Select condition to enable point (0 - alive players, 1 - time)", FCVAR_NONE, true, 0.0, true, 1.0);
+	cvarVSH2[PointDelay] = CreateConVar("sm_vsh2_point_delay", "6", "Addition (for each player) delay before point's activation.", FCVAR_NONE);
+	cvarVSH2[AliveToEnable] = CreateConVar("sm_vsh2_point_alive", "5", "Enable control points when there are X people left alive.", FCVAR_NONE);
+	cvarVSH2[FirstRound] = CreateConVar("sm_vsh2_firstround", "0", "if 1, allows the first round to start with VSH2 enabled", FCVAR_NONE, true, 0.0, true, 1.0);
+	cvarVSH2[DamagePoints] = CreateConVar("sm_vsh2_damage_points", "600", "amount of damage needed to gain 1 point score", FCVAR_NONE);
+	cvarVSH2[DamageForQueue] = CreateConVar("sm_vsh2_damage_queue", "1", "allow damage to influence increase of queue points", FCVAR_NONE, true, 0.0, true, 1.0);
+	cvarVSH2[QueueGained] = CreateConVar("sm_vsh2_queue_gain", "10", "how much queue to give at end of round", FCVAR_NONE);
+	cvarVSH2[EnableMusic] = CreateConVar("sm_vsh2_enable_music", "1", "enable or disable background music", FCVAR_NONE, true, 0.0, true, 1.0);
+	cvarVSH2[MusicVolume] = CreateConVar("sm_vsh2_music_volume", "0.5", "how loud the music should be", FCVAR_NONE);
+	cvarVSH2[HealthPercentForLastGuy] = CreateConVar("sm_vsh2_health_percentage_last_guy", "51", "if the health bar is lower than 51 out of 255, the last player timer will stop", FCVAR_NONE);
+	cvarVSH2[HealthRegenForPlayers] = CreateConVar("sm_vsh2_health_regen", "0", "allow non-boss and non-minion players to have health regen", FCVAR_NONE);
+	cvarVSH2[HealthRegenAmount] = CreateConVar("sm_vsh2_health_regen_amount", "2.0", "if health regen is allowed, how much health regen should players get?", FCVAR_NONE);
+	cvarVSH2[MedigunReset] = CreateConVar("sm_vsh2_medigun_reset_amount", "0.31", "how much uber percentage should mediguns, after uber, reset to?", FCVAR_NONE, true, 0.0, true, 1.0);
+	cvarVSH2[StopTickleTime] = CreateConVar("sm_vsh2_stop_tickle_time", "3.0", "how much time for the ticklefists tickle to be removed from boss", FCVAR_NONE);
+	cvarVSH2[AirStrikeDamage] = CreateConVar("sm_vsh2_airstrike_damage", "200", "how much damage using the airstrike needed to gain clipsize", FCVAR_NONE);
+	cvarVSH2[AirblastRage] = CreateConVar("sm_vsh2_airblast_rage", "8.0", "how much rage should airblast give/remove? (negative number to remove rage)", FCVAR_NONE);
+	cvarVSH2[JarateRage] = CreateConVar("sm_vsh2_jarate_rage", "8.0", "how much rage should jarate give/remove? (negative number to add rage)", FCVAR_NONE);
+	cvarVSH2[FanoWarRage] = CreateConVar("sm_vsh2_fanowar_rage", "5.0", "how much rage should the fanowar give/remove? (negative number to add rage)", FCVAR_NONE);
+	cvarVSH2[LastPlayerTime] = CreateConVar("sm_vsh2_lastplayer_time", "180", "how many seconds to give the last player to fight the Boss(es) until said seconds are over", FCVAR_NONE);
+	
+#if defined _steamtools_included
+	gamemode.bSteam = LibraryExists("SteamTools");
+#endif
+	AutoExecConfig(true, "VSHv2");
+	HookEvent("player_death", PlayerDeath, EventHookMode_Pre);
+	HookEvent("player_hurt", PlayerHurt, EventHookMode_Pre);
+	HookEvent("teamplay_round_start", RoundStart);
+	HookEvent("teamplay_round_win", RoundEnd);
+	HookEvent("player_spawn", ReSpawn);
+	HookEvent("post_inventory_application", Resupply);
+	HookEvent("object_deflected", ObjectDeflected);
+	HookEvent("object_destroyed", ObjectDestroyed, EventHookMode_Pre);
+	HookEvent("player_jarated", PlayerJarated);
+	//HookEvent("player_changeclass", ChangeClass);
+	HookEvent( "rocket_jump", OnHookedEvent );
+	HookEvent( "rocket_jump_landed", OnHookedEvent );
+	HookEvent( "sticky_jump", OnHookedEvent );
+	HookEvent( "sticky_jump_landed", OnHookedEvent );
+	HookEvent("item_pickup", ItemPickedUp);
+	HookEvent("player_chargedeployed", UberDeployed);
+	
+	AddCommandListener(DoTaunt, "taunt");
+	AddCommandListener(DoTaunt, "+taunt");
+	AddCommandListener(cdVoiceMenu, "voicemenu");
+	AddNormalSoundHook(HookSound);
+	
+	PointCookie = RegClientCookie("vsh2_queuepoints", "Amount of VSH2 Queue points player has", CookieAccess_Protected);
+	BossCookie = RegClientCookie("vsh2_presetbosses", "Preset bosses for VSH2 players", CookieAccess_Protected);
+	MusicCookie = RegClientCookie("vsh2_music_settings", "HaleMusic setting", CookieAccess_Public);
+
+	ManageDownloads(); // in handler.sp
+
+	for (int i=MaxClients ; i ; --i) {
+		if ( not IsValidClient(i) )
+			continue;
 		OnClientPutInServer(i);
+	}
+	AddMultiTargetFilter("@boss", HaleTargetFilter, "the current Boss/Bosses", false);
+	AddMultiTargetFilter("@hale", HaleTargetFilter, "the current Boss/Bosses", false);
+	AddMultiTargetFilter("@minion", MinionTargetFilter, "the Minions", false);
+	AddMultiTargetFilter("@minions", MinionTargetFilter, "the Minions", false);
+	AddMultiTargetFilter("@!boss", HaleTargetFilter, "all non-Boss players", false);
+	AddMultiTargetFilter("@!hale", HaleTargetFilter, "all non-Boss players", false);
+}
+public bool HaleTargetFilter(const char[] pattern, Handle clients)
+{
+	bool non = StrContains(pattern, "!", false) not_eq -1;
+	for (int i=MaxClients ; i ; i--) {
+		if (IsClientValid(i) and FindValueInArray(clients, i) is -1)
+        	{
+			if (bEnabled.BoolValue and BaseBoss(i).bIsBoss) {
+				if (!non)
+					PushArrayCell(clients, i);
+			}
+			else if (non)
+				PushArrayCell(clients, i);
+		}
+	}
+	return true;
+}
+public bool MinionTargetFilter(const char[] pattern, Handle clients)
+{
+	bool non = StrContains(pattern, "!", false) not_eq -1;
+	for (int i=MaxClients ; i ; i--) {
+		if (IsClientValid(i) and FindValueInArray(clients, i) is -1)
+        	{
+			if (bEnabled.BoolValue and BaseBoss(i).bIsMinion) {
+				if (!non)
+					PushArrayCell(clients, i);
+			}
+			else if (non)
+				PushArrayCell(clients, i);
+		}
+	}
+	return true;
+}
+
+public void OnLibraryAdded(const char[] name)
+{
+#if defined _steamtools_included
+	if (not strcmp(name, "SteamTools", false))
+		gamemode.bSteam = true;
+#endif
+}
+public void OnLibraryRemoved(const char[] name)
+{
+#if defined _steamtools_included
+	if (not strcmp(name, "SteamTools", false))
+		gamemode.bSteam = false;
+#endif
+}
+
+int
+	tf_arena_use_queue,
+	mp_teams_unbalance_limit,
+	tf_arena_first_blood,
+	mp_forcecamera
+;
+
+float
+	tf_scout_hype_pep_max
+;
+
+public void OnConfigsExecuted()
+{
+	if ( IsVSHMap() ) {
+		tf_arena_use_queue = GetConVarInt(FindConVar("tf_arena_use_queue"));
+		mp_teams_unbalance_limit = GetConVarInt(FindConVar("mp_teams_unbalance_limit"));
+		tf_arena_first_blood = GetConVarInt(FindConVar("tf_arena_first_blood"));
+		mp_forcecamera = GetConVarInt(FindConVar("mp_forcecamera"));
+		tf_scout_hype_pep_max = GetConVarFloat(FindConVar("tf_scout_hype_pep_max"));
+		SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
+		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 0);
+		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), cvarVSH2[FirstRound].BoolValue ? 0 : 1);
+		SetConVarInt(FindConVar("tf_arena_first_blood"), 0);
+		SetConVarInt(FindConVar("mp_forcecamera"), 0);
+		SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), 100.0);
+		//SetConVarInt(FindConVar("tf_damage_disablespread"), 1);
+#if defined _steamtools_included
+		if (gamemode.bSteam) {
+			char gameDesc[64];
+			Format(gameDesc, sizeof(gameDesc), "%s (v%s)", PLUGIN_DESCRIPT, PLUGIN_VERSION);
+			Steam_SetGameDescription(gameDesc);
+		}
+#endif
 	}
 }
 public void OnClientPutInServer(int client)
 {
-	for (int i = 0; i < 6; i++) {
-		Structures[client][i] = null;
-	}
+	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
+	SDKHook(client, SDKHook_TraceAttack, TraceAttack);
+	SDKHook(client, SDKHook_Touch, OnTouch);
+	//SDKHook(client, SDKHook_PreThink, OnPreThink);
+
+	BaseBoss boss = BaseBoss(client);
+	boss.bIsBoss = false;
+	boss.bSetOnSpawn = false;
+	boss.iType = -1;
+
+	ManageConnect(client); // in handler.sp
 }
 public void OnClientDisconnect(int client)
 {
-	for (int i = 0; i < 6; i++)
-	{
-		if ( Structures[client][i] != null && Structures[client][i].IsValid )
-		{
-			CreateTimer( 0.1, RemoveEnt, Structures[client][i].Ref );
-			Structures[client][i] = null;
-		}
+	ManageDisconnect(client);
+}
+public void OnClientPostAdminCheck(int client)
+{
+	CPrintToChat(client, "{olive}[VSH 2]{default} Welcome to VSH2, type /bosshelp for help!");
+}
+
+public Action OnTouch(int client, int other)
+{
+	if (0 < other <= MaxClients) {
+		BaseBoss player = BaseBoss(client);
+		BaseBoss victim = BaseBoss(other);
+
+		if ( player.bIsBoss and not victim.bIsBoss )
+			ManageOnTouchPlayer(player, victim); // in handler.sp
 	}
-}
-public void OnMapStart()
-{
-	char extensions[][] = { ".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd", ".phy" };
-	char extensionsb[][] = { ".vtf", ".vmt" };
-	char s[PLATFORM_MAX_PATH];
-	int i;
-	for (i = 0; i < sizeof(extensions); i++)
-	{
-		Format(s, PLATFORM_MAX_PATH, "models/mrmof/sandbags01%s", extensions[i]);
-		Format(s, PLATFORM_MAX_PATH, "models/bunker/shelter%s", extensions[i]);
-		CheckDownload(s);
-	}
-	for (i = 0; i < sizeof(extensionsb); i++)
-	{
-		Format(s, PLATFORM_MAX_PATH, "materials/models/mrmof/sandbags01%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/mrmof/sandbags01_normal%s", extensionsb[i]);
-		CheckDownload(s);
-	}
-}
-public Action CommandBuildings(int client, int args)
-{
-	if (!bEnabled.BoolValue) return Plugin_Handled;
-
-	CTFPlayer pCreator = new CTFPlayer(client);
-	if ( !pCreator ) return Plugin_Handled;
-
-	int team = view_as<int>(pCreator.Team);
-	if ( (!AllowBlu.BoolValue && (team == 3)) || (!AllowRed.BoolValue && (team == 2)) )
-		return Plugin_Handled;
-
-	Menu pStructs = new Menu(MenuHandlerStructures);
-	pStructs.SetTitle("[Structs] Main Menu");
-	pStructs.AddItem("tier1", "Build Defensive Structure");
-	//pStructs.AddItem("tier2", "Build Base Structure");
-	//pStructs.AddItem("tier3", "Rotate a Structure");
-	pStructs.AddItem("tier4", "Destroy a Structure");
-	pStructs.AddItem("tier4", "Destroy All Built Structures");
-	pStructs.Display(client, MENU_TIME_FOREVER);
-	return Plugin_Handled;
-}
-public int MenuHandlerStructures(Menu menu, MenuAction action, int client, int selection)
-{
-	char info[32];
-	menu.GetItem( selection, info, sizeof(info) );
-	if (action == MenuAction_Select)
-        {
-		switch (selection)
+	else if (other > MaxClients) {
+		BaseBoss player = BaseBoss(client);
+		if (IsValidEntity(other) and player.bIsBoss)
 		{
-			case 0: DefensiveMenu(client);
-			case 1: DestroyMenu(client);
-			case 2:
+			char ent[5];
+			if (GetEntityClassname(other, ent, sizeof(ent)), not StrContains(ent, "obj_") )
 			{
-				for (int i = 0; i < 6; i++)
-				{
-					if ( Structures[client][i] != null && Structures[client][i].IsValid )
-					{
-						CreateTimer( 0.1, RemoveEnt, Structures[client][i].Ref );
-						Structures[client][i] = null;
-					}
-				}
-				CommandBuildings(client, -1);
-			}
-		}
-        }
-	else if (action == MenuAction_End) delete menu;	
-}
-public void DestroyMenu(int client)
-{
-	Menu pStructs = new Menu(MenuHandlerDestroyStructures);
-	pStructs.SetTitle("[Structs] Destroy a Structure");
-	pStructs.AddItem("tier1", "Small Bridge");
-	pStructs.AddItem("tier1", "Sandbag Wall");
-	pStructs.Display(client, MENU_TIME_FOREVER);
-}
-public int MenuHandlerDestroyStructures(Menu menu, MenuAction action, int client, int selection)
-{
-	char info[32];
-	menu.GetItem(selection, info, sizeof(info));
-	if (action == MenuAction_Select)
-        {
-		if ( Structures[client][selection] != null && Structures[client][selection].IsValid )
-		{
-			CreateTimer( 0.1, RemoveEnt, Structures[client][selection].Ref );
-			Structures[client][selection] = null;
-		}
-		else Structures[client][selection] = null;
-		CommandBuildings(client, -1);
-        }
-	else if (action == MenuAction_End) delete menu;	
-}
-public void DefensiveMenu(int client)
-{
-	Menu pStructs = new Menu(MenuHandlerDefensiveStructures);
-	pStructs.SetTitle("[Structs] Defensive Structures");
-	pStructs.AddItem("tier1", "Small Bridge");
-	pStructs.AddItem("tier1", "Sandbag Wall");
-	pStructs.Display(client, MENU_TIME_FOREVER);
-}
-public int MenuHandlerDefensiveStructures(Menu menu, MenuAction action, int client, int selection)
-{
-	char info[32];
-	menu.GetItem(selection, info, sizeof(info));
-	if (action == MenuAction_Select)
-        {
-		GetBuilding(client, view_as<Structure>(selection));
-		DefensiveMenu(client);
-        }
-	else if (action == MenuAction_End) delete menu;	
-}
-public void GetBuilding(int client, Structure type)
-{
-	CTFPlayer pPlayer = new CTFPlayer(client);
-	if ( !pPlayer || !pPlayer.IsAlive ) return;
-
-	char szModelPath[64];
-	int iClient = pPlayer.Index;
-	CBaseAnimating pStruct;
-
-	float flEyePos[3], flAng[3];
-	pPlayer.GetEyePosition(flEyePos);
-	pPlayer.GetEyeAngles(flAng);
-
-	TR_TraceRayFilter(flEyePos, flAng, MASK_PLAYERSOLID, RayType_Infinite, TraceFilterIgnorePlayers, iClient);
-	//float StructAng[3]; TR_GetPlaneNormal(StructAng);
-
-	if ( TR_GetFraction() < 1.0 )
-	{
-		float flEndPos[3]; TR_GetEndPosition(flEndPos);
-
-		pPlayer.GetAbsAngles(flAng);
-		flAng[1] += 90.0;
-
-		pStruct = view_as<CBaseAnimating>( CBaseEntity.CreateByName("prop_dynamic") );
-		if ( !pStruct || !pStruct.IsValid ) return;
-
-		pStruct.Team = view_as<int>( pPlayer.Team );
-
-		switch (type)
-		{
-			case Bridge: szModelPath = "models/props_forest/sawmill_bridge.mdl";
-			case Sandbags: szModelPath = "models/mrmof/sandbags01.mdl";
-		}
-		PrecacheModel(szModelPath, true);
-		pStruct.SetModel(szModelPath);
-		pStruct.SolidType = SOLID_VPHYSICS;
-
-		float mins[3], maxs[3];
-		pStruct.GetPropVector(Prop_Send, "m_vecMins", mins );
-		pStruct.GetPropVector(Prop_Send, "m_vecMaxs", maxs );
-		if ( CanBuildHere(flEndPos, mins, maxs) )
-		{
-			pStruct.Spawn();
-			pStruct.SetProp(Prop_Data, "m_takedamage", 2);
-			SDKHook(pStruct.Index, SDKHook_OnTakeDamage, OnStructureDamaged);
-			pStruct.Teleport(flEndPos, flAng, nullvec);
-
-			int beamcolor[4]; beamcolor[0] = 0, beamcolor[1] = 255, beamcolor[2] = 90, beamcolor[3] = 255;
-
-			float vecMins[3], vecMaxs[3];
-			pStruct.GetPropVector(Prop_Send, "m_vecMins", mins );
-			pStruct.GetPropVector(Prop_Send, "m_vecMaxs", maxs );
-			AddVectors(flEndPos, mins, vecMins);
-			AddVectors(flEndPos, maxs, vecMaxs);
-			TE_SendBeamBoxToAll( vecMaxs, vecMins, PrecacheModel("sprites/laser.vmt", true), PrecacheModel("sprites/laser.vmt", true), 1, 1, 5.0, 8.0, 8.0, 5, 2.0, beamcolor, 0 );
-
-			switch (type)
-			{
-				case Bridge: pStruct.SetProp(Prop_Data, "m_iHealth", 300);
-				case Sandbags:
-				{
-					SDKHook(pStruct.Index, SDKHook_ShouldCollide, OnStructureCollide);
-					pStruct.SetProp(Prop_Data, "m_iHealth", 500);
-				}
-			}
-			if ( pStruct != null && pStruct.IsValid )
-			{
-				if (Structures[iClient][type] != null)
-				{
-					CreateTimer( 0.1, RemoveEnt, Structures[client][type].Ref );
-					Structures[iClient][type] = null;
-				}
-				Structures[iClient][type] = pStruct;
-				PrintStructureSize(pPlayer, pStruct);
-			}
-		}
-		else
-		{
-			PrintToChat(iClient, "Can't build structure there");
-			CreateTimer( 0.1, RemoveEnt, pStruct.Ref );
-		}
-	}
-	return;
-}
-/*
-void CreateBuilding(int client, Structure type, CBaseAnimating pBuild)
-{
-	
-}
-*/
-public Action OnStructureDamaged(int victim, int &attacker, int &inflictor, float &damage, int &damagetype)
-{
-	CBaseAnimating pStruct = new CBaseAnimating(victim);
-	if ( pStruct != null && pStruct.IsValid )
-	{
-		CBasePlayer pAttacker = new CBasePlayer(attacker);
-		if ( pAttacker != null && IsValidClient(pAttacker) )
-		{
-			if (pStruct.Team == pAttacker.Team)
-			{
-				damage = 0.0;
-				return Plugin_Changed;
+				if (GetEntProp(other, Prop_Send, "m_iTeamNum") not_eq GetClientTeam(client))
+					ManageOnTouchBuilding(player, other); // in handler.sp
 			}
 		}
 	}
 	return Plugin_Continue;
 }
-public bool OnStructureCollide(int entity, int collisiongroup, int contentsmask, bool originalResult)
-{
-	CBaseAnimating pStruct = new CBaseAnimating(entity);
-	if ( pStruct != null && pStruct.IsValid )
-	{
-		if ( pStruct.Team == 0 ) return false;
 
-		if ( collisiongroup == 8 ) //COLLISION_GROUP_PLAYER_MOVEMENT
-		{
-			switch (pStruct.Team) //do collisions by team
-			{
-				case 2: if ( !(contentsmask & 0x800) ) return false; //CONTENTS_REDTEAM
-				case 3: if ( !(contentsmask & 0x1000) ) return false; //CONTENTS_BLUETEAM
-			}
-			return true;
+public void OnMapStart()
+{
+	ManageDownloads();	// in handler.sp
+	gamemode.hMusic = null;
+	CreateTimer(0.1, Timer_PlayerThink, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(5.0, MakeModelTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+
+	gamemode.iHealthBar = FindEntityByClassname(-1, "monster_resource");
+	if (gamemode.iHealthBar is -1) {
+		gamemode.iHealthBar = CreateEntityByName("monster_resource");
+		if (gamemode.iHealthBar not_eq -1)
+			DispatchSpawn(gamemode.iHealthBar);
+	}
+	gamemode.iRoundCount = 0;
+}
+public void OnMapEnd()
+{
+	SetConVarInt(FindConVar("tf_arena_use_queue"), tf_arena_use_queue);
+	SetConVarInt(FindConVar("mp_teams_unbalance_limit"), mp_teams_unbalance_limit);
+	SetConVarInt(FindConVar("tf_arena_first_blood"), tf_arena_first_blood);
+	SetConVarInt(FindConVar("mp_forcecamera"), mp_forcecamera);
+	SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), tf_scout_hype_pep_max);
+}
+
+public void _MakePlayerBoss(const int userid)
+{
+	int client = GetClientOfUserId(userid);
+	if ( client and IsClientInGame(client) ) {
+		BaseBoss player = BaseBoss(client);
+		ManageBossTransition(player);	// in handler.sp; sets health, model, and equips the boss
+	}
+}
+public void _MakePlayerMinion(const int userid)
+{
+	int client = GetClientOfUserId(userid);
+	if ( client and IsClientInGame(client) ) {
+		BaseBoss player = BaseBoss(client);
+		ManageMinionTransition(player);	// in handler.sp; sets health, model, and equips the boss
+	}
+}
+
+public void _BossDeath(const int userid)
+{
+	int client = GetClientOfUserId(userid);
+	if ( IsValidClient(client, false) ) {
+		BaseBoss player = BaseBoss(client);
+		if (player.iHealth <= 0)
+			player.iHealth = 0; //ded, not big soup rice!
+
+		ManageBossDeath(player); // in handler.sp
+	}
+}
+public Action MakeModelTimer(Handle hTimer)
+{
+	BaseBoss player;
+	for (int i=MaxClients ; i ; --i) {
+		if ( not IsValidClient(i, false) )
+			continue;
+
+		player = BaseBoss(i);
+		if (player.bIsBoss) {
+			if ( not IsPlayerAlive(i) )
+				continue;
+			ManageBossModels(player); // in handler.sp
 		}
 	}
-	return false;
+	return Plugin_Continue;
 }
-
-//stocks
-stock void PrintStructureSize(CBasePlayer pOwner, CBaseEntity pEnt)
+public void SetGravityNormal(const int userid)
 {
-	if ( !pEnt || !pEnt.IsValid ) return;
-	else if ( !pOwner || !pOwner.IsValid ) return;
-
-	float mins[3], maxs[3];
-
-	pEnt.GetPropVector(Prop_Send, "m_vecMins", mins );
-	pEnt.GetPropVector(Prop_Send, "m_vecMaxs", maxs );
-	PrintToConsole(pOwner.Index, "Bridge Vec Mins %f x, %f y, %f z", mins[0], mins[1], mins[2]);
-	PrintToConsole(pOwner.Index, "Bridge Vec Maxs %f x, %f y, %f z", maxs[0], maxs[1], maxs[2]);
+	int i = GetClientOfUserId(userid);
+	if ( IsValidClient(i) )
+		SetEntityGravity(i, 1.0);
 }
-stock bool IsInRange( CBaseEntity pEnt, CBaseEntity pTarget, float dist, bool bTrace )
+public Action Timer_PlayerThink(Handle hTimer) //the main 'mechanics' of bosses
 {
-	float entitypos[3]; pEnt.GetAbsOrigin( entitypos );
-	float targetpos[3]; pTarget.GetAbsOrigin( targetpos );
+	if (not bEnabled.BoolValue or gamemode.iRoundState not_eq StateRunning)
+		return Plugin_Continue;
 
-	if ( GetVectorDistance(entitypos, targetpos) <= dist )
-	{
-		if (!bTrace) return true;
-		else {
-			TR_TraceRayFilter( entitypos, targetpos, MASK_SHOT, RayType_EndPoint, TraceRayDontHitSelf, pEnt.Index );
-			if ( TR_GetFraction() > 0.98 ) return true;
-			//I have no fucking clue how but above code works more accurately than the commented...
-			//if ( TR_DidHit() && TR_GetEntityIndex() == target ) return true;
+	gamemode.UpdateBossHealth();
+	BaseBoss player;
+	for (int i=MaxClients ; i ; --i) {
+		if ( not IsValidClient(i, false) )
+			continue;
+
+		player = BaseBoss(i);
+		if (player.bIsBoss) {	/* If player is a boss, force Boss think on them; if not boss or on blue team, force fighter think! */
+			ManageBossThink(player); // in handler.sp
+			SetEntProp(i, Prop_Send, "m_iHealth", player.iHealth);
 		}
+		else ManageFighterThink(player);
 	}
-	return false;
+	return Plugin_Continue;
 }
-public bool TraceRayDontHitSelf(int entity, int contentsMask, any data)
+
+public Action CmdReloadCFG(int client, int args)
 {
-	return ( entity != data );
+	ServerCommand("sm_rcon exec sourcemod/VSHv2.cfg");
+	ReplyToCommand(client, "**** Reloading VSH 2 ConVar Config ****");
+	return Plugin_Handled;
 }
-stock bool CanBuildHere(float flPos[3], float flMins[3], float flMaxs[3])
+
+public Action TraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &ammotype, int hitbox, int hitgroup)
 {
-	bool bSuccess = false;
-	int iIterations = 4;
-	for ( int i = 0; ( i < iIterations ) && !bSuccess; i++ )
-	{
-		TR_TraceHull( flPos, flPos, flMins, flMaxs, MASK_PLAYERSOLID );
-		if (TR_GetFraction() > 0.98) bSuccess = true;
-		flPos[2] += 2.0;
+	if ( not bEnabled.BoolValue )
+		return Plugin_Continue;
+
+	if ( IsClientValid(attacker) and IsClientValid(victim) ) {
+		BaseBoss player = BaseBoss(victim);
+		BaseBoss enemy = BaseBoss(attacker);
+		ManageTraceHit(player, enemy, inflictor, damage, damagetype, ammotype, hitbox, hitgroup); // in handler.sp
 	}
-	return bSuccess;
+	return Plugin_Continue;
 }
-public bool TraceFilterIgnorePlayers(int entity, int contentsMask, any client)
+public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	return ( !(entity > 0 && entity <= MaxClients) );
+	if ( not bEnabled.BoolValue or not IsClientValid(victim) )
+		return Plugin_Continue;
+
+	BaseBoss BossVictim = BaseBoss(victim);
+	int bFallDamage = (damagetype & DMG_FALL);
+	if (BossVictim.bIsBoss and attacker <= 0 and bFallDamage) {
+		damage = (BossVictim.iHealth > 100) ? 1.0 : 30.0;
+		return Plugin_Changed;
+	}
+	BaseBoss BossAttacker = BaseBoss(attacker);
+	
+	if (BossVictim.bIsBoss) // in handler.sp
+		return ManageOnBossTakeDamage(BossVictim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
+
+	if (damagetype & DMG_CRIT)
+		return Plugin_Continue; // this prevents damage fall off applying to crits
+
+	if (BossAttacker.bIsBoss) // in handler.sp
+		return ManageOnBossDealDamage(BossVictim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
+
+	return Plugin_Continue;
 }
 public Action RemoveEnt(Handle timer, any entid)
 {
-	CBaseEntity pEnt = new CBaseEntity( EntRefToEntIndex(entid) );
-	if ( pEnt != null && pEnt.IsValid ) pEnt.AcceptInput("Kill");
+	int ent = EntRefToEntIndex(entid);
+	if ( ent > 0 and IsValidEntity(ent) )
+		AcceptEntityInput(ent, "Kill");
 	return Plugin_Continue;
 }
-stock void CheckDownload(char[] dlpath)
+public Action cdVoiceMenu(int client, const char[] command, int argc)
 {
-	if ( FileExists(dlpath) ) AddFileToDownloadsTable(dlpath);
+	if ( not bEnabled.BoolValue )
+		return Plugin_Continue;
+	if (argc < 2 or not IsPlayerAlive(client))
+		return Plugin_Handled;
+
+	char szCmd1[8]; GetCmdArg(1, szCmd1, sizeof(szCmd1));
+	char szCmd2[8]; GetCmdArg(2, szCmd2, sizeof(szCmd2));
+
+	// Capture call for medic commands (represented by "voicemenu 0 0")
+	BaseBoss boss = BaseBoss(client);
+	if ( szCmd1[0] equals '0' and szCmd2[0] equals '0' and boss.bIsBoss )
+		ManageBossMedicCall(boss);
+
+	return Plugin_Continue;
 }
-stock float Vector2DLength( const float vec[2] )
+public Action DoTaunt(int client, const char[] command, int argc)
 {
-	return SquareRoot(vec[0]*vec[0] + vec[1]*vec[1]);		
-}
-stock float fMax(float a, float b) { return (a > b) ? a : b; }
-stock float fMin(float a, float b) { return (a < b) ? a : b; }
+	if (not bEnabled.BoolValue)
+		return Plugin_Continue;
 
-stock void EyeVectors(CBasePlayer pPlayer, float vecForw[3] = nullvec, float vecRite[3] = nullvec, float vecUp[3] = nullvec)
-{
-	float flEyeAngs[3];
-	pPlayer.GetEyeAngles(flEyeAngs);
-	GetAngleVectors( flEyeAngs, vecForw, vecRite, vecUp );
-}
-
-stock void TE_SendBeamBoxToAll(const float upc[3], const float btc[3], int ModelIndex, int HaloIndex, int StartFrame, int FrameRate, const float Life, const float Width, const float EndWidth, int FadeLength, const float Amplitude, const int Color[4], int Speed)
-{
-	// Create the additional corners of the box
-	float tc1[] = {0.0, 0.0, 0.0};
-	float tc2[] = {0.0, 0.0, 0.0};
-	float tc3[] = {0.0, 0.0, 0.0};
-	float tc4[] = {0.0, 0.0, 0.0};
-	float tc5[] = {0.0, 0.0, 0.0};
-	float tc6[] = {0.0, 0.0, 0.0};
-
-	AddVectors(tc1, upc, tc1);
-	AddVectors(tc2, upc, tc2);
-	AddVectors(tc3, upc, tc3);
-	AddVectors(tc4, btc, tc4);
-	AddVectors(tc5, btc, tc5);
-	AddVectors(tc6, btc, tc6);
-
-	tc1[0] = btc[0];
-	tc2[1] = btc[1];
-	tc3[2] = btc[2];
-	tc4[0] = upc[0];
-	tc5[1] = upc[1];
-	tc6[2] = upc[2];
-
-	// Draw all the edges
-	TE_SetupBeamPoints(upc, tc1, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToAll();
-	TE_SetupBeamPoints(upc, tc2, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToAll();
-	TE_SetupBeamPoints(upc, tc3, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToAll();
-	TE_SetupBeamPoints(tc6, tc1, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToAll();
-	TE_SetupBeamPoints(tc6, tc2, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToAll();
-	TE_SetupBeamPoints(tc6, btc, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToAll();
-	TE_SetupBeamPoints(tc4, btc, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToAll();
-	TE_SetupBeamPoints(tc5, btc, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToAll();
-	TE_SetupBeamPoints(tc5, tc1, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToAll();
-	TE_SetupBeamPoints(tc5, tc3, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToAll();
-	TE_SetupBeamPoints(tc4, tc3, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToAll();
-	TE_SetupBeamPoints(tc4, tc2, ModelIndex, HaloIndex, StartFrame, FrameRate, Life, Width, EndWidth, FadeLength, Amplitude, Color, Speed);
-	TE_SendToAll();
+	BaseBoss boss = BaseBoss(client);
+	if ( boss.flRAGE >= 100.0 ) {
+		ManageBossTaunt(boss);
+		boss.flRAGE = 0.0;
+	}
+	return Plugin_Continue;
 }
 
-
-
-
-
-
-
-
-
-/*
-							Legacy testing code
-*/
-
-/*public Action MyDearWatson(Handle timer, any entid)
+public void OnEntityCreated(int entity, const char[] classname)
 {
-	CBaseAnimating pEnt = new CBaseAnimating( EntRefToEntIndex(entid) );
-	if ( !pEnt || !pEnt.IsValid ) return Plugin_Stop;
+	if ( not bEnabled.BoolValue )
+		return;
 
-	CTFPlayer player;
-	for (int i = 1; i <= MaxClients; ++i)
-	{
-		if ( (player = new CTFPlayer(i)) == null ) continue;
-		if ( !IsValidClient(player) ) continue;
+	ManageEntityCreated(entity, classname);
 
-		if ( (!AllowBlu.BoolValue && player.Team == TFTeam_Blue) || (!AllowRed.BoolValue && player.Team == TFTeam_Red) )
+}
+public void CalcScores()
+{
+	int j, damage, amount;
+	BaseBoss player;
+	Event scoring = CreateEvent("player_escort_score", true);
+	for ( int i = MaxClients ; i ; --i ) {
+		if (not IsValidClient(i))
 			continue;
+		player = BaseBoss(i);
+		
+		damage = player.iDamage;
+		scoring.SetInt("player", i);
+		amount = cvarVSH2[DamagePoints].IntValue;
+		for (j=0 ; damage-amount > 0 ; damage -= amount, j++) {}
+		scoring.SetInt("points", j);
+		scoring.FireToClient(i);
+		CPrintToChat(i, "{olive}[VSH 2]{default} You scored %i points.", j);
 
-		if ( IsInRange(player, pEnt, 100.0, false) && flTimer[player.Index] <= GetGameTime() )
-		{
-			SetVariantString("open");
-			pEnt.AcceptInput("SetAnimation");
-			ResupplyPlayer(player.UserID);
+		if ( player.bIsBoss ) {
+			player.iQueue = 0;
+			continue;
 		}
-		else
+		if (GetClientTeam(i) > 1) {
+			int queue;
+			if (cvarVSH2[DamageForQueue].BoolValue)
+				queue = cvarVSH2[QueueGained].IntValue+(player.iDamage/1000);
+			else queue = cvarVSH2[QueueGained].IntValue;
+			player.iQueue += queue; //(i, GetClientQueuePoints(i)+queue);
+			CPrintToChat(i, "{olive}[VSH 2]{default} You get %i queue points.", queue);
+		}
+	}
+	delete scoring;
+}
+public Action Timer_DrawGame(Handle timer)
+{
+	if (gamemode.iHealthBarPercent < cvarVSH2[HealthPercentForLastGuy].IntValue or gamemode.iRoundState not_eq StateRunning)
+		return Plugin_Stop;
+
+	int time = gamemode.iTimeLeft;
+	gamemode.iTimeLeft--;
+	char strTime[6];
+
+	if (time/60 > 9)
+		IntToString(time/60, strTime, 6);
+	else Format(strTime, 6, "0%i", time/60);
+
+	if (time%60 > 9)
+		Format(strTime, 6, "%s:%i", strTime, time%60);
+	else Format(strTime, 6, "%s:0%i" , strTime, time%60);
+
+	SetHudTextParams(-1.0, 0.17, 1.1, 255, 255, 255, 255);
+	for (int i=MaxClients ; i ; --i) {
+		if ( not IsValidClient(i) or not IsClientConnected(i) )
+			continue;
+		ShowSyncHudText(i, timeleftHUD, strTime);
+	}
+	switch ( time )
+	{
+		case 60: EmitSoundToAll("vo/announcer_ends_60sec.mp3");
+		case 30: EmitSoundToAll("vo/announcer_ends_30sec.mp3");
+		case 10: EmitSoundToAll("vo/announcer_ends_10sec.mp3");
+		case 1, 2, 3, 4, 5:
 		{
-			SetVariantString("close");
-			pEnt.AcceptInput("SetAnimation");
+			char sound[FULLPATH];
+			Format(sound, FULLPATH, "vo/announcer_ends_%isec.mp3", time);
+			EmitSoundToAll(sound);
+		}
+		case 0:  //Thx MasterOfTheXP
+		{
+			ForceTeamWin(BLU);
+			return Plugin_Stop;
 		}
 	}
 	return Plugin_Continue;
 }
-public void ResupplyPlayer(int userid)
+public void ResetMediCharge(const int entid)
 {
-	CTFPlayer pUser = view_as<CTFPlayer>( Player_FromUserId(userid) );
-	if ( IsValidClient(pUser) && pUser.IsAlive )
+	int medigun = EntRefToEntIndex(entid); 
+	if (medigun > MaxClients and IsValidEntity(medigun))
+		SetMediCharge(medigun, GetMediCharge(medigun)+cvarVSH2[MedigunReset].FloatValue);
+}
+public Action TimerLazor(Handle timer, any medigunid)
+{
+	int medigun = EntRefToEntIndex(medigunid);
+	if (medigun and IsValidEntity(medigun) and gamemode.iRoundState is StateRunning)
 	{
-		float cooldown = Cooldown.FloatValue;
+		int client = GetOwner(medigun);
+		float charge = GetMediCharge(medigun);
+		if (charge > 0.05) {
+			TF2_AddCondition(client, TFCond_CritOnWin, 0.5);
 
-		if (!ArenaMode.BoolValue) pUser.Regenerate();
-		else
-		{
-			pUser.Health = pUser.GetProp(Prop_Data, "m_iMaxHealth");
-		}
-
-		EmitSoundToClient(pUser.Index, "items/regenerate.wav");
-		if (bAllOrNone.BoolValue)
-		{
-			CTFPlayer player;
-			for (int i = 1; i <= MaxClients; i++)
+			int target = GetHealingTarget(client);
+			if (IsClientValid(target) and IsPlayerAlive(target))
 			{
-				if ( (player = new CTFPlayer(i)) == null ) continue;
-				if ( !IsValidClient(player) ) continue;
-
-				if (player.Team == pUser.Team) {
-					flTimer[player.Index] = GetGameTime()+cooldown;
-				}
+				TF2_AddCondition(target, TFCond_CritOnWin, 0.5);
+				UberTarget[client] = GetClientUserId(target);
 			}
+			else UberTarget[client] = 0;
 		}
-		else flTimer[pUser.Index] = GetGameTime()+cooldown;
+		else if (charge < 0.05) {
+			SetPawnTimer(ResetMediCharge, 3.0, EntIndexToEntRef(medigun)); //CreateTimer(3.0, TimerLazor2, EntIndexToEntRef(medigun));
+			return Plugin_Stop;
+		}
 	}
-	return;
+	else return Plugin_Stop;
+	return Plugin_Continue;
+}
+public void _MusicPlay()
+{
+	if ( not bEnabled.BoolValue or gamemode.iRoundState not_eq StateRunning)
+		return;
+
+	if (!cvarVSH2[EnableMusic].BoolValue)
+		return;
+
+	if (gamemode.hMusic != null) {
+		KillTimer(gamemode.hMusic);
+		gamemode.hMusic = null;
+	}
+	char sound[FULLPATH] = "";
+	float time = -1.0;
+
+	/*if ( MapHasMusic() ) {
+		strcopy(sound, sizeof(sound), "");
+		time = -1.0;
+	}
+	else*/ ManageMusic(sound, time);	// in handler.sp
+
+	BaseBoss boss;
+	float vol = cvarVSH2[MusicVolume].FloatValue;
+	if (sound[0] not_eq '\0') {
+		for (int i=MaxClients ; i ; --i) {
+			if (!IsValidClient(i))
+				continue;
+			boss = BaseBoss(i);
+			if (boss.bNoMusic)
+				continue;
+			EmitSoundToClient(i, sound, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+		}
+	}
+	if (time not_eq -1.0) {
+		DataPack pack = new DataPack();
+		pack.WriteString(sound);
+		pack.WriteFloat(time);
+		int timerFlags = TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT|TIMER_DATA_HNDL_CLOSE;
+		gamemode.hMusic = CreateTimer(time, Timer_MusicTheme, pack, timerFlags);
+	}
 }
 
-public Action CreatePortableResupply(int client, int args)
+public Action Timer_MusicTheme(Handle timer, DataPack pack)
 {
-	if (bEnabled.BoolValue)
+	if (bEnabled.BoolValue and gamemode.iRoundState equals StateRunning)
 	{
-		CTFPlayer pCreator = new CTFPlayer(client);
-		if ( !pCreator || !pCreator.IsAlive ) return Plugin_Continue;
-
-		int team = view_as<int>(pCreator.Team);
-		if ( (!AllowBlu.BoolValue && (team == 3)) || (!AllowRed.BoolValue && (team == 2)) )
-			return Plugin_Continue;
-
-		if (iResuppliesBuilt[team-2] <= 0)
-		{
-			float flPos[3], flAng[3];
-			pCreator.GetEyePosition(flPos);
-			pCreator.GetEyeAngles(flAng);
-
-			TR_TraceRayFilter(flPos, flAng, MASK_SHOT, RayType_Infinite, TraceFilterIgnorePlayers, pCreator.Index);
-			if ( TR_DidHit() )
-			{
-				float flEndPos[3]; TR_GetEndPosition(flEndPos);
-				flEndPos[2] += 5.0;
-
-				float mins[3] = {-24.0, -24.0, 0.0};
-				float maxs[3] = {24.0, 24.0, 55.0};
-
-				if ( CanBuildHere(flEndPos, mins, maxs) )
-				{
-					pCreator.GetAbsAngles(flAng);
-					CBaseAnimating pResupply = CreateResupply(pCreator, flEndPos, flAng);
-
-					switch (pCreator.Team)
-					{
-						case TFTeam_Red: pRedSupply = pResupply;
-						case TFTeam_Blue: pBluSupply = pResupply;
-					}
-					//CreateTimer(0.1, MyDearWatson, pResupply.Ref, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-					PrintToConsole(pCreator.Index, "built resupply");
-				}
-				else PrintToChat(pCreator.Index, "Can't build Resupply there");
+		char music[FULLPATH];
+		pack.Reset();
+		pack.ReadString(music, sizeof(music));
+		//float time = pack.ReadFloat();
+		BaseBoss boss;
+		float vol = cvarVSH2[MusicVolume].FloatValue;
+		if (music[0] not_eq '\0') {
+			for (int i=MaxClients ; i ; --i) {
+				if (!IsValidClient(i))
+					continue;
+				boss = BaseBoss(i);
+				if (boss.bNoMusic)
+					continue;
+				EmitSoundToClient(i, music, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
 			}
-		}
-		else
-		{
-			CBaseAnimating pEnt = null;
-			switch (pCreator.Team)
-			{
-				case TFTeam_Red:	pEnt = pRedSupply;
-				case TFTeam_Blue:	pEnt = pBluSupply;
-			}
-			PrintToConsole(pCreator.Index, "got ent");
-
-			if ( pEnt != null && pEnt.IsValid ) CreateTimer( 0.1, RemoveEnt, pEnt.Ref );
-			else PrintToConsole(pCreator.Index, "entity wasn't valid, resetting");
-
-			iResuppliesBuilt[team-2]--;
-			CreatePortableResupply(pCreator.Index, -1);
 		}
 	}
-	return Plugin_Handled;
-}*/
+	else gamemode.hMusic = null;
+	return Plugin_Continue;
+}
