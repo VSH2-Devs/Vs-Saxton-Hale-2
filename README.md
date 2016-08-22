@@ -4,25 +4,16 @@ This README would normally document whatever steps are necessary to get your app
 
 ### What is this repository for? ###
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+* VSH2 was created to facilitate easier boss additions to VSH while having the same capabilities and even more so than FF2.
+* 1.0.0 BETA
 
 ### How do I get set up? ###
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
+* Compile with spcomp
+* VSH2 uses the same map configurations as FF2 and VSH and this is for compatibility reasons.
+* Dependencies: TF2Items, MoreColors
+* Compile plugin into .smx and put in addons/sourcemod/plugins folder
 
 ### Who do I talk to? ###
 
-* Repo owner or admin
+* Contact the Repo Owner: Nergal the Ashurian/Assyrian - https://forums.alliedmods.net/member.php?u=176545
