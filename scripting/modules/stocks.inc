@@ -409,7 +409,7 @@ stock bool OnlyScoutsLeft(const int team)
 	for (int i=MaxClients ; i ; --i) {
 		if ( not IsValidClient(i) or not IsPlayerAlive(i) )
 			continue;
-		if (GetClientTeam(i) equals team and TF2_GetPlayerClass(i) != TFClass_Scout)
+		if (GetClientTeam(i) is team and TF2_GetPlayerClass(i) != TFClass_Scout)
 			return false;
 	}
 	return true;
@@ -626,9 +626,9 @@ stock bool IsVSHMap()	// just use arena maps as vsh/ff2 maps
 	char config[FULLPATH], currentmap[99];
 	GetCurrentMap(currentmap, sizeof(currentmap));
 	if ( FileExists("bNextMapToFF2") )
-		return true;
+		{return true;}
 	else if ( FileExists("bNextMapToHale") )
-		return true;
+		{return true;}
 
 	BuildPath(Path_SM, config, FULLPATH, "configs/freak_fortress_2/maps.cfg");	// Compatibility :)
 	if (not FileExists(config)) {
@@ -649,7 +649,7 @@ stock bool IsVSHMap()	// just use arena maps as vsh/ff2 maps
 	while ( file.ReadLine(config, sizeof(config)) and tries < 100 )
 	{
 		++tries;
-		if (tries equals 100) {
+		if (tries is 100) {
 			LogError("[VSH 2] **** Breaking Loop Looking For a Map ****");
 			return false;
 		}
@@ -740,7 +740,7 @@ stock void SpawnRandomHealth()
 	while ( (iEnt = FindEntityByClassname(iEnt, "info_player_teamspawn")) != -1 )
 	{
 		if ( GetRandomInt(0, 4) )
-			continue;
+			{continue;}
 		// Technically you'll never find a map without a spawn point.
 		GetEntPropVector(iEnt, Prop_Send, "m_vecOrigin", vPos);
 		GetEntPropVector(iEnt, Prop_Send, "m_angRotation", vAng);
@@ -756,7 +756,7 @@ stock int GetTeamPlayerCount(const int team)
 	int count = 0;
 	for (int i=MaxClients ; i ; --i) {
 		if (IsValidClient(i) and GetClientTeam(i) is team)
-			count++;
+			{count++;}
 	}
 	return count;
 }
@@ -777,7 +777,7 @@ stock int GetSlotFromWeapon(const int iClient, const int iWeapon)
 {
 	for (int i=0; i<5; i++) {
 		if ( iWeapon is GetPlayerWeaponSlot(iClient, i) )
-			return i;
+			{return i;}
 	}
 	return -1;
 }
@@ -795,7 +795,7 @@ stock void RemovePlayerBack(int client, int[] indices, int len)
 			if (GetOwner(edict) is client and not GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
 			{
 				for (int i = 0; i < len; i++) {
-					if (idx equals indices[i]) {
+					if (idx is indices[i]) {
 						TF2_RemoveWearable(client, edict);
 						//AcceptEntityInput(edict, "Kill");
 					}
@@ -812,7 +812,7 @@ stock void RemovePlayerBack(int client, int[] indices, int len)
 			int idx = GetItemIndex(edict);
 			if (GetOwner(edict) is client and not GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
 			{
-				for (int i = 0; i < len; i++) {
+				for (int i=0; i < len; i++) {
 					if (idx is indices[i]) {
 						TF2_RemoveWearable(client, edict);
 						//AcceptEntityInput(edict, "Kill");
@@ -883,8 +883,8 @@ stock bool TF2_IsPlayerCritBuffed(const int client)
 }
 stock void OverNineThousand()
 {
-	EmitSoundToAll("saxton_hale/9000.wav", _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, false, 0.0);
-	EmitSoundToAll("saxton_hale/9000.wav", _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, false, 0.0);
+	EmitSoundToAll("saxton_hale/9000.wav");
+	EmitSoundToAll("saxton_hale/9000.wav");
 }
 public void _NoHonorBound(const int userid)
 {
@@ -937,15 +937,13 @@ stock TF2Item PrepareItemHandle(TF2Item hItem, char[] name = "", int index = -1,
 	else hWeapon.iFlags = flags;
 //	Handle hWeapon = TF2Items_CreateItem(flags);	//null;
 
-	if (hItem != null)
-	{
+	if (hItem != null) {
 		addattribs = hItem.iNumAttribs;
 		if (addattribs) {
 			for (int i=0; i < 2*addattribs; i+=2) {
 				bool dontAdd = false;
 				int attribIndex = hItem.GetAttribID(i);
-				for (int z = 0; z < attribCount+i; z += 2)
-				{
+				for (int z=0; z < attribCount+i; z += 2) {
 					if (StringToInt(weaponAttribsArray[z]) == attribIndex)
 					{
 						dontAdd = true;
@@ -985,7 +983,7 @@ stock TF2Item PrepareItemHandle(TF2Item hItem, char[] name = "", int index = -1,
 }
 stock bool IsWeaponSlotActive(const int client, const int slot)
 {
-	return GetPlayerWeaponSlot(client, slot) equals GetActiveWep(client);
+	return GetPlayerWeaponSlot(client, slot) is GetActiveWep(client);
 }
 public void _StopTickle(const int userid)
 {
@@ -1067,6 +1065,35 @@ stock void SetAmmo(const int client, const int slot, const int ammo)
 		int iAmmoTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
 		SetEntData(client, iAmmoTable+iOffset, ammo, 4, true);
 	}
+}
+stock void SetClip(const int client, const int slot, const int ammo)
+{
+	int weapon = GetPlayerWeaponSlot(client, slot);
+	if (IsValidEntity(weapon)) {
+		int iAmmoTable = FindSendPropInfo("CTFWeaponBase", "m_iClip1");
+		SetEntData(weapon, iAmmoTable, ammo, 4, true);
+	}
+}
+stock int GetAmmo(const int client, const int slot)
+{
+	if (!IsValidClient(client))
+		return 0;
+	int weapon = GetPlayerWeaponSlot(client, slot);
+	if (IsValidEntity(weapon)) {
+		int iOffset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
+		int iAmmoTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
+		return GetEntData(client, iAmmoTable+iOffset);
+	}
+	return 0;
+}
+stock int GetClip(const int client, const int slot)
+{
+	int weapon = GetPlayerWeaponSlot(client, slot);
+	if (IsValidEntity(weapon)) {
+		int AmmoClipTable = FindSendPropInfo("CTFWeaponBase", "m_iClip1");
+		return GetEntData(weapon, AmmoClipTable);
+	}
+	return 0;
 }
 stock void SkipBossPanelNotify(const int client, bool newchoice = true)
 {
