@@ -15,6 +15,8 @@ public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 			if (GetClientTeam(player.index) not_eq BLU)
 				player.ForceTeamChange(BLU);
 			player.ConvertToBoss();		// in base.sp
+			if (player.iHealth == 0)
+				player.iHealth = player.iMaxHealth;
 		}
 
 		if (not player.bIsBoss and gamemode.iRoundState > StateDisabled and not player.bIsMinion)
@@ -89,13 +91,14 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 #endif
 		return Plugin_Continue;
 	}
-	if (gamemode.hMusic != null) {
+	/*if (gamemode.hMusic != null) {
 		KillTimer(gamemode.hMusic);
 		gamemode.hMusic = null;
-	}
+	}*/
 	StopBackGroundMusic();
 	gamemode.CheckArena(cvarVSH2[PointType].BoolValue);
 	gamemode.bPointReady = false;
+	gamemode.bAllowSuperWeps = false;
 	GetBossType();	// in handler.sp, check if a boss needs multiple players maybe
 
 	int playing;
@@ -160,8 +163,8 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 		if (GetClientTeam(i) is BLU)
 			player.ForceTeamChange(RED);	// Forceteamchange already does respawn by itself
 	}
-	gamemode.iRoundState = StateStarting;	// We got players and a valid boss, set the gamestate to Starting
-	SetPawnTimer(RoundStartPost, 9.1);		// in handler.sp
+	gamemode.iRoundState = StateStarting;		// We got players and a valid boss, set the gamestate to Starting
+	//SetPawnTimer(RoundStartPost, 9.1);		// in handler.sp
 	SetPawnTimer(ManagePlayBossIntro, 3.5, boss);	// in handler.sp
 	
 	int ent = -1;
@@ -232,13 +235,14 @@ public Action PlayerJarated(Event event, const char[] name, bool dontBroadcast)
 
 	return Plugin_Continue;
 }
-public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
+public Action RoundEnd(Event fevent, const char[] name, bool dontBroadcast)
 {
 	gamemode.iRoundCount++;
 	if (not bEnabled.BoolValue or gamemode.iRoundState is StateDisabled)
 		return Plugin_Continue;
 
 	gamemode.iRoundState = StateEnding;
+	gamemode.flMusicTime = 0.0;
 	BaseBoss boss;
 	for (int i=MaxClients ; i ; --i) {
 		if (not IsValidClient(i))
@@ -249,14 +253,15 @@ public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 #endif
 	}
 	StopBackGroundMusic();	// in handler.sp
-	if (gamemode.hMusic != null) {
+	/*if (gamemode.hMusic != null) {
 		KillTimer(gamemode.hMusic);
 		gamemode.hMusic = null;
-	}
+	}*/
 	
-	BaseBoss bosses[34];
-	int index = 0;
-	for (int i=MaxClients ; i ; --i, ++index) {		// Loop again for bosses only
+	//BaseBoss bosses[34];
+	ArrayList bosses = new ArrayList();
+	//int index = 0;
+	for (int i=MaxClients ; i ; --i) {		// Loop again for bosses only
 		if (not IsValidClient(i))
 			continue;
 
@@ -268,7 +273,7 @@ public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 			if (GetClientTeam(i) != BLU/*gamemode.iHaleTeam*/)
 				boss.ForceTeamChange(BLU);
 		}
-		else bosses[index] = boss;	// Only living bosses are counted
+		else bosses.Push(boss); //bosses[index++] = boss;	// Only living bosses are counted
 	}
 	ManageRoundEndBossInfo(bosses);
 
@@ -276,6 +281,8 @@ public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 	int top[3];
 	Damage[0] = 0;
 	for (int i=MaxClients ; i ; --i) {	// Too lazy to setup methodmap instances, going to use direct arrays
+		if (!IsClientValid(i) or BaseBoss(i).bIsBoss)
+			continue;
 		if (Damage[i] >= Damage[top[0]])
 		{
 			top[2]=top[1];
@@ -294,27 +301,27 @@ public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 		SetPawnTimer(OverNineThousand, 1.0);	// in stocks.inc
 
 	char score1[PATH], score2[PATH], score3[PATH];
-	if (IsValidClient(top[0]) and (GetClientTeam(top[0]) is RED))
+	if (IsClientInGame(top[0]) and (GetClientTeam(top[0]) > 1))
 		GetClientName(top[0], score1, PATH);
 	else {
 		Format(score1, PATH, "---");
 		top[0]=0;
 	}
 
-	if (IsValidClient(top[1]) and (GetClientTeam(top[1]) is RED))
+	if (IsClientInGame(top[1]) and (GetClientTeam(top[1]) > 1))
 		GetClientName(top[1], score2, PATH);
 	else {
 		Format(score2, PATH, "---");
 		top[1]=0;
 	}
 
-	if (IsValidClient(top[2]) and (GetClientTeam(top[2]) is RED))
+	if (IsClientInGame(top[2]) and (GetClientTeam(top[2]) > 1))
 		GetClientName(top[2], score3, PATH);
 	else {
 		Format(score3, PATH, "---");
 		top[2]=0;
 	}
-	SetHudTextParams(-1.0, 0.3, 10.0, 255, 255, 255, 255);
+	SetHudTextParams(-1.0, 0.4, 10.0, 255, 255, 255, 255);
 	PrintCenterTextAll("");	// Should clear center text
 	for (int i=MaxClients ; i ; --i) {
 		if (IsValidClient(i) and not (GetClientButtons(i) & IN_SCORE))
@@ -350,5 +357,62 @@ public Action UberDeployed(Event event, const char[] name, bool dontBroadcast)
 	BaseBoss medic = BaseBoss(event.GetInt("userid"), true);
 	BaseBoss patient = BaseBoss(event.GetInt("targetid"), true);
 	ManageUberDeploy(medic, patient);	// In handler.sp
+	return Plugin_Continue;
+}
+public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast)
+{
+	if (not bEnabled.BoolValue)
+		return Plugin_Continue;
+	
+	BaseBoss	boss;
+	int		i;	// Count amount of bosses for health calculation!
+	for (i=MaxClients ; i ; --i) {
+		if ( not IsValidClient(i) or not IsPlayerAlive(i) )
+			continue;
+		boss = BaseBoss(i);
+		if (!boss.bIsBoss) {
+			SetEntityMoveType(i, MOVETYPE_WALK);
+			if (GetClientTeam(i) not_eq RED and GetClientTeam(i) > int(TFTeam_Spectator))	// For good measure!
+				boss.ForceTeamChange(RED);
+			SetPawnTimer( PrepPlayers, 0.2, boss.userid );	// in handler.sp
+		}
+	}
+	gamemode.iTotalMaxHealth = 0;
+	int bosscount = gamemode.CountBosses(true);
+
+	//BaseBoss bosses[34];	// There's no way almost everybody can be an overpowered boss...
+	ArrayList bosses = new ArrayList();
+	//int index = 0;
+	for (i=MaxClients ; i ; --i) {		// Loop again for bosses only
+		if (not IsValidClient(i))
+			continue;
+
+		boss = BaseBoss(i);
+		if (not boss.bIsBoss)
+			continue;
+
+		bosses.Push(boss); //bosses[index++] = boss;
+		if (not IsPlayerAlive(i))
+			TF2_RespawnPlayer(i);
+		
+		// Automatically divides health based on boss count but this can be changed if necessary
+		boss.iMaxHealth = CalcBossHealth(760.8, gamemode.iPlaying, 1.0, 1.0341, 2046.0) / (bosscount);	// In stocks.sp
+		if (boss.iMaxHealth < 3000 and bosscount is 1)
+			boss.iMaxHealth = 3000;
+#if defined _tf2attributes_included
+		int maxhp = GetEntProp(boss.index, Prop_Data, "m_iMaxHealth");
+		TF2Attrib_RemoveAll(boss.index);
+		TF2Attrib_SetByDefIndex( boss.index, 26, float(boss.iMaxHealth-maxhp) );
+#endif
+		if (GetClientTeam(boss.index) not_eq BLU)
+			boss.ForceTeamChange(BLU);
+		gamemode.iTotalMaxHealth += boss.iMaxHealth;
+		boss.iHealth = boss.iMaxHealth;
+	}
+	SetPawnTimer(CheckAlivePlayers, 0.2);
+	ManageMessageIntro(bosses);
+	if ( gamemode.iPlaying > 5 )
+		SetControlPoint(false);
+
 	return Plugin_Continue;
 }
