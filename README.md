@@ -7,7 +7,7 @@ VSH2 is half-rewrite of VSH 1. VSH and FF2 were made as very bad frameworks and 
 * VSH2 was created to facilitate easier boss additions to VSH while having the same capabilities and even more so than FF2.
 * VSH2 operates through a series of Event Handling functions across different Boss and non-Boss actions which allows developers to control boss code at will.
 * VSH2's game state is controlled through a singleton instance of the VSHGameMode methodmap.
-* 1.0.0 BETA
+* v1.0.2 BETA
 
 ### How do I get set up? ###
 
