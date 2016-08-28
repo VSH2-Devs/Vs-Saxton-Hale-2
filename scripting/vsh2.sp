@@ -27,7 +27,7 @@
 #define	RED	2
 #define BLU	3
 
-//Python style operators
+//Python+C style operators
 #define and				&&
 #define and_eq				&=
 #define bitand				&
@@ -42,7 +42,6 @@
 #define bitl				<<
 #define bitr				>>
 #define is				==
-#define equals				==
 
 //functional-style typecasting
 #define int(%1)				view_as<int>(%1)
@@ -114,40 +113,34 @@ methodmap TF2Item < Handle
 {
 	/* [*C*O*N*S*T*R*U*C*T*O*R*] */
 
-	public TF2Item(int iFlags)
-	{
+	public TF2Item(int iFlags) {
 		return view_as<TF2Item>( TF2Items_CreateItem(iFlags) );
 	}
 	/////////////////////////////// 
 
 	/* [ P R O P E R T I E S ] */
 
-	property int iFlags
-	{
+	property int iFlags {
 		public get()			{ return TF2Items_GetFlags(this); }
 		public set( int iVal )		{ TF2Items_SetFlags(this, iVal); }
 	}
 
-	property int iItemIndex
-	{
+	property int iItemIndex {
 		public get()			{return TF2Items_GetItemIndex(this);}
 		public set( int iVal )		{TF2Items_SetItemIndex(this, iVal);}
 	}
 
-	property int iQuality
-	{
+	property int iQuality {
 		public get()			{return TF2Items_GetQuality(this);}
 		public set( int iVal )		{TF2Items_SetQuality(this, iVal);}
 	}
 
-	property int iLevel
-	{
+	property int iLevel {
 		public get()			{return TF2Items_GetLevel(this);}
 		public set( int iVal )		{TF2Items_SetLevel(this, iVal);}
 	}
 
-	property int iNumAttribs
-	{
+	property int iNumAttribs {
 		public get()			{return TF2Items_GetNumAttributes(this);}
 		public set( int iVal )		{TF2Items_SetNumAttributes(this, iVal);}
 	}
@@ -187,6 +180,8 @@ methodmap TF2Item < Handle
 	/**************************************************************/
 };
 
+//ArrayList ptrBosses ;
+
 #include "modules/stocks.inc"
 #include "modules/handler.sp"	// Contains the game mode logic as well
 #include "modules/events.sp"
@@ -194,6 +189,9 @@ methodmap TF2Item < Handle
 
 public void OnPluginStart()
 {
+	//RegConsoleCmd("sm_onboss", MakeBoss);
+	//RegConsoleCmd("sm_offboss", MakeNotBoss);
+
 	RegAdminCmd("sm_setspecial", SetNextSpecial, ADMFLAG_GENERIC);
 	RegAdminCmd("sm_halespecial", SetNextSpecial, ADMFLAG_GENERIC);
 	RegAdminCmd("sm_hale_special", SetNextSpecial, ADMFLAG_GENERIC);
@@ -291,6 +289,7 @@ public void OnPluginStart()
 	HookEvent( "sticky_jump_landed", OnHookedEvent );
 	HookEvent("item_pickup", ItemPickedUp);
 	HookEvent("player_chargedeployed", UberDeployed);
+	HookEvent("arena_round_start", ArenaRoundStart);
 	
 	AddCommandListener(DoTaunt, "taunt");
 	AddCommandListener(DoTaunt, "+taunt");
@@ -308,12 +307,14 @@ public void OnPluginStart()
 			continue;
 		OnClientPutInServer(i);
 	}
+	
 	AddMultiTargetFilter("@boss", HaleTargetFilter, "the current Boss/Bosses", false);
 	AddMultiTargetFilter("@hale", HaleTargetFilter, "the current Boss/Bosses", false);
 	AddMultiTargetFilter("@minion", MinionTargetFilter, "the Minions", false);
 	AddMultiTargetFilter("@minions", MinionTargetFilter, "the Minions", false);
 	AddMultiTargetFilter("@!boss", HaleTargetFilter, "all non-Boss players", false);
 	AddMultiTargetFilter("@!hale", HaleTargetFilter, "all non-Boss players", false);
+
 }
 public bool HaleTargetFilter(const char[] pattern, Handle clients)
 {
@@ -403,6 +404,8 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 	SDKHook(client, SDKHook_TraceAttack, TraceAttack);
 	SDKHook(client, SDKHook_Touch, OnTouch);
+	SDKHook(client, SDKHook_WeaponSwitchPost, OnWeaponSwitchPost);
+	flHolstered[client][0] = flHolstered[client][1] = flHolstered[client][2] = 0.0;
 	//SDKHook(client, SDKHook_PreThink, OnPreThink);
 
 	BaseBoss boss = BaseBoss(client);
@@ -448,7 +451,7 @@ public Action OnTouch(int client, int other)
 public void OnMapStart()
 {
 	ManageDownloads();	// in handler.sp
-	gamemode.hMusic = null;
+	//gamemode.hMusic = null;
 	CreateTimer(0.1, Timer_PlayerThink, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(5.0, MakeModelTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
@@ -521,10 +524,13 @@ public void SetGravityNormal(const int userid)
 }
 public Action Timer_PlayerThink(Handle hTimer) //the main 'mechanics' of bosses
 {
-	if (not bEnabled.BoolValue or gamemode.iRoundState not_eq StateRunning)
+	if (not bEnabled.BoolValue or gamemode.iRoundState != StateRunning)
 		return Plugin_Continue;
 
 	gamemode.UpdateBossHealth();
+	if (gamemode.flMusicTime <= GetGameTime())
+		_MusicPlay();
+
 	BaseBoss player;
 	for (int i=MaxClients ; i ; --i) {
 		if ( not IsValidClient(i, false) )
@@ -534,11 +540,39 @@ public Action Timer_PlayerThink(Handle hTimer) //the main 'mechanics' of bosses
 		if (player.bIsBoss) {	/* If player is a boss, force Boss think on them; if not boss or on blue team, force fighter think! */
 			ManageBossThink(player); // in handler.sp
 			SetEntProp(i, Prop_Send, "m_iHealth", player.iHealth);
+			SetEntProp(i, Prop_Data, "m_iHealth", player.iHealth);
 		}
 		else ManageFighterThink(player);
 	}
 	return Plugin_Continue;
 }
+
+/*
+float lastFrameTime = 0.0;
+public void OnGameFrame()
+{
+	if ( not bEnabled.BoolValue )
+		return;
+
+	float curtime = GetGameTime();
+	float deltatime = curtime - lastFrameTime;
+	//float frametime = 1.0 / CODEFRAMES; //cvarFrameTime.FloatValue;
+	if ( deltatime > CODEFRAMES ) {
+		BaseBoss player;
+		for (int i=MaxClients ; i ; --i) {
+			if ( not IsValidClient(i, false) or not IsPlayerAlive(i) or IsClientObserver(i) )
+				continue;
+			player = BaseBoss(i);
+			if (player.bIsBoss) {
+				ManageBossThink(player); // in handler.sp
+				PrintToConsole(i, "Think Frame| curtime = %f, lastFrameTime = %f, deltatime = %f", curtime, lastFrameTime, deltatime);
+				SetEntProp(player.index, Prop_Send, "m_iHealth", player.iHealth);
+			}
+		}
+		lastFrameTime = curtime;
+	}
+}
+*/
 
 public Action CmdReloadCFG(int client, int args)
 {
@@ -546,6 +580,22 @@ public Action CmdReloadCFG(int client, int args)
 	ReplyToCommand(client, "**** Reloading VSH 2 ConVar Config ****");
 	return Plugin_Handled;
 }
+
+/*
+public void OnPreThink(int client) //powers the HUD and riding mechanics
+{
+	if ( not bEnabled.BoolValue )
+		return;
+	if ( IsClientObserver(client) or !IsPlayerAlive(client) )
+		return;
+
+	BaseBoss player = BaseBoss(client);
+	if (player.bIsBoss) {
+
+	}
+	return;
+}
+*/
 
 public Action TraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &ammotype, int hitbox, int hitgroup)
 {
@@ -575,9 +625,6 @@ public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& dam
 	if (BossVictim.bIsBoss) // in handler.sp
 		return ManageOnBossTakeDamage(BossVictim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 
-	if (damagetype & DMG_CRIT)
-		return Plugin_Continue; // this prevents damage fall off applying to crits
-
 	if (BossAttacker.bIsBoss) // in handler.sp
 		return ManageOnBossDealDamage(BossVictim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 
@@ -602,7 +649,7 @@ public Action cdVoiceMenu(int client, const char[] command, int argc)
 
 	// Capture call for medic commands (represented by "voicemenu 0 0")
 	BaseBoss boss = BaseBoss(client);
-	if ( szCmd1[0] equals '0' and szCmd2[0] equals '0' and boss.bIsBoss )
+	if ( szCmd1[0] is '0' and szCmd2[0] is '0' and boss.bIsBoss )
 		ManageBossMedicCall(boss);
 
 	return Plugin_Continue;
@@ -627,6 +674,42 @@ public void OnEntityCreated(int entity, const char[] classname)
 
 	ManageEntityCreated(entity, classname);
 
+	if ( not strncmp(classname, "tf_weapon_", 10, false) and IsValidEntity(entity) )
+		CreateTimer( 0.6, OnWeaponSpawned, EntIndexToEntRef(entity) );
+
+}
+public Action OnWeaponSpawned(Handle timer, any ref)
+{
+	int wep = EntRefToEntIndex(ref);
+	if ( IsValidEntity(wep) and IsValidEdict(wep) )
+	{
+		char name[32]; GetEntityClassname(wep, name, sizeof(name));
+		if ( not strncmp(name, "tf_weapon_", 10, false) )
+		{
+			int client = GetOwner(wep);
+			if ( IsValidClient(client) and GetClientTeam(client) is RED) {
+				int slot = GetSlotFromWeapon(client, wep);
+				if (slot not_eq -1 and slot < 3)
+					flHolstered[client][slot] = GetGameTime();
+
+				AmmoTable[wep] = GetWeaponAmmo(wep);
+				ClipTable[wep] = GetWeaponClip(wep);
+			}
+		}
+	}
+	return Plugin_Continue;
+}
+public void OnWeaponSwitchPost(int client, int weapon)
+{
+	static int iActiveSlot[PLYR];
+	if ( (client > 0 && client <= MaxClients) && IsValidEntity(weapon) )
+	{
+		switch (iActiveSlot[client]) // This will be the previous slot at this time, that you switched FROM
+		{
+			case 0, 1: flHolstered[client][iActiveSlot[client]] = GetGameTime();
+		}
+		iActiveSlot[client] = GetSlotFromWeapon(client, weapon);
+	}
 }
 public void CalcScores()
 {
@@ -644,18 +727,18 @@ public void CalcScores()
 		for (j=0 ; damage-amount > 0 ; damage -= amount, j++) {}
 		scoring.SetInt("points", j);
 		scoring.FireToClient(i);
-		CPrintToChat(i, "{olive}[VSH 2]{default} You scored %i points.", j);
 
-		if ( player.bIsBoss ) {
-			player.iQueue = 0;
-			continue;
-		}
 		if (GetClientTeam(i) > 1) {
+			if ( player.bIsBoss ) {
+				player.iQueue = 0;
+				continue;
+			}
 			int queue;
 			if (cvarVSH2[DamageForQueue].BoolValue)
 				queue = cvarVSH2[QueueGained].IntValue+(player.iDamage/1000);
 			else queue = cvarVSH2[QueueGained].IntValue;
 			player.iQueue += queue; //(i, GetClientQueuePoints(i)+queue);
+			CPrintToChat(i, "{olive}[VSH 2]{default} You scored %i points.", j);
 			CPrintToChat(i, "{olive}[VSH 2]{default} You get %i queue points.", queue);
 		}
 	}
@@ -684,13 +767,11 @@ public Action Timer_DrawGame(Handle timer)
 			continue;
 		ShowSyncHudText(i, timeleftHUD, strTime);
 	}
-	switch ( time )
-	{
+	switch ( time ) {
 		case 60: EmitSoundToAll("vo/announcer_ends_60sec.mp3");
 		case 30: EmitSoundToAll("vo/announcer_ends_30sec.mp3");
 		case 10: EmitSoundToAll("vo/announcer_ends_10sec.mp3");
-		case 1, 2, 3, 4, 5:
-		{
+		case 1, 2, 3, 4, 5: {
 			char sound[FULLPATH];
 			Format(sound, FULLPATH, "vo/announcer_ends_%isec.mp3", time);
 			EmitSoundToAll(sound);
@@ -740,46 +821,47 @@ public void _MusicPlay()
 	if ( not bEnabled.BoolValue or gamemode.iRoundState not_eq StateRunning)
 		return;
 
-	if (!cvarVSH2[EnableMusic].BoolValue)
+	float currtime = GetGameTime();
+	if (!cvarVSH2[EnableMusic].BoolValue or gamemode.flMusicTime > currtime)
 		return;
 
-	if (gamemode.hMusic != null) {
+	/*if (gamemode.hMusic != null) {
 		KillTimer(gamemode.hMusic);
 		gamemode.hMusic = null;
-	}
+	}*/
 	char sound[FULLPATH] = "";
 	float time = -1.0;
 
-	/*if ( MapHasMusic() ) {
-		strcopy(sound, sizeof(sound), "");
-		time = -1.0;
-	}
-	else*/ ManageMusic(sound, time);	// in handler.sp
+	ManageMusic(sound, time);	// in handler.sp
 
 	BaseBoss boss;
 	float vol = cvarVSH2[MusicVolume].FloatValue;
 	if (sound[0] not_eq '\0') {
+		strcopy(BackgroundSong, FULLPATH, sound);
+		//Format(sound, FULLPATH, "#%s", sound);
 		for (int i=MaxClients ; i ; --i) {
-			if (!IsValidClient(i))
+			if (!IsClientValid(i))
 				continue;
 			boss = BaseBoss(i);
 			if (boss.bNoMusic)
 				continue;
 			EmitSoundToClient(i, sound, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+			//ClientCommand(i, "playgamesound \"%s\"", sound);
 		}
 	}
 	if (time not_eq -1.0) {
-		DataPack pack = new DataPack();
-		pack.WriteString(sound);
-		pack.WriteFloat(time);
-		int timerFlags = TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT|TIMER_DATA_HNDL_CLOSE;
-		gamemode.hMusic = CreateTimer(time, Timer_MusicTheme, pack, timerFlags);
+		gamemode.flMusicTime = currtime+time;
+		//DataPack pack = new DataPack();
+		//pack.WriteString(sound);
+		//pack.WriteFloat(time);
+		//int timerFlags = TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT|TIMER_DATA_HNDL_CLOSE;
+		//gamemode.hMusic = CreateTimer(time, Timer_MusicTheme, pack, timerFlags);
 	}
 }
 
-public Action Timer_MusicTheme(Handle timer, DataPack pack)
+/*public Action Timer_MusicTheme(Handle timer, DataPack pack)
 {
-	if (bEnabled.BoolValue and gamemode.iRoundState equals StateRunning)
+	if (bEnabled.BoolValue and gamemode.iRoundState is StateRunning)
 	{
 		char music[FULLPATH];
 		pack.Reset();
@@ -798,6 +880,6 @@ public Action Timer_MusicTheme(Handle timer, DataPack pack)
 			}
 		}
 	}
-	else gamemode.hMusic = null;
+	//else gamemode.hMusic = null;
 	return Plugin_Continue;
-}
+}*/
