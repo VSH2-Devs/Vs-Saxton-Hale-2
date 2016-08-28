@@ -18,7 +18,8 @@ int
 	Marketted[PLYR],	/* How many times player got market gardenned */
 	UberTarget[PLYR],	/* userid of the uber'd client */
 	PresetBossType[PLYR],	/* If the upcoming boss set their boss from SetBoss command, this array will hold that data */
-	OwnerBoss[PLYR]		/* For use on minions, this allows us to get which boss actually created the minion that helps them */
+	OwnerBoss[PLYR],	/* For use on minions, this allows us to get which boss actually created the minion that helps them */
+	Difficulty[PLYR]
 ;
 
 bool
@@ -191,6 +192,11 @@ Methods
 	{
 		public get()				{ return UberTarget[ this.index ]; }
 		public set( const int val )		{ UberTarget[ this.index ] = val; }
+	}
+	property int iDifficulty
+	{
+		public get()				{ return Difficulty[ this.index ]; }
+		public set( const int val )		{ Difficulty[ this.index ] = val; }
 	}
 	property int bGlow
 	{
