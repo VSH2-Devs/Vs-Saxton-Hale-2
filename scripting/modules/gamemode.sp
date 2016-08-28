@@ -10,9 +10,12 @@ int
 ;
 
 float
-	HealthTime		/* for health check time */
+	HealthTime,		/* for health check time */
+	MusicTime
 ;
-bool PointReady;
+bool
+	PointReady
+;
 
 BaseBoss preselected;		/* The next player chosen as boss */
 
@@ -20,9 +23,9 @@ BaseBoss preselected;		/* The next player chosen as boss */
 bool steamtools;
 #endif
 
-Handle
-	hMusicTimer		/* bool for music timer */
-;
+//Handle
+//	hMusicTimer		/* bool for music timer */
+//;
 
 enum /* VSH2 Round States */
 {
@@ -31,6 +34,31 @@ enum /* VSH2 Round States */
 	StateRunning = 1,
 	StateEnding = 2,
 };
+
+/*enum
+{
+	Skill_Normal = 0,
+	Skill_AllCrits,
+	Skill_RuneKing,
+	Skill_RuneHaste,
+	Skill_RuneKnockout,
+	Skill_RunePrecision,
+	Skill_RuneAgility,
+	Skill_RuneStrength,
+	Skill_GnG,
+	Skill_MiniCrits
+};
+
+public int AllowedDifficulties[] = {
+	Skill_AllCrits,
+	Skill_RuneKing,
+	Skill_RuneHaste,
+	Skill_RuneKnockout,
+	Skill_RunePrecision,
+	Skill_RuneAgility,
+	Skill_RuneStrength,
+	Skill_MiniCrits
+};*/
 
 methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONLY */
 {
@@ -78,9 +106,9 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		public set(const int val)
 		{
 			int clamped = val;
-			if (clamped > 255)
+			if (clamped>255)
 				clamped = 255;
-			else if (clamped < 0)
+			else if (clamped<0)
 				clamped = 0;
 			SetEntProp(this.iHealthBar, Prop_Send, "m_iBossHealthPercentageByte", clamped);
 		}
@@ -124,6 +152,11 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		public get()			{ return HealthTime; }
 		public set(const float val)	{ HealthTime = val; }
 	}
+	property float flMusicTime
+	{
+		public get()			{ return MusicTime; }
+		public set(const float val)	{ MusicTime = val; }
+	}
 
 	property BaseBoss hNextBoss
 	{
@@ -135,11 +168,11 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		}
 		public set(const BaseBoss val)	{ preselected = val; }
 	}
-	property Handle hMusic
+	/*property Handle hMusic
 	{
 		public get()			{ return hMusicTimer; }
 		public set(const Handle val)	{ hMusicTimer = val; }
-	}
+	}*/
 
 	public BaseBoss GetRandomBoss(const bool balive)
 	{
@@ -167,7 +200,7 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 			boss = BaseBoss(i);
 			if (not boss.bIsBoss)
 				continue;
-			if (boss.iType equals type)
+			if (boss.iType is type)
 				return boss;
 		}
 		return SPNULL;
@@ -227,6 +260,21 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 			if (not boss.bIsBoss)
 				continue;
 			++count;
+		}
+		return (count);
+	}
+	public int GetTotalBossHealth()
+	{
+		BaseBoss boss;
+		int count=0;
+		for (int i=MaxClients ; i ; --i) {
+			if (not IsValidClient(i) )
+				continue;
+
+			boss = BaseBoss(i);
+			if (not boss.bIsBoss)
+				continue;
+			count += boss.iHealth;
 		}
 		return (count);
 	}
@@ -311,12 +359,13 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		BaseBoss boss;
 		int totalHealth, bosscount;
 		for (int i=MaxClients; i ; --i) {
-			if (not IsValidClient(i))	// Count dead bosses as well
-				continue;
+			if (not IsValidClient(i))	// don't count dead bosses
+				{continue;}
 			boss = BaseBoss(i);
 			if (not boss.bIsBoss)
-				continue;
-
+				{continue;}
+			if (not IsPlayerAlive(i))
+				{boss.iHealth = 0;}
 			bosscount++;
 			totalHealth += boss.iHealth;
 		}
