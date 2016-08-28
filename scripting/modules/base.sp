@@ -7,7 +7,6 @@ int
 	ClimbCount[PLYR],	/* self explanatory */
 	Hits[PLYR],		/* How many times has the player been hit? */
 	Lives[PLYR],		/* Same reason as Hits, Lives should never be under 0. Never heard of -1 lives lol */
-	Difficulty[PLYR],	/* Boss difficulty settings for player */
 	State[PLYR],		/* This is for bosses or players that change "state" for various mechanics */
 	AmmoTable[2049],	/* saved max ammo size of the weapon */
 	ClipTable[2049],	/* saved max clip size of the weapon */
@@ -38,16 +37,18 @@ float
 	WeighDown[PLYR],	/* meter for when boss is looking down while in the air and crouching */
 	Glowtime[PLYR],
 	LastHit[PLYR],		/* last time the player was hit */
-	LastShot[PLYR]		/* last time player shot/fired their weapon */
+	LastShot[PLYR],		/* last time player shot/fired their weapon */
+	flHolstered[PLYR][3]	/* New mechanic for VSH 2, holster reloading for certain classes and weapons */
 ;
 
-//	Gonna leave these here so we can reduce stack memory for calling boss specific Download functiion calls
+//	Gonna leave these here so we can reduce stack memory for calling boss specific Download function calls
 public char snd[FULLPATH];
 public char extensions[][] = { ".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd", ".phy" };
-public char extensionsb[][] = { ".vtf", ".vmt" };
+public char extensionsb[2][5] = { ".vtf", ".vmt" };
 
-#define MAXMESSAGE	1024
+#define MAXMESSAGE	4096
 public char gameMessage[MAXMESSAGE];	// Just incase...
+public char BackgroundSong[FULLPATH];
 
 methodmap BaseFighter	/* Player Interface that Opposing team and Boss team derives from */
 /*
@@ -147,11 +148,6 @@ Methods
 		}
 		public set( const int val )		{ Lives[ this.index ] = val; }
 	}
-	property int iDifficulty
-	{
-		public get()				{ return Difficulty[ this.index ]; }
-		public set( const int val )		{ Difficulty[ this.index ] = val; }
-	}
 	property int iState
 	{
 		public get()				{ return State[ this.index ]; }
@@ -213,7 +209,7 @@ Methods
 			int healers = GetEntProp(this.index, Prop_Send, "m_nNumHealers");
 			if (healers) {
 				for (int i=MaxClients ; i ; --i) {
-					if (IsValidClient(i) and GetHealingTarget(i) equals this.index)
+					if (IsValidClient(i) and GetHealingTarget(i) is this.index)
 						medics++;
 				}
 			}
@@ -247,8 +243,8 @@ Methods
 
 			int value;
 			if (val)
-				value = 0;
-			else value = 1;
+				value = 1;
+			else value = 0;
 			char musical[6];
 			IntToString(value, musical, sizeof(musical));
 			SetClientCookie(this.index, MusicCookie, musical);
@@ -410,7 +406,7 @@ Methods
 			if (team <= 1)
 				hArray.Push(iEnt);
 			else {
-				if (GetEntProp(iEnt, Prop_Send, "m_iTeamNum") equals team)
+				if (GetEntProp(iEnt, Prop_Send, "m_iTeamNum") is team)
 					hArray.Push(iEnt);
 			}
 		}
@@ -652,9 +648,19 @@ Methods
 	public void GiveRage(const int damage)
 	{
 		int health = GetClientHealth(this.index);
-		this.flRAGE += ( damage/SquareRoot(float(health))*5.0 );
+		this.flRAGE += ( damage/SquareRoot(float(health))*4.0 );
+	}
+	public void MakeBossAndSwitch(const int type)
+	{
+		this.bSetOnSpawn = true;
+		this.iType = type;
+		ManageOnBossSelected(this);
+		this.ConvertToBoss();
+		if (GetClientTeam(this.index) is RED)
+			this.ForceTeamChange(BLU);
 	}
 };
+
 
 public int HintPanel(Menu menu, MenuAction action, int param1, int param2)
 {
@@ -662,6 +668,4 @@ public int HintPanel(Menu menu, MenuAction action, int param1, int param2)
 		return;
 	return;
 }
-
-
 //	EOF
