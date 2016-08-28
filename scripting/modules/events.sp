@@ -98,7 +98,6 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 	StopBackGroundMusic();
 	gamemode.CheckArena(cvarVSH2[PointType].BoolValue);
 	gamemode.bPointReady = false;
-	gamemode.bAllowSuperWeps = false;
 	GetBossType();	// in handler.sp, check if a boss needs multiple players maybe
 
 	int playing;
