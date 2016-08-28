@@ -85,7 +85,7 @@ public int TurnToZeroPanelH(Menu menu, MenuAction action, int param1, int param2
 public int SkipHalePanelH(Menu menu, MenuAction action, int client, int param2)
 {
 	/*if ( IsValidAdmin(client, "b") )
-		CommandSetBoss( client, -1 );
+		SetBossMenu( client, -1 );
 	else CommandSetSkill( client, -1 );*/
 }
 public Action SetNextSpecial(int client, int args)
@@ -168,11 +168,11 @@ public Action SetBossMenu(int client, int args)
 public int MenuHandler_PickBosses(Menu menu, MenuAction action, int client, int select)
 {
 	char info1[16]; menu.GetItem(select, info1, sizeof(info1));
-	if (action equals MenuAction_Select) {
+	if (action is MenuAction_Select) {
 		BaseBoss player = BaseBoss(client);
 		player.iPresetType = StringToInt(info1);
 	}
-	else if (action equals MenuAction_End)
+	else if (action is MenuAction_End)
 		delete menu;
 }
 
