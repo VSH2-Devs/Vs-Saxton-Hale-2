@@ -1,7 +1,7 @@
 # VSH 2 #
 
 #### Current STABLE Version: N/A
-#### Current BETA Version: v1.0.2
+#### Current BETA Version: v1.1.6
 
 VSH2 is half-rewrite of VSH 1. VSH and FF2 were made as very bad frameworks and shoddy, hacky coding. VSH2 combines the best of both FF2 and VSH by not only having multiplayer boss support but also to make it easier to add new bosses and to give those bosses truly unique abilities and mechanics by giving the developer full, uninhibited power through code rather than configs.
 
