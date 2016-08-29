@@ -237,30 +237,88 @@ public Action PlayerJarated(Event event, const char[] name, bool dontBroadcast)
 public Action RoundEnd(Event fevent, const char[] name, bool dontBroadcast)
 {
 	gamemode.iRoundCount++;
+	
 	if (not bEnabled.BoolValue or gamemode.iRoundState is StateDisabled)
-		return Plugin_Continue;
+		{return Plugin_Continue;}
 
 	gamemode.iRoundState = StateEnding;
 	gamemode.flMusicTime = 0.0;
 	BaseBoss boss;
-	for (int i=MaxClients ; i ; --i) {
+	int i;
+	for (i=MaxClients ; i ; --i) {
 		if (not IsValidClient(i))
 			continue;
 #if defined _tf2attributes_included
 		boss = BaseBoss(i);
 		TF2Attrib_RemoveByDefIndex(boss.index, 26);
 #endif
+		//PrintToConsole(i, "resetting boss hp.");
 	}
 	StopBackGroundMusic();	// in handler.sp
 	/*if (gamemode.hMusic != null) {
 		KillTimer(gamemode.hMusic);
 		gamemode.hMusic = null;
 	}*/
+	// Showcase top damage scores!
+	int top[3];
+	Damage[0] = 0;
+	for (i=MaxClients ; i ; --i) {	// Too lazy to setup methodmap instances, going to use direct arrays
+		if (!IsClientValid(i))
+			continue;
+		if (BaseBoss(i).bIsBoss)
+			continue;
+		if (Damage[i] >= Damage[top[0]]) {
+			top[2]=top[1];
+			top[1]=top[0];
+			top[0]=i;
+		}
+		else if (Damage[i] >= Damage[top[1]]) {
+			top[2]=top[1];
+			top[1]=i;
+		}
+		else if (Damage[i] >= Damage[top[2]])
+			{top[2]=i;}
+	}
+	if (Damage[top[0]] > 9000)
+		SetPawnTimer(OverNineThousand, 1.0);	// in stocks.inc
+
+	char score1[PATH], score2[PATH], score3[PATH];
+	if (IsValidClient(top[0]) and (GetClientTeam(top[0]) > 1))
+		GetClientName(top[0], score1, PATH);
+	else {
+		Format(score1, PATH, "---");
+		top[0]=0;
+	}
+
+	if (IsValidClient(top[1]) and (GetClientTeam(top[1]) > 1))
+		GetClientName(top[1], score2, PATH);
+	else {
+		Format(score2, PATH, "---");
+		top[1]=0;
+	}
+
+	if (IsValidClient(top[2]) and (GetClientTeam(top[2]) > 1))
+		GetClientName(top[2], score3, PATH);
+	else {
+		Format(score3, PATH, "---");
+		top[2]=0;
+	}
+	SetHudTextParams(-1.0, 0.4, 10.0, 255, 255, 255, 255);
+	PrintCenterTextAll("");	// Should clear center text
+	for (i=MaxClients ; i ; --i) {
+		if (IsValidClient(i) and not (GetClientButtons(i) & IN_SCORE))
+		{
+			SetGlobalTransTarget(i);
+			ShowHudText(i, -1, "Most damage dealt by:\n1)%i - %s\n2)%i - %s\n3)%i - %s\n\nDamage Dealt: %i\nScore for this round: %i", Damage[top[0]], score1, Damage[top[1]], score2, Damage[top[2]], score3, Damage[i], RoundFloat(Damage[i] / 600.0));
+			//PrintToConsole(i, "did damage dealth stuff.");
+		}
+	}
+	SetPawnTimer(CalcScores, 3.0);	// In vsh2.sp
 	
 	//BaseBoss bosses[34];
 	ArrayList bosses = new ArrayList();
 	//int index = 0;
-	for (int i=MaxClients ; i ; --i) {		// Loop again for bosses only
+	for (i=MaxClients ; i ; --i) {		// Loop again for bosses only
 		if (not IsValidClient(i))
 			continue;
 
@@ -276,60 +334,6 @@ public Action RoundEnd(Event fevent, const char[] name, bool dontBroadcast)
 	}
 	ManageRoundEndBossInfo(bosses);
 
-	// Showcase top damage scores!
-	int top[3];
-	Damage[0] = 0;
-	for (int i=MaxClients ; i ; --i) {	// Too lazy to setup methodmap instances, going to use direct arrays
-		if (!IsClientValid(i) or BaseBoss(i).bIsBoss)
-			continue;
-		if (Damage[i] >= Damage[top[0]])
-		{
-			top[2]=top[1];
-			top[1]=top[0];
-			top[0]=i;
-		}
-		else if (Damage[i] >= Damage[top[1]])
-		{
-			top[2]=top[1];
-			top[1]=i;
-		}
-		else if (Damage[i] >= Damage[top[2]])
-			top[2]=i;
-	}
-	if (Damage[top[0]] > 9000)
-		SetPawnTimer(OverNineThousand, 1.0);	// in stocks.inc
-
-	char score1[PATH], score2[PATH], score3[PATH];
-	if (IsClientInGame(top[0]) and (GetClientTeam(top[0]) > 1))
-		GetClientName(top[0], score1, PATH);
-	else {
-		Format(score1, PATH, "---");
-		top[0]=0;
-	}
-
-	if (IsClientInGame(top[1]) and (GetClientTeam(top[1]) > 1))
-		GetClientName(top[1], score2, PATH);
-	else {
-		Format(score2, PATH, "---");
-		top[1]=0;
-	}
-
-	if (IsClientInGame(top[2]) and (GetClientTeam(top[2]) > 1))
-		GetClientName(top[2], score3, PATH);
-	else {
-		Format(score3, PATH, "---");
-		top[2]=0;
-	}
-	SetHudTextParams(-1.0, 0.4, 10.0, 255, 255, 255, 255);
-	PrintCenterTextAll("");	// Should clear center text
-	for (int i=MaxClients ; i ; --i) {
-		if (IsValidClient(i) and not (GetClientButtons(i) & IN_SCORE))
-		{
-			SetGlobalTransTarget(i);
-			ShowHudText(i, -1, "Most damage dealt by:\n1)%i - %s\n2)%i - %s\n3)%i - %s\n\nDamage Dealt: %i\nScore for this round: %i", Damage[top[0]], score1, Damage[top[1]], score2, Damage[top[2]], score3, Damage[i], RoundFloat(Damage[i] / 600.0));
-		}
-	}
-	SetPawnTimer(CalcScores, 3.0);	// In vsh2.sp
 	return Plugin_Continue;
 }
 public void OnHookedEvent(Event event, const char[] name, bool dontBroadcast)
@@ -360,7 +364,7 @@ public Action UberDeployed(Event event, const char[] name, bool dontBroadcast)
 }
 public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast)
 {
-	if (not bEnabled.BoolValue)
+	if (not bEnabled.BoolValue or gamemode.iRoundState is StateDisabled)
 		return Plugin_Continue;
 	
 	BaseBoss	boss;
