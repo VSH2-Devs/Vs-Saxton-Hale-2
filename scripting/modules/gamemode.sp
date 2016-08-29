@@ -83,7 +83,9 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		{
 			int playing = 0;
 			for (int i=MaxClients ; i ; --i) {
-				if (not IsClientInGame(i) or not IsPlayerAlive(i) or BaseBoss(i).bIsBoss)
+				if (not IsClientInGame(i) or not IsPlayerAlive(i))
+					continue;
+				if (BaseBoss(i).bIsBoss)
 					continue;
 				playing++;
 			}
@@ -364,10 +366,10 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 			boss = BaseBoss(i);
 			if (not boss.bIsBoss)
 				{continue;}
-			if (not IsPlayerAlive(i))
-				{boss.iHealth = 0;}
 			bosscount++;
 			totalHealth += boss.iHealth;
+			if (not IsPlayerAlive(i))
+				totalHealth -= boss.iHealth;
 		}
 		if (bosscount)
 			this.iHealthBarPercent = RoundToCeil( float(totalHealth)/float(this.iTotalMaxHealth)*255.0 );
