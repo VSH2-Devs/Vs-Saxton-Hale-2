@@ -17,7 +17,7 @@
 #pragma semicolon			1
 #pragma newdecls			required
 
-#define PLUGIN_VERSION			"1.0 BETA"
+#define PLUGIN_VERSION			"1.1.6 BETA"
 #define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
 #define CODEFRAMES			(1.0/30.0)	/* 30 frames per second means 0.03333 seconds or 33.33 ms */
 
@@ -59,6 +59,7 @@
 #define PATH				64
 #define FULLPATH			PLATFORM_MAX_PATH
 #define SPNULL				view_as< any >(0)	// stands for SourcePawn NULL
+#define repeat(%1)			for (int xyz=0; xyz<%1; ++xyz)	// laziness is real lmao
 
 
 public Plugin myinfo = {
@@ -716,11 +717,11 @@ public void CalcScores()
 	int j, damage, amount;
 	BaseBoss player;
 	Event scoring = CreateEvent("player_escort_score", true);
-	for ( int i = MaxClients ; i ; --i ) {
-		if (not IsValidClient(i))
+	for (int i=MaxClients ; i ; --i) {
+		if (not IsClientValid(i) or GetClientTeam(i) < RED)
 			continue;
 		player = BaseBoss(i);
-		
+
 		damage = player.iDamage;
 		scoring.SetInt("player", i);
 		amount = cvarVSH2[DamagePoints].IntValue;
@@ -728,11 +729,9 @@ public void CalcScores()
 		scoring.SetInt("points", j);
 		scoring.FireToClient(i);
 
-		if (GetClientTeam(i) > 1) {
-			if ( player.bIsBoss ) {
-				player.iQueue = 0;
-				continue;
-			}
+		if ( player.bIsBoss )
+			{player.iQueue = 0;}
+		else {
 			int queue;
 			if (cvarVSH2[DamageForQueue].BoolValue)
 				queue = cvarVSH2[QueueGained].IntValue+(player.iDamage/1000);
@@ -741,6 +740,7 @@ public void CalcScores()
 			CPrintToChat(i, "{olive}[VSH 2]{default} You scored %i points.", j);
 			CPrintToChat(i, "{olive}[VSH 2]{default} You get %i queue points.", queue);
 		}
+		//PrintToConsole(i, "CalcScores running.");
 	}
 	delete scoring;
 }
