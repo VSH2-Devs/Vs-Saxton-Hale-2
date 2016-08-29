@@ -3,6 +3,11 @@
 #define VagineerModel		"models/player/saxton_hale/vagineer_v134.mdl"
 #define VagineerModelPrefix	"models/player/saxton_hale/vagineer_v134"
 
+/*
+#define VagineerModel		"models/player/saxton_hale/vagineer_v150.mdl"
+#define VagineerModelPrefix	"models/player/saxton_hale/vagineer_v150"
+*/
+
 //Vagineer voicelines
 #define VagineerLastA		"saxton_hale/lolwut_0.wav"
 #define VagineerRageSound	"saxton_hale/lolwut_2.wav"
