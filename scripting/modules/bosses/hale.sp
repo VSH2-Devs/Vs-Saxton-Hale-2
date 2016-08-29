@@ -1,7 +1,7 @@
 
 //defines
-#define HaleModel		"models/player/saxtonhale.mdl"
-#define HaleModelPrefix		"models/player/saxtonhale"
+#define HaleModel		"models/player/saxton_hale/saxton_hale.mdl"
+#define HaleModelPrefix		"models/player/saxton_hale/saxton_hale"
 
 //Saxton Hale voicelines
 #define HaleComicArmsFallSound	"saxton_hale/saxton_hale_responce_2.wav"
