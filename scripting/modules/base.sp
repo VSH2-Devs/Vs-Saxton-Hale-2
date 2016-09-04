@@ -1,4 +1,3 @@
-
 int
 	Health[PLYR],		/* Amount of health given to bosses */
 	MaxHealth[PLYR],

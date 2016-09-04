@@ -1,5 +1,3 @@
-
-
 public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 {
 	if (not bEnabled.BoolValue)
