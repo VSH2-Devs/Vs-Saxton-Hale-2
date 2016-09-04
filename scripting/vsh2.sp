@@ -17,7 +17,7 @@
 #pragma semicolon			1
 #pragma newdecls			required
 
-#define PLUGIN_VERSION			"1.1.6 BETA"
+#define PLUGIN_VERSION			"1.1.7 BETA"
 #define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
 #define CODEFRAMES			(1.0/30.0)	/* 30 frames per second means 0.03333 seconds or 33.33 ms */
 
@@ -714,7 +714,7 @@ public void OnWeaponSwitchPost(int client, int weapon)
 }
 public void CalcScores()
 {
-	int j, damage, amount;
+	int j, damage, amount, queue;
 	BaseBoss player;
 	Event scoring = CreateEvent("player_escort_score", true);
 	for (int i=MaxClients ; i ; --i) {
@@ -732,7 +732,6 @@ public void CalcScores()
 		if ( player.bIsBoss )
 			{player.iQueue = 0;}
 		else {
-			int queue;
 			if (cvarVSH2[DamageForQueue].BoolValue)
 				queue = cvarVSH2[QueueGained].IntValue+(player.iDamage/1000);
 			else queue = cvarVSH2[QueueGained].IntValue;
