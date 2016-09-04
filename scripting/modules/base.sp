@@ -193,11 +193,6 @@ Methods
 		public get()				{ return UberTarget[ this.index ]; }
 		public set( const int val )		{ UberTarget[ this.index ] = val; }
 	}
-	property int iDifficulty
-	{
-		public get()				{ return Difficulty[ this.index ]; }
-		public set( const int val )		{ Difficulty[ this.index ] = val; }
-	}
 	property int bGlow
 	{
 		public get()			{ return GetEntProp(this.index, Prop_Send, "m_bGlowEnabled"); }
@@ -594,6 +589,11 @@ Methods
 	{
 		public get()				{ return Marketted[ this.index ]; }
 		public set( const int val )		{ Marketted[ this.index ] = val; }
+	}
+	property int iDifficulty
+	{
+		public get()				{ return Difficulty[ this.index ]; }
+		public set( const int val )		{ Difficulty[ this.index ] = val; }
 	}
 
 	property bool bIsBoss

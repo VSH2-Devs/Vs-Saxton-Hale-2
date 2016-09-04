@@ -346,3 +346,4 @@ public void AddCBSToMenu ( Menu& menu )
 {
 	menu.AddItem("2", "Christian Brutal Sniper");
 }
+

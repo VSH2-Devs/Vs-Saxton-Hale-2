@@ -348,3 +348,4 @@ public void AddVagToMenu ( Menu& menu )
 {
 	menu.AddItem("1", "Vagineer");
 }
+

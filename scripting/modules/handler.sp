@@ -364,11 +364,12 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 
 				return Plugin_Changed;
 			}
-			if ( not damagecustom
+			if ( not damagecustom	// Detects if boss is damaged by Rock Paper Scissors
 				and TF2_IsPlayerInCondition(victim.index, TFCond_Taunting)
 				and TF2_IsPlayerInCondition(attacker, TFCond_Taunting) )
 			{
 				damage = victim.iHealth+0.2;
+				Damage[attacker] += RoundFloat(damage);	// If necessary, just cheat by using the arrays.
 				return Plugin_Changed;
 			}
 			else if (damagecustom is TF_CUSTOM_TELEFRAG) {
@@ -377,8 +378,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 			}
 			if (damagecustom is TF_CUSTOM_TAUNT_BARBARIAN_SWING)	// Gives 4 heads if successful sword killtaunt!
 			{
-				for (int h=0; h<4; ++h)
-					IncrementHeadCount(attacker);
+				repeat(4) IncrementHeadCount(attacker);
 			}
 			if ( not strcmp(classname, "tf_weapon_shotgun_hwg", false) )
 			{
@@ -1343,8 +1343,12 @@ public void _SkipBossPanel()
 			SkipBossPanelNotify(upnext[j].index);
 		else CPrintToChat(upnext[j].index, "{olive}[VSH]{default} You are going to be a Boss soon! Type {olive}/halenext{default} to check/reset your queue points.");
 	}
-	for (int j=0; j<3; ++j) {	// Ughhh, reset shit...
-		upnext[j].bSetOnSpawn = false;
+	for (int n=MaxClients ; n ; --n) {	// Ughhh, reset shit...
+		if (not IsValidClient(n))
+			continue;
+		upnext[0] = BaseBoss(n);
+		if (not upnext[0].bIsBoss)
+			upnext[0].bSetOnSpawn = false;
 	}
 }
 

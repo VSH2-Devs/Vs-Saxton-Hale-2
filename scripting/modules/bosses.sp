@@ -13,3 +13,4 @@ Had to place it here because methodmaps can't be forward declared (yet) and neit
 #include "bosses/hhh.sp"
 #include "bosses/bunny.sp"
 #include "bosses/plague.sp"
+
