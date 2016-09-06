@@ -1,3 +1,5 @@
+
+
 public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 {
 	if (not bEnabled.BoolValue)
@@ -59,7 +61,13 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 
 	//if (fighter.bIsBoss and victim.bIsBoss) //clash of the titans - when both killer and victim are Bosses
 
-	SetPawnTimer(CheckAlivePlayers, 0.2);
+
+	if (!victim.bIsBoss and !victim.bIsMinion)	// Patch: Don't want multibosses playing last-player sound clips when a BOSS dies...
+		SetPawnTimer(CheckAlivePlayers, 0.2);
+	
+	if ( !gamemode.CountBosses(true) )	// If there's no active, living bosses, then force RED to win
+		ForceTeamWin(RED);
+
 	return Plugin_Continue;
 }
 public Action PlayerHurt(Event event, const char[] name, bool dontBroadcast)
@@ -135,7 +143,7 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 	}
 	else if ( gamemode.hNextBoss ) {
 		boss = gamemode.hNextBoss;
-		gamemode.hNextBoss = SPNULL;
+		gamemode.hNextBoss = view_as< BaseBoss >(0);
 	}
 
 	// Got our boss, let's prep him/her.
@@ -232,7 +240,7 @@ public Action PlayerJarated(Event event, const char[] name, bool dontBroadcast)
 
 	return Plugin_Continue;
 }
-public Action RoundEnd(Event fevent, const char[] name, bool dontBroadcast)
+public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	gamemode.iRoundCount++;
 	
@@ -330,7 +338,11 @@ public Action RoundEnd(Event fevent, const char[] name, bool dontBroadcast)
 		}
 		else bosses.Push(boss); //bosses[index++] = boss;	// Only living bosses are counted
 	}
-	ManageRoundEndBossInfo(bosses);
+	ManageRoundEndBossInfo(bosses, (event.GetInt("team") == BLU));
+	/*int teamroundtimer = FindEntityByClassname(-1, "team_round_timer");
+	if (teamroundtimer and IsValidEntity(teamroundtimer))
+		AcceptEntityInput(teamroundtimer, "Kill");*/
+
 
 	return Plugin_Continue;
 }
@@ -414,6 +426,6 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 	ManageMessageIntro(bosses);
 	if ( gamemode.iPlaying > 5 )
 		SetControlPoint(false);
-
+	gamemode.flHealthTime = 0.0;
 	return Plugin_Continue;
 }
