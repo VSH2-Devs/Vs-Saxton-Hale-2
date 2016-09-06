@@ -1,3 +1,4 @@
+
 int
 	Health[PLYR],		/* Amount of health given to bosses */
 	MaxHealth[PLYR],
@@ -561,7 +562,12 @@ Methods
 
 	property int iHealth
 	{
-		public get()				{ return Health[ this.index ]; }
+		public get()
+		{
+			if (Health[ this.index ] < 0)
+				Health[ this.index ] = 0;
+			return Health[ this.index ];
+		}
 		public set( const int val )		{ Health[ this.index ] = val; }
 	}
 	property int iMaxHealth
@@ -652,8 +658,7 @@ Methods
 
 	public void GiveRage(const int damage)
 	{
-		int health = GetClientHealth(this.index);
-		this.flRAGE += ( damage/SquareRoot(float(health))*4.0 );
+		this.flRAGE += ( damage/SquareRoot(float(this.iHealth))*4.0 );
 	}
 	public void MakeBossAndSwitch(const int type)
 	{
