@@ -1,3 +1,4 @@
+
 int
 	state,			/* Sets the round state of the gamemode */
 	BossSpecial = -1,	/* preset the next boss type */
@@ -63,7 +64,7 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 {
 	public VSHGameMode()
 	{
-		preselected = SPNULL;
+		preselected = view_as< BaseBoss >(0);
 	}
 
 	property int iRoundState
@@ -164,7 +165,7 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		public get()
 		{
 			if (!preselected.userid or !IsClientValid(preselected.index))
-				return SPNULL;
+				return view_as< BaseBoss >(0);
 			return preselected;
 		}
 		public set(const BaseBoss val)	{ preselected = val; }
@@ -188,7 +189,7 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 				continue;
 			else return boss;
 		}
-		return SPNULL;
+		return view_as< BaseBoss >(0);
 	}
 	public BaseBoss GetBossByType(const bool balive, const int type)
 	{
@@ -204,7 +205,7 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 			if (boss.iType is type)
 				return boss;
 		}
-		return SPNULL;
+		return view_as< BaseBoss >(0);
 	}
 	public void CheckArena(const bool type)
 	{
