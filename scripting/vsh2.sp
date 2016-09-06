@@ -17,7 +17,7 @@
 #pragma semicolon			1
 #pragma newdecls			required
 
-#define PLUGIN_VERSION			"1.1.7 BETA"
+#define PLUGIN_VERSION			"1.2.2 BETA"
 #define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
 #define CODEFRAMES			(1.0/30.0)	/* 30 frames per second means 0.03333 seconds or 33.33 ms */
 
@@ -58,7 +58,6 @@
 #define PLYR				MAXPLAYERS+1
 #define PATH				64
 #define FULLPATH			PLATFORM_MAX_PATH
-#define SPNULL				view_as< any >(0)	// stands for SourcePawn NULL
 #define repeat(%1)			for (int xyz=0; xyz<%1; ++xyz)	// laziness is real lmao
 
 
@@ -621,11 +620,14 @@ public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& dam
 		damage = (BossVictim.iHealth > 100) ? 1.0 : 30.0;
 		return Plugin_Changed;
 	}
-	BaseBoss BossAttacker = BaseBoss(attacker);
 	
 	if (BossVictim.bIsBoss) // in handler.sp
 		return ManageOnBossTakeDamage(BossVictim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 
+	if (!IsClientValid(attacker))	// BUG PATCH: Client index 0 is invalid
+		return Plugin_Continue;
+	
+	BaseBoss BossAttacker = BaseBoss(attacker);
 	if (BossAttacker.bIsBoss) // in handler.sp
 		return ManageOnBossDealDamage(BossVictim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 
