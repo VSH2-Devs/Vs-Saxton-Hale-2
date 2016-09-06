@@ -144,7 +144,7 @@ public Action CommandBossSelect(int client, int args)
 			gamemode.hNextBoss = BaseBoss(target);
 			ReplyToCommand(client, "[VSH2] %N is set as next Boss!", gamemode.hNextBoss.index);
 		}
-		else gamemode.hNextBoss = SPNULL;
+		else gamemode.hNextBoss = view_as< BaseBoss >(0);
 	}
 	return Plugin_Handled;
 }
