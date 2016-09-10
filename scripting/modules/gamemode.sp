@@ -1,4 +1,3 @@
-
 int
 	state,			/* Sets the round state of the gamemode */
 	BossSpecial = -1,	/* preset the next boss type */
