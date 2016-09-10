@@ -2,7 +2,7 @@
 ALL NON-BOSS AND NON-MINION RELATED CODE IS NEAR THE BOTTOM. HAVE FUN CODING!
 */
 
-#include "bosses.sp"
+#include "modules/bosses.sp"
 
 enum /* Bosses */	/* When you add custom Bosses, add to the anonymous enum as the Boss' ID */
 {
