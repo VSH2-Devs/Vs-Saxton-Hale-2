@@ -66,7 +66,7 @@ public void ManageDownloads()
 	PrecacheSound("vo/announcer_ends_4sec.mp3", true);
 	PrecacheSound("vo/announcer_ends_5sec.mp3", true);
 	PrecacheSound("items/pumpkin_pickup.wav", true);
-		
+	
 	AddHaleToDownloads	();
 	AddVagToDownloads	();
 	AddCBSToDownloads	();
@@ -747,7 +747,7 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 	if (custom is TF_CUSTOM_TELEFRAG)
 		damage = (IsPlayerAlive(attacker.index) ? 9001 : 1);	// Telefrags normally 1-shot the boss but let's cap damage at 9k
 	attacker.iDamage += damage;
-	if (TF2_GetPlayerClass(attacker.index) is TFClass_Soldier and GetIndexOfWeaponSlot(attacker.index, TFWeaponSlot_Primary) is 1104)
+	if (GetIndexOfWeaponSlot(attacker.index, TFWeaponSlot_Primary) is 1104)	// Compatibility patch for Randomizer
 	{
 		if (weapon is TF_WEAPON_ROCKETLAUNCHER)
 			attacker.iAirDamage += damage;
@@ -993,7 +993,8 @@ public void ManageMessageIntro(ArrayList bosses)//(const BaseBoss base[34])		// 
 	}
 	int i;
 	BaseBoss base;
-	for (i=0 ; i<bosses.Length ; ++i) { //for (i=0 ; i<34 ; ++i) {
+	int len = bosses.Length;
+	for (i=0 ; i<len ; ++i) { //for (i=0 ; i<34 ; ++i) {
 		base = bosses.Get(i);
 		if ( base == view_as< BaseBoss >(0) )
 			continue;
@@ -1175,7 +1176,8 @@ public void ManageRoundEndBossInfo(ArrayList bosses, bool bossWon) //(const Base
 	gameMessage[0] = '\0';
 	int i=0;
 	BaseBoss base;
-	for (i=0 ; i<bosses.Length ; ++i) { //for (i=0 ; i<34 ; ++i) {
+	int len = bosses.Length;
+	for (i=0 ; i<len ; ++i) { //for (i=0 ; i<34 ; ++i) {
 		base = bosses.Get(i);
 		if ( base == view_as< BaseBoss >(0) )
 			continue;
@@ -1188,6 +1190,7 @@ public void ManageRoundEndBossInfo(ArrayList bosses, bool bossWon) //(const Base
 			case PlagueDoc:	Format(gameMessage, MAXMESSAGE, "%s\nPlague Doctor (%N) had %i (of %i) health left.", gameMessage, base.index, base.iHealth, base.iMaxHealth);
 		}
 		if (bossWon) {
+			victory[0] = '\0';
 			switch ( base.iType ) {
 				case -1: {}
 				case Vagineer:	Format(victory, FULLPATH, "%s%i.wav", VagineerKSpreeNew, GetRandomInt(1, 5));
