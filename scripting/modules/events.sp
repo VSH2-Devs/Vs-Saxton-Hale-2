@@ -48,7 +48,7 @@ public Action Resupply(Event event, const char[] name, bool dontBroadcast)
 
 public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	if (not bEnabled.BoolValue)
+	if (not bEnabled.BoolValue or gamemode.iRoundState is StateDisabled)	// Bug patch: first round kill immediately ends the round.
 		return Plugin_Continue;
 
 	BaseBoss victim = BaseBoss( event.GetInt("userid"), true );
