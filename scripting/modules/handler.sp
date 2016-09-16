@@ -102,7 +102,7 @@ public void ManageDisconnect(const int client)
 				gamemode.hNextBoss = view_as< BaseBoss >(0);
 			}
 			if ( IsValidClient(replace.index) ) {
-				replace.MakeBossAndSwitch(leaver.iType);
+				replace.MakeBossAndSwitch(leaver.iType, true);
 				CPrintToChat(replace.index, "{olive}[VSH2]{default} {green}Surprise! You're on NOW!{default}");
 			}
 		}
@@ -118,13 +118,13 @@ public void ManageDisconnect(const int client)
 	}
 }
 
-public void ManageOnBossSelected(const BaseBoss base)	// Don't forget to set custom music here using iSongPick property
+public void ManageOnBossSelected(const BaseBoss base)
 {
 	ManageBossHelp(base);
 	if (gamemode.iPlaying < 7 or GetRandomInt(0, 3) > 0)
 		return;
 
-	gamemode.FindNextBoss().MakeBossAndSwitch(GetRandomInt(Hale, MAXBOSS));
+	gamemode.FindNextBoss().MakeBossAndSwitch(GetRandomInt(Hale, MAXBOSS), true);
 }
 
 public void ManageOnTouchPlayer(const BaseBoss base, const BaseBoss victim)
@@ -720,7 +720,7 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 {
 	int damage = event.GetInt("damageamount");
 	int custom = event.GetInt("custom");
-	int weapon = GetEventInt(event, "weaponid");
+	int weapon = event.GetInt("weaponid");
 
 	if (not victim.bIsBoss and victim.bIsMinion and not attacker.bIsMinion)
 	{
@@ -1598,6 +1598,9 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case 36, 412: // Blutsauger and Overdose
 		{
 			hItemOverride = PrepareItemHandle(hItemCast, _, _, "17 ; 0.01");
+		}
+		case 772: {	// Baby Face Blaster
+			hItemOverride = PrepareItemHandle(hItemCast, _, _, "106 ; 0.3 ; 4 ; 1.33 ; 45 ; 0.6 ; 114 ; 1.0", true);
 		}
 	}
 	if (hItemOverride not_eq null) {
