@@ -1,3 +1,4 @@
+
 int
 	Health[PLYR],		/* Amount of health given to bosses */
 	MaxHealth[PLYR],
@@ -659,11 +660,12 @@ Methods
 	{
 		this.flRAGE += ( damage/SquareRoot(float(this.iHealth))*4.0 );
 	}
-	public void MakeBossAndSwitch(const int type)
+	public void MakeBossAndSwitch(const int type, bool callEvent)
 	{
 		this.bSetOnSpawn = true;
 		this.iType = type;
-		ManageOnBossSelected(this);
+		if (callEvent)
+			ManageOnBossSelected(this);
 		this.ConvertToBoss();
 		if (GetClientTeam(this.index) is RED)
 			this.ForceTeamChange(BLU);
