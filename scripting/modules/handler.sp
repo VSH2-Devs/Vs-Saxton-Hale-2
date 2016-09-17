@@ -35,6 +35,7 @@ public void GetBossType()
 	BaseBoss boss = gamemode.FindNextBoss();
 	if (boss.iPresetType > -1 and gamemode.iSpecial is -1) {
 		gamemode.iSpecial = boss.iPresetType;
+		boss.iPresetType = -1;
 		if ( gamemode.iSpecial > MAXBOSS )
 			gamemode.iSpecial = MAXBOSS;
 		return;
@@ -710,8 +711,10 @@ public void ManageBossKillPlayer(const BaseBoss attacker, const BaseBoss victim,
 		switch (owner.iType) {
 			case -1: {}
 			case PlagueDoc: {
-				int _minions = gamemode.CountMinions(false);
-				SetPawnTimer(_MakePlayerMinion, float(_minions), victim.userid);
+				if (IsPlayerAlive(owner.index)) {
+					int _minions = gamemode.CountMinions(false);
+					SetPawnTimer(_MakePlayerMinion, float(_minions), victim.userid);
+				}
 			}
 		}
 	}
