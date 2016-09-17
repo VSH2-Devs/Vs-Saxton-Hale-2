@@ -17,7 +17,7 @@
 #pragma semicolon			1
 #pragma newdecls			required
 
-#define PLUGIN_VERSION			"1.2.8 BETA"
+#define PLUGIN_VERSION			"1.2.9 BETA"
 #define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
 #define CODEFRAMES			(1.0/30.0)	/* 30 frames per second means 0.03333 seconds or 33.33 ms */
 
@@ -528,7 +528,7 @@ public Action Timer_PlayerThink(Handle hTimer) //the main 'mechanics' of bosses
 		return Plugin_Continue;
 
 	gamemode.UpdateBossHealth();
-	if (gamemode.flMusicTime <= GetGameTime())
+	if ( gamemode.flMusicTime <= GetGameTime() )
 		_MusicPlay();
 
 	BaseBoss player;
@@ -539,8 +539,7 @@ public Action Timer_PlayerThink(Handle hTimer) //the main 'mechanics' of bosses
 		player = BaseBoss(i);
 		if (player.bIsBoss) {	/* If player is a boss, force Boss think on them; if not boss or on blue team, force fighter think! */
 			ManageBossThink(player); // in handler.sp
-			SetEntProp(i, Prop_Send, "m_iHealth", player.iHealth);
-			SetEntProp(i, Prop_Data, "m_iHealth", player.iHealth);
+			SetEntityHealth(i, player.iHealth);
 		}
 		else ManageFighterThink(player);
 	}
