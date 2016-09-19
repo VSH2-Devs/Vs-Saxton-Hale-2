@@ -1109,3 +1109,19 @@ stock void SkipBossPanelNotify(const int client, bool newchoice = true)
 	panel.Send(client, SkipHalePanelH, 30);
 	delete panel;
 }
+public void _SetCapOwner(const int iCapTeam)
+{
+	int i = -1;
+	int cap_master = FindEntityByClassname(-1, "team_control_point_master");
+	while ( (i = FindEntityByClassname(i, "team_control_point")) != -1 )
+	{
+		if (IsValidEntity(i)) {	//Most of this code taken from Arena:Respawn
+			SetVariantInt(iCapTeam);	//Reset cap ownership on cap.
+			// AcceptEntityInput(i, "SetOwner");
+			AcceptEntityInput(i, "SetOwner", -1, cap_master);	//Taken from Arena: Respawn
+			SetVariantInt(1);
+			AcceptEntityInput(i, "SetLocked");
+			SetPawnTimer(EnableCap, 30.0);
+		}
+	}
+}
