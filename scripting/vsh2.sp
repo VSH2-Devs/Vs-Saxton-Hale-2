@@ -17,7 +17,7 @@
 #pragma semicolon			1
 #pragma newdecls			required
 
-#define PLUGIN_VERSION			"1.2.9 BETA"
+#define PLUGIN_VERSION			"1.3.0 BETA"
 #define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
 #define CODEFRAMES			(1.0/30.0)	/* 30 frames per second means 0.03333 seconds or 33.33 ms */
 
@@ -90,6 +90,12 @@ enum /*CvarName*/
 	JarateRage,
 	FanoWarRage,
 	LastPlayerTime,
+	EngieBuildings,
+	MedievalLives,
+	MedievalRespawnTime,
+	PermOverheal,
+	MultiCapture,
+	MultiCapAmount
 };
 
 // cvar + handles
@@ -97,7 +103,7 @@ ConVar
 	bEnabled = null
 ;
 
-ConVar cvarVSH2[LastPlayerTime+1];
+ConVar cvarVSH2[MultiCapAmount+1];
 
 Handle
 	hHudText,
@@ -251,23 +257,29 @@ public void OnPluginStart()
 	bEnabled = CreateConVar("sm_vsh2_enabled", "1", "Enable VSH 2 plugin", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[PointType] = CreateConVar("sm_vsh2_point_type", "0", "Select condition to enable point (0 - alive players, 1 - time)", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[PointDelay] = CreateConVar("sm_vsh2_point_delay", "6", "Addition (for each player) delay before point's activation.", FCVAR_NONE);
-	cvarVSH2[AliveToEnable] = CreateConVar("sm_vsh2_point_alive", "5", "Enable control points when there are X people left alive.", FCVAR_NONE);
+	cvarVSH2[AliveToEnable] = CreateConVar("sm_vsh2_point_alive", "5", "Enable control points when there are X people left alive.", FCVAR_NONE, true, 1.0, true, 32.0);
 	cvarVSH2[FirstRound] = CreateConVar("sm_vsh2_firstround", "0", "if 1, allows the first round to start with VSH2 enabled", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[DamagePoints] = CreateConVar("sm_vsh2_damage_points", "600", "amount of damage needed to gain 1 point score", FCVAR_NONE);
 	cvarVSH2[DamageForQueue] = CreateConVar("sm_vsh2_damage_queue", "1", "allow damage to influence increase of queue points", FCVAR_NONE, true, 0.0, true, 1.0);
-	cvarVSH2[QueueGained] = CreateConVar("sm_vsh2_queue_gain", "10", "how much queue to give at end of round", FCVAR_NONE);
+	cvarVSH2[QueueGained] = CreateConVar("sm_vsh2_queue_gain", "10", "how much queue to give at end of round", FCVAR_NONE, true, 0.0, true, 9999.0);
 	cvarVSH2[EnableMusic] = CreateConVar("sm_vsh2_enable_music", "1", "enable or disable background music", FCVAR_NONE, true, 0.0, true, 1.0);
-	cvarVSH2[MusicVolume] = CreateConVar("sm_vsh2_music_volume", "0.5", "how loud the music should be", FCVAR_NONE);
-	cvarVSH2[HealthPercentForLastGuy] = CreateConVar("sm_vsh2_health_percentage_last_guy", "51", "if the health bar is lower than 51 out of 255, the last player timer will stop", FCVAR_NONE);
-	cvarVSH2[HealthRegenForPlayers] = CreateConVar("sm_vsh2_health_regen", "0", "allow non-boss and non-minion players to have health regen", FCVAR_NONE);
+	cvarVSH2[MusicVolume] = CreateConVar("sm_vsh2_music_volume", "0.5", "how loud the music should be", FCVAR_NONE, true, 0.0, true, 20.0);
+	cvarVSH2[HealthPercentForLastGuy] = CreateConVar("sm_vsh2_health_percentage_last_guy", "51", "if the health bar is lower than x out of 255, the last player timer will stop", FCVAR_NONE, true, 0.0, true, 255.0);
+	cvarVSH2[HealthRegenForPlayers] = CreateConVar("sm_vsh2_health_regen", "0", "allow non-boss and non-minion players to have health regen", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[HealthRegenAmount] = CreateConVar("sm_vsh2_health_regen_amount", "2.0", "if health regen is allowed, how much health regen should players get?", FCVAR_NONE);
 	cvarVSH2[MedigunReset] = CreateConVar("sm_vsh2_medigun_reset_amount", "0.31", "how much uber percentage should mediguns, after uber, reset to?", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[StopTickleTime] = CreateConVar("sm_vsh2_stop_tickle_time", "3.0", "how much time for the ticklefists tickle to be removed from boss", FCVAR_NONE);
 	cvarVSH2[AirStrikeDamage] = CreateConVar("sm_vsh2_airstrike_damage", "200", "how much damage using the airstrike needed to gain clipsize", FCVAR_NONE);
-	cvarVSH2[AirblastRage] = CreateConVar("sm_vsh2_airblast_rage", "8.0", "how much rage should airblast give/remove? (negative number to remove rage)", FCVAR_NONE);
-	cvarVSH2[JarateRage] = CreateConVar("sm_vsh2_jarate_rage", "8.0", "how much rage should jarate give/remove? (negative number to add rage)", FCVAR_NONE);
+	cvarVSH2[AirblastRage] = CreateConVar("sm_vsh2_airblast_rage", "8.0", "how much rage should airblast give/remove? (negative number to remove rage)", FCVAR_NONE, true, 0.0, true, 100.0);
+	cvarVSH2[JarateRage] = CreateConVar("sm_vsh2_jarate_rage", "8.0", "how much rage should jarate give/remove? (negative number to add rage)", FCVAR_NONE, true, 0.0, true, 100.0);
 	cvarVSH2[FanoWarRage] = CreateConVar("sm_vsh2_fanowar_rage", "5.0", "how much rage should the fanowar give/remove? (negative number to add rage)", FCVAR_NONE);
 	cvarVSH2[LastPlayerTime] = CreateConVar("sm_vsh2_lastplayer_time", "180", "how many seconds to give the last player to fight the Boss(es) until said seconds are over", FCVAR_NONE);
+	cvarVSH2[EngieBuildings] = CreateConVar("sm_vsh2_killbuilding_engiedeath", "0", "if 0, no building dies when engie dies. If 1, only sentry dies. If 2, all buildings die.", FCVAR_NONE, true, 0.0, true, 2.0);
+	cvarVSH2[MedievalLives] = CreateConVar("sm_vsh2_medievalmode_lives", "3", "amount of lives red players are entitled during Medieval Mode", FCVAR_NONE, true, 0.0, true, 99.0);
+	cvarVSH2[MedievalRespawnTime] = CreateConVar("sm_vsh2_medievalmode_respawntime", "5.0", "how long it takes for players to respawn after dying in medieval mode", FCVAR_NONE, true, 1.0, true, 999.0);
+	cvarVSH2[PermOverheal] = CreateConVar("sm_vsh2_permanent_overheal", "1", "set if Mediguns give permanent overheal", FCVAR_NONE, true, 0.0, true, 1.0);
+	cvarVSH2[MultiCapture] = CreateConVar("sm_vsh2_multiple_cp_captures", "0", "if enabled, allow control points to be captured more than once instead of ending the round.", FCVAR_NONE, true, 0.0, true, 1.0);
+	cvarVSH2[MultiCapAmount] = CreateConVar("sm_vsh2_multiple_cp_capture_amount", "3", "if sm_vsh2_allow_multiple_cp_captures is enabled, how many times must a team capture a Control Point to win", FCVAR_NONE, true, 1.0, true, 999.0);
 	
 #if defined _steamtools_included
 	gamemode.bSteam = LibraryExists("SteamTools");
@@ -290,8 +302,8 @@ public void OnPluginStart()
 	HookEvent("item_pickup", ItemPickedUp);
 	HookEvent("player_chargedeployed", UberDeployed);
 	HookEvent("arena_round_start", ArenaRoundStart);
+	HookEvent("teamplay_point_captured", PointCapture, EventHookMode_Post);
 	
-	AddCommandListener(DoTaunt, "taunt");
 	AddCommandListener(DoTaunt, "+taunt");
 	AddCommandListener(cdVoiceMenu, "voicemenu");
 	AddNormalSoundHook(HookSound);
@@ -540,9 +552,14 @@ public Action Timer_PlayerThink(Handle hTimer) //the main 'mechanics' of bosses
 		if (player.bIsBoss) {	/* If player is a boss, force Boss think on them; if not boss or on blue team, force fighter think! */
 			ManageBossThink(player); // in handler.sp
 			SetEntityHealth(i, player.iHealth);
+			if (player.iHealth <= 0)	// BUG PATCH: Bosses are not being 100% dead when the iHealth is at 0...
+				ForcePlayerSuicide(i);
 		}
 		else ManageFighterThink(player);
 	}
+	if ( !gamemode.CountBosses(true) )	// If there's no active, living bosses, then force RED to win
+		ForceTeamWin(RED);
+
 	return Plugin_Continue;
 }
 
@@ -784,7 +801,7 @@ public Action Timer_DrawGame(Handle timer)
 	}
 	return Plugin_Continue;
 }
-public void ResetMediCharge(const int entid)
+public void _ResetMediCharge(const int entid)
 {
 	int medigun = EntRefToEntIndex(entid); 
 	if (medigun > MaxClients and IsValidEntity(medigun))
@@ -809,7 +826,7 @@ public Action TimerLazor(Handle timer, any medigunid)
 			else UberTarget[client] = 0;
 		}
 		else if (charge < 0.05) {
-			SetPawnTimer(ResetMediCharge, 3.0, EntIndexToEntRef(medigun)); //CreateTimer(3.0, TimerLazor2, EntIndexToEntRef(medigun));
+			SetPawnTimer(_ResetMediCharge, 3.0, EntIndexToEntRef(medigun)); //CreateTimer(3.0, TimerLazor2, EntIndexToEntRef(medigun));
 			return Plugin_Stop;
 		}
 	}
