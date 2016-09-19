@@ -65,6 +65,8 @@ Methods
 	{
 		if (uid)	// If you're using a userid and you know 100% it's valid, then set uid to true
 			return view_as< BaseFighter >( ind );
+		if ( !IsClientValid(ind) )
+			return view_as< BaseFighter >( 0 );
 		return view_as< BaseFighter >( GetClientUserId(ind) );
 	}
 	///////////////////////////////
@@ -528,9 +530,9 @@ Methods
 			case TFClass_Soldier:	Format(helpstr, sizeof(helpstr), "Soldier:\nThe Battalion's Backup nerfs Boss damage.\nThe Half-Zatoichi heals 35HP on hit + can overheal to +25. Honorbound is removed on hit.\nShotguns minicrit Boss in midair + lower rocketjump damage.\nDirect Hit crits when it would minicrit.\nReserve Shooter has faster weapon switch + damage buff.\nMantreads create greater rocketjumps + negates fall damage.\nRocketJumper replaced with stock Rocket Launcher.");
 			case TFClass_Pyro:	Format(helpstr, sizeof(helpstr), "Pyro:\nThe Flare Gun is replaced by the MegaDetonator.\nAirblasting Bosses builds Rage and lengthens the Vagineer's uber.\nThird Degree gains uber for healers on hit.\nBackburner has Chargeable airblast.\nMannmelter crits do extra damage.");
 			case TFClass_DemoMan:	Format(helpstr, sizeof(helpstr), "Demoman:\nThe shields block at least one hit from Boss melees.\nUsing shields grants crits on all weapons.\nEyelander/reskins gain heads on hit.\nHalf-Zatoichi heals 35HP on hit and can overheal to +25. Honorbound is removed on hit.\nPersian Persuader gives 2x reserve ammo.\nBoots do stomp damage.\nLoch-n-Load does afterburn on hit.\nGrenade Launcher & Cannon reduces explosive jumping if the weapon is active.\nStickyJumper replaced with Sticky Launcher.\nDecapitator taunt gives 4 heads if Successful.");
-			case TFClass_Heavy:	Format(helpstr, sizeof(helpstr), "Heavy:\nNatascha, the KGB, and the Fists of Steel are replaced with the\nRocket Natascha, Gloves of Running, and Fists, respectively.\nThe Gloves of Running are quite quick but cause you to lose more health.\nThe Holiday Punch will remove any stun on you if you hit Hale while stunned.\nMiniguns get +25% damage boost when being healed by a medic.");
+			case TFClass_Heavy:	Format(helpstr, sizeof(helpstr), "Heavy:\nNatascha, the KGB, and the Fists of Steel are replaced with the\nRocket Natascha, Gloves of Running, and Fists, respectively.\nThe Gloves of Running are fast but cause you to take more damage.\nThe Holiday Punch will remove any stun on you if you hit Hale while stunned.\nMiniguns get +25% damage boost when being healed by a medic.\nShotguns give damage back as health.\n");
 			case TFClass_Engineer:	Format(helpstr, sizeof(helpstr), "Engineer:\nWrenches give an extra +25HP.\nGunslinger gives +55HP\nThe Frontier Justice gains crits only while your sentry is targetting Hale.\nThe Eureka Effect is disabled for now.\nTelefrags kill Bosses in one shot.");
-			case TFClass_Medic:	Format(helpstr, sizeof(helpstr), "Medic:\nCharge: Kritz+Uber+Ammo. Charge starts at 40percent.\nCharge lasts for 150 percent after activation.\nSyringe Guns: on hit: +5 to Uber.\nCrossbow: 100 percent crits, +150pct damage, +15 uber on hit.\nUber gives patient infinite ammo until Uber is depleted.\nhaving 90% or higher Uber protects you from one Melee hit from Boss.\nBlutsauger + Overdose are Unlocked + give 1 pct Uber on hit.");
+			case TFClass_Medic:	Format(helpstr, sizeof(helpstr), "Medic:\nCharge: Kritz+Uber+Ammo. Charge starts at 40percent.\nCharge lasts for 150 percent after activation.\nSyringe Guns: on hit: +5 to Uber.\nCrossbow: 100 percent crits, +150pct damage, +15 uber on hit.\nUber gives patient infinite ammo until Uber is depleted.\nhaving 90% or higher Uber protects you from one Melee hit from Boss.\nBlutsauger + Overdose are Unlocked + give 1 pct Uber on hit.\nHealing Heavies give them damage boost on Miniguns.");
 			case TFClass_Sniper:	Format(helpstr, sizeof(helpstr), "Sniper:\nJarate removes small pct of Boss Rage.\nBack-equipped weapons are replaced with SMG.\nSniper Rifles causes Certain Bosses to glow. Glow time scales with charge.\nAll Sniper melees climb walls, but has slower rate of fire.\nHuntsman carries 2x more ammo.\n");
 			case TFClass_Spy:	Format(helpstr, sizeof(helpstr), "Spy:\nBackstab does about 10+ percent of a Boss' max HP.\nCloaknDagger replaced with normal inviswatch.\nAll revolvers minicrit.\nYour Eternal Reward backstabs will disguise you.\nKunai backstabs will get you a health bonus.\nSappers are replaced with NailGun.\nDiamondback gets 2 crits on backstab.\nBig Earner gives full Cloak on backstab.\nAmbassador headshots do extra damage.");
 		}
@@ -660,7 +662,7 @@ Methods
 	{
 		this.flRAGE += ( damage/SquareRoot(float(this.iHealth))*4.0 );
 	}
-	public void MakeBossAndSwitch(const int type, bool callEvent)
+	public void MakeBossAndSwitch(const int type, const bool callEvent)
 	{
 		this.bSetOnSpawn = true;
 		this.iType = type;
