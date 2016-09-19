@@ -63,9 +63,37 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	if (!victim.bIsBoss and !victim.bIsMinion)	// Patch: Don't want multibosses playing last-player sound clips when a BOSS dies...
 		SetPawnTimer(CheckAlivePlayers, 0.2);
 	
-	if ( !gamemode.CountBosses(true) )	// If there's no active, living bosses, then force RED to win
-		ForceTeamWin(RED);
-
+	if (gamemode.bMedieval and !victim.bIsBoss and !victim.bIsMinion and victim.iLives and gamemode.iRoundState is StateRunning)
+	{
+		SetPawnTimer(_RespawnPlayer, cvarVSH2[MedievalRespawnTime].FloatValue, victim.userid);
+		victim.iLives--;
+	}
+	
+	if ( (TF2_GetPlayerClass(victim.index) == TFClass_Engineer) and !(event.GetInt("death_flags") & TF_DEATHFLAG_DEADRINGER) )
+	{
+		if (cvarVSH2[EngieBuildings].IntValue) {
+			switch (cvarVSH2[EngieBuildings].IntValue) {
+				case 1: {
+					int sentry = FindSentry(victim.index);
+					if (sentry != -1) {
+						SetVariantInt(GetEntProp(sentry, Prop_Send, "m_iMaxHealth")+8);
+						AcceptEntityInput(sentry, "RemoveHealth");
+					}
+				}
+				case 2: {
+					for (int ent=MaxClients+1 ; ent<2048 ; ent++) {
+						if (!IsValidEdict(ent)) 
+							continue;
+						if (!HasEntProp(ent, Prop_Send, "m_hBuilder"))
+							continue;
+	
+						SetVariantInt(GetEntProp(ent, Prop_Send, "m_iMaxHealth")+8);
+						AcceptEntityInput(ent, "RemoveHealth");
+					}
+				}
+			}
+		}
+	}
 	return Plugin_Continue;
 }
 public Action PlayerHurt(Event event, const char[] name, bool dontBroadcast)
@@ -100,9 +128,11 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 		gamemode.hMusic = null;
 	}*/
 	StopBackGroundMusic();
+	gamemode.bMedieval = (FindEntityByClassname(-1, "tf_logic_medieval") != -1 or FindConVar("tf_medieval").BoolValue);
 	gamemode.CheckArena(cvarVSH2[PointType].BoolValue);
 	gamemode.bPointReady = false;
-	GetBossType();	// in handler.sp, check if a boss needs multiple players maybe
+	gamemode.iCaptures = 0;
+	gamemode.GetBossType();		// in gamemode.sp
 
 	int playing;
 	for (int iplay=MaxClients ; iplay ; --iplay) {
@@ -222,7 +252,7 @@ public Action ObjectDestroyed(Event event, const char[] name, bool dontBroadcast
 	int building = event.GetInt("index");
 	int objecttype = event.GetInt("objecttype");
 
-	ManageBuildingDestroyed(boss, building, objecttype);
+	ManageBuildingDestroyed(boss, building, objecttype, event);
 
 	return Plugin_Continue;
 }
@@ -425,5 +455,45 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 	if ( gamemode.iPlaying > 5 )
 		SetControlPoint(false);
 	gamemode.flHealthTime = 0.0;
+	return Plugin_Continue;
+}
+
+public Action PointCapture(Event event, const char[] name, bool dontBroadcast)
+{
+	if ( !bEnabled.BoolValue or gamemode.iRoundState != StateRunning or !cvarVSH2[MultiCapture].BoolValue )
+		return Plugin_Continue;
+	
+	// int iCap = GetEventInt(event, "cp"); //Doesn't seem to give the correct origin vectors
+	int iCapTeam = event.GetInt("team");
+	gamemode.iCaptures++;
+	
+	if (gamemode.iCaptures >= cvarVSH2[MultiCapAmount].IntValue or (GetLivingPlayers(RED) == 1 and iCapTeam == RED))
+	{
+		ForceTeamWin(iCapTeam);
+		return Plugin_Continue;
+	}
+	//SetPawnTimer(_SetCapOwner, 0.1, 0);	// in stocks.inc
+	_SetCapOwner(0);	// in stocks.inc
+	
+	char sCappers[MAXPLAYERS+1];
+	event.GetString("cappers", sCappers, MAXPLAYERS);
+	ManageOnBossCap(sCappers, iCapTeam);
+	
+	//int i = -1;
+	/*switch (iCapTeam) {
+		case BLU: {
+			char sCappers[MAXPLAYERS+1];
+			event.GetString("cappers", sCappers, MAXPLAYERS);
+			BaseBoss boss = BaseBoss(sCappers[0]);
+			if (boss) {
+				//ManageOnBossCap(sCappers, iCapTeam);
+			}
+		}
+		case RED: {
+			char sCappers[MAXPLAYERS+1];
+			event.GetString("cappers", sCappers, MAXPLAYERS);
+			//ManageOnBossCap(sCappers, iCapTeam);
+		}
+	}*/
 	return Plugin_Continue;
 }
