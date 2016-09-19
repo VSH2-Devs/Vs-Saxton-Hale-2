@@ -2,7 +2,6 @@
 ALL NON-BOSS AND NON-MINION RELATED CODE IS NEAR THE BOTTOM. HAVE FUN CODING!
 */
 
-#include "modules/bosses.sp"
 
 enum /* Bosses */	/* When you add custom Bosses, add to the anonymous enum as the Boss' ID */
 {
@@ -16,6 +15,8 @@ enum /* Bosses */	/* When you add custom Bosses, add to the anonymous enum as th
 
 #define MAXBOSS		5	// When adding new bosses, increase the MAXBOSS define for the newest boss id
 
+#include "modules/bosses.sp"
+
 /*
 PLEASE REMEMBER THAT PLAYERS THAT DON'T HAVE THEIR BOSS ID'S SET ARE NOT BOSSES.
 THIS PLUGIN HAS BEEN SETUP SO THAT IF YOU BECOME A BOSS, YOU MUST HAVE A VALID BOSS ID
@@ -23,29 +24,6 @@ THIS PLUGIN HAS BEEN SETUP SO THAT IF YOU BECOME A BOSS, YOU MUST HAVE A VALID B
 FOR MANAGEMENT FUNCTIONS, DO NOT HAVE THEM DISCRIMINATE WHO IS A BOSS OR NOT, SIMPLY CHECK THE ITYPE TO SEE IF IT REALLY WAS A BOSS PLAYER.
 */
 
-
-public void GetBossType()	
-{
-	if (gamemode.hNextBoss and gamemode.hNextBoss.iPresetType > -1) {
-		gamemode.iSpecial = gamemode.hNextBoss.iPresetType;
-		if ( gamemode.iSpecial > MAXBOSS)
-			gamemode.iSpecial = MAXBOSS;
-		return;
-	}
-	BaseBoss boss = gamemode.FindNextBoss();
-	if (boss.iPresetType > -1 and gamemode.iSpecial is -1) {
-		gamemode.iSpecial = boss.iPresetType;
-		boss.iPresetType = -1;
-		if ( gamemode.iSpecial > MAXBOSS )
-			gamemode.iSpecial = MAXBOSS;
-		return;
-	}
-	if (gamemode.iSpecial > -1) {	// Clamp the chosen special so we don't error out.
-		if ( gamemode.iSpecial > MAXBOSS)
-			gamemode.iSpecial = MAXBOSS;
-	}
-	else gamemode.iSpecial = GetRandomInt(Hale, MAXBOSS);
-}
 
 public void ManageDownloads()
 {
@@ -733,6 +711,8 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 			case -1: {}
 			case PlagueDoc:
 			{
+				// Didn't work...
+				//SDKHooks_TakeDamage(ownerBoss.index, attacker.index, attacker.index, float(damage), DMG_DIRECT, weapon, nullvec, nullvec);
 				ownerBoss.iHealth -= damage;
 				ownerBoss.GiveRage(damage);
 			}
@@ -749,6 +729,7 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 	}
 	if (custom is TF_CUSTOM_TELEFRAG)
 		damage = (IsPlayerAlive(attacker.index) ? 9001 : 1);	// Telefrags normally 1-shot the boss but let's cap damage at 9k
+
 	attacker.iDamage += damage;
 	if (GetIndexOfWeaponSlot(attacker.index, TFWeaponSlot_Primary) is 1104)	// Compatibility patch for Randomizer
 	{
@@ -771,7 +752,9 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 		}
 	}
 	for (int r=0; r<healercount; r++) {	// Medics now count as 3/5 of a backstab, similar to telefrag assists.
-		if (not IsValidClient(healers[r]) or not IsPlayerAlive(healers[r]))
+		if ( not IsValidClient(healers[r]) )
+			continue;
+		if ( not IsPlayerAlive(healers[r]) )
 			continue;
 
 		if (damage < 10 or UberTarget[healers[r]] is attacker.userid)
@@ -864,12 +847,12 @@ public void ManageBossTaunt(const BaseBoss base)
 		case PlagueDoc:	ToCPlague(base).RageAbility();
 	}
 }
-public void ManageBuildingDestroyed(const BaseBoss base, const int building, const int objecttype)
+public void ManageBuildingDestroyed(const BaseBoss base, const int building, const int objecttype, Event event)
 {
 	switch ( base.iType ) {
 		case -1: {}
-		case Hale:
-		{
+		case Hale: {
+			event.SetString("weapon", "fists");
 			if ( !GetRandomInt(0, 3) ) {
 				strcopy(snd, FULLPATH, HaleSappinMahSentry132);
 				EmitSoundToAll(snd, base.index);
@@ -894,8 +877,7 @@ public Action HookSound(int clients[64], int& numClients, char sample[FULLPATH],
 
 	switch (base.iType) {
 		case -1: {}
-		case Hale:
-		{
+		case Hale: {
 			if ( not strncmp(sample, "vo", 2, false) )
 				return Plugin_Handled;
 		}
@@ -1057,6 +1039,7 @@ public void ManageResetVariables(const BaseBoss base)
 	base.flLastShot = 0.0;
 	base.flLastHit = 0.0;
 	base.iState = -1;
+	base.iLives = (gamemode.bMedieval ? cvarVSH2[MedievalLives].IntValue : 0);
 }
 public void ManageEntityCreated(const int entity, const char[] classname)
 {
@@ -1277,9 +1260,10 @@ public void CheckAlivePlayers()
 		return;
 
 	int living = GetLivingPlayers(RED);
-	if (not living)
+	if (!living)
 		ForceTeamWin(BLU);
-	else if (living is 1 and gamemode.GetRandomBoss(true))
+
+	if (living is 1 and gamemode.GetRandomBoss(true))
 	{
 		ManageLastPlayer();	// in handler.sp
 		gamemode.iTimeLeft = cvarVSH2[LastPlayerTime].IntValue;
@@ -1362,6 +1346,15 @@ public void ManageSetBossArgs(const int client)
 		ReplyToCommand(target_list[i], "[VSH2] You have set your Boss!");
 	}
 }
+
+public void ManageOnBossCap(char sCappers[MAXPLAYERS+1], const int CappingTeam)
+{
+	switch (CappingTeam) {
+		case RED:	{}	// Code pertaining to red team here
+		case BLU:	{}	// Code pertaining to blu team and/or bosses here
+	}
+}
+
 public void _SkipBossPanel()
 {
 	BaseBoss upnext[3];
@@ -1385,8 +1378,9 @@ public void _SkipBossPanel()
 public void PrepPlayers(const BaseBoss player)
 {
 	int client = player.index;
-	if (not IsValidClient(client)
-		or not IsPlayerAlive(client)
+	if (not IsValidClient(client) )
+		return;
+	if (not IsPlayerAlive(client)
 		or gamemode.iRoundState is StateEnding
 		or player.bIsBoss)
 		return ;
@@ -1513,7 +1507,9 @@ public void PrepPlayers(const BaseBoss player)
 			int mediquality = GetItemQuality(weapon);
 			if (mediquality not_eq 10) {
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-				weapon = player.SpawnWeapon("tf_weapon_medigun", 35, 5, 10, "14 ; 0.0 ; 18 ; 0.0 ; 10 ; 1.25 ; 178 ; 0.75");
+				if (cvarVSH2[PermOverheal].BoolValue)
+					weapon = player.SpawnWeapon("tf_weapon_medigun", 35, 5, 10, "14 ; 0.0 ; 18 ; 0.0 ; 10 ; 1.25 ; 178 ; 0.75");
+				else weapon = player.SpawnWeapon("tf_weapon_medigun", 35, 5, 10, "18 ; 0.0 ; 10 ; 1.25 ; 178 ; 0.75");
 				//200 ; 1 for area of effect healing, 178 ; 0.75 Faster switch-to, 14 ; 0.0 perm overheal, 11 ; 1.25 Higher overheal
 				if (GetMediCharge(weapon) < 0.41)
 					SetMediCharge(weapon, 0.41);
@@ -1522,7 +1518,7 @@ public void PrepPlayers(const BaseBoss player)
 	}
 #if defined _tf2attributes_included
 	if (cvarVSH2[HealthRegenForPlayers].BoolValue)
-		TF2Attrib_SetByDefIndex( client, 57, GetClientHealth(client)/50.0+4.0/*cvarVSH2[HealthRegenAmount].FloatValue*/ );
+		TF2Attrib_SetByDefIndex( client, 57, GetClientHealth(client)/50.0+cvarVSH2[HealthRegenAmount].FloatValue );
 #endif
 }
 
@@ -1689,7 +1685,9 @@ public void ManageFighterThink(const BaseBoss fighter)
 		return;
 	}
 	if (not (buttons & IN_SCORE))
-		ShowSyncHudText(i, rageHUD, "Damage: %d", fighter.iDamage);
+		if (gamemode.bMedieval)
+			ShowSyncHudText(i, rageHUD, "Damage: %d | Lives: %d", fighter.iDamage, fighter.iLives);
+		else ShowSyncHudText(i, rageHUD, "Damage: %d", fighter.iDamage);
 
 	if (HasEntProp(i, Prop_Send, "m_iKillStreak")) {
 		int killstreaker = fighter.iDamage/1000;
@@ -1875,4 +1873,8 @@ public void ManageFighterThink(const BaseBoss fighter)
 			}
 		}
 	}
+}
+public void _RespawnPlayer(const int userid)	// too many temp funcs just to call as a timer. No wonder sourcepawn needs lambda funcs...
+{
+	TF2_RespawnPlayer( GetClientOfUserId(userid) );
 }
