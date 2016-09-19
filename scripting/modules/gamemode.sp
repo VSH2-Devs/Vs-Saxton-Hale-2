@@ -1,3 +1,4 @@
+
 int
 	state,			/* Sets the round state of the gamemode */
 	BossSpecial = -1,	/* preset the next boss type */
@@ -5,7 +6,8 @@ int
 	TotalMaxHealth,
 	TimeLeft,		/* How many minutes to countdown! */
 	RoundCount,		/* number of rounds played */
-	HealthChecks
+	HealthChecks,		/* self explanatory */
+	NumCaps			/* number of times control point has been capped */
 ;
 
 float
@@ -13,7 +15,8 @@ float
 	MusicTime
 ;
 bool
-	PointReady
+	PointReady,
+	Medieval
 ;
 
 BaseBoss preselected;		/* The next player chosen as boss */
@@ -134,6 +137,11 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		public get()			{ return HealthChecks; }
 		public set(const int val)	{ HealthChecks = val; }
 	}
+	property int iCaptures
+	{
+		public get()			{ return NumCaps; }
+		public set(const int val)	{ NumCaps = val; }
+	}
 	
 #if defined _steamtools_included
 	property bool bSteam
@@ -146,6 +154,11 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 	{
 		public get()			{ return PointReady; }
 		public set(const bool val)	{ PointReady = val; }
+	}
+	property bool bMedieval
+	{
+		public get()			{ return Medieval; }
+		public set(const bool val)	{ Medieval = val; }
 	}
 
 	property float flHealthTime
@@ -372,6 +385,28 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		}
 		if (bosscount)
 			this.iHealthBarPercent = RoundToCeil( float(totalHealth)/float(this.iTotalMaxHealth)*255.0 );
+	}
+	public void GetBossType()
+	{
+		if (this.hNextBoss and this.hNextBoss.iPresetType > -1) {
+			this.iSpecial = this.hNextBoss.iPresetType;
+			if ( this.iSpecial > MAXBOSS)
+				this.iSpecial = MAXBOSS;
+			return;
+		}
+		BaseBoss boss = this.FindNextBoss();
+		if (boss.iPresetType > -1 and this.iSpecial is -1) {
+			this.iSpecial = boss.iPresetType;
+			boss.iPresetType = -1;
+			if ( this.iSpecial > MAXBOSS )
+				this.iSpecial = MAXBOSS;
+			return;
+		}
+		if (this.iSpecial > -1) {	// Clamp the chosen special so we don't error out.
+			if ( this.iSpecial > MAXBOSS)
+				this.iSpecial = MAXBOSS;
+		}
+		else this.iSpecial = GetRandomInt(Hale, MAXBOSS);
 	}
 };
 
