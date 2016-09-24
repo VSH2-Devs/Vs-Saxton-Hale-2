@@ -473,7 +473,7 @@ public Action PointCapture(Event event, const char[] name, bool dontBroadcast)
 		return Plugin_Continue;
 	}
 	//SetPawnTimer(_SetCapOwner, 0.1, 0);	// in stocks.inc
-	_SetCapOwner(0);	// in stocks.inc
+	_SetCapOwner(NEUTRAL);	// in stocks.inc
 	
 	char sCappers[MAXPLAYERS+1];
 	event.GetString("cappers", sCappers, MAXPLAYERS);

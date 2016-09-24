@@ -24,6 +24,9 @@
 #define IsClientValid(%1)		( 0 < %1 and %1 <= MaxClients and IsClientInGame(%1) )
 #define PLYR				MAXPLAYERS+1
 
+#define UNASSIGNED 0
+#define NEUTRAL 0
+#define SPEC 1
 #define	RED	2
 #define BLU	3
 
