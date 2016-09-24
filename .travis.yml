@@ -3,6 +3,9 @@
 # Use the new container-based infrastructure
 sudo: false
 
+#Set lang
+language: sourcepawn
+
 # Install some apt packages needed for spcomp
 addons:
 

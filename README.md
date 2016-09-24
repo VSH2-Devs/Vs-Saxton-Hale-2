@@ -1,6 +1,3 @@
-[![Issues/PRs in Ready](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=ready&title=Ready)](http://waffle.io/Starblaster64/Vs-Saxton-Hale-2)
-[![Issues/PRs in In Progress](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=in%20progress&title=In%20Progress)](http://waffle.io/Starblaster64/Vs-Saxton-Hale-2)
-[![Issues/PRs in On Hold](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=on%20hold&title=On%20Hold)](http://waffle.io/Starblaster64/Vs-Saxton-Hale-2)
 # VSH 2 #
 
 #### Current STABLE Version: N/A
@@ -24,3 +21,12 @@ VSH2 is half-rewrite of VSH 1. VSH and FF2 were made as very bad frameworks and 
 ### Who do I talk to? ###
 
 * Contact the main plugin developer: Nergal the Ashurian/Assyrian - https://forums.alliedmods.net/member.php?u=176545
+
+
+## Waffle.io Board ##
+[![Issues/PRs in Ready](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=ready&title=Ready)](http://waffle.io/Starblaster64/Vs-Saxton-Hale-2)
+[![Issues/PRs in In Progress](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=in%20progress&title=In%20Progress)](http://waffle.io/Starblaster64/Vs-Saxton-Hale-2)
+[![Issues/PRs in On Hold](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=on%20hold&title=On%20Hold)](http://waffle.io/Starblaster64/Vs-Saxton-Hale-2)
+## Travis Build Status ##
+[![Master Build Status](https://travis-ci.org/Starblaster64/Vs-Saxton-Hale-2.svg?branch=master)](https://travis-ci.org/Starblaster64/Vs-Saxton-Hale-2)
+[![Develop Build Status](https://travis-ci.org/Starblaster64/Vs-Saxton-Hale-2.svg?branch=develop)](https://travis-ci.org/Starblaster64/Vs-Saxton-Hale-2)
