@@ -70,7 +70,7 @@ public Plugin myinfo = {
 	author 			= "nergal/assyrian, props to Flamin' Sarge, Chdata, & Buzzkillington",
 	description 		= "Allows Players to play as various bosses of TF2",
 	version 		= PLUGIN_VERSION,
-	url 			= "hue" //will fill later
+	url 			= "https://forums.alliedmods.net/showthread.php?t=286701"
 };
 
 enum /*CvarName*/
