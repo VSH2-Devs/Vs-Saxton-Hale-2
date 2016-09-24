@@ -1109,7 +1109,7 @@ stock void SkipBossPanelNotify(const int client, bool newchoice = true)
 	panel.Send(client, SkipHalePanelH, 30);
 	delete panel;
 }
-public void _SetCapOwner(const int iCapTeam, float flEnableTime = 30.0)
+stock void _SetCapOwner(const int iCapTeam, float flEnableTime = 30.0)
 {
 	int i = -1;
 	int cap_master = FindEntityByClassname(-1, "team_control_point_master");
