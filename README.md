@@ -1,8 +1,6 @@
-[![Issues/PRs Backlogged](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=backlog&title=Backlog)](http://waffle.io/Starblaster64/Vs-Saxton-Hale-2)
 [![Issues/PRs in Ready](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=ready&title=Ready)](http://waffle.io/Starblaster64/Vs-Saxton-Hale-2)
 [![Issues/PRs in In Progress](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=in%20progress&title=In%20Progress)](http://waffle.io/Starblaster64/Vs-Saxton-Hale-2)
 [![Issues/PRs in On Hold](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=on%20hold&title=On%20Hold)](http://waffle.io/Starblaster64/Vs-Saxton-Hale-2)
-[![Issues/PRs addressed/fixed/completed](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=finished&title=Finished)](http://waffle.io/Starblaster64/Vs-Saxton-Hale-2)
 # VSH 2 #
 
 #### Current STABLE Version: N/A
