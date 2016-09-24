@@ -299,10 +299,10 @@ public void OnPluginStart()
 	HookEvent("object_destroyed", ObjectDestroyed, EventHookMode_Pre);
 	HookEvent("player_jarated", PlayerJarated);
 	//HookEvent("player_changeclass", ChangeClass);
-	HookEvent( "rocket_jump", OnHookedEvent );
-	HookEvent( "rocket_jump_landed", OnHookedEvent );
-	HookEvent( "sticky_jump", OnHookedEvent );
-	HookEvent( "sticky_jump_landed", OnHookedEvent );
+	HookEvent("rocket_jump", OnHookedEvent);
+	HookEvent("rocket_jump_landed", OnHookedEvent);
+	HookEvent("sticky_jump", OnHookedEvent);
+	HookEvent("sticky_jump_landed", OnHookedEvent);
 	HookEvent("item_pickup", ItemPickedUp);
 	HookEvent("player_chargedeployed", UberDeployed);
 	HookEvent("arena_round_start", ArenaRoundStart);
