@@ -23,7 +23,7 @@ VSH2 is half-rewrite of VSH 1. VSH and FF2 were made as very bad frameworks and 
 * Contact the main plugin developer: Nergal the Ashurian/Assyrian - https://forums.alliedmods.net/member.php?u=176545
 
 
-## Waffle.io Board ##
-[![Issues/PRs in Ready](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=ready&title=Ready)](http://waffle.io/Starblaster64/Vs-Saxton-Hale-2)
-[![Issues/PRs in In Progress](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=in%20progress&title=In%20Progress)](http://waffle.io/Starblaster64/Vs-Saxton-Hale-2)
-[![Issues/PRs in On Hold](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=on%20hold&title=On%20Hold)](http://waffle.io/Starblaster64/Vs-Saxton-Hale-2)
+## Issue Progress ##
+[![Issues/PRs in Ready](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=ready&title=Ready)](https://overv.io/Starblaster64/Vs-Saxton-Hale-2/)
+[![Issues/PRs in In Progress](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=in%20progress&title=In%20Progress)](https://overv.io/Starblaster64/Vs-Saxton-Hale-2/)
+[![Issues/PRs in On Hold](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=on%20hold&title=On%20Hold)](https://overv.io/Starblaster64/Vs-Saxton-Hale-2/)
