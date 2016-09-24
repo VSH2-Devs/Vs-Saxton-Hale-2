@@ -33,7 +33,6 @@ before_script:
     - wget "http://hg.limetech.org/projects/tf2items/tf2items_source/raw-file/tip/pawn/tf2items.inc" -O include/tf2items.inc
     - wget "http://www.doctormckay.com/download/scripting/include/morecolors.inc" -O include/morecolors.inc
     - wget "http://hg.limetech.org/projects/steamtools/raw-file/tip/plugin/steamtools.inc" -O include/steamtools.inc
-    - wget "https://bitbucket.org/GoD_Tony/updater/raw/default/include/updater.inc" -O include/updater.inc
     - wget "https://forums.alliedmods.net/attachment.php?attachmentid=116849&d=1377667508" -O include/tf2attributes.inc
 
     - chmod +x spcomp
