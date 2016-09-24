@@ -6,6 +6,12 @@ sudo: false
 #Set lang
 language: sourcepawn
 
+# safelist
+branches:
+  only:
+  - master
+  - develop
+
 # Install some apt packages needed for spcomp
 addons:
 
