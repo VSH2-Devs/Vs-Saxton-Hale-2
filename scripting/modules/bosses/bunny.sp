@@ -1,13 +1,33 @@
-
 //defines
+
+//models
 #define BunnyModel		"models/player/saxton_hale/easter_demo.mdl"
-#define BunnyModelPrefix	"models/player/saxton_hale/easter_demo"
+// #define BunnyModelPrefix	"models/player/saxton_hale/easter_demo"
 
 #define EggModel		"models/player/saxton_hale/w_easteregg.mdl"
-#define EggModelPrefix		"models/player/saxton_hale/w_easteregg"
+// #define EggModelPrefix		"models/player/saxton_hale/w_easteregg"
 //#define ReloadEggModel	"models/player/saxton_hale/c_easter_cannonball.mdl"
 //#define ReloadEggModelPrefix	"models/player/saxton_hale/c_easter_cannonball"
 
+//materials
+static const char BunnyMaterials[][] = {
+	"materials/models/player/easter_demo/demoman_head_red.vmt",
+	"materials/models/player/easter_demo/easter_body.vmt",
+	"materials/models/player/easter_demo/easter_body.vtf",
+	"materials/models/player/easter_demo/easter_rabbit.vmt",
+	"materials/models/player/easter_demo/easter_rabbit.vtf",
+	"materials/models/player/easter_demo/easter_rabbit_normal.vtf",
+	"materials/models/player/easter_demo/eyeball_r.vmt"
+	// "materials/models/player/easter_demo/demoman_head_blue_invun.vmt", // This is for the new version of easter demo which VSH isn't using
+	// "materials/models/player/easter_demo/demoman_head_red_invun.vmt",
+	// "materials/models/player/easter_demo/easter_rabbit_blue.vmt",
+	// "materials/models/player/easter_demo/easter_rabbit_blue.vtf",
+	// "materials/models/player/easter_demo/easter_rabbit_invun.vmt",
+	// "materials/models/player/easter_demo/easter_rabbit_invun.vtf",
+	// "materials/models/player/easter_demo/easter_rabbit_invun_blue.vmt",
+	// "materials/models/player/easter_demo/easter_rabbit_invun_blue.vtf",
+	// "materials/models/player/easter_demo/eyeball_invun.vmt"
+};
 
 //Easter Bunny voicelines
 char BunnyWin[][] = {
@@ -345,73 +365,27 @@ public CBunny ToCBunny (const BaseBoss guy)
 
 public void AddBunnyToDownloads()
 {
-	char s[PLATFORM_MAX_PATH];
+	// static const char s[PLATFORM_MAX_PATH]; //This is the odd one out of all the boss.sp files, is it the rule or exception?
 	
-	int i;
-	PrecacheModel(BunnyModel, true);
-	PrecacheModel(EggModel, true);
-	for (i = 0; i < sizeof(extensions); i++) {
-		Format(s, PLATFORM_MAX_PATH, "%s%s", BunnyModelPrefix, extensions[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "%s%s", EggModelPrefix, extensions[i]);
-		CheckDownload(s);
-	}
-	for (i = 0; i < sizeof(extensionsb); i++)
-	{
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/easter_demo/easter_body%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/easter_demo/easter_rabbit%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/easter_demo/demoman_head_red%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/easter_demo/easter_rabbit_normal%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/easter_demo/eyeball_r%s", extensionsb[i]);
-		CheckDownload(s);
+	// int i;
+	PrepareModel(BunnyModel);
+	PrepareModel(EggModel);
 
-		Format(s, PLATFORM_MAX_PATH, "materials/models/props_easteregg/c_easteregg%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/props_easteregg/c_easteregg_gold%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/saxton_hale/hale_egg%s", extensionsb[i]);
-		CheckDownload(s);
-	}
-	for (i = 0; i < sizeof(BunnyWin); i++)
-	{
-		PrecacheSound(BunnyWin[i], true);
-	}
-	for (i = 0; i < sizeof(BunnyJump); i++)
-	{
-		PrecacheSound(BunnyJump[i], true);
-	}
-	for (i = 0; i < sizeof(BunnyRage); i++)
-	{
-		PrecacheSound(BunnyRage[i], true);
-	}
-	for (i = 0; i < sizeof(BunnyFail); i++)
-	{
-		PrecacheSound(BunnyFail[i], true);
-	}
-	for (i = 0; i < sizeof(BunnyKill); i++)
-	{
-		PrecacheSound(BunnyKill[i], true);
-	}
-	for (i = 0; i < sizeof(BunnySpree); i++)
-	{
-		PrecacheSound(BunnySpree[i], true);
-	}
-	for (i = 0; i < sizeof(BunnyLast); i++)
-	{
-		PrecacheSound(BunnyLast[i], true);
-	}
-	for (i = 0; i < sizeof(BunnyPain); i++)
-	{
-		PrecacheSound(BunnyPain[i], true);
-	}
-	for (i = 0; i < sizeof(BunnyStart); i++)
-	{
-		PrecacheSound(BunnyStart[i], true);
-	}
+	DownloadMaterialList(BunnyMaterials, sizeof(BunnyMaterials));
+
+	PrepareMaterial("materials/models/props_easteregg/c_easteregg");
+	CheckDownload("materials/models/props_easteregg/c_easteregg_gold.vmt");
+
+	PrecacheSoundList(BunnyWin, sizeof(BunnyWin));
+	PrecacheSoundList(BunnyJump, sizeof(BunnyJump));
+	PrecacheSoundList(BunnyRage, sizeof(BunnyRage));
+	PrecacheSoundList(BunnyFail, sizeof(BunnyFail));
+	PrecacheSoundList(BunnyKill, sizeof(BunnyKill));
+	PrecacheSoundList(BunnySpree, sizeof(BunnySpree));
+	PrecacheSoundList(BunnyLast, sizeof(BunnyLast));
+	PrecacheSoundList(BunnyPain, sizeof(BunnyPain));
+	PrecacheSoundList(BunnyStart, sizeof(BunnyStart));
+	PrecacheSoundList(BunnyRandomVoice, sizeof(BunnyRandomVoice));
 }
 
 public void AddBunnyToMenu ( Menu& menu )
