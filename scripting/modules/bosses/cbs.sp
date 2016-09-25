@@ -1,7 +1,6 @@
-
 //defines
 #define CBSModel		"models/player/saxton_hale/cbs_v4.mdl"
-#define CBSModelPrefix		"models/player/saxton_hale/cbs_v4"
+// #define CBSModelPrefix		"models/player/saxton_hale/cbs_v4"
 
 //CBS voicelines
 #define CBS0			"vo/sniper_specialweapon08.mp3"
@@ -310,36 +309,32 @@ public void AddCBSToDownloads()
 	char s[PLATFORM_MAX_PATH];
 	
 	int i;
-	PrecacheModel(CBSModel, true);
-	for (i = 0; i < sizeof(extensions); i++) {
-		Format(s, PLATFORM_MAX_PATH, "%s%s", CBSModelPrefix, extensions[i]);
-		CheckDownload(s);
-	}
-	for (i = 0; i < sizeof(extensionsb); ++i) {
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/saxton_hale/sniper_red%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/saxton_hale/sniper_lens%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/saxton_hale/sniper_head%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/saxton_hale/sniper_head_red%s", extensionsb[i]);
-		CheckDownload(s);
-	}
+
+	PrepareModel(CBSModel);
+
+	PrepareMaterial("materials/models/player/saxton_hale/sniper_red");
+	PrepareMaterial("materials/models/player/saxton_hale/sniper_lens");
+	PrepareMaterial("materials/models/player/saxton_hale/sniper_head");
+	PrepareMaterial("materials/models/player/saxton_hale/sniper_head_red");
+
 	PrecacheSound(CBS0, true);
 	PrecacheSound(CBS1, true);
+	PrecacheSound(CBS3, true);
 	PrecacheSound(CBSJump1, true);
-	PrecacheSound(CBSTheme, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", CBSTheme);
-	CheckDownload(s);
+	PrepareSound(CBSTheme);
 
-	for (i = 1; i <= 25; i++) {
-		Format(s, PLATFORM_MAX_PATH, "%s%02i.mp3", CBS2, i);
-		if ( FileExists(s) )
+	for (i = 1; i <= 25; i++)
+	{
+		if (i <= 9)
+		{
+			Format(s, PLATFORM_MAX_PATH, "%s%02i.mp3", CBS2, i);
 			PrecacheSound(s, true);
-		Format(s, PLATFORM_MAX_PATH, "%s%i.mp3", CBS4, i);
-		if ( FileExists(s) )
-			PrecacheSound(s, true);
+		}
+		Format(s, PLATFORM_MAX_PATH, "%s%02i.mp3", CBS4, i);
+		PrecacheSound(s, true);
 	}
+
+	PrecacheSound("vo/sniper_dominationspy04.mp3", true);
 }
 
 public void AddCBSToMenu ( Menu& menu )
