@@ -365,7 +365,7 @@ public CBunny ToCBunny (const BaseBoss guy)
 
 public void AddBunnyToDownloads()
 {
-	// static const char s[PLATFORM_MAX_PATH]; //This is the odd one out of all the boss.sp files, is it the rule or exception?
+	// char s[PLATFORM_MAX_PATH];
 	
 	// int i;
 	PrepareModel(BunnyModel);
