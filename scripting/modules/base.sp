@@ -1,4 +1,3 @@
-
 int
 	Health[PLYR],		/* Amount of health given to bosses */
 	MaxHealth[PLYR],
@@ -43,9 +42,10 @@ float
 ;
 
 //	Gonna leave these here so we can reduce stack memory for calling boss specific Download function calls
-public char snd[FULLPATH];
-public char extensions[][] = { ".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd", ".phy" };
-public char extensionsb[2][5] = { ".vtf", ".vmt" };
+public char snd[FULLPATH]; //How is this even used?
+// Moved to stocks.inc
+// public char extensions[][] = { ".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd", ".phy" };
+// public char extensionsb[2][5] = { ".vtf", ".vmt" };
 
 #define MAXMESSAGE	4096
 public char gameMessage[MAXMESSAGE];	// Just incase...
