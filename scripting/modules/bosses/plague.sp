@@ -1,8 +1,7 @@
-
 #define PlagueModel			"models/player/medic.mdl"
-#define PlagueModelPrefix		"models/player/medic"
+// #define PlagueModelPrefix		"models/player/medic"
 #define ZombieModel			"models/player/scout.mdl"
-#define ZombieModelPrefix		"models/player/scout"
+// #define ZombieModelPrefix		"models/player/scout"
 
 
 //voicelines
@@ -201,15 +200,13 @@ public CPlague ToCPlague (const BaseBoss guy)
 
 public void AddPlagueDocToDownloads()
 {
-	char s[PLATFORM_MAX_PATH];
+	// char s[PLATFORM_MAX_PATH];
 	
-	int i;
+	// int i;
+
 	PrecacheModel(PlagueModel, true);
 	PrecacheModel(ZombieModel, true);
-	for (i=0 ; i < sizeof(extensions) ; i++) {
-		Format(s, PLATFORM_MAX_PATH, "%s%s", ZombieModelPrefix, extensions[i]);
-		CheckDownload(s);
-	}
+
 	PrecacheSound(PlagueIntro, true);
 	PrecacheSound(PlagueRage1, true);
 	PrecacheSound(PlagueRage2, true);
