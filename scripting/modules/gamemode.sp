@@ -6,7 +6,8 @@ int
 	TotalMaxHealth,
 	TimeLeft,		/* How many minutes to countdown! */
 	RoundCount,		/* number of rounds played */
-	HealthChecks
+	HealthChecks,		/* self explanatory */
+	NumCaps			/* number of times control point has been capped */
 ;
 
 float
@@ -14,7 +15,8 @@ float
 	MusicTime
 ;
 bool
-	PointReady
+	PointReady,
+	Medieval
 ;
 
 BaseBoss preselected;		/* The next player chosen as boss */
@@ -64,7 +66,7 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 {
 	public VSHGameMode()
 	{
-		preselected = SPNULL;
+		preselected = view_as< BaseBoss >(0);
 	}
 
 	property int iRoundState
@@ -83,7 +85,9 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		{
 			int playing = 0;
 			for (int i=MaxClients ; i ; --i) {
-				if (not IsClientInGame(i) or not IsPlayerAlive(i) or BaseBoss(i).bIsBoss)
+				if (not IsClientInGame(i) or not IsPlayerAlive(i))
+					continue;
+				if (BaseBoss(i).bIsBoss)
 					continue;
 				playing++;
 			}
@@ -133,6 +137,11 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		public get()			{ return HealthChecks; }
 		public set(const int val)	{ HealthChecks = val; }
 	}
+	property int iCaptures
+	{
+		public get()			{ return NumCaps; }
+		public set(const int val)	{ NumCaps = val; }
+	}
 	
 #if defined _steamtools_included
 	property bool bSteam
@@ -145,6 +154,11 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 	{
 		public get()			{ return PointReady; }
 		public set(const bool val)	{ PointReady = val; }
+	}
+	property bool bMedieval
+	{
+		public get()			{ return Medieval; }
+		public set(const bool val)	{ Medieval = val; }
 	}
 
 	property float flHealthTime
@@ -163,7 +177,7 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		public get()
 		{
 			if (!preselected.userid or !IsClientValid(preselected.index))
-				return SPNULL;
+				return view_as< BaseBoss >(0);
 			return preselected;
 		}
 		public set(const BaseBoss val)	{ preselected = val; }
@@ -187,7 +201,7 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 				continue;
 			else return boss;
 		}
-		return SPNULL;
+		return view_as< BaseBoss >(0);
 	}
 	public BaseBoss GetBossByType(const bool balive, const int type)
 	{
@@ -203,7 +217,7 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 			if (boss.iType is type)
 				return boss;
 		}
-		return SPNULL;
+		return view_as< BaseBoss >(0);
 	}
 	public void CheckArena(const bool type)
 	{
@@ -364,13 +378,35 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 			boss = BaseBoss(i);
 			if (not boss.bIsBoss)
 				{continue;}
-			if (not IsPlayerAlive(i))
-				{boss.iHealth = 0;}
 			bosscount++;
 			totalHealth += boss.iHealth;
+			if (not IsPlayerAlive(i))
+				totalHealth -= boss.iHealth;
 		}
 		if (bosscount)
 			this.iHealthBarPercent = RoundToCeil( float(totalHealth)/float(this.iTotalMaxHealth)*255.0 );
+	}
+	public void GetBossType()
+	{
+		if (this.hNextBoss and this.hNextBoss.iPresetType > -1) {
+			this.iSpecial = this.hNextBoss.iPresetType;
+			if ( this.iSpecial > MAXBOSS)
+				this.iSpecial = MAXBOSS;
+			return;
+		}
+		BaseBoss boss = this.FindNextBoss();
+		if (boss.iPresetType > -1 and this.iSpecial is -1) {
+			this.iSpecial = boss.iPresetType;
+			boss.iPresetType = -1;
+			if ( this.iSpecial > MAXBOSS )
+				this.iSpecial = MAXBOSS;
+			return;
+		}
+		if (this.iSpecial > -1) {	// Clamp the chosen special so we don't error out.
+			if ( this.iSpecial > MAXBOSS)
+				this.iSpecial = MAXBOSS;
+		}
+		else this.iSpecial = GetRandomInt(Hale, MAXBOSS);
 	}
 };
 

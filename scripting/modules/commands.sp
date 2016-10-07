@@ -144,7 +144,7 @@ public Action CommandBossSelect(int client, int args)
 			gamemode.hNextBoss = BaseBoss(target);
 			ReplyToCommand(client, "[VSH2] %N is set as next Boss!", gamemode.hNextBoss.index);
 		}
-		else gamemode.hNextBoss = SPNULL;
+		else gamemode.hNextBoss = view_as< BaseBoss >(0);
 	}
 	return Plugin_Handled;
 }
@@ -256,15 +256,9 @@ public Action ForceBossRealtime(int client, int args)
 	}
 	BaseBoss player;
 	for (int i=0; i<target_count; i++) {
-		if ( IsClientInGame(target_list[i]) )
-		{
+		if ( IsClientInGame(target_list[i]) ) {
 			player = BaseBoss(target_list[i]);
-			player.bSetOnSpawn = true;
-			player.iType = bosstype;
-			ManageOnBossSelected(player);
-			player.ConvertToBoss();
-			if (GetClientTeam(player.index) is RED)
-				player.ForceTeamChange(BLU);
+			player.MakeBossAndSwitch(bosstype, false);
 			CPrintToChat(player.index, "{orange}[VSH2]{default} an Admin has forced you to be a Boss!");
 		}
 	}
@@ -276,6 +270,7 @@ public Action CommandAddPoints(int client, int args)
 {
 	if ( !bEnabled.BoolValue )
 		return Plugin_Continue;
+
 	if (args < 2) {
 		ReplyToCommand(client, "[VSH] Usage: hale_addpoints <target> <points>");
 		return Plugin_Handled;

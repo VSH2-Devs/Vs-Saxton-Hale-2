@@ -2,7 +2,6 @@
 ALL NON-BOSS AND NON-MINION RELATED CODE IS NEAR THE BOTTOM. HAVE FUN CODING!
 */
 
-#include "bosses.sp"
 
 enum /* Bosses */	/* When you add custom Bosses, add to the anonymous enum as the Boss' ID */
 {
@@ -16,6 +15,8 @@ enum /* Bosses */	/* When you add custom Bosses, add to the anonymous enum as th
 
 #define MAXBOSS		5	// When adding new bosses, increase the MAXBOSS define for the newest boss id
 
+#include "modules/bosses.sp"
+
 /*
 PLEASE REMEMBER THAT PLAYERS THAT DON'T HAVE THEIR BOSS ID'S SET ARE NOT BOSSES.
 THIS PLUGIN HAS BEEN SETUP SO THAT IF YOU BECOME A BOSS, YOU MUST HAVE A VALID BOSS ID
@@ -23,28 +24,6 @@ THIS PLUGIN HAS BEEN SETUP SO THAT IF YOU BECOME A BOSS, YOU MUST HAVE A VALID B
 FOR MANAGEMENT FUNCTIONS, DO NOT HAVE THEM DISCRIMINATE WHO IS A BOSS OR NOT, SIMPLY CHECK THE ITYPE TO SEE IF IT REALLY WAS A BOSS PLAYER.
 */
 
-
-public void GetBossType()	
-{
-	if (gamemode.hNextBoss and gamemode.hNextBoss.iPresetType > -1) {
-		gamemode.iSpecial = gamemode.hNextBoss.iPresetType;
-		if ( gamemode.iSpecial > MAXBOSS)
-			gamemode.iSpecial = MAXBOSS;
-		return;
-	}
-	BaseBoss boss = gamemode.FindNextBoss();
-	if (boss.iPresetType > -1 and gamemode.iSpecial is -1) {
-		gamemode.iSpecial = boss.iPresetType;
-		if ( gamemode.iSpecial > MAXBOSS )
-			gamemode.iSpecial = MAXBOSS;
-		return;
-	}
-	if (gamemode.iSpecial > -1) {	// Clamp the chosen special so we don't error out.
-		if ( gamemode.iSpecial > MAXBOSS)
-			gamemode.iSpecial = MAXBOSS;
-	}
-	else gamemode.iSpecial = GetRandomInt(Hale, MAXBOSS);
-}
 
 public void ManageDownloads()
 {
@@ -56,7 +35,17 @@ public void ManageDownloads()
 	PrecacheSound("vo/announcer_am_capincite01.mp3", true);
 	PrecacheSound("vo/announcer_am_capincite03.mp3", true);
 	PrecacheSound("vo/announcer_am_capenabled02.mp3", true);
-
+	
+	PrecacheSound("vo/announcer_ends_60sec.mp3", true);
+	PrecacheSound("vo/announcer_ends_30sec.mp3", true);
+	PrecacheSound("vo/announcer_ends_10sec.mp3", true);
+	PrecacheSound("vo/announcer_ends_1sec.mp3", true);
+	PrecacheSound("vo/announcer_ends_2sec.mp3", true);
+	PrecacheSound("vo/announcer_ends_3sec.mp3", true);
+	PrecacheSound("vo/announcer_ends_4sec.mp3", true);
+	PrecacheSound("vo/announcer_ends_5sec.mp3", true);
+	PrecacheSound("items/pumpkin_pickup.wav", true);
+	
 	AddHaleToDownloads	();
 	AddVagToDownloads	();
 	AddCBSToDownloads	();
@@ -89,15 +78,10 @@ public void ManageDisconnect(const int client)
 			BaseBoss replace = gamemode.FindNextBoss();
 			if (gamemode.hNextBoss) {
 				replace = gamemode.hNextBoss;
-				gamemode.hNextBoss = SPNULL;
+				gamemode.hNextBoss = view_as< BaseBoss >(0);
 			}
 			if ( IsValidClient(replace.index) ) {
-				replace.bSetOnSpawn = true;
-				replace.iType = leaver.iType;
-				ManageOnBossSelected(replace);
-				replace.ConvertToBoss();
-				if (GetClientTeam(replace.index) != BLU)
-					replace.ForceTeamChange(BLU);
+				replace.MakeBossAndSwitch(leaver.iType, true);
 				CPrintToChat(replace.index, "{olive}[VSH2]{default} {green}Surprise! You're on NOW!{default}");
 			}
 		}
@@ -109,17 +93,17 @@ public void ManageDisconnect(const int client)
 			SetPawnTimer(_SkipBossPanel, 1.0);
 
 		if (gamemode.hNextBoss and client is gamemode.hNextBoss.index)
-			gamemode.hNextBoss = SPNULL;
+			gamemode.hNextBoss = view_as< BaseBoss >(0);
 	}
 }
 
-public void ManageOnBossSelected(const BaseBoss base)	// Don't forget to set custom music here using iSongPick property
+public void ManageOnBossSelected(const BaseBoss base)
 {
 	ManageBossHelp(base);
 	if (gamemode.iPlaying < 7 or GetRandomInt(0, 3) > 0)
 		return;
 
-	gamemode.FindNextBoss().MakeBossAndSwitch(GetRandomInt(Hale, MAXBOSS));
+	gamemode.FindNextBoss().MakeBossAndSwitch(GetRandomInt(Hale, MAXBOSS), true);
 }
 
 public void ManageOnTouchPlayer(const BaseBoss base, const BaseBoss victim)
@@ -160,6 +144,8 @@ public void ManageBossThink(const BaseBoss base)
 		case Bunny:		ToCBunny(base).Think();
 		case PlagueDoc:		ToCPlague(base).Think();
 	}
+	/* Adding this so bosses can take minicrits if airborne */
+	TF2_AddCondition(base.index, TFCond_GrapplingHookSafeFall, 0.2);
 }
 
 public void ManageBossModels(const BaseBoss base)
@@ -299,6 +285,15 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 		case -1: {}
 		case Hale, Vagineer, CBS, HHHjr, Bunny, PlagueDoc:
 		{
+			char trigger[32];
+			if (GetEdictClassname(attacker, trigger, sizeof(trigger)) and not strcmp(trigger, "trigger_hurt", false))
+			{
+				if (damage >= 350.0)
+					TeleportToSpawn(victim.index, BLU);
+			}
+			if (attacker <= 0)
+				return Plugin_Continue;
+		
 			char classname [64], strEntname [32];
 			if ( IsValidEdict(inflictor) )
 				GetEntityClassname(inflictor, strEntname, sizeof(strEntname));
@@ -364,11 +359,12 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 
 				return Plugin_Changed;
 			}
-			if ( not damagecustom
+			if ( not damagecustom	// Detects if boss is damaged by Rock Paper Scissors
 				and TF2_IsPlayerInCondition(victim.index, TFCond_Taunting)
 				and TF2_IsPlayerInCondition(attacker, TFCond_Taunting) )
 			{
 				damage = victim.iHealth+0.2;
+				Damage[attacker] += RoundFloat(damage);	// If necessary, just cheat by using the arrays.
 				return Plugin_Changed;
 			}
 			else if (damagecustom is TF_CUSTOM_TELEFRAG) {
@@ -377,8 +373,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 			}
 			if (damagecustom is TF_CUSTOM_TAUNT_BARBARIAN_SWING)	// Gives 4 heads if successful sword killtaunt!
 			{
-				for (int h=0; h<4; ++h)
-					IncrementHeadCount(attacker);
+				repeat(4) IncrementHeadCount(attacker);
 			}
 			if ( not strcmp(classname, "tf_weapon_shotgun_hwg", false) )
 			{
@@ -559,12 +554,6 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 						TF2_RemoveCondition(attacker, TFCond_Dazed);
 				}
 			}
-			char trigger[32];
-			if (GetEdictClassname(attacker, trigger, sizeof(trigger)) and not strcmp(trigger, "trigger_hurt", false))
-			{
-				if (damage >= 350.0)
-					TeleportToSpawn(victim.index, BLU);
-			}
 		}
 	}
 	return Plugin_Continue;
@@ -700,8 +689,10 @@ public void ManageBossKillPlayer(const BaseBoss attacker, const BaseBoss victim,
 		switch (owner.iType) {
 			case -1: {}
 			case PlagueDoc: {
-				int _minions = gamemode.CountMinions(false);
-				SetPawnTimer(_MakePlayerMinion, float(_minions), victim.userid);
+				if (IsPlayerAlive(owner.index)) {
+					int _minions = gamemode.CountMinions(false);
+					SetPawnTimer(_MakePlayerMinion, float(_minions), victim.userid);
+				}
 			}
 		}
 	}
@@ -710,7 +701,7 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 {
 	int damage = event.GetInt("damageamount");
 	int custom = event.GetInt("custom");
-	int weapon = GetEventInt(event, "weaponid");
+	int weapon = event.GetInt("weaponid");
 
 	if (not victim.bIsBoss and victim.bIsMinion and not attacker.bIsMinion)
 	{
@@ -720,6 +711,8 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 			case -1: {}
 			case PlagueDoc:
 			{
+				// Didn't work...
+				//SDKHooks_TakeDamage(ownerBoss.index, attacker.index, attacker.index, float(damage), DMG_DIRECT, weapon, nullvec, nullvec);
 				ownerBoss.iHealth -= damage;
 				ownerBoss.GiveRage(damage);
 			}
@@ -736,8 +729,9 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 	}
 	if (custom is TF_CUSTOM_TELEFRAG)
 		damage = (IsPlayerAlive(attacker.index) ? 9001 : 1);	// Telefrags normally 1-shot the boss but let's cap damage at 9k
+
 	attacker.iDamage += damage;
-	if (TF2_GetPlayerClass(attacker.index) is TFClass_Soldier and GetIndexOfWeaponSlot(attacker.index, TFWeaponSlot_Primary) is 1104)
+	if (GetIndexOfWeaponSlot(attacker.index, TFWeaponSlot_Primary) is 1104)	// Compatibility patch for Randomizer
 	{
 		if (weapon is TF_WEAPON_ROCKETLAUNCHER)
 			attacker.iAirDamage += damage;
@@ -758,7 +752,9 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 		}
 	}
 	for (int r=0; r<healercount; r++) {	// Medics now count as 3/5 of a backstab, similar to telefrag assists.
-		if (not IsValidClient(healers[r]) or not IsPlayerAlive(healers[r]))
+		if ( not IsValidClient(healers[r]) )
+			continue;
+		if ( not IsPlayerAlive(healers[r]) )
 			continue;
 
 		if (damage < 10 or UberTarget[healers[r]] is attacker.userid)
@@ -851,12 +847,12 @@ public void ManageBossTaunt(const BaseBoss base)
 		case PlagueDoc:	ToCPlague(base).RageAbility();
 	}
 }
-public void ManageBuildingDestroyed(const BaseBoss base, const int building, const int objecttype)
+public void ManageBuildingDestroyed(const BaseBoss base, const int building, const int objecttype, Event event)
 {
 	switch ( base.iType ) {
 		case -1: {}
-		case Hale:
-		{
+		case Hale: {
+			event.SetString("weapon", "fists");
 			if ( !GetRandomInt(0, 3) ) {
 				strcopy(snd, FULLPATH, HaleSappinMahSentry132);
 				EmitSoundToAll(snd, base.index);
@@ -881,8 +877,7 @@ public Action HookSound(int clients[64], int& numClients, char sample[FULLPATH],
 
 	switch (base.iType) {
 		case -1: {}
-		case Hale:
-		{
+		case Hale: {
 			if ( not strncmp(sample, "vo", 2, false) )
 				return Plugin_Handled;
 		}
@@ -983,9 +978,10 @@ public void ManageMessageIntro(ArrayList bosses)//(const BaseBoss base[34])		// 
 	}
 	int i;
 	BaseBoss base;
-	for (i=0 ; i<bosses.Length ; ++i) { //for (i=0 ; i<34 ; ++i) {
+	int len = bosses.Length;
+	for (i=0 ; i<len ; ++i) { //for (i=0 ; i<34 ; ++i) {
 		base = bosses.Get(i);
-		if ( base == SPNULL )
+		if ( base == view_as< BaseBoss >(0) )
 			continue;
 		switch ( base.iType ) {
 			case -1: {}
@@ -1029,6 +1025,7 @@ public void ManageResetVariables(const BaseBoss base)
 	base.iMarketted = 0;
 	base.flRAGE = 0.0;
 	base.bIsMinion = false;
+	base.iDifficulty = 0;
 	base.iDamage = 0;
 	base.iAirDamage = 0;
 	base.iUberTarget = 0;
@@ -1041,7 +1038,8 @@ public void ManageResetVariables(const BaseBoss base)
 	SetEntityRenderColor(base.index, 255, 255, 255, 255);
 	base.flLastShot = 0.0;
 	base.flLastHit = 0.0;
-	base.iState = 0;
+	base.iState = -1;
+	base.iLives = (gamemode.bMedieval ? cvarVSH2[MedievalLives].IntValue : 0);
 }
 public void ManageEntityCreated(const int entity, const char[] classname)
 {
@@ -1158,35 +1156,35 @@ public void StopBackGroundMusic()
 		StopSound(i, SNDCHAN_AUTO, BackgroundSong);
 	}
 }
-public void ManageRoundEndBossInfo(ArrayList bosses) //(const BaseBoss base[34])	// I STILL can't believe this works lmaoooo.
+public void ManageRoundEndBossInfo(ArrayList bosses, bool bossWon) //(const BaseBoss base[34])	// I STILL can't believe this works lmaoooo.
 {
 	char victory[FULLPATH];
 	gameMessage[0] = '\0';
 	int i=0;
 	BaseBoss base;
-	for (i=0 ; i<bosses.Length ; ++i) { //for (i=0 ; i<34 ; ++i) {
+	int len = bosses.Length;
+	for (i=0 ; i<len ; ++i) { //for (i=0 ; i<34 ; ++i) {
 		base = bosses.Get(i);
-		if ( base == SPNULL )
+		if ( base == view_as< BaseBoss >(0) )
 			continue;
 		switch ( base.iType ) {
-			case Vagineer: {
-				Format(gameMessage, MAXMESSAGE, "%s\nThe Vagineer (%N) had %i (of %i) health left.", gameMessage, base.index, base.iHealth, base.iMaxHealth);
-				Format(victory, FULLPATH, "%s%i.wav", VagineerKSpreeNew, GetRandomInt(1, 5));
-				EmitSoundToAll(victory);
+			case Vagineer:	Format(gameMessage, MAXMESSAGE, "%s\nThe Vagineer (%N) had %i (of %i) health left.", gameMessage, base.index, base.iHealth, base.iMaxHealth);
+			case HHHjr:	Format(gameMessage, MAXMESSAGE, "%s\nThe Horseless Headless Horsemann Jr. (%N) had %i (of %i) health left.", gameMessage, base.index, base.iHealth, base.iMaxHealth);
+			case CBS:	Format(gameMessage, MAXMESSAGE, "%s\nThe Christian Brutal Sniper (%N) had %i (of %i) health left.", gameMessage, base.index, base.iHealth, base.iMaxHealth);
+			case Bunny:	Format(gameMessage, MAXMESSAGE, "%s\nThe Easter Bunny (%N) had %i (of %i) health left.", gameMessage, base.index, base.iHealth, base.iMaxHealth);
+			case Hale:	Format(gameMessage, MAXMESSAGE, "%s\nSaxton Hale (%N) had %i (of %i) health left.", gameMessage, base.index, base.iHealth, base.iMaxHealth);
+			case PlagueDoc:	Format(gameMessage, MAXMESSAGE, "%s\nPlague Doctor (%N) had %i (of %i) health left.", gameMessage, base.index, base.iHealth, base.iMaxHealth);
+		}
+		if (bossWon) {
+			victory[0] = '\0';
+			switch ( base.iType ) {
+				case -1: {}
+				case Vagineer:	Format(victory, FULLPATH, "%s%i.wav", VagineerKSpreeNew, GetRandomInt(1, 5));
+				case Bunny:	strcopy(victory, FULLPATH, BunnyWin[GetRandomInt(0, sizeof(BunnyWin)-1)]);
+				case Hale:	Format(victory, FULLPATH, "%s%i.wav", HaleWin, GetRandomInt(1, 2));
 			}
-			case HHHjr: Format(gameMessage, MAXMESSAGE, "%s\nThe Horseless Headless Horsemann Jr. (%N) had %i (of %i) health left.", gameMessage, base.index, base.iHealth, base.iMaxHealth);
-			case CBS: Format(gameMessage, MAXMESSAGE, "%s\nThe Christian Brutal Sniper (%N) had %i (of %i) health left.", gameMessage, base.index, base.iHealth, base.iMaxHealth);
-			case Bunny: {
-				Format(gameMessage, MAXMESSAGE, "%s\nThe Easter Bunny (%N) had %i (of %i) health left.", gameMessage, base.index, base.iHealth, base.iMaxHealth);
-				strcopy(victory, FULLPATH, BunnyWin[GetRandomInt(0, sizeof(BunnyWin)-1)]);
+			if (victory[0] != '\0')
 				EmitSoundToAll(victory);
-			}
-			case Hale: {
-				Format(gameMessage, MAXMESSAGE, "%s\nSaxton Hale (%N) had %i (of %i) health left.", gameMessage, base.index, base.iHealth, base.iMaxHealth);
-				Format(victory, FULLPATH, "%s%i.wav", HaleWin, GetRandomInt(1, 2));
-				EmitSoundToAll(victory);
-			}
-			case PlagueDoc: Format(gameMessage, MAXMESSAGE, "%s\nPlague Doctor (%N) had %i (of %i) health left.", gameMessage, base.index, base.iHealth, base.iMaxHealth);
 		}
 	}
 	if (gameMessage[0] not_eq '\0') {
@@ -1262,16 +1260,32 @@ public void CheckAlivePlayers()
 		return;
 
 	int living = GetLivingPlayers(RED);
-	if (not living)
+	if (!living)
 		ForceTeamWin(BLU);
-	else if (living is 1 and gamemode.GetRandomBoss(true))
+
+	if (living is 1 and gamemode.GetRandomBoss(true))
 	{
 		ManageLastPlayer();	// in handler.sp
 		gamemode.iTimeLeft = cvarVSH2[LastPlayerTime].IntValue;
+		/*int RoundTimer = -1;
+		RoundTimer = FindEntityByClassname(RoundTimer, "team_round_timer");
+		if (RoundTimer <= 0)
+			RoundTimer = CreateEntityByName("team_round_timer");
+
+		if ( RoundTimer > MaxClients and IsValidEntity(RoundTimer) ) {
+			SetVariantInt(cvarVSH2[LastPlayerTime].IntValue);
+			//DispatchKeyValue(RoundTimer, "targetname", TIMER_NAME);
+			//DispatchKeyValue(RoundTimer, "setup_length", setupLength);
+			//DispatchKeyValue(RoundTimer, "setup_length", "30");
+			DispatchKeyValue(RoundTimer, "reset_time", "1");
+			DispatchKeyValue(RoundTimer, "auto_countdown", "1");
+			char time[5];
+			IntToString(cvarVSH2[LastPlayerTime].IntValue, time, sizeof(time));
+			DispatchKeyValue(RoundTimer, "timer_length", time);
+			DispatchSpawn(RoundTimer);
+		}*/
 		CreateTimer(1.0, Timer_DrawGame, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	}
-	if ( !gamemode.CountBosses(true) )
-		ForceTeamWin(RED);
 	
 	int Alive = cvarVSH2[AliveToEnable].IntValue;
 	if (!cvarVSH2[PointType].BoolValue and living <= Alive and !gamemode.bPointReady)
@@ -1332,6 +1346,15 @@ public void ManageSetBossArgs(const int client)
 		ReplyToCommand(target_list[i], "[VSH2] You have set your Boss!");
 	}
 }
+
+public void ManageOnBossCap(char sCappers[MAXPLAYERS+1], const int CappingTeam)
+{
+	switch (CappingTeam) {
+		case RED:	{}	// Code pertaining to red team here
+		case BLU:	{}	// Code pertaining to blu team and/or bosses here
+	}
+}
+
 public void _SkipBossPanel()
 {
 	BaseBoss upnext[3];
@@ -1343,16 +1366,21 @@ public void _SkipBossPanel()
 			SkipBossPanelNotify(upnext[j].index);
 		else CPrintToChat(upnext[j].index, "{olive}[VSH]{default} You are going to be a Boss soon! Type {olive}/halenext{default} to check/reset your queue points.");
 	}
-	for (int j=0; j<3; ++j) {	// Ughhh, reset shit...
-		upnext[j].bSetOnSpawn = false;
+	for (int n=MaxClients ; n ; --n) {	// Ughhh, reset shit...
+		if (not IsValidClient(n))
+			continue;
+		upnext[0] = BaseBoss(n);
+		if (not upnext[0].bIsBoss)
+			upnext[0].bSetOnSpawn = false;
 	}
 }
 
 public void PrepPlayers(const BaseBoss player)
 {
 	int client = player.index;
-	if (not IsValidClient(client)
-		or not IsPlayerAlive(client)
+	if (not IsValidClient(client) )
+		return;
+	if (not IsPlayerAlive(client)
 		or gamemode.iRoundState is StateEnding
 		or player.bIsBoss)
 		return ;
@@ -1386,7 +1414,7 @@ public void PrepPlayers(const BaseBoss player)
 			case 237:
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-				weapon = player.SpawnWeapon("tf_weapon_rocketlauncher", 18, 1, 0, "265 ; 999.0");
+				weapon = player.SpawnWeapon("tf_weapon_rocketlauncher", 18, 1, 0, "114 ; 1.0");
 				SetWeaponAmmo(weapon, 20);
 			}
 			case 17, 204:
@@ -1479,7 +1507,9 @@ public void PrepPlayers(const BaseBoss player)
 			int mediquality = GetItemQuality(weapon);
 			if (mediquality not_eq 10) {
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-				weapon = player.SpawnWeapon("tf_weapon_medigun", 35, 5, 10, "14 ; 0.0 ; 18 ; 0.0 ; 10 ; 1.25 ; 178 ; 0.75");
+				if (cvarVSH2[PermOverheal].BoolValue)
+					weapon = player.SpawnWeapon("tf_weapon_medigun", 35, 5, 10, "14 ; 0.0 ; 18 ; 0.0 ; 10 ; 1.25 ; 178 ; 0.75");
+				else weapon = player.SpawnWeapon("tf_weapon_medigun", 35, 5, 10, "18 ; 0.0 ; 10 ; 1.25 ; 178 ; 0.75");
 				//200 ; 1 for area of effect healing, 178 ; 0.75 Faster switch-to, 14 ; 0.0 perm overheal, 11 ; 1.25 Higher overheal
 				if (GetMediCharge(weapon) < 0.41)
 					SetMediCharge(weapon, 0.41);
@@ -1488,7 +1518,7 @@ public void PrepPlayers(const BaseBoss player)
 	}
 #if defined _tf2attributes_included
 	if (cvarVSH2[HealthRegenForPlayers].BoolValue)
-		TF2Attrib_SetByDefIndex( client, 57, GetClientHealth(client)/50.0+4.0/*cvarVSH2[HealthRegenAmount].FloatValue*/ );
+		TF2Attrib_SetByDefIndex( client, 57, GetClientHealth(client)/50.0+cvarVSH2[HealthRegenAmount].FloatValue );
 #endif
 }
 
@@ -1558,7 +1588,7 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		}
 		case 415: //reserve shooter
 		{
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "179 ; 1 ; 265 ; 999.0 ; 178 ; 0.6 ; 2 ; 1.1 ; 3 ; 0.66", true);
+			hItemOverride = PrepareItemHandle(hItemCast, _, _, "179 ; 1 ; 114 ; 1.0 ; 178 ; 0.6 ; 2 ; 1.1 ; 3 ; 0.66", true);
 		}
 		case 405, 608: // Demo boots have falling stomp damage
 		{
@@ -1567,6 +1597,9 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case 36, 412: // Blutsauger and Overdose
 		{
 			hItemOverride = PrepareItemHandle(hItemCast, _, _, "17 ; 0.01");
+		}
+		case 772: {	// Baby Face Blaster
+			hItemOverride = PrepareItemHandle(hItemCast, _, _, "106 ; 0.3 ; 4 ; 1.33 ; 45 ; 0.6 ; 114 ; 1.0", true);
 		}
 	}
 	if (hItemOverride not_eq null) {
@@ -1579,19 +1612,19 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 	if (!strncmp(classname, "tf_weapon_rocketlauncher", 24, false) or !strncmp(classname, "tf_weapon_particle_cannon", 25, false))
 	{
 		switch (iItemDefinitionIndex) {
-			case 127: hItemOverride = PrepareItemHandle(hItemCast, _, _, "265 ; 999.0 ; 179 ; 1.0");
-			case 414: hItemOverride = PrepareItemHandle(hItemCast, _, _, "265 ; 999.0 ; 99 ; 1.25");
-			case 1104: hItemOverride = PrepareItemHandle(hItemCast, _, _, "76 ; 1.25 ; 265 ; 999.0");
+			case 127: hItemOverride = PrepareItemHandle(hItemCast, _, _, "114 ; 1.0 ; 179 ; 1.0");
+			case 414: hItemOverride = PrepareItemHandle(hItemCast, _, _, "114 ; 1.0 ; 99 ; 1.25");
+			case 1104: hItemOverride = PrepareItemHandle(hItemCast, _, _, "76 ; 1.25 ; 114 ; 1.0");
 			//case 730: hItemOverride = PrepareItemHandle(hItemCast, _, _, "394 ; 0.2 ; 241 ; 1.3 ; 3 ; 0.75 ; 411 ; 5 ; 6 ; 0.1 ; 642 ; 1 ; 413 ; 1", true);
-			default: hItemOverride = PrepareItemHandle(hItemCast, _, _, "265 ; 999.0");
+			default: hItemOverride = PrepareItemHandle(hItemCast, _, _, "114 ; 1.0");
 		}
 	}
 	if (!strncmp(classname, "tf_weapon_grenadelauncher", 25, false) or !strncmp(classname, "tf_weapon_cannon", 16, false))
 	{
 		switch (iItemDefinitionIndex) {
 			// loch n load
-			case 308: hItemOverride = PrepareItemHandle(hItemCast, _, _, "265 ; 999 ; 208 ; 1.0");
-			default: hItemOverride = PrepareItemHandle(hItemCast, _, _, "265 ; 999.0 ; 128 ; 1 ; 135 ; 0.5");
+			case 308: hItemOverride = PrepareItemHandle(hItemCast, _, _, "114 ; 1.0 ; 208 ; 1.0");
+			default: hItemOverride = PrepareItemHandle(hItemCast, _, _, "114 ; 1.0 ; 128 ; 1 ; 135 ; 0.5");
 		}
 	}
 	if (!strncmp(classname, "tf_weapon_sword", 15, false))
@@ -1602,10 +1635,10 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 	{
 		switch ( iClass ) {
 			case TFClass_Soldier:
-				hItemOverride = PrepareItemHandle(hItemCast, _, _, "135 ; 0.6 ; 265 ; 999.0");
-			default: hItemOverride = PrepareItemHandle(hItemCast, _, _, "265 ; 999.0");
+				hItemOverride = PrepareItemHandle(hItemCast, _, _, "135 ; 0.6 ; 114 ; 1.0");
+			default: hItemOverride = PrepareItemHandle(hItemCast, _, _, "114 ; 1.0");
 		}
-		//hItemOverride = PrepareItemHandle(hItem, _, _, "265 ; 999.0");
+		//hItemOverride = PrepareItemHandle(hItem, _, _, "114 ; 1.0");
 	}
 	if (!strncmp(classname, "tf_weapon_wrench", 16, false) or !strncmp(classname, "tf_weapon_robot_arm", 19, false))
 	{
@@ -1652,7 +1685,9 @@ public void ManageFighterThink(const BaseBoss fighter)
 		return;
 	}
 	if (not (buttons & IN_SCORE))
-		ShowSyncHudText(i, rageHUD, "Damage: %d", fighter.iDamage);
+		if (gamemode.bMedieval)
+			ShowSyncHudText(i, rageHUD, "Damage: %d | Lives: %d", fighter.iDamage, fighter.iLives);
+		else ShowSyncHudText(i, rageHUD, "Damage: %d", fighter.iDamage);
 
 	if (HasEntProp(i, Prop_Send, "m_iKillStreak")) {
 		int killstreaker = fighter.iDamage/1000;
@@ -1838,4 +1873,8 @@ public void ManageFighterThink(const BaseBoss fighter)
 			}
 		}
 	}
+}
+public void _RespawnPlayer(const int userid)	// too many temp funcs just to call as a timer. No wonder sourcepawn needs lambda funcs...
+{
+	TF2_RespawnPlayer( GetClientOfUserId(userid) );
 }

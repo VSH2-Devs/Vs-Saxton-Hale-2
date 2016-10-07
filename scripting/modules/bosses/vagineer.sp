@@ -1,7 +1,13 @@
 
 //defines
+/*
 #define VagineerModel		"models/player/saxton_hale/vagineer_v134.mdl"
 #define VagineerModelPrefix	"models/player/saxton_hale/vagineer_v134"
+*/
+
+#define VagineerModel		"models/player/saxton_hale/vagineer_v150.mdl"
+// #define VagineerModelPrefix	"models/player/saxton_hale/vagineer_v150"
+
 
 //Vagineer voicelines
 #define VagineerLastA		"saxton_hale/lolwut_0.wav"
@@ -287,55 +293,34 @@ public void AddVagToDownloads()
 	char s[PLATFORM_MAX_PATH];
 	
 	int i;
-	PrecacheModel(VagineerModel, true);
-	for (i = 0; i < sizeof(extensions); i++) {
-		Format(s, PLATFORM_MAX_PATH, "%s%s", VagineerModelPrefix, extensions[i]);
-		CheckDownload(s);
-	}
 
-	PrecacheSound(VagineerLastA, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", VagineerLastA);
-	CheckDownload(s);
-	PrecacheSound(VagineerStart, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", VagineerStart);
-	CheckDownload(s);
-	PrecacheSound(VagineerRageSound, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", VagineerRageSound);
-	CheckDownload(s);
-	PrecacheSound(VagineerKSpree, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", VagineerKSpree);
-	CheckDownload(s);
-	PrecacheSound(VagineerKSpree2, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", VagineerKSpree2);
-	CheckDownload(s);
-	PrecacheSound(VagineerHit, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", VagineerHit);
-	CheckDownload(s);
+	PrepareModel(VagineerModel);
 
-	for (i = 1; i <= 5; i++) {
-		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", VagineerJump, i);
-		PrecacheSound(s, true);
-		Format(s, PLATFORM_MAX_PATH, "sound/%s", s);
-		CheckDownload(s);
-		
-		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", VagineerRageSound2, i);
-		PrecacheSound(s, true);
-		Format(s, PLATFORM_MAX_PATH, "sound/%s", s);
-		CheckDownload(s);
-		
-		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", VagineerFail, i);
-		PrecacheSound(s, true);
-		Format(s, PLATFORM_MAX_PATH, "sound/%s", s);
-		CheckDownload(s);
+	PrepareSound(VagineerLastA);
+	PrepareSound(VagineerStart);
+	PrepareSound(VagineerRageSound);
+	PrepareSound(VagineerKSpree);
+	PrepareSound(VagineerKSpree2);
+	PrepareSound(VagineerHit);
+	PrepareSound(VagineerRoundStart);
 
-		PrecacheSound(VagineerRoundStart, true);
-		Format(s, PLATFORM_MAX_PATH, "sound/%s", VagineerRoundStart);
-		CheckDownload(s);
+	for (i = 1; i <= 5; i++)
+	{
+		if (i <= 2)
+		{
+			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", VagineerJump, i);
+			PrepareSound(s);
+
+			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", VagineerRageSound2, i);
+			PrepareSound(s);
+
+			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", VagineerFail, i);
+			PrepareSound(s);
+		}
 		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", VagineerKSpreeNew, i);
-		PrecacheSound(s, true);
-		Format(s, PLATFORM_MAX_PATH, "sound/%s", s);
-		CheckDownload(s);
+		PrepareSound(s);
 	}
+
 	PrecacheSound("vo/engineer_positivevocalization01.mp3", true);
 }
 
@@ -343,3 +328,4 @@ public void AddVagToMenu ( Menu& menu )
 {
 	menu.AddItem("1", "Vagineer");
 }
+

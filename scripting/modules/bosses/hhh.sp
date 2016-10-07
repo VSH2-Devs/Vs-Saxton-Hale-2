@@ -1,6 +1,5 @@
-
 #define HHHModel			"models/player/saxton_hale/hhh_jr_mk3.mdl"
-#define HHHModelPrefix			"models/player/saxton_hale/hhh_jr_mk3"
+// #define HHHModelPrefix			"models/player/saxton_hale/hhh_jr_mk3"
 
 //HHH voicelines
 #define HHHLaught			"vo/halloween_boss/knight_laugh"
@@ -301,20 +300,16 @@ public void AddHHHToDownloads()
 	char s[PLATFORM_MAX_PATH];
 	
 	int i;
-	PrecacheModel(HHHModel, true);
-	for (i = 0; i < sizeof(extensions); i++) {
-		Format(s, PLATFORM_MAX_PATH, "%s%s", HHHModelPrefix, extensions[i]);
-		CheckDownload(s);
-	}
+
+	PrepareModel(HHHModel);
+
 	for (i = 1; i <= 4; i++) {
 		Format(s, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHLaught, i);
 		PrecacheSound(s, true);
 		Format(s, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHAttack, i);
 		PrecacheSound(s, true);
-
 		Format(s, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHPain, i);
-		if ( FileExists(s) )
-			PrecacheSound(s, true);
+		PrecacheSound(s, true);
 
 	}
 	PrecacheSound(HHHRage, true);
