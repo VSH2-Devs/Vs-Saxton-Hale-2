@@ -18,14 +18,14 @@ VSH2 is half-rewrite of VSH 1. VSH and FF2 were made as very bad frameworks and 
 * Compile with spcomp
 * VSH2 uses the same map configurations as FF2 and VSH and this is for compatibility reasons.
 * Dependencies: TF2Items, MoreColors
-*  Optional: TF2Attributes, SteamTools
+ * Optional: TF2Attributes, SteamTools
 * Compile plugin into .smx and put in addons/sourcemod/plugins folder
 * Take a look at the [Wiki](https://github.com/Starblaster64/Vs-Saxton-Hale-2/wiki) to get started making your own boss!
 
 ### Who do I talk to? ###
 
-*  **Main Plugin Developer:** *Nergal the Ashurian/Assyrian* - https://forums.alliedmods.net/member.php?u=176545
-*  **Repository Manager and Contributor:** *Starblaster 64* - https://forums.alliedmods.net/member.php?u=261662
+* **Main Plugin Developer:** *Nergal the Ashurian/Assyrian* - https://forums.alliedmods.net/member.php?u=176545
+* **Repository Manager and Contributor:** *Starblaster 64* - https://forums.alliedmods.net/member.php?u=261662
 
 
 ## Issue Progress ##
