@@ -37,7 +37,7 @@ before_script:
 
     - chmod +x spcomp
     - mkdir compiled
-script: ./compile.sh /scripting/vsh2.sp
+script: ./compile.sh ../../../scripting/vsh2.sp
 
 # Notifications
 notifications:
