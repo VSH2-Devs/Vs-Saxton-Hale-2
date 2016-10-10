@@ -30,13 +30,14 @@ install:
     - tar -xzf $(cat sourcemod-latest-linux)
 before_script:
     - cd scripting/
+    - mkdir include
     - wget "https://raw.githubusercontent.com/asherkin/TF2Items/master/pawn/tf2items.inc" -O include/tf2items.inc
     - wget "http://www.doctormckay.com/download/scripting/include/morecolors.inc" -O include/morecolors.inc
     - wget "https://raw.githubusercontent.com/asherkin/SteamTools/master/plugin/steamtools.inc" -O include/steamtools.inc
     - wget "https://forums.alliedmods.net/attachment.php?attachmentid=116849&d=1377667508" -O include/tf2attributes.inc
 
     - chmod +x spcomp
-    - mkdir compiled compiled/vsh2
+    - mkdir compiled
 script: ./compile.sh vsh2.sp
 
 # Notifications
