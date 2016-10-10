@@ -29,8 +29,7 @@ install:
     - wget --input-file=http://sourcemod.net/smdrop/$SMVERSION/sourcemod-latest-linux
     - tar -xzf $(cat sourcemod-latest-linux)
 before_script:
-    - cd scripting/
-    - mkdir include
+    - cd addons/sourcemod/scripting/
     - wget "https://raw.githubusercontent.com/asherkin/TF2Items/master/pawn/tf2items.inc" -O include/tf2items.inc
     - wget "http://www.doctormckay.com/download/scripting/include/morecolors.inc" -O include/morecolors.inc
     - wget "https://raw.githubusercontent.com/asherkin/SteamTools/master/plugin/steamtools.inc" -O include/steamtools.inc
@@ -38,7 +37,7 @@ before_script:
 
     - chmod +x spcomp
     - mkdir compiled
-script: ./compile.sh vsh2.sp
+script: ./compile.sh /scripting/vsh2.sp
 
 # Notifications
 notifications:
