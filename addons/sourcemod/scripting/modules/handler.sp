@@ -570,6 +570,14 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 				damagetype &= ~DMG_CRIT;
 
 			int client = victim.index;
+
+			if (damagecustom == TF_CUSTOM_BOOTS_STOMP)
+			{
+				float flFallVelocity = GetEntPropFloat(inflictor, Prop_Send, "m_flFallVelocity");
+				damage = 10.0 * (GetRandomFloat(0.8, 1.2) * (5.0 * (flFallVelocity / 300.0))); //TF2 Fall Damage formula, modified for VSH2
+				return Plugin_Changed;
+			}
+
 			if (TF2_IsPlayerInCondition(client, TFCond_DefenseBuffed))
 			{
 				ScaleVector(damageForce, 9.0);
