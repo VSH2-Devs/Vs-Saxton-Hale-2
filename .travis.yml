@@ -35,12 +35,10 @@ before_script:
     - wget "https://raw.githubusercontent.com/asherkin/SteamTools/master/plugin/steamtools.inc" -O include/steamtools.inc
     - wget "https://forums.alliedmods.net/attachment.php?attachmentid=116849&d=1377667508" -O include/tf2attributes.inc
 
-    - sed -i'' 'i\ #include "bosses.sp"' ../../../scripting/modules/handler.sp
-
     - chmod +x spcomp
     - mkdir compiled
-script: ./compile.sh ../../../scripting/vsh2.sp
+script: ./compile.sh vsh2.sp
 
 # Notifications
 notifications:
-email: false
+    email: false
