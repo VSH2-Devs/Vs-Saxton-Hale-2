@@ -1702,14 +1702,14 @@ public void ManageFighterThink(const BaseBoss fighter)
 		if ( killstreaker and GetEntProp(i, Prop_Send, "m_iKillStreak") >= 0 )
 			SetEntProp(i, Prop_Send, "m_iKillStreak", killstreaker);
 	}
-	TFClassType tf2class = TF2_GetPlayerClass(i);
+	TFClassType TFClass = TF2_GetPlayerClass(i);
 	int weapon = GetActiveWep(i);
 	if (weapon <= MaxClients or not IsValidEntity(weapon) or not GetEdictClassname(weapon, wepclassname, sizeof(wepclassname)))
 		strcopy(wepclassname, sizeof(wepclassname), "");
 	bool validwep = ( not strncmp(wepclassname, "tf_wea", 6, false) );
 	int index = GetItemIndex(weapon);
 
-	switch (tf2class) {
+	switch (TFClass) {
 		// Chdata's Deadringer Notifier
 		case TFClass_Spy:
 		{
@@ -1779,7 +1779,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 	{
 		TF2_AddCondition(i, TFCond_CritOnWin, 0.2);
 		int primary = GetPlayerWeaponSlot(i, TFWeaponSlot_Primary);
-		if (tf2class is TFClass_Engineer and weapon is primary and StrEqual(wepclassname, "tf_weapon_sentry_revenge", false))
+		if (TFClass is TFClass_Engineer and weapon is primary and StrEqual(wepclassname, "tf_weapon_sentry_revenge", false))
 			SetEntProp(i, Prop_Send, "m_iRevengeCrits", 3);
 		TF2_AddCondition(i, TFCond_Buffed, 0.2);
 		return;
@@ -1789,7 +1789,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 		TF2_AddCondition(i, TFCond_Buffed, 0.2);
 							/* THIS section really needs cleaning! */
 	TFCond cond = TFCond_CritOnWin;
-	if (TF2_IsPlayerInCondition(i, TFCond_CritCola) and (tf2class is TFClass_Scout or tf2class is TFClass_Heavy))
+	if (TF2_IsPlayerInCondition(i, TFCond_CritCola) and (TFClass is TFClass_Scout or TFClass is TFClass_Heavy))
 	{
 		TF2_AddCondition(i, cond, 0.2);
 		return;
@@ -1807,39 +1807,60 @@ public void ManageFighterThink(const BaseBoss fighter)
 	if (validwep and weapon is GetPlayerWeaponSlot(i, TFWeaponSlot_Melee))
 	{
 		//slightly longer check but makes sure that any weapon that can backstab will not crit (e.g. Saxxy)
-		if ( strcmp(wepclassname, "tf_weapon_knife", false) and index not_eq 416 )
+		if ( strcmp(wepclassname, "tf_weapon_knife", false))
 			addthecrit = true;
 	}
-	switch (index) {
-		case 305, 1079, 1081, 56, 16, 203,
-                     1149, 15001, 15022, 15032, 15037, 15058, // SMG
-                     58, 1083, 1105, 1100, 1005, 1092, 812, 833, 997, 39, 351, 740, 588, 595, 751: //Critlist
+	if (validwep && weapon == GetPlayerWeaponSlot(i, TFWeaponSlot_Primary)) // Primary weapon crit list
+	{
+		if (StrStarts(wepclassname, "tf_weapon_compound_bow") || // Sniper bows
+			StrStarts(wepclassname, "tf_weapon_crossbow") || // Medic crossbows
+			StrEqual(wepclassname, "tf_weapon_shotgun_building_rescue") || // Engineer Rescue Ranger
+			StrEqual(wepclassname, "tf_weapon_drg_pomson")) // Engineer Pomson
 		{
-			int flindex = GetIndexOfWeaponSlot(i, TFWeaponSlot_Primary);
-			// No crits if using phlog
-			if (TF2_GetPlayerClass(i) is TFClass_Pyro and flindex is 594)
+			addthecrit = true;
+		}
+	}
+	if (validwep && weapon == GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary)) // Secondary weapon crit list
+	{
+		if (StrStarts(wepclassname, "tf_weapon_pistol") || // Engineer/Scout pistols
+			StrStarts(wepclassname, "tf_weapon_handgun_scout_secondary") || // Scout pistols
+			StrStarts(wepclassname, "tf_weapon_flaregun") || // Flare guns
+			StrEqual(wepclassname, "tf_weapon_smg")) // Sniper SMGs minus Cleaner's Carbine
+		{
+			if (TFClass == TFClass_Scout && cond == TFCond_CritOnWin) cond = TFCond_Buffed;
+
+			int PrimaryIndex = GetIndexOfWeaponSlot(i, TFWeaponSlot_Primary);
+			if ((TFClass == TFClass_Pyro && PrimaryIndex == 594) || (IsValidEntity(FindPlayerBack(i, { 642 }, 1)))) // No crits if using Phlogistinator or Cozy Camper
 				addthecrit = false;
-			else addthecrit = true;
-		}
-		case 22, 23, 160, 209, 294, 449, 773,          // Scout pistol minicrits - Engie crits
-                     15013, 15018, 15035, 15041, 15046, 15056: // Gunmettle
-		{
-			if (tf2class not_eq TFClass_Spy) 
+			else
 				addthecrit = true;
-			if (tf2class is TFClass_Scout and cond is TFCond_CritOnKill)
-				cond = TFCond_Buffed;
 		}
-		case 656:
+		if (StrStarts(wepclassname, "tf_weapon_jar") || // Jarate/Milk
+			StrEqual(wepclassname, "tf_weapon_cleaver")) // Flying Guillotine
+			addthecrit = true;
+	}
+	switch (index) //Specific weapon crit list
+	{
+		/*case :
+		{
+			addthecrit = true;
+		}*/
+		case 656: //Holiday Punch
 		{
 			addthecrit = true;
 			cond = TFCond_Buffed;
 		}
-		default: {}
+		case 416: //Market Gardener
+		{
+			addthecrit = false;
+		}
+		case 38, 457, 1000: //Axtinguisher, Postal Pummeler
+		{
+			addthecrit = false;
+		}
 	}
-	if (index is 16 and addthecrit and IsValidEntity(FindPlayerBack(i, { 642 }, 1)))
-		addthecrit = false;
 
-	if ( tf2class is TFClass_DemoMan and not IsValidEntity(GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary)) )
+	if ( TFClass is TFClass_DemoMan and not IsValidEntity(GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary)) )
 	{
 		addthecrit = true;
 		/*if (not gamemode.bDemomanShieldCrits and GetActiveWep(i) not_eq GetPlayerWeaponSlot(i, TFWeaponSlot_Melee))
@@ -1853,7 +1874,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 		if (addmini and cond not_eq TFCond_Buffed)
 			TF2_AddCondition(i, TFCond_Buffed, 0.2);
 	}
-	if (tf2class is TFClass_Spy and validwep and weapon is GetPlayerWeaponSlot(i, TFWeaponSlot_Primary))
+	if (TFClass is TFClass_Spy and validwep and weapon is GetPlayerWeaponSlot(i, TFWeaponSlot_Primary))
 	{
 		if (not TF2_IsPlayerCritBuffed(i)
 			and not TF2_IsPlayerInCondition(i, TFCond_Buffed)
@@ -1864,7 +1885,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 			TF2_AddCondition(i, TFCond_CritCola, 0.2);
 		}
 	}
-	if (tf2class is TFClass_Engineer
+	if (TFClass is TFClass_Engineer
 		and weapon is GetPlayerWeaponSlot(i, TFWeaponSlot_Primary)
 		and StrEqual(wepclassname, "tf_weapon_sentry_revenge", false))
 	{

@@ -1190,3 +1190,7 @@ stock void _SetCapOwner(const int iCapTeam, float flEnableTime = 30.0)
 		}
 	}
 }
+stock bool StrStarts(const char[] szStr, const char[] szSubStr, bool bCaseSensitive = true)
+{
+	return !StrContains(szStr, szSubStr, bCaseSensitive);
+}
