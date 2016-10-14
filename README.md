@@ -7,7 +7,7 @@
 ======
 VSH2 is half-rewrite of VSH 1. VSH and FF2 were made as very bad frameworks and shoddy, hacky coding. VSH2 combines the best of both FF2 and VSH by not only having multiplayer boss support but also to make it easier to add new bosses and to give those bosses truly unique abilities and mechanics by giving the developer full, uninhibited power through code rather than configs.
 
-**NB** While VSH2 will work perfectly fine as-is out of the box as a VSH1 replacement, it was designed with capable SourcePawn **_developers_** in mind to make the most out of the coded-from-scratch framework! So don't expect to be able to easily modify/add bosses if you have no prior SourcePawn experience like you would with FF2.
+**NB:** While VSH2 will work perfectly fine as-is out of the box as a VSH1 replacement, it was designed with capable SourcePawn **_developers_** in mind to make the most out of the coded-from-scratch framework! So don't expect to be able to easily modify/add bosses if you have no prior SourcePawn experience like you would with FF2.
 
 ======
 ### Why VSH2? ###
