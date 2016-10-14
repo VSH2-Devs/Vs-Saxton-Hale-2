@@ -631,12 +631,11 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 			int ent = -1;
 			while ((ent = FindEntityByClassname(ent, "tf_wearable_demoshield")) != -1)
 			{
-				if (GetOwner(ent) is client and not GetEntProp(ent, Prop_Send, "m_bDisguiseWearable") and weapon is GetPlayerWeaponSlot(attacker, 2))
+				if (GetOwner(ent) is client and !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable") and weapon is GetPlayerWeaponSlot(attacker, 2))
 				{
 					victim.iHits++;
 					int HitsRequired = 0;
-					int index = GetItemIndex(ent);
-					switch (index) {
+					switch (GetItemIndex(ent)) {
 						case 131, 1144: HitsRequired = 2;	// 2 hits for normal and festive Chargin' Targe
 						case 406, 1099: HitsRequired = 1;
 					}
@@ -646,6 +645,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 						EmitSoundToAll("player/spy_shield_break.wav", client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
 					}
 				}
+				break;
 			}
 		}
 	}
@@ -1041,6 +1041,7 @@ public void ManageResetVariables(const BaseBoss base)
 	base.flLastShot = 0.0;
 	base.flLastHit = 0.0;
 	base.iState = -1;
+	base.iHits = 0;
 	base.iLives = (gamemode.bMedieval ? cvarVSH2[MedievalLives].IntValue : 0);
 }
 public void ManageEntityCreated(const int entity, const char[] classname)
