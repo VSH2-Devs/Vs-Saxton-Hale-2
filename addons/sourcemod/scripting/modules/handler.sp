@@ -644,8 +644,8 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 						TF2_RemoveWearable(client, ent);
 						EmitSoundToAll("player/spy_shield_break.wav", client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
 					}
+					break;
 				}
-				break;
 			}
 		}
 	}
