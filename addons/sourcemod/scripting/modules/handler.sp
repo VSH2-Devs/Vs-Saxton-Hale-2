@@ -476,8 +476,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 						PrintCenterText(attacker, "You Market Gardened the Boss!");
 						PrintCenterText(victim.index, "You Were Just Market Gardened!");
 
-						EmitSoundToClient(victim.index, "player/doubledonk.wav", _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, 0.6, 100, _, damagePosition, NULL_VECTOR, false, 0.0);
-						EmitSoundToClient(attacker, "player/doubledonk.wav", _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, 0.6, 100, _, damagePosition, NULL_VECTOR, false, 0.0);
+						EmitSoundToAll("player/doubledonk.wav", victim.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
 						SetEntPropFloat(weapon, Prop_Send, "m_flNextPrimaryAttack", GetGameTime()+2.0);
 
 						return Plugin_Changed;
