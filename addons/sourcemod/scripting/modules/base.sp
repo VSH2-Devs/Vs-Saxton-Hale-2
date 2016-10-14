@@ -83,47 +83,59 @@ Methods
 	{
 		public get()
 		{
-			if (not AreClientCookiesCached(this.index) or IsFakeClient(this.index))	// If the coookies aren't cached yet, use array
-				return Queue[this.index];
+			int player = this.index;
+			if (!player)
+				return 0;
+			else if (not AreClientCookiesCached(player) or IsFakeClient(player))	// If the coookies aren't cached yet, use array
+				return Queue[player];
 
 			char strPoints[10];	// HOW WILL OUR QUEUE SURPRISE OVER 9 DIGITS?
-			GetClientCookie(this.index, PointCookie, strPoints, sizeof(strPoints));
-			Queue[this.index] = StringToInt(strPoints);
-			return Queue[ this.index ];
+			GetClientCookie(player, PointCookie, strPoints, sizeof(strPoints));
+			Queue[player] = StringToInt(strPoints);
+			return Queue[ player ];
 		}
 		public set( const int val )
 		{
-			if (not AreClientCookiesCached(this.index) or IsFakeClient(this.index)) {
-				Queue[this.index] = val;
+			int player = this.index;
+			if (!player)
+				return;
+			else if (not AreClientCookiesCached(player) or IsFakeClient(player)) {
+				Queue[player] = val;
 				return;
 			}
-			Queue[this.index] = val;
+			Queue[player] = val;
 			char strPoints[10];
-			IntToString(Queue[this.index], strPoints, sizeof(strPoints));
-			SetClientCookie(this.index, PointCookie, strPoints);
+			IntToString(Queue[player], strPoints, sizeof(strPoints));
+			SetClientCookie(player, PointCookie, strPoints);
 		}
 	}
 	property int iPresetType	// if cookies aren't cached, oh well!
 	{
 		public get()
 		{
-			if (not AreClientCookiesCached(this.index))
-				return PresetBossType[this.index];
+			int player = this.index;
+			if (!player)
+				return -1;
+			if (not AreClientCookiesCached(player))
+				return PresetBossType[player];
 			char setboss[6];
-			GetClientCookie(this.index, BossCookie, setboss, sizeof(setboss));
-			PresetBossType[this.index] = StringToInt(setboss);
-			return PresetBossType[this.index];
+			GetClientCookie(player, BossCookie, setboss, sizeof(setboss));
+			PresetBossType[player] = StringToInt(setboss);
+			return PresetBossType[player];
 		}
 		public set( const int val )
 		{
-			if (not AreClientCookiesCached(this.index)) {
-				PresetBossType[this.index] = val;
+			int player = this.index;
+			if (!player)
+				return;
+			else if (not AreClientCookiesCached(player)) {
+				PresetBossType[player] = val;
 				return;
 			}
-			PresetBossType[this.index] = val;
+			PresetBossType[player] = val;
 			char setboss[6];
-			IntToString(PresetBossType[this.index], setboss, sizeof(setboss));
-			SetClientCookie(this.index, BossCookie, setboss);
+			IntToString(PresetBossType[player], setboss, sizeof(setboss));
+			SetClientCookie(player, BossCookie, setboss);
 		}
 	}
 	property int iKills
