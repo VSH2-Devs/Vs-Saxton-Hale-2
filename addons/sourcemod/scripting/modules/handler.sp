@@ -1755,6 +1755,8 @@ public void ManageFighterThink(const BaseBoss fighter)
 				int healtarget = GetHealingTarget(i);
 				if (IsValidClient(healtarget) and TF2_GetPlayerClass(healtarget) is TFClass_Scout)
 					TF2_AddCondition(i, TFCond_SpeedBuffAlly, 0.2);
+				if (GetEntProp(medigun, Prop_Send, "m_bChargeRelease") && GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel") > 0.0)
+					TF2_AddCondition(i, TFCond_Ubercharged, 1.0); //Fixes Ubercharges ending prematurely on Medics.
 			}
 			if (medigun is -1)
 				return;
