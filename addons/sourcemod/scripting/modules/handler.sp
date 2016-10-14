@@ -318,10 +318,8 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				damage = changedamage/3; // You can level "damage dealt" with backstabs
 				damagetype |= DMG_CRIT;
 
-				EmitSoundToClient(victim.index, "player/spy_shield_break.wav");
-				EmitSoundToClient(attacker, "player/spy_shield_break.wav");
-				EmitSoundToClient(victim.index, "player/crit_received3.wav");
-				EmitSoundToClient(attacker, "player/crit_received3.wav");
+				EmitSoundToAll("player/spy_shield_break.wav", victim.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
+				EmitSoundToAll("player/crit_received3.wav", victim.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
 				float curtime = GetGameTime();
 				SetEntPropFloat(weapon, Prop_Send, "m_flNextPrimaryAttack", curtime+2.0);
 				SetEntPropFloat(attacker, Prop_Send, "m_flNextAttack", curtime+2.0);
@@ -646,10 +644,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 					TF2_AddCondition(client, TFCond_Bonked, 0.1);
 					if (HitsRequired <= victim.iHits) {
 						TF2_RemoveWearable(client, ent);
-						EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, 0.7, 100, _, damagePosition, NULL_VECTOR, false, 0.0);
-						EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, 0.7, 100, _, damagePosition, NULL_VECTOR, false, 0.0);
-						EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, 0.7, 100, _, damagePosition, NULL_VECTOR, false, 0.0);
-						EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, 0.7, 100, _, damagePosition, NULL_VECTOR, false, 0.0);
+						EmitSoundToAll("player/spy_shield_break.wav", client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
 					}
 				}
 			}
