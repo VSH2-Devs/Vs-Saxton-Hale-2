@@ -283,7 +283,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 {
 	switch ( victim.iType ) {
 		case -1: {}
-		case Hale, Vagineer, CBS, HHHjr, Bunny, PlagueDoc:
+		default:
 		{
 			char trigger[32];
 			if (GetEdictClassname(attacker, trigger, sizeof(trigger)) and not strcmp(trigger, "trigger_hurt", false))
@@ -564,7 +564,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 	BaseBoss fighter = BaseBoss(attacker);
 	switch ( fighter.iType ) {
 		case -1: {}
-		case Hale, Vagineer, CBS, HHHjr, Bunny, PlagueDoc:
+		default:
 		{
 			if (damagetype & DMG_CRIT)
 				damagetype &= ~DMG_CRIT;
@@ -721,7 +721,7 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 	}
 	switch ( victim.iType ) {
 		case -1: {}
-		case Hale, Vagineer, CBS, HHHjr, Bunny, PlagueDoc:
+		default:
 		{
 			victim.iHealth -= damage;
 			victim.GiveRage(damage);
