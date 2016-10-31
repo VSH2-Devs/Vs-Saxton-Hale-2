@@ -99,7 +99,8 @@ enum /*CvarName*/
 	MedievalRespawnTime,
 	PermOverheal,
 	MultiCapture,
-	MultiCapAmount
+	MultiCapAmount,
+	DemoShieldCrits
 };
 
 // cvar + handles
@@ -107,7 +108,7 @@ ConVar
 	bEnabled = null
 ;
 
-ConVar cvarVSH2[MultiCapAmount+1];
+ConVar cvarVSH2[DemoShieldCrits+1];
 
 Handle
 	hHudText,
@@ -284,6 +285,7 @@ public void OnPluginStart()
 	cvarVSH2[PermOverheal] = CreateConVar("vsh2_permanent_overheal", "1", "set if Mediguns give permanent overheal", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[MultiCapture] = CreateConVar("vsh2_multiple_cp_captures", "0", "if enabled, allow control points to be captured more than once instead of ending the round.", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[MultiCapAmount] = CreateConVar("vsh2_multiple_cp_capture_amount", "3", "if vsh2_allow_multiple_cp_captures is enabled, how many times must a team capture a Control Point to win", FCVAR_NONE, true, 1.0, true, 999.0);
+	cvarVSH2[DemoShieldCrits] = CreateConVar("vsh2_demoman_shield_crits", "3", "Sets Demoman Shield crit behaviour. 0 - No crits, 1 - Mini-crits, 2 - Crits, 3 - Scale with Charge Meter (Losing the Shield results in no more (mini)crits.)", FCVAR_NONE, true, 0.0, true, 3.0);
 	
 #if defined _steamtools_included
 	gamemode.bSteam = LibraryExists("SteamTools");

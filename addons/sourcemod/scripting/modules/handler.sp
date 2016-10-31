@@ -1855,9 +1855,19 @@ public void ManageFighterThink(const BaseBoss fighter)
 		}
 	}
 
-	if ( TFClass is TFClass_DemoMan and not IsValidEntity(GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary)) )
+	// if ( TFClass is TFClass_DemoMan and not IsValidEntity(GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary)) )
+	if (TFClass == TFClass_DemoMan && cvarVSH2[DemoShieldCrits].IntValue && validwep && weapon != GetPlayerWeaponSlot(i, TFWeaponSlot_Melee))
 	{
-		addthecrit = true;
+		float flShieldMeter = GetEntPropFloat(i, Prop_Send, "m_flChargeMeter");
+
+		if (cvarVSH2[DemoShieldCrits].IntValue >= 1)
+		{
+			addthecrit = true;
+			if (cvarVSH2[DemoShieldCrits].IntValue == 1 || (cvarVSH2[DemoShieldCrits].IntValue == 3 && flShieldMeter < 100.0))
+				cond = TFCond_Buffed;
+			if (cvarVSH2[DemoShieldCrits].IntValue == 3 && (flShieldMeter < 35.0 || !GetEntProp(i, Prop_Send, "m_bShieldEquipped")))
+				addthecrit = false;
+		}
 		/*if (not gamemode.bDemomanShieldCrits and GetActiveWep(i) not_eq GetPlayerWeaponSlot(i, TFWeaponSlot_Melee))
 		{
 			cond = TFCond_Buffed;
