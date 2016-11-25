@@ -283,7 +283,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 {
 	switch ( victim.iType ) {
 		case -1: {}
-		case Hale, Vagineer, CBS, HHHjr, Bunny, PlagueDoc:
+		default:
 		{
 			char trigger[32];
 			if (GetEdictClassname(attacker, trigger, sizeof(trigger)) and not strcmp(trigger, "trigger_hurt", false))
@@ -318,10 +318,8 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				damage = changedamage/3; // You can level "damage dealt" with backstabs
 				damagetype |= DMG_CRIT;
 
-				EmitSoundToClient(victim.index, "player/spy_shield_break.wav");
-				EmitSoundToClient(attacker, "player/spy_shield_break.wav");
-				EmitSoundToClient(victim.index, "player/crit_received3.wav");
-				EmitSoundToClient(attacker, "player/crit_received3.wav");
+				EmitSoundToAll("player/spy_shield_break.wav", victim.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
+				EmitSoundToAll("player/crit_received3.wav", victim.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
 				float curtime = GetGameTime();
 				SetEntPropFloat(weapon, Prop_Send, "m_flNextPrimaryAttack", curtime+2.0);
 				SetEntPropFloat(attacker, Prop_Send, "m_flNextAttack", curtime+2.0);
@@ -478,8 +476,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 						PrintCenterText(attacker, "You Market Gardened the Boss!");
 						PrintCenterText(victim.index, "You Were Just Market Gardened!");
 
-						EmitSoundToClient(victim.index, "player/doubledonk.wav", _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, 0.6, 100, _, damagePosition, NULL_VECTOR, false, 0.0);
-						EmitSoundToClient(attacker, "player/doubledonk.wav", _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, 0.6, 100, _, damagePosition, NULL_VECTOR, false, 0.0);
+						EmitSoundToAll("player/doubledonk.wav", victim.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
 						SetEntPropFloat(weapon, Prop_Send, "m_flNextPrimaryAttack", GetGameTime()+2.0);
 
 						return Plugin_Changed;
@@ -564,12 +561,20 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 	BaseBoss fighter = BaseBoss(attacker);
 	switch ( fighter.iType ) {
 		case -1: {}
-		case Hale, Vagineer, CBS, HHHjr, Bunny, PlagueDoc:
+		default:
 		{
 			if (damagetype & DMG_CRIT)
 				damagetype &= ~DMG_CRIT;
 
 			int client = victim.index;
+
+			if (damagecustom == TF_CUSTOM_BOOTS_STOMP)
+			{
+				float flFallVelocity = GetEntPropFloat(inflictor, Prop_Send, "m_flFallVelocity");
+				damage = 10.0 * (GetRandomFloat(0.8, 1.2) * (5.0 * (flFallVelocity / 300.0))); //TF2 Fall Damage formula, modified for VSH2
+				return Plugin_Changed;
+			}
+
 			if (TF2_IsPlayerInCondition(client, TFCond_DefenseBuffed))
 			{
 				ScaleVector(damageForce, 9.0);
@@ -626,23 +631,20 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 			int ent = -1;
 			while ((ent = FindEntityByClassname(ent, "tf_wearable_demoshield")) != -1)
 			{
-				if (GetOwner(ent) is client and not GetEntProp(ent, Prop_Send, "m_bDisguiseWearable") and weapon is GetPlayerWeaponSlot(attacker, 2))
+				if (GetOwner(ent) is client and !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable") and weapon is GetPlayerWeaponSlot(attacker, 2))
 				{
 					victim.iHits++;
 					int HitsRequired = 0;
-					int index = GetItemIndex(ent);
-					switch (index) {
+					switch (GetItemIndex(ent)) {
 						case 131, 1144: HitsRequired = 2;	// 2 hits for normal and festive Chargin' Targe
 						case 406, 1099: HitsRequired = 1;
 					}
 					TF2_AddCondition(client, TFCond_Bonked, 0.1);
 					if (HitsRequired <= victim.iHits) {
 						TF2_RemoveWearable(client, ent);
-						EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, 0.7, 100, _, damagePosition, NULL_VECTOR, false, 0.0);
-						EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, 0.7, 100, _, damagePosition, NULL_VECTOR, false, 0.0);
-						EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, 0.7, 100, _, damagePosition, NULL_VECTOR, false, 0.0);
-						EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, 0.7, 100, _, damagePosition, NULL_VECTOR, false, 0.0);
+						EmitSoundToAll("player/spy_shield_break.wav", client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
 					}
+					break;
 				}
 			}
 		}
@@ -721,7 +723,7 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 	}
 	switch ( victim.iType ) {
 		case -1: {}
-		case Hale, Vagineer, CBS, HHHjr, Bunny, PlagueDoc:
+		default:
 		{
 			victim.iHealth -= damage;
 			victim.GiveRage(damage);
@@ -1039,6 +1041,7 @@ public void ManageResetVariables(const BaseBoss base)
 	base.flLastShot = 0.0;
 	base.flLastHit = 0.0;
 	base.iState = -1;
+	base.iHits = 0;
 	base.iLives = (gamemode.bMedieval ? cvarVSH2[MedievalLives].IntValue : 0);
 }
 public void ManageEntityCreated(const int entity, const char[] classname)
@@ -1694,14 +1697,14 @@ public void ManageFighterThink(const BaseBoss fighter)
 		if ( killstreaker and GetEntProp(i, Prop_Send, "m_iKillStreak") >= 0 )
 			SetEntProp(i, Prop_Send, "m_iKillStreak", killstreaker);
 	}
-	TFClassType tf2class = TF2_GetPlayerClass(i);
+	TFClassType TFClass = TF2_GetPlayerClass(i);
 	int weapon = GetActiveWep(i);
 	if (weapon <= MaxClients or not IsValidEntity(weapon) or not GetEdictClassname(weapon, wepclassname, sizeof(wepclassname)))
 		strcopy(wepclassname, sizeof(wepclassname), "");
 	bool validwep = ( not strncmp(wepclassname, "tf_wea", 6, false) );
 	int index = GetItemIndex(weapon);
 
-	switch (tf2class) {
+	switch (TFClass) {
 		// Chdata's Deadringer Notifier
 		case TFClass_Spy:
 		{
@@ -1747,6 +1750,8 @@ public void ManageFighterThink(const BaseBoss fighter)
 				int healtarget = GetHealingTarget(i);
 				if (IsValidClient(healtarget) and TF2_GetPlayerClass(healtarget) is TFClass_Scout)
 					TF2_AddCondition(i, TFCond_SpeedBuffAlly, 0.2);
+				if (GetEntProp(medigun, Prop_Send, "m_bChargeRelease") && GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel") > 0.0)
+					TF2_AddCondition(i, TFCond_Ubercharged, 1.0); //Fixes Ubercharges ending prematurely on Medics.
 			}
 			if (medigun is -1)
 				return;
@@ -1769,7 +1774,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 	{
 		TF2_AddCondition(i, TFCond_CritOnWin, 0.2);
 		int primary = GetPlayerWeaponSlot(i, TFWeaponSlot_Primary);
-		if (tf2class is TFClass_Engineer and weapon is primary and StrEqual(wepclassname, "tf_weapon_sentry_revenge", false))
+		if (TFClass is TFClass_Engineer and weapon is primary and StrEqual(wepclassname, "tf_weapon_sentry_revenge", false))
 			SetEntProp(i, Prop_Send, "m_iRevengeCrits", 3);
 		TF2_AddCondition(i, TFCond_Buffed, 0.2);
 		return;
@@ -1779,7 +1784,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 		TF2_AddCondition(i, TFCond_Buffed, 0.2);
 							/* THIS section really needs cleaning! */
 	TFCond cond = TFCond_CritOnWin;
-	if (TF2_IsPlayerInCondition(i, TFCond_CritCola) and (tf2class is TFClass_Scout or tf2class is TFClass_Heavy))
+	if (TF2_IsPlayerInCondition(i, TFCond_CritCola) and (TFClass is TFClass_Scout or TFClass is TFClass_Heavy))
 	{
 		TF2_AddCondition(i, cond, 0.2);
 		return;
@@ -1797,41 +1802,72 @@ public void ManageFighterThink(const BaseBoss fighter)
 	if (validwep and weapon is GetPlayerWeaponSlot(i, TFWeaponSlot_Melee))
 	{
 		//slightly longer check but makes sure that any weapon that can backstab will not crit (e.g. Saxxy)
-		if ( strcmp(wepclassname, "tf_weapon_knife", false) and index not_eq 416 )
+		if ( strcmp(wepclassname, "tf_weapon_knife", false))
 			addthecrit = true;
 	}
-	switch (index) {
-		case 305, 1079, 1081, 56, 16, 203,
-                     1149, 15001, 15022, 15032, 15037, 15058, // SMG
-                     58, 1083, 1105, 1100, 1005, 1092, 812, 833, 997, 39, 351, 740, 588, 595, 751: //Critlist
+	if (validwep && weapon == GetPlayerWeaponSlot(i, TFWeaponSlot_Primary)) // Primary weapon crit list
+	{
+		if (StrStarts(wepclassname, "tf_weapon_compound_bow") || // Sniper bows
+			StrStarts(wepclassname, "tf_weapon_crossbow") || // Medic crossbows
+			StrEqual(wepclassname, "tf_weapon_shotgun_building_rescue") || // Engineer Rescue Ranger
+			StrEqual(wepclassname, "tf_weapon_drg_pomson")) // Engineer Pomson
 		{
-			int flindex = GetIndexOfWeaponSlot(i, TFWeaponSlot_Primary);
-			// No crits if using phlog
-			if (TF2_GetPlayerClass(i) is TFClass_Pyro and flindex is 594)
+			addthecrit = true;
+		}
+	}
+	if (validwep && weapon == GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary)) // Secondary weapon crit list
+	{
+		if (StrStarts(wepclassname, "tf_weapon_pistol") || // Engineer/Scout pistols
+			StrStarts(wepclassname, "tf_weapon_handgun_scout_secondary") || // Scout pistols
+			StrStarts(wepclassname, "tf_weapon_flaregun") || // Flare guns
+			StrEqual(wepclassname, "tf_weapon_smg")) // Sniper SMGs minus Cleaner's Carbine
+		{
+			if (TFClass == TFClass_Scout && cond == TFCond_CritOnWin) cond = TFCond_Buffed;
+
+			int PrimaryIndex = GetIndexOfWeaponSlot(i, TFWeaponSlot_Primary);
+			if ((TFClass == TFClass_Pyro && PrimaryIndex == 594) || (IsValidEntity(FindPlayerBack(i, { 642 }, 1)))) // No crits if using Phlogistinator or Cozy Camper
 				addthecrit = false;
-			else addthecrit = true;
-		}
-		case 22, 23, 160, 209, 294, 449, 773,          // Scout pistol minicrits - Engie crits
-                     15013, 15018, 15035, 15041, 15046, 15056: // Gunmettle
-		{
-			if (tf2class not_eq TFClass_Spy) 
+			else
 				addthecrit = true;
-			if (tf2class is TFClass_Scout and cond is TFCond_CritOnKill)
-				cond = TFCond_Buffed;
 		}
-		case 656:
+		if (StrStarts(wepclassname, "tf_weapon_jar") || // Jarate/Milk
+			StrEqual(wepclassname, "tf_weapon_cleaver")) // Flying Guillotine
+			addthecrit = true;
+	}
+	switch (index) //Specific weapon crit list
+	{
+		/*case :
+		{
+			addthecrit = true;
+		}*/
+		case 656: //Holiday Punch
 		{
 			addthecrit = true;
 			cond = TFCond_Buffed;
 		}
-		default: {}
+		case 416: //Market Gardener
+		{
+			addthecrit = false;
+		}
+		case 38, 457, 1000: //Axtinguisher, Postal Pummeler
+		{
+			addthecrit = false;
+		}
 	}
-	if (index is 16 and addthecrit and IsValidEntity(FindPlayerBack(i, { 642 }, 1)))
-		addthecrit = false;
 
-	if ( tf2class is TFClass_DemoMan and not IsValidEntity(GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary)) )
+	// if ( TFClass is TFClass_DemoMan and not IsValidEntity(GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary)) )
+	if (TFClass == TFClass_DemoMan && cvarVSH2[DemoShieldCrits].IntValue && validwep && weapon != GetPlayerWeaponSlot(i, TFWeaponSlot_Melee))
 	{
-		addthecrit = true;
+		float flShieldMeter = GetEntPropFloat(i, Prop_Send, "m_flChargeMeter");
+
+		if (cvarVSH2[DemoShieldCrits].IntValue >= 1)
+		{
+			addthecrit = true;
+			if (cvarVSH2[DemoShieldCrits].IntValue == 1 || (cvarVSH2[DemoShieldCrits].IntValue == 3 && flShieldMeter < 100.0))
+				cond = TFCond_Buffed;
+			if (cvarVSH2[DemoShieldCrits].IntValue == 3 && (flShieldMeter < 35.0 || !GetEntProp(i, Prop_Send, "m_bShieldEquipped")))
+				addthecrit = false;
+		}
 		/*if (not gamemode.bDemomanShieldCrits and GetActiveWep(i) not_eq GetPlayerWeaponSlot(i, TFWeaponSlot_Melee))
 		{
 			cond = TFCond_Buffed;
@@ -1843,7 +1879,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 		if (addmini and cond not_eq TFCond_Buffed)
 			TF2_AddCondition(i, TFCond_Buffed, 0.2);
 	}
-	if (tf2class is TFClass_Spy and validwep and weapon is GetPlayerWeaponSlot(i, TFWeaponSlot_Primary))
+	if (TFClass is TFClass_Spy and validwep and weapon is GetPlayerWeaponSlot(i, TFWeaponSlot_Primary))
 	{
 		if (not TF2_IsPlayerCritBuffed(i)
 			and not TF2_IsPlayerInCondition(i, TFCond_Buffed)
@@ -1854,7 +1890,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 			TF2_AddCondition(i, TFCond_CritCola, 0.2);
 		}
 	}
-	if (tf2class is TFClass_Engineer
+	if (TFClass is TFClass_Engineer
 		and weapon is GetPlayerWeaponSlot(i, TFWeaponSlot_Primary)
 		and StrEqual(wepclassname, "tf_weapon_sentry_revenge", false))
 	{
