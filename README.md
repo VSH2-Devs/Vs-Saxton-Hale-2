@@ -1,6 +1,6 @@
 # VSH 2 #
 
-#### Current STABLE Version: *v1.3.1*
+#### Current STABLE Version: *v1.3.6*
 [![Master Build Status](https://travis-ci.org/Starblaster64/Vs-Saxton-Hale-2.svg?branch=master)](https://travis-ci.org/Starblaster64/Vs-Saxton-Hale-2)
 #### Current UNSTABLE Version: *1.4.0*
 [![Develop Build Status](https://travis-ci.org/Starblaster64/Vs-Saxton-Hale-2.svg?branch=develop)](https://travis-ci.org/Starblaster64/Vs-Saxton-Hale-2)
