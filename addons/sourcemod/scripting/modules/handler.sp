@@ -71,7 +71,7 @@ public void ManageDisconnect(const int client)
 {
 	BaseBoss leaver = BaseBoss(client);
 	if (leaver.bIsBoss) {
-		if (gamemode.iRoundState is StateRunning)
+		if (gamemode.iRoundState is StateRunning and !gamemode.CountBosses(true))
 			ForceTeamWin(RED);
 
 		else if (gamemode.iRoundState is StateStarting) {
