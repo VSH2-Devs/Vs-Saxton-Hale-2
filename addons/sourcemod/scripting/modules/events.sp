@@ -84,9 +84,11 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 					for (int ent=MaxClients+1 ; ent<2048 ; ent++) {
 						if (!IsValidEdict(ent)) 
 							continue;
-						if (!HasEntProp(ent, Prop_Send, "m_hBuilder"))
+						else if (!HasEntProp(ent, Prop_Send, "m_hBuilder"))
 							continue;
-	
+						else if (GetBuilder(ent) != victim.index)
+							continue;
+
 						SetVariantInt(GetEntProp(ent, Prop_Send, "m_iMaxHealth")+8);
 						AcceptEntityInput(ent, "RemoveHealth");
 					}
@@ -235,7 +237,7 @@ public Action ObjectDeflected(Event event, const char[] name, bool dontBroadcast
 	BaseBoss airblaster = BaseBoss( event.GetInt("userid"), true );
 	BaseBoss airblasted = BaseBoss( event.GetInt("ownerid"), true );
 	int weaponid = GetEventInt(event, "weaponid");
-	if (weaponid)	// number lower or higher than 0 is considered "true", learned that in C programming lol
+	if (weaponid)		// number lower or higher than 0 is considered "true", learned that in C programming lol
 		return Plugin_Continue;
 
 	ManagePlayerAirblast(airblaster, airblasted, event);
@@ -273,7 +275,7 @@ public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 	gamemode.iRoundCount++;
 	
 	if (not bEnabled.BoolValue or gamemode.iRoundState is StateDisabled)
-		{return Plugin_Continue;}
+		return Plugin_Continue;
 
 	gamemode.iRoundState = StateEnding;
 	gamemode.flMusicTime = 0.0;
@@ -299,8 +301,9 @@ public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 	for (i=MaxClients ; i ; --i) {	// Too lazy to setup methodmap instances, going to use direct arrays
 		if (!IsClientValid(i))
 			continue;
-		if (BaseBoss(i).bIsBoss)
+		else if (BaseBoss(i).bIsBoss)
 			continue;
+
 		if (Damage[i] >= Damage[top[0]]) {
 			top[2]=top[1];
 			top[1]=top[0];
@@ -367,11 +370,11 @@ public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 		else bosses.Push(boss); //bosses[index++] = boss;	// Only living bosses are counted
 	}
 	ManageRoundEndBossInfo(bosses, (event.GetInt("team") == BLU));
-	/*int teamroundtimer = FindEntityByClassname(-1, "team_round_timer");
+	/*
+	int teamroundtimer = FindEntityByClassname(-1, "team_round_timer");
 	if (teamroundtimer and IsValidEntity(teamroundtimer))
-		AcceptEntityInput(teamroundtimer, "Kill");*/
-
-
+		AcceptEntityInput(teamroundtimer, "Kill");
+	*/
 	return Plugin_Continue;
 }
 public void OnHookedEvent(Event event, const char[] name, bool dontBroadcast)
@@ -408,8 +411,11 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 	BaseBoss	boss;
 	int		i;	// Count amount of bosses for health calculation!
 	for (i=MaxClients ; i ; --i) {
-		if ( not IsValidClient(i) or not IsPlayerAlive(i) )
+		if ( not IsValidClient(i) )
 			continue;
+		else if (not IsPlayerAlive(i))
+			continue;
+
 		boss = BaseBoss(i);
 		if (!boss.bIsBoss) {
 			SetEntityMoveType(i, MOVETYPE_WALK);
