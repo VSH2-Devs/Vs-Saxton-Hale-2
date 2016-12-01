@@ -742,8 +742,11 @@ public void CalcScores()
 	BaseBoss player;
 	Event scoring = CreateEvent("player_escort_score", true);
 	for (int i=MaxClients ; i ; --i) {
-		if (not IsClientValid(i) or GetClientTeam(i) < RED)
+		if (not IsClientValid(i))
 			continue;
+		else if (GetClientTeam(i) < RED)
+			continue;
+		
 		player = BaseBoss(i);
 
 		damage = player.iDamage;
