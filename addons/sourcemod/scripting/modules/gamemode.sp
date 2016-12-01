@@ -37,7 +37,8 @@ enum /* VSH2 Round States */
 	StateEnding = 2,
 };
 
-/*enum
+/*
+enum
 {
 	Skill_Normal = 0,
 	Skill_AllCrits,
@@ -60,7 +61,8 @@ public int AllowedDifficulties[] = {
 	Skill_RuneAgility,
 	Skill_RuneStrength,
 	Skill_MiniCrits
-};*/
+};
+*/
 
 methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONLY */
 {
@@ -85,7 +87,9 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		{
 			int playing = 0;
 			for (int i=MaxClients ; i ; --i) {
-				if (not IsClientInGame(i) or not IsPlayerAlive(i))
+				if (not IsClientInGame(i))
+					continue;
+				else if (not IsPlayerAlive(i))
 					continue;
 				if (BaseBoss(i).bIsBoss)
 					continue;
@@ -182,11 +186,13 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		}
 		public set(const BaseBoss val)	{ preselected = val; }
 	}
-	/*property Handle hMusic
+	/*
+	property Handle hMusic
 	{
 		public get()			{ return hMusicTimer; }
 		public set(const Handle val)	{ hMusicTimer = val; }
-	}*/
+	}
+	*/
 
 	public BaseBoss GetRandomBoss(const bool balive)
 	{
@@ -194,7 +200,7 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		for (int i=MaxClients ; i ; --i) {
 			if (not IsValidClient(i) )
 				continue;
-			if (balive and not IsPlayerAlive(i))
+			else if (balive and not IsPlayerAlive(i))
 				continue;
 			boss = BaseBoss(i);
 			if (not boss.bIsBoss)
@@ -209,7 +215,7 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		for (int i=MaxClients ; i ; --i) {
 			if (not IsValidClient(i) )
 				continue;
-			if (balive and not IsPlayerAlive(i))
+			else if (balive and not IsPlayerAlive(i))
 				continue;
 			boss = BaseBoss(i);
 			if (not boss.bIsBoss)
@@ -234,9 +240,10 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		int points = -999;
 		BaseBoss boss;
 		for (int i=MaxClients ; i ; --i) {
-			if ( not IsValidClient(i) or GetClientTeam(i) <= int(TFTeam_Spectator) )
+			if ( not IsValidClient(i) )
 				continue;
-
+			else if (GetClientTeam(i) <= int(TFTeam_Spectator)
+				continue;
 			boss = BaseBoss(i);
 			if (boss.iQueue >= points and not boss.bSetOnSpawn) {
 				tBoss = boss;
@@ -252,7 +259,7 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		for (int i=MaxClients ; i ; --i) {
 			if (not IsValidClient(i) )
 				continue;
-			if (balive and not IsPlayerAlive(i))
+			else if (balive and not IsPlayerAlive(i))
 				continue;
 			boss = BaseBoss(i);
 			if (not boss.bIsMinion)
@@ -268,7 +275,7 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		for (int i=MaxClients ; i ; --i) {
 			if (not IsValidClient(i) )
 				continue;
-			if (balive and not IsPlayerAlive(i))
+			else if (balive and not IsPlayerAlive(i))
 				continue;
 			boss = BaseBoss(i);
 			if (not boss.bIsBoss)
