@@ -242,7 +242,7 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		for (int i=MaxClients ; i ; --i) {
 			if ( not IsValidClient(i) )
 				continue;
-			else if (GetClientTeam(i) <= int(TFTeam_Spectator)
+			else if ( GetClientTeam(i) <= int(TFTeam_Spectator) )
 				continue;
 			boss = BaseBoss(i);
 			if (boss.iQueue >= points and not boss.bSetOnSpawn) {
