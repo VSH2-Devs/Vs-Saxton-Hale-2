@@ -33,14 +33,12 @@ stock void SetMediCharge(const int medigun, const float val)
 }
 stock bool IsNearSpencer(const int client)
 {
-	int medics = 0, healers = GetEntProp(client, Prop_Send, "m_nNumHealers");
-	if (healers) {
-		for (int i=MaxClients ; i ; --i) {
-			if (IsValidClient(i) && GetHealingTarget(i) == client)
-				medics++;
-		}
+	int medics = 0;
+	for (int i=MaxClients ; i ; --i) {
+		if (IsValidClient(i) && GetHealingTarget(i) == client)
+			medics++;
 	}
-	return (healers > medics);
+	return (GetEntProp(client, Prop_Send, "m_nNumHealers") > medics);
 }
 //Prepare content stocks
 stock void CheckDownload(const char[] dlpath)
