@@ -640,7 +640,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 						case 406, 1099: HitsRequired = 1;
 					}
 					TF2_AddCondition(client, TFCond_Bonked, 0.1);
-					if (HitsRequired <= victim.iHits) {
+					if (victim.iHits >= HitsRequired) {
 						TF2_RemoveWearable(client, ent);
 						EmitSoundToAll("player/spy_shield_break.wav", client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
 					}
@@ -1653,8 +1653,8 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 	{
 		switch ( iItemDefinitionIndex ) {
 			case 41:	// Natascha
-				hItemOverride = PrepareItemHandle(hItemCast, _, _, "87 ; 0.75 ; 280 ; 2 ; 642 ; 1 ; 2 ; 3.0 ; 411 ; 4 ; 181 ; 2.0 ; 233 ; 1.25", true);
-			default: hItemOverride = PrepareItemHandle(hItemCast, _, _, "233 ; 1.25");
+				hItemOverride = PrepareItemHandle(hItemCast, _, _, "76 ; 1.5", true);			
+default: hItemOverride = PrepareItemHandle(hItemCast, _, _, "233 ; 1.25");
 		}
 	}
 	if (hItemOverride != null) {
