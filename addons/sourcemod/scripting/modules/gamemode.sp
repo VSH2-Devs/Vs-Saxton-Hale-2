@@ -63,14 +63,14 @@ public int AllowedDifficulties[] = {
 	Skill_MiniCrits
 };
 */
-
+//StringMap hGameModeFields ;
 methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONLY */
 {
 	public VSHGameMode()
 	{
 		preselected = view_as< BaseBoss >(0);
+		//hGameModeFields = new StringMap();
 	}
-
 	property int iRoundState
 	{
 		public get()			{ return state; }
