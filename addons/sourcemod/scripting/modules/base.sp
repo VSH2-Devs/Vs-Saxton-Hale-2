@@ -220,15 +220,14 @@ Methods
 	property bool bNearDispenser
 	{
 		public get() {
-			int medics = 0;
-			int healers = GetEntProp(this.index, Prop_Send, "m_nNumHealers");
-			if (healers) {
-				for (int i=MaxClients ; i ; --i) {
-					if (IsValidClient(i) and GetHealingTarget(i) is this.index)
-						medics++;
-				}
+			int medics=0;
+			for (int i=MaxClients ; i ; --i) {
+				if (!IsValidClient(i))
+					continue;
+				if (GetHealingTarget(i) is this.index)
+					medics++;
 			}
-			return (healers > medics);
+			return (GetEntProp(this.index, Prop_Send, "m_nNumHealers") > medics);
 		}
 	}
 	property bool bIsMinion
