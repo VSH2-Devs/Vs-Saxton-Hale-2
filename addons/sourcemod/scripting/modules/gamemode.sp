@@ -74,7 +74,18 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 	property int iRoundState
 	{
 		public get()			{ return state; }
+		/*
+		{
+			int i; hGameModeFields.GetValue("iRoundState", i);
+			return i;
+		}
+		*/
 		public set(const int val)	{ state = val; }
+		/*
+		{
+			hGameModeFields.SetValue("iRoundState", val);
+		}
+		*/
 	}
 	property int iSpecial
 	{
