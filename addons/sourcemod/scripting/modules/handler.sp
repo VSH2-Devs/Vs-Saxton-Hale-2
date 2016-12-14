@@ -1043,6 +1043,8 @@ public void ManageResetVariables(const BaseBoss base)
 	base.iState = -1;
 	base.iHits = 0;
 	base.iLives = (gamemode.bMedieval ? cvarVSH2[MedievalLives].IntValue : 0);
+	base.iHealth = 0;
+	base.iMaxHealth = 0;
 }
 public void ManageEntityCreated(const int entity, const char[] classname)
 {
@@ -1687,11 +1689,11 @@ public void ManageFighterThink(const BaseBoss fighter)
 		}
 		return;
 	}
-	if (not (buttons & IN_SCORE))
+	if (not (buttons & IN_SCORE)) {
 		if (gamemode.bMedieval)
 			ShowSyncHudText(i, rageHUD, "Damage: %d | Lives: %d", fighter.iDamage, fighter.iLives);
 		else ShowSyncHudText(i, rageHUD, "Damage: %d", fighter.iDamage);
-
+	}
 	if (HasEntProp(i, Prop_Send, "m_iKillStreak")) {
 		int killstreaker = fighter.iDamage/1000;
 		if ( killstreaker and GetEntProp(i, Prop_Send, "m_iKillStreak") >= 0 )
