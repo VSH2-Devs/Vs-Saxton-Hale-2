@@ -81,7 +81,7 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 					}
 				}
 				case 2: {
-					for (int ent=MaxClients+1 ; ent<2048 ; ent++) {
+					for (int ent=MaxClients+1 ; ent<2048 ; ++ent) {
 						if (!IsValidEdict(ent)) 
 							continue;
 						else if (!HasEntProp(ent, Prop_Send, "m_hBuilder"))
@@ -446,6 +446,8 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 		boss.iMaxHealth = CalcBossHealth(760.8, gamemode.iPlaying, 1.0, 1.0341, 2046.0) / (bosscount);	// In stocks.sp
 		if (boss.iMaxHealth < 3000 and bosscount is 1)
 			boss.iMaxHealth = 3000;
+		else if ( boss.iMaxHealth > 3000 and bosscount > 1 )
+			boss.iMaxHealth -= 1500;	// Putting in multiboss Handicap from complaints multibosses being too overpowered.
 #if defined _tf2attributes_included
 		int maxhp = GetEntProp(boss.index, Prop_Data, "m_iMaxHealth");
 		TF2Attrib_RemoveAll(boss.index);
