@@ -63,11 +63,12 @@ Methods
 {
 	public BaseFighter(const int ind, bool uid=false)
 	{
-		if (uid)	// If you're using a userid and you know 100% it's valid, then set uid to true
-			return view_as< BaseFighter >( ind );
-		if ( !IsClientValid(ind) )
-			return view_as< BaseFighter >( 0 );
-		return view_as< BaseFighter >( GetClientUserId(ind) );
+		int player=0;	// If you're using a userid and you know 100% it's valid, then set uid to true
+		if (uid and GetClientOfUserId(ind) > 0)
+			player = ( ind );
+		else if ( IsClientValid(ind) )
+			player = GetClientUserId(ind);
+		return view_as< BaseFighter >( player );
 	}
 	///////////////////////////////
 
@@ -564,11 +565,9 @@ Floats
 Methods
 */
 {
-	public BaseBoss(const int ind, bool uid = false)
+	public BaseBoss(const int ind, bool uid=false)
 	{
-		if (uid)
-			return view_as< BaseBoss >( BaseFighter(ind,true) );
-		return view_as< BaseBoss >( BaseFighter(ind) );
+		return view_as< BaseBoss >( BaseFighter(ind, uid) );
 	}
 	///////////////////////////////
 	/* [ P R O P E R T I E S ] */
