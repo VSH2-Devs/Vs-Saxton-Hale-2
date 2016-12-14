@@ -17,7 +17,7 @@
 #pragma semicolon			1
 #pragma newdecls			required
 
-#define PLUGIN_VERSION			"1.4.0 BETA"
+#define PLUGIN_VERSION			"1.4.2 BETA"
 #define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
 #define CODEFRAMES			(1.0/30.0)	/* 30 frames per second means 0.03333 seconds or 33.33 ms */
 
@@ -202,6 +202,8 @@ public void OnPluginStart()
 {
 	//RegConsoleCmd("sm_onboss", MakeBoss);
 	//RegConsoleCmd("sm_offboss", MakeNotBoss);
+	gamemode = VSHGameMode();
+	gamemode.Init();
 
 	RegAdminCmd("sm_setspecial", SetNextSpecial, ADMFLAG_GENERIC);
 	RegAdminCmd("sm_halespecial", SetNextSpecial, ADMFLAG_GENERIC);
@@ -253,6 +255,10 @@ public void OnPluginStart()
 	RegAdminCmd("sm_hale_force", ForceBossRealtime, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss");
 	RegAdminCmd("sm_boss_force", ForceBossRealtime, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss");
 	RegAdminCmd("sm_ff2_force", ForceBossRealtime, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss");
+	
+	AddCommandListener(BlockSuicide, "explode");
+	AddCommandListener(BlockSuicide, "kill");
+	AddCommandListener(BlockSuicide, "jointeam");
 
 	hHudText = CreateHudSynchronizer();
 	jumpHUD = CreateHudSynchronizer();
@@ -365,6 +371,22 @@ public bool MinionTargetFilter(const char[] pattern, Handle clients)
 		}
 	}
 	return true;
+}
+
+public Action BlockSuicide(int client, const char[] command, int argc)
+{
+	if (bEnabled.BoolValue and gamemode.iRoundState > 0)
+	{
+		BaseBoss player = BaseBoss(client);
+		if (player.bIsBoss) {
+			float flhp_percent = float(player.iHealth) / float(player.iMaxHealth);
+			if (flhp_percent > 0.15) {	// Allow bosses to suicide if their health is under 15%.
+				CPrintToChat(client, "Do not suicide as a Boss. Please Use '!resetq' instead.");
+				return Plugin_Handled;
+			}
+		}
+	}
+	return Plugin_Continue;
 }
 
 public void OnLibraryAdded(const char[] name)
