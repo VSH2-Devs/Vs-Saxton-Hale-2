@@ -292,7 +292,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				if (damage >= 350.0)
 					TeleportToSpawn(victim.index, BLU);
 			}
-			if (attacker <= 0)
+			if (attacker <= 0 || attacker > MaxClients)
 				return Plugin_Continue;
 		
 			char classname [64], strEntname [32];
