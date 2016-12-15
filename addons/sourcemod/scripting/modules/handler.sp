@@ -80,7 +80,7 @@ public void ManageDisconnect(const int client)
 				replace = gamemode.hNextBoss;
 				gamemode.hNextBoss = view_as< BaseBoss >(0);
 			}
-			if ( replace.userid > 0 ) {
+			if ( IsValidClient(replace.index) ) {
 				replace.MakeBossAndSwitch(leaver.iType, true);
 				CPrintToChat(replace.index, "{olive}[VSH2]{default} {green}Surprise! You're on NOW!{default}");
 			}
