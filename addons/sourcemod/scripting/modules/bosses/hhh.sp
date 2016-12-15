@@ -344,5 +344,5 @@ public void StunHHH(const int userid, const int targetid)
 	int target = GetClientOfUserId(targetid);
 	if ( not IsValidClient(target) or not IsPlayerAlive(target))
 		target = 0;
-	TF2_StunPlayer(userid, 2.0, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, target);
+	TF2_StunPlayer(client, 2.0, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, target);
 }
