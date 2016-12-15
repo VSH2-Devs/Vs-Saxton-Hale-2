@@ -1900,7 +1900,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 		int sentry = FindSentry(i);
 		if (IsValidEntity(sentry)) {
 			int enemy = GetEntPropEnt(sentry, Prop_Send, "m_hEnemy");
-			if (enemy and GetClientTeam(enemy) is 3) {	// Trying to target minions as well
+			if (enemy > 0 and GetClientTeam(enemy) is 3) {	// Trying to target minions as well
 				SetEntProp(i, Prop_Send, "m_iRevengeCrits", 3);
 				TF2_AddCondition(i, TFCond_Kritzkrieged, 0.2);
 			}
