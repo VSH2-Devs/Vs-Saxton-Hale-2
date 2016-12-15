@@ -314,6 +314,7 @@ Methods
 		hWep.iQuality = qual;
 		char atts[32][32];
 		int count = ExplodeString(att, " ; ", atts, 32, 32);
+		count &= ~1;	// odd numbered count results in error, remove the 1st bit so count will always be even.
 		if (count > 0) {
 			hWep.iNumAttribs = count/2;
 			int i2=0;
