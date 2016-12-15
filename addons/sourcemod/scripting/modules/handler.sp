@@ -513,7 +513,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					}
 					if (TF2_IsPlayerInCondition(attacker, TFCond_OnFire))
 						TF2_RemoveCondition(attacker, TFCond_OnFire);
-					int weap = GetPlayerWeaponSlot(Hale, TFWeaponSlot_Melee);
+					int weap = GetPlayerWeaponSlot(victim.index, TFWeaponSlot_Melee);
 					int index = GetItemIndex(weap);
 					int active = GetEntPropEnt(victim.index, Prop_Send, "m_hActiveWeapon");
 					if (index == 357 and active == weap) {
