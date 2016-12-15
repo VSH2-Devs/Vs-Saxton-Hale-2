@@ -80,19 +80,20 @@ public void ManageDisconnect(const int client)
 				replace = gamemode.hNextBoss;
 				gamemode.hNextBoss = view_as< BaseBoss >(0);
 			}
-			if ( IsValidClient(replace.index) ) {
+			if ( replace.userid > 0 ) {
 				replace.MakeBossAndSwitch(leaver.iType, true);
 				CPrintToChat(replace.index, "{olive}[VSH2]{default} {green}Surprise! You're on NOW!{default}");
 			}
 		}
 		CPrintToChatAll("{olive}[VSH2]{default} {red}A Boss Just Disconnected!{default}");
 	} else {
-		if ( IsPlayerAlive(client) )
-			SetPawnTimer(CheckAlivePlayers, 0.2);
-		if ( client == gamemode.FindNextBoss().index )
+		//if ( IsPlayerAlive(client) )
+		SetPawnTimer(CheckAlivePlayers, 0.2);
+		if ( IsClientInGame(client) and client == gamemode.FindNextBoss().index )
 			SetPawnTimer(_SkipBossPanel, 1.0);
-
-		if (gamemode.hNextBoss and client is gamemode.hNextBoss.index)
+		
+		int myuserid = GetClientUserId(client);
+		if (myuserid and gamemode.hNextBoss and myuserid == view_as< int >(gamemode.hNextBoss))
 			gamemode.hNextBoss = view_as< BaseBoss >(0);
 	}
 }
