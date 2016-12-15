@@ -92,8 +92,7 @@ public void ManageDisconnect(const int client)
 		if ( IsClientInGame(client) and client == gamemode.FindNextBoss().index )
 			SetPawnTimer(_SkipBossPanel, 1.0);
 		
-		int myuserid = GetClientUserId(client);
-		if (myuserid and gamemode.hNextBoss and myuserid == view_as< int >(gamemode.hNextBoss))
+		if (leaver.userid == gamemode.hNextBoss.userid)
 			gamemode.hNextBoss = view_as< BaseBoss >(0);
 	}
 }
