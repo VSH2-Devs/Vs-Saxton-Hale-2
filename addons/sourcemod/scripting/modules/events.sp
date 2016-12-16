@@ -154,7 +154,7 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 	}
 	else if ( gamemode.iRoundCount <= 0 and not cvarVSH2[FirstRound].BoolValue )
 	{
-		CPrintToChatAll("{olive}[VSH2]{default} Normal Round while Everybody is Loading");
+		CPrintToChatAll("{olive}[VSH 2]{default} Normal Round while Everybody is Loading");
 		gamemode.iRoundState = StateDisabled;
 		SetArenaCapEnableTime(60.0);
 		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 1);
@@ -285,8 +285,8 @@ public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 		if (not IsValidClient(i))
 			continue;
 #if defined _tf2attributes_included
-		boss = BaseBoss(i);
-		TF2Attrib_RemoveByDefIndex(boss.index, 26);
+		if (gamemode.bTF2Attribs)
+			TF2Attrib_RemoveByDefIndex(i, 26);
 #endif
 		//PrintToConsole(i, "resetting boss hp.");
 	}
@@ -295,61 +295,8 @@ public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 		KillTimer(gamemode.hMusic);
 		gamemode.hMusic = null;
 	}*/
-	// Showcase top damage scores!
-	int top[3];
-	Damage[0] = 0;
-	for (i=MaxClients ; i ; --i) {	// Too lazy to setup methodmap instances, going to use direct arrays
-		if (!IsClientValid(i))
-			continue;
-		else if (BaseBoss(i).bIsBoss)
-			continue;
-
-		if (Damage[i] >= Damage[top[0]]) {
-			top[2]=top[1];
-			top[1]=top[0];
-			top[0]=i;
-		}
-		else if (Damage[i] >= Damage[top[1]]) {
-			top[2]=top[1];
-			top[1]=i;
-		}
-		else if (Damage[i] >= Damage[top[2]])
-			{top[2]=i;}
-	}
-	if (Damage[top[0]] > 9000)
-		SetPawnTimer(OverNineThousand, 1.0);	// in stocks.inc
-
-	char score1[PATH], score2[PATH], score3[PATH];
-	if (IsValidClient(top[0]) and (GetClientTeam(top[0]) > 1))
-		GetClientName(top[0], score1, PATH);
-	else {
-		Format(score1, PATH, "---");
-		top[0]=0;
-	}
-
-	if (IsValidClient(top[1]) and (GetClientTeam(top[1]) > 1))
-		GetClientName(top[1], score2, PATH);
-	else {
-		Format(score2, PATH, "---");
-		top[1]=0;
-	}
-
-	if (IsValidClient(top[2]) and (GetClientTeam(top[2]) > 1))
-		GetClientName(top[2], score3, PATH);
-	else {
-		Format(score3, PATH, "---");
-		top[2]=0;
-	}
-	SetHudTextParams(-1.0, 0.4, 10.0, 255, 255, 255, 255);
-	PrintCenterTextAll("");	// Should clear center text
-	for (i=MaxClients ; i ; --i) {
-		if (IsValidClient(i) and not (GetClientButtons(i) & IN_SCORE))
-		{
-			SetGlobalTransTarget(i);
-			ShowHudText(i, -1, "Most damage dealt by:\n1)%i - %s\n2)%i - %s\n3)%i - %s\n\nDamage Dealt: %i\nScore for this round: %i", Damage[top[0]], score1, Damage[top[1]], score2, Damage[top[2]], score3, Damage[i], RoundFloat(Damage[i] / 600.0));
-			//PrintToConsole(i, "did damage dealth stuff.");
-		}
-	}
+	
+	ShowPlayerScores();	// In vsh2.sp
 	SetPawnTimer(CalcScores, 3.0);	// In vsh2.sp
 	
 	//BaseBoss bosses[34];
@@ -450,8 +397,10 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 			boss.iMaxHealth -= 1500;	// Putting in multiboss Handicap from complaints multibosses being too overpowered.
 #if defined _tf2attributes_included
 		int maxhp = GetEntProp(boss.index, Prop_Data, "m_iMaxHealth");
-		TF2Attrib_RemoveAll(boss.index);
-		TF2Attrib_SetByDefIndex( boss.index, 26, float(boss.iMaxHealth-maxhp) );
+		if (gamemode.bTF2Attribs) {
+			TF2Attrib_RemoveAll(boss.index);
+			TF2Attrib_SetByDefIndex( boss.index, 26, float(boss.iMaxHealth-maxhp) );
+		}
 #endif
 		if (GetClientTeam(boss.index) not_eq BLU)
 			boss.ForceTeamChange(BLU);
