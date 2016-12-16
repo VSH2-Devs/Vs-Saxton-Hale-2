@@ -289,7 +289,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 			char trigger[32];
 			if (GetEdictClassname(attacker, trigger, sizeof(trigger)) and not strcmp(trigger, "trigger_hurt", false))
 			{
-				if (damage >= 350.0)
+				if (damage >= 100.0)
 					TeleportToSpawn(victim.index, BLU);
 			}
 			if (attacker <= 0 || attacker > MaxClients)
