@@ -394,7 +394,7 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 		if (boss.iMaxHealth < 3000 and bosscount is 1)
 			boss.iMaxHealth = 3000;
 		else if ( boss.iMaxHealth > 3000 and bosscount > 1 )
-			boss.iMaxHealth -= 1500;	// Putting in multiboss Handicap from complaints multibosses being too overpowered.
+			boss.iMaxHealth -= 500;	// Putting in multiboss Handicap from complaints multibosses being too overpowered.
 #if defined _tf2attributes_included
 		int maxhp = GetEntProp(boss.index, Prop_Data, "m_iMaxHealth");
 		if (gamemode.bTF2Attribs) {
