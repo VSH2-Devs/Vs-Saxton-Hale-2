@@ -602,13 +602,13 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 				and not TF2_IsPlayerInCondition(client, TFCond_Ubercharged)
 				and weapon is GetPlayerWeaponSlot(attacker, 2)) {
 				/*
-				If medic has (nearly) full uber, use it as a single-hit shield to prevent medics from dying early.
-				Entire team is pretty much screwed if all the medics just die.
+					If medic has (nearly) full uber, use it as a single-hit shield to prevent medics from dying early.
+					Entire team is pretty much screwed if all the medics just die.
 				*/
 				if (GetMediCharge(medigun) >= 0.90) {
-					SetMediCharge(medigun, 0.0);
-					damage = 1.0;
-					ScaleVector(damageForce, 50.0);
+					SetMediCharge(medigun, 50.0);
+					damage *= 0.25;
+					ScaleVector(damageForce, 10.0);
 					return Plugin_Changed;
 				}
 			}
@@ -618,14 +618,14 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 				{
 					if (damagetype & DMG_CRIT)
 						damagetype &= ~DMG_CRIT;
-					damage = 100.0;
+					damage *= 0.5;
 					return Plugin_Changed;
 				}
 				if (TF2_IsPlayerInCondition(client, TFCond_Cloaked) or TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
 				{
 					if (damagetype & DMG_CRIT)
 						damagetype &= ~DMG_CRIT;
-					damage = 100.0;
+					damage *= 0.5;
 					return Plugin_Changed;
 				}
 			}
