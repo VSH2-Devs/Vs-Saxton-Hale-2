@@ -254,7 +254,7 @@ public void ManageMinionTransition(const BaseBoss base)
 			if (gamemode.bTF2Attribs)
 				TF2Attrib_RemoveAll(base.index);
 #endif
-			int weapon = base.SpawnWeapon("tf_weapon_bat", 572, 100, 5, "6 ; 0.5 ; 57 ; 15.0 ; 26 ; 75.0 ; 49 ; 1.0 ; 68 ; -2.0");
+			int weapon = base.SpawnWeapon("tf_weapon_bat", 572, 100, 5, "6 ; 0.5 ; 57 ; 15.0 ; 26 ; 25.0 ; 49 ; 1.0 ; 68 ; -2.0");
 			SetEntPropEnt(base.index, Prop_Send, "m_hActiveWeapon", weapon);
 			TF2_AddCondition(base.index, TFCond_Ubercharged, 3.0);
 			SetVariantString(ZombieModel);
