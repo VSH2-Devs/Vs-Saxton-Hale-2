@@ -66,7 +66,7 @@ public int AllowedDifficulties[] = {
 
 StringMap hGameModeFields ;
 
-methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONLY */
+methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should be handled HERE ONLY */
 {
 	public VSHGameMode()
 	{
@@ -215,6 +215,20 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		public set(const bool val)	//{ steamtools = val; }
 		{
 			hGameModeFields.SetValue("bSteam", val);
+		}
+	}
+#endif
+#if defined _tf2attributes_included
+	property bool bTF2Attribs
+	{
+		public get()
+		{
+			bool i; hGameModeFields.GetValue("bTF2Attribs", i);
+			return i;
+		}
+		public set(const bool val)
+		{
+			hGameModeFields.SetValue("bTF2Attribs", val);
 		}
 	}
 #endif
