@@ -161,8 +161,16 @@ methodmap CPlague < BaseBoss
 			minion = BaseBoss(i);
 			if (minion.bIsMinion) {
 #if defined _tf2attributes_included
-				TF2Attrib_SetByDefIndex(i, attribute, value);
-				SetPawnTimer(TF2AttribsRemove, 10.0, i);
+				if (gamemode.bTF2Attribs) {
+					TF2Attrib_SetByDefIndex(i, attribute, value);
+					SetPawnTimer(TF2AttribsRemove, 10.0, i);
+				}
+				else {
+					char pdapower[32];
+					Format(pdapower, sizeof(pdapower), "%i ; %f", attribute, value);
+					int wep = minion.SpawnWeapon("tf_weapon_builder", 28, 5, 10, pdapower);
+					SetPawnTimer( RemoveWepFromSlot, 10.0, i, GetSlotFromWeapon(i, wep) );
+				}
 #else
 				char pdapower[32];
 				Format(pdapower, sizeof(pdapower), "%i ; %f", attribute, value);
