@@ -17,11 +17,11 @@
 #pragma semicolon			1
 #pragma newdecls			required
 
-#define PLUGIN_VERSION			"1.4.3 BETA"
+#define PLUGIN_VERSION			"1.5.1 BETA"
 #define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
 #define CODEFRAMES			(1.0/30.0)	/* 30 frames per second means 0.03333 seconds or 33.33 ms */
 
-#define IsClientValid(%1)		( 0 < %1 and %1 <= MaxClients and IsClientInGame(%1) )
+#define IsClientValid(%1)		( 0 < (%1) and (%1) <= MaxClients and IsClientInGame((%1)) )
 #define PLYR				MAXPLAYERS+1
 
 //Team number defines
@@ -296,6 +296,9 @@ public void OnPluginStart()
 #if defined _steamtools_included
 	gamemode.bSteam = LibraryExists("SteamTools");
 #endif
+#if defined _tf2attributes_included
+	gamemode.bTF2Attribs = LibraryExists("tf2attributes");
+#endif
 	AutoExecConfig(true, "VSHv2");
 	HookEvent("player_death", PlayerDeath, EventHookMode_Pre);
 	HookEvent("player_hurt", PlayerHurt, EventHookMode_Pre);
@@ -338,7 +341,7 @@ public void OnPluginStart()
 	AddMultiTargetFilter("@minions", MinionTargetFilter, "the Minions", false);
 	AddMultiTargetFilter("@!boss", HaleTargetFilter, "all non-Boss players", false);
 	AddMultiTargetFilter("@!hale", HaleTargetFilter, "all non-Boss players", false);
-
+	hPlayerFields[0] = new StringMap();	// This will be freed when plugin is unloaded again
 }
 public bool HaleTargetFilter(const char[] pattern, Handle clients)
 {
@@ -375,7 +378,7 @@ public bool MinionTargetFilter(const char[] pattern, Handle clients)
 
 public Action BlockSuicide(int client, const char[] command, int argc)
 {
-	if (bEnabled.BoolValue and gamemode.iRoundState > 0)
+	if (bEnabled.BoolValue and gamemode.iRoundState == StateRunning)
 	{
 		BaseBoss player = BaseBoss(client);
 		if (player.bIsBoss) {
@@ -395,12 +398,20 @@ public void OnLibraryAdded(const char[] name)
 	if (not strcmp(name, "SteamTools", false))
 		gamemode.bSteam = true;
 #endif
+#if defined _tf2attributes_included
+	if (not strcmp(name, "tf2attributes", false))
+		gamemode.bTF2Attribs = true;
+#endif
 }
 public void OnLibraryRemoved(const char[] name)
 {
 #if defined _steamtools_included
 	if (not strcmp(name, "SteamTools", false))
 		gamemode.bSteam = false;
+#endif
+#if defined _tf2attributes_included
+	if (not strcmp(name, "tf2attributes", false))
+		gamemode.bTF2Attribs = false;
 #endif
 }
 
@@ -445,15 +456,50 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_TraceAttack, TraceAttack);
 	SDKHook(client, SDKHook_Touch, OnTouch);
 	SDKHook(client, SDKHook_WeaponSwitchPost, OnWeaponSwitchPost);
+	
 	flHolstered[client][0] = flHolstered[client][1] = flHolstered[client][2] = 0.0;
 	//SDKHook(client, SDKHook_PreThink, OnPreThink);
-
+	
+	if (hPlayerFields[client] != null)
+		delete hPlayerFields[client] ;
+	
+	hPlayerFields[client] = new StringMap();
 	BaseBoss boss = BaseBoss(client);
+	
+	// BaseFighter properties
+	hPlayerFields[client].SetValue("iQueue", 0);
+	hPlayerFields[client].SetValue("iPresetType", -1);
+	boss.iKills = 0;
+	boss.iHits = 0;
+	boss.iLives = 0;
+	boss.iState = -1;
+	boss.iDamage = 0;
+	boss.iAirDamage = 0;
+	boss.iSongPick = 0;
+	boss.iOwnerBoss = 0;
+	boss.iUberTarget = 0;
+	boss.bIsMinion = false;
+	boss.bInJump = false;
+	boss.flGlowtime = 0.0;
+	boss.flLastHit = 0.0;
+	boss.flLastShot = 0.0;
+	
+	// BaseBoss properties
+	boss.iHealth = 0;
+	boss.iMaxHealth = 0;
+	boss.iType = -1;
+	boss.iClimbs = 0;
+	boss.iStabbed = 0;
+	boss.iMarketted = 0;
+	boss.iDifficulty = -1;
 	boss.bIsBoss = false;
 	boss.bSetOnSpawn = false;
-	boss.iType = -1;
-
-	ManageConnect(client); // in handler.sp
+	boss.bUsedUltimate = false;
+	boss.flSpeed = 0.0;
+	boss.flCharge = 0.0;
+	boss.flRAGE = 0.0;
+	boss.flKillSpree = 0.0;
+	boss.flWeighDown = 0.0;
 }
 public void OnClientDisconnect(int client)
 {
@@ -758,6 +804,72 @@ public void OnWeaponSwitchPost(int client, int weapon)
 		iActiveSlot[client] = GetSlotFromWeapon(client, weapon);
 	}
 }
+public void ShowPlayerScores()	// scores kept glitching out and I hate debugging so I made it its own func.
+{
+	BaseBoss hTop[3];
+	
+	BaseBoss(0).iDamage = 0;
+	BaseBoss player;
+	for (int i=MaxClients ; i ; --i) {
+		if (!IsClientValid(i))
+			continue;
+		
+		player = BaseBoss(i);
+		if (player.bIsBoss) {
+			player.iDamage = 0;
+			continue;
+		}
+		
+		if (player.iDamage >= hTop[0].iDamage /*Damage[top[0]]*/) {
+			hTop[2] = hTop[1];
+			hTop[1] = hTop[0];
+			hTop[0] = BaseBoss(i);
+		}
+		else if (player.iDamage >= hTop[1].iDamage /*Damage[top[1]]*/) {
+			hTop[2] = hTop[1];
+			hTop[1] = BaseBoss(i);
+		}
+		else if (player.iDamage >= hTop[2].iDamage /*Damage[top[2]]*/)
+			hTop[2] = BaseBoss(i);
+	}
+	if (hTop[0].iDamage > 9000) //if (Damage[top[0]] > 9000)
+		SetPawnTimer(OverNineThousand, 1.0);	// in stocks.inc
+
+	char score1[PATH], score2[PATH], score3[PATH];
+	if (IsValidClient(hTop[0].index) and (GetClientTeam(hTop[0].index) > 1))
+		GetClientName(hTop[0].index, score1, PATH);
+	else {
+		Format(score1, PATH, "---");
+		hTop[0] = view_as< BaseBoss >(0);
+	}
+
+	if (IsValidClient(hTop[1].index) and (GetClientTeam(hTop[1].index) > 1))
+		GetClientName(hTop[1].index, score2, PATH);
+	else {
+		Format(score2, PATH, "---");
+		hTop[1] = view_as< BaseBoss >(0);
+	}
+
+	if (IsValidClient(hTop[2].index) and (GetClientTeam(hTop[2].index) > 1))
+		GetClientName(hTop[2].index, score3, PATH);
+	else {
+		Format(score3, PATH, "---");
+		hTop[2] = view_as< BaseBoss >(0);
+	}
+	SetHudTextParams(-1.0, 0.4, 10.0, 255, 255, 255, 255);
+	PrintCenterTextAll("");	// Should clear center text
+	
+	for (int i=MaxClients ; i ; --i) {
+		if (!IsClientValid(i))
+			continue;
+		if (not (GetClientButtons(i) & IN_SCORE)) {
+			player = BaseBoss(i);
+			SetGlobalTransTarget(i);
+			ShowHudText(i, -1, "Most damage dealt by:\n1)%i - %s\n2)%i - %s\n3)%i - %s\n\nDamage Dealt: %i\nScore for this round: %i", hTop[0].iDamage, score1, hTop[1].iDamage, score2, hTop[2].iDamage, score3, player.iDamage, (player.iDamage/600));
+			//PrintToConsole(i, "did damage dealth stuff.");
+		}
+	}
+}
 public void CalcScores()
 {
 	int j, damage, amount, queue;
@@ -770,23 +882,23 @@ public void CalcScores()
 			continue;
 		
 		player = BaseBoss(i);
-
-		damage = player.iDamage;
-		scoring.SetInt("player", i);
-		amount = cvarVSH2[DamagePoints].IntValue;
-		for (j=0 ; damage-amount > 0 ; damage -= amount, j++) {}
-		scoring.SetInt("points", j);
-		scoring.FireToClient(i);
-
 		if ( player.bIsBoss )
-			{player.iQueue = 0;}
+			player.iQueue = 0;
 		else {
 			if (cvarVSH2[DamageForQueue].BoolValue)
 				queue = cvarVSH2[QueueGained].IntValue+(player.iDamage/1000);
 			else queue = cvarVSH2[QueueGained].IntValue;
 			player.iQueue += queue; //(i, GetClientQueuePoints(i)+queue);
-			CPrintToChat(i, "{olive}[VSH 2]{default} You scored %i points.", j);
-			CPrintToChat(i, "{olive}[VSH 2]{default} You get %i queue points.", queue);
+			CPrintToChat(i, "{olive}[VSH 2] Queue{default} You gained %i queue points.", queue);
+			
+			// We don't want the Bosses getting free points for doing damage.
+			damage = player.iDamage;
+			scoring.SetInt("player", i);
+			amount = cvarVSH2[DamagePoints].IntValue;
+			for (j=0 ; damage-amount > 0 ; damage -= amount, j++) {}
+			scoring.SetInt("points", j);
+			scoring.FireToClient(i);
+			CPrintToChat(i, "{olive}[VSH 2] Queue{default} You scored %i points.", j);
 		}
 		//PrintToConsole(i, "CalcScores running.");
 	}
@@ -852,9 +964,9 @@ public Action TimerLazor(Handle timer, any medigunid)
 			if (IsClientValid(target) and IsPlayerAlive(target))
 			{
 				TF2_AddCondition(target, TFCond_CritOnWin, 0.5);
-				UberTarget[client] = GetClientUserId(target);
+				BaseBoss(client).iUberTarget = GetClientUserId(target);
 			}
-			else UberTarget[client] = 0;
+			else BaseBoss(client).iUberTarget = 0;
 		}
 		else if (charge < 0.05) {
 			SetPawnTimer(_ResetMediCharge, 3.0, EntIndexToEntRef(medigun)); //CreateTimer(3.0, TimerLazor2, EntIndexToEntRef(medigun));
