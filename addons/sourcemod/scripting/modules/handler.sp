@@ -63,10 +63,7 @@ public void ManageMenu( Menu& menu )
 	AddBunnyToMenu	(menu);
 	AddPlagueToMenu	(menu);
 }
-public void ManageConnect(const int client)
-{
-	
-}
+
 public void ManageDisconnect(const int client)
 {
 	BaseBoss leaver = BaseBoss(client);
@@ -82,10 +79,10 @@ public void ManageDisconnect(const int client)
 			}
 			if ( IsValidClient(replace.index) ) {
 				replace.MakeBossAndSwitch(leaver.iType, true);
-				CPrintToChat(replace.index, "{olive}[VSH2]{default} {green}Surprise! You're on NOW!{default}");
+				CPrintToChat(replace.index, "{olive}[VSH 2]{default} {green}Surprise! You're on NOW!{default}");
 			}
 		}
-		CPrintToChatAll("{olive}[VSH2]{default} {red}A Boss Just Disconnected!{default}");
+		CPrintToChatAll("{olive}[VSH 2]{default} {red}A Boss Just Disconnected!{default}");
 	} else {
 		//if ( IsPlayerAlive(client) )
 		SetPawnTimer(CheckAlivePlayers, 0.2);
@@ -100,10 +97,13 @@ public void ManageDisconnect(const int client)
 public void ManageOnBossSelected(const BaseBoss base)
 {
 	ManageBossHelp(base);
-	if (gamemode.iPlaying < 7 or GetRandomInt(0, 3) > 0)
+	if (gamemode.iPlaying < 10 or GetRandomInt(0, 3) > 0)
 		return;
 
-	gamemode.FindNextBoss().MakeBossAndSwitch(GetRandomInt(Hale, MAXBOSS), true);
+	int extraBosses = gamemode.iPlaying / 6;
+	extraBosses = (extraBosses > 1) ? GetRandomInt(1, extraBosses) : extraBosses;
+	while (extraBosses-- > 0)
+		gamemode.FindNextBoss().MakeBossAndSwitch(GetRandomInt(Hale, MAXBOSS), true);
 }
 
 public void ManageOnTouchPlayer(const BaseBoss base, const BaseBoss victim)
@@ -251,7 +251,8 @@ public void ManageMinionTransition(const BaseBoss base)
 			TF2_SetPlayerClass(base.index, TFClass_Scout, _, false);
 			TF2_RemoveAllWeapons(base.index);
 #if defined _tf2attributes_included
-			TF2Attrib_RemoveAll(base.index);
+			if (gamemode.bTF2Attribs)
+				TF2Attrib_RemoveAll(base.index);
 #endif
 			int weapon = base.SpawnWeapon("tf_weapon_bat", 572, 100, 5, "6 ; 0.5 ; 57 ; 15.0 ; 26 ; 75.0 ; 49 ; 1.0 ; 68 ; -2.0");
 			SetEntPropEnt(base.index, Prop_Send, "m_hActiveWeapon", weapon);
@@ -362,7 +363,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				and TF2_IsPlayerInCondition(attacker, TFCond_Taunting) )
 			{
 				damage = victim.iHealth+0.2;
-				Damage[attacker] += RoundFloat(damage);	// If necessary, just cheat by using the arrays.
+				BaseBoss(attacker).iDamage += RoundFloat(damage);	// If necessary, just cheat by using the arrays.
 				return Plugin_Changed;
 			}
 			else if (damagecustom is TF_CUSTOM_TELEFRAG) {
@@ -744,24 +745,27 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 	int healers[MAXPLAYERS];
 	int healercount = 0;
 	for (int i=MaxClients ; i ; --i) {
-		if (not IsValidClient(i) or not IsPlayerAlive(i))
+		if (not IsValidClient(i))
+			continue;
+		else if ( not IsPlayerAlive(i) )
 			continue;
 	
-		if (GetHealingTarget(i) is attacker.index)
-		{
+		if (GetHealingTarget(i) is attacker.index) {
 			healers[healercount] = i;
 			healercount++;
 		}
 	}
+	BaseBoss medic;
 	for (int r=0; r<healercount; r++) {	// Medics now count as 3/5 of a backstab, similar to telefrag assists.
 		if ( not IsValidClient(healers[r]) )
 			continue;
-		if ( not IsPlayerAlive(healers[r]) )
+		else if ( not IsPlayerAlive(healers[r]) )
 			continue;
 
-		if (damage < 10 or UberTarget[healers[r]] is attacker.userid)
-			Damage[healers[r]] += damage;
-		else Damage[healers[r]] += damage/(healercount+1);
+		medic = BaseBoss(healers[r]);
+		if (damage < 10 or medic.iUberTarget is attacker.userid)
+			medic.iDamage += damage; //Damage[healers[r]] += damage;
+		else medic.iDamage += damage/(healercount+1); //Damage[healers[r]] += damage/(healercount+1);
 	}
 }
 
@@ -1193,7 +1197,7 @@ public void ManageRoundEndBossInfo(ArrayList bosses, bool bossWon) //(const Base
 		}
 	}
 	if (gameMessage[0] not_eq '\0') {
-		CPrintToChatAll("{olive}[VSH2]{default} %s", gameMessage);
+		CPrintToChatAll("{olive}[VSH 2] End of Round{default} %s", gameMessage);
 		SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
 		for (i=MaxClients ; i ; --i) {
 			if (IsValidClient(i) and not (GetClientButtons(i) & IN_SCORE))
@@ -1253,7 +1257,7 @@ public void ManageBossCheckHealth(const BaseBoss base)
 			totalHealth += boss.iHealth;
 		}
 		PrintCenterTextAll(gameMessage);
-		CPrintToChatAll("{olive}[VSH 2]{default} %s", gameMessage);
+		CPrintToChatAll("{olive}[VSH 2] Boss Health Check{default} %s", gameMessage);
 		LastBossTotalHealth = totalHealth;
 		gamemode.flHealthTime = currtime+(gamemode.iHealthChecks < 3 ? 10.0 : 60.0);
 	}
@@ -1268,7 +1272,7 @@ public void CheckAlivePlayers()
 	if (!living)
 		ForceTeamWin(BLU);
 
-	if (living is 1 and gamemode.GetRandomBoss(true))
+	if (living is 1 and gamemode.GetRandomBoss(true) and gamemode.iTimeLeft <= 0)
 	{
 		ManageLastPlayer();	// in handler.sp
 		gamemode.iTimeLeft = cvarVSH2[LastPlayerTime].IntValue;
@@ -1348,7 +1352,7 @@ public void ManageSetBossArgs(const int client)
 			continue;
 
 		BaseBoss(target_list[i]).iPresetType = typei;
-		ReplyToCommand(target_list[i], "[VSH2] You have set your Boss!");
+		ReplyToCommand(target_list[i], "[VSH 2] You have set your Boss!");
 	}
 }
 
@@ -1391,7 +1395,8 @@ public void PrepPlayers(const BaseBoss player)
 		return ;
 
 #if defined _tf2attributes_included
-	TF2Attrib_RemoveAll(client);
+	if (gamemode.bTF2Attribs)
+		TF2Attrib_RemoveAll(client);
 #endif
 	if (GetClientTeam(client) not_eq RED and GetClientTeam(client) > int(TFTeam_Spectator))
 	{
@@ -1405,7 +1410,7 @@ public void PrepPlayers(const BaseBoss player)
 		player.HelpPanelClass();
 
 #if defined _tf2attributes_included
-	if (IsValidEntity(FindPlayerBack(client, { 444 }, 1)))    //  Fixes mantreads to have jump height again
+	if (gamemode.bTF2Attribs and IsValidEntity(FindPlayerBack(client, { 444 }, 1)))    //  Fixes mantreads to have jump height again
         {
             TF2Attrib_SetByDefIndex(client, 58, 1.8);             //  "self dmg push force increased"
         }
@@ -1522,7 +1527,7 @@ public void PrepPlayers(const BaseBoss player)
 		}
 	}
 #if defined _tf2attributes_included
-	if (cvarVSH2[HealthRegenForPlayers].BoolValue)
+	if (gamemode.bTF2Attribs and cvarVSH2[HealthRegenForPlayers].BoolValue)
 		TF2Attrib_SetByDefIndex( client, 57, GetClientHealth(client)/50.0+cvarVSH2[HealthRegenAmount].FloatValue );
 #endif
 }
@@ -1605,6 +1610,9 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		}
 		case 772: {	// Baby Face Blaster
 			hItemOverride = PrepareItemHandle(hItemCast, _, _, "106 ; 0.3 ; 4 ; 1.33 ; 45 ; 0.6 ; 114 ; 1.0", true);
+		}
+		case 133: {	// Gunboats ; make gunboats more attractive compared to the mantreads by having it reduce more rj dmg
+			hItemOverride = PrepareItemHandle(hItemCast, _, _, "135 ; 0.25", true);
 		}
 	}
 	if (hItemOverride not_eq null) {
@@ -1767,7 +1775,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 			{
 				SetHudTextParams(-1.0, 0.83, 0.35, 255, 255, 255, 255, 0, 0.2, 0.0, 0.1);
 				if (!(buttons & IN_SCORE))
-					ShowSyncHudText(i, jumpHUD, "Air Strike Damage: %i", AirDamage[i]);
+					ShowSyncHudText(i, jumpHUD, "Air Strike Damage: %i", fighter.iAirDamage);
 			}
 		}
 	}
