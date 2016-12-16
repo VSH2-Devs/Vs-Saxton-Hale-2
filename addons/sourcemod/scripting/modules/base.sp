@@ -1,48 +1,53 @@
-int
-	Health[PLYR],		/* Amount of health given to bosses */
+/*int
+	Health[PLYR],		// Amount of health given to bosses
 	MaxHealth[PLYR],
-	BossType[PLYR],		/* What kind of boss is player? */
-	Kills[PLYR],		/* how many players killed by boss or bosses killed by player? */
-	ClimbCount[PLYR],	/* self explanatory */
-	Hits[PLYR],		/* How many times has the player been hit? */
-	Lives[PLYR],		/* Same reason as Hits, Lives should never be under 0. Never heard of -1 lives lol */
-	State[PLYR],		/* This is for bosses or players that change "state" for various mechanics */
-	AmmoTable[2049],	/* saved max ammo size of the weapon */
-	ClipTable[2049],	/* saved max clip size of the weapon */
-	Damage[PLYR],		/* self explanatory */
-	AirDamage[PLYR],	/* how much damage done by AirStrike soldier, perhaps replace this with static local variable in TakeDamage? */
-	SongPick[PLYR],		/* Let bosses customize what Background theme music they want playing. */
-	Queue[PLYR],		/* old Queue system but this array is a backup incase cookies haven't cached yet. */
-	Stabbed[PLYR],		/* How many times player got backstabbed */
-	Marketted[PLYR],	/* How many times player got market gardenned */
-	UberTarget[PLYR],	/* userid of the uber'd client */
-	PresetBossType[PLYR],	/* If the upcoming boss set their boss from SetBoss command, this array will hold that data */
-	OwnerBoss[PLYR],	/* For use on minions, this allows us to get which boss actually created the minion that helps them */
+	BossType[PLYR],		// What kind of boss is player?
+	Kills[PLYR],		// how many players killed by boss or bosses killed by player?
+	ClimbCount[PLYR],	// self explanatory
+	Hits[PLYR],		// How many times has the player been hit?
+	Lives[PLYR],		// Same reason as Hits, Lives should never be under 0. Never heard of -1 lives lol
+	State[PLYR],		// This is for bosses or players that change "state" for various mechanics
+	Damage[PLYR],		// self explanatory
+	AirDamage[PLYR],	// how much damage done by AirStrike soldier, perhaps replace this with static local variable in TakeDamage?
+	SongPick[PLYR],		// Let bosses customize what Background theme music they want playing.
+	Stabbed[PLYR],		// How many times player got backstabbed
+	Marketted[PLYR],	// How many times player got market gardenned
+	UberTarget[PLYR],	// userid of the uber'd client
+	OwnerBoss[PLYR],	// For use on minions, this allows us to get which boss actually created the minion that helps them
 	Difficulty[PLYR]
 ;
 
 bool
-	IsBoss[PLYR],		/* Is the player a boss? */
-	IsToSpawnAsBoss[PLYR],	/* Is the player set to become a boss when they spawn? */
-	IsMinion[PLYR],		/* Is the player a minion/zombie of a current boss? (Can be set on bosses but please don't, only use on players) */
-	UsedUltimate[PLYR],	/* When a boss used a single-use only rage, can be reset, inb4 Overwatch bosses lol */
-	InJump[PLYR]		/* when a player is currently in the air as a result of a rocket/sticky jump */
+	IsBoss[PLYR],		// Is the player a boss?
+	IsToSpawnAsBoss[PLYR],	// Is the player set to become a boss when they spawn?
+	IsMinion[PLYR],		// Is the player a minion/zombie of a current boss? (Can be set on bosses but please don't, only use on players)
+	UsedUltimate[PLYR],	// When a boss used a single-use only rage, can be reset, inb4 Overwatch bosses lol
+	InJump[PLYR]		// when a player is currently in the air as a result of a rocket/sticky jump
 ;
 
 float
-	fSpeed[PLYR],		/* self explanatory, Boss' movement speed */
-	flRightClick[PLYR],	/* Basically the Crouch or Right click ability charge */
-	flRage[PLYR],		/* meter for when boss taunts or calls medic */
-	fKillSpree[PLYR],	/* When a boss meets a criteria for murdering in a single instance :) */
-	WeighDown[PLYR],	/* meter for when boss is looking down while in the air and crouching */
+	fSpeed[PLYR],		// self explanatory, Boss' movement speed
+	flRightClick[PLYR],	// Basically the Crouch or Right click ability charge
+	flRage[PLYR],		// meter for when boss taunts or calls medic
+	fKillSpree[PLYR],	// When a boss meets a criteria for murdering in a single instance :)
+	WeighDown[PLYR],	// meter for when boss is looking down while in the air and crouching
 	Glowtime[PLYR],
-	LastHit[PLYR],		/* last time the player was hit */
-	LastShot[PLYR],		/* last time player shot/fired their weapon */
-	flHolstered[PLYR][3]	/* New mechanic for VSH 2, holster reloading for certain classes and weapons */
+	LastHit[PLYR],		// last time the player was hit
+	LastShot[PLYR]		// last time player shot/fired their weapon
 ;
+*/
+
+int
+	//Queue[PLYR],		// old Queue system but this array is a backup incase cookies haven't cached yet.
+	//PresetBossType[PLYR],	// If the upcoming boss set their boss from SetBoss command, this array will hold that data
+	AmmoTable[2049],	// saved max ammo size of the weapon
+	ClipTable[2049]		// saved max clip size of the weapon
+;
+float flHolstered[PLYR][3];	// New mechanic for VSH 2, holster reloading for certain classes and weapons
 
 //	Gonna leave these here so we can reduce stack memory for calling boss specific Download function calls
 public char snd[FULLPATH]; //How is this even used?
+
 // Moved to stocks.inc
 // public char extensions[][] = { ".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd", ".phy" };
 // public char extensionsb[2][5] = { ".vtf", ".vmt" };
@@ -50,6 +55,12 @@ public char snd[FULLPATH]; //How is this even used?
 #define MAXMESSAGE	4096
 public char gameMessage[MAXMESSAGE];	// Just incase...
 public char BackgroundSong[FULLPATH];
+
+
+/*
+When making new properties, remember to base it off this StringMap AND do NOT forget to initialize it in OnClientPutInServer()
+*/
+StringMap hPlayerFields[PLYR];
 
 methodmap BaseFighter	/* Player Interface that Opposing team and Boss team derives from */
 /*
@@ -82,31 +93,31 @@ Methods
 	}
 	property int iQueue
 	{
-		public get()
-		{
+		public get() {
 			int player = this.index;
 			if (!player)
 				return 0;
-			else if (not AreClientCookiesCached(player) or IsFakeClient(player))	// If the coookies aren't cached yet, use array
-				return Queue[player];
-
-			char strPoints[10];	// HOW WILL OUR QUEUE SURPRISE OVER 9 DIGITS?
+			else if (not AreClientCookiesCached(player) or IsFakeClient(player)) {	// If the coookies aren't cached yet, use array
+				int i; hPlayerFields[player].GetValue("iQueue", i);
+				return i; //return Queue[player];
+			}
+			char strPoints[10];	// HOW WILL OUR QUEUE SURPASS OVER 9 DIGITS?
 			GetClientCookie(player, PointCookie, strPoints, sizeof(strPoints));
-			Queue[player] = StringToInt(strPoints);
-			return Queue[ player ];
+			int points = StringToInt(strPoints);
+			hPlayerFields[player].SetValue("iQueue", points); //Queue[player] = StringToInt(strPoints);
+			return points ; //Queue[player];
 		}
-		public set( const int val )
-		{
+		public set( const int val ) {
 			int player = this.index;
 			if (!player)
 				return;
 			else if (not AreClientCookiesCached(player) or IsFakeClient(player)) {
-				Queue[player] = val;
+				hPlayerFields[player].SetValue("iQueue", val); //Queue[player] = val;
 				return;
 			}
-			Queue[player] = val;
+			hPlayerFields[player].SetValue("iQueue", val); //Queue[player] = val;
 			char strPoints[10];
-			IntToString(Queue[player], strPoints, sizeof(strPoints));
+			IntToString(val, strPoints, sizeof(strPoints));
 			SetClientCookie(player, PointCookie, strPoints);
 		}
 	}
@@ -117,12 +128,15 @@ Methods
 			int player = this.index;
 			if (!player)
 				return -1;
-			if (not AreClientCookiesCached(player))
-				return PresetBossType[player];
+			if (not AreClientCookiesCached(player)) {
+				int i; hPlayerFields[player].GetValue("iPresetType", i);
+				return i; //return PresetBossType[player];
+			}
 			char setboss[6];
 			GetClientCookie(player, BossCookie, setboss, sizeof(setboss));
-			PresetBossType[player] = StringToInt(setboss);
-			return PresetBossType[player];
+			int bossType = StringToInt(setboss);
+			hPlayerFields[player].SetValue("iPresetType", bossType); //PresetBossType[player] = StringToInt(setboss);
+			return bossType; //PresetBossType[player];
 		}
 		public set( const int val )
 		{
@@ -130,59 +144,104 @@ Methods
 			if (!player)
 				return;
 			else if (not AreClientCookiesCached(player)) {
-				PresetBossType[player] = val;
+				hPlayerFields[player].SetValue("iPresetType", val); //PresetBossType[player] = val;
 				return;
 			}
-			PresetBossType[player] = val;
+			hPlayerFields[player].SetValue("iPresetType", val); //PresetBossType[player] = val;
 			char setboss[6];
-			IntToString(PresetBossType[player], setboss, sizeof(setboss));
+			IntToString(val, setboss, sizeof(setboss));
 			SetClientCookie(player, BossCookie, setboss);
 		}
 	}
 	property int iKills
 	{
-		public get()				{ return Kills[ this.index ]; }
-		public set( const int val )		{ Kills[ this.index ] = val; }
+		public get()				//{ return Kills[ this.index ]; }
+		{
+			int i; hPlayerFields[this.index].GetValue("iKills", i);
+			return i;
+		}
+		public set( const int val )		//{ Kills[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("iKills", val);
+		}
 	}
 	property int iHits
 	{
 		public get()
 		{
-			if (Hits[this.index] < 0)	// No unsigned integers yet, clamp Hits to 0 if under
-				Hits[this.index] = 0;
-			return Hits[ this.index ];
+			int i; hPlayerFields[this.index].GetValue("iHits", i);
+			if (i < 0)	// No unsigned integers yet, clamp Hits to 0 if under
+				i = 0;
+			return i;
 		}
-		public set( const int val )		{ Hits[ this.index ] = val; }
+		public set( const int val )		//{ Hits[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("iHits", val);
+		}
 	}
 	property int iLives
 	{
 		public get()
 		{
-			if (Lives[this.index] < 0)
-				Lives[this.index] = 0;
-			return Lives[ this.index ];
+			int i; hPlayerFields[this.index].GetValue("iLives", i);
+			if ( i < 0 )
+				i = 0;
+			//if (Lives[this.index] < 0)
+			//	Lives[this.index] = 0;
+			return i;
 		}
-		public set( const int val )		{ Lives[ this.index ] = val; }
+		public set( const int val )		//{ Lives[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("iLives", val);
+		}
 	}
 	property int iState
 	{
-		public get()				{ return State[ this.index ]; }
-		public set( const int val )		{ State[ this.index ] = val; }
+		public get()				//{ return State[ this.index ]; }
+		{
+			int i; hPlayerFields[this.index].GetValue("iState", i);
+			return i;
+		}
+		public set( const int val )		//{ State[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("iState", val);
+		}
 	}
 	property int iDamage
 	{
-		public get()				{ return Damage[ this.index ]; }
-		public set( const int val )		{ Damage[ this.index ] = val; }
+		public get()				//{ return Damage[ this.index ]; }
+		{
+			int i; hPlayerFields[this.index].GetValue("iDamage", i);
+			return i;
+		}
+		public set( const int val )		//{ Damage[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("iDamage", val);
+		}
 	}
 	property int iAirDamage
 	{
-		public get()				{ return AirDamage[ this.index ]; }
-		public set( const int val )		{ AirDamage[ this.index ] = val; }
+		public get()				//{ return AirDamage[ this.index ]; }
+		{
+			int i; hPlayerFields[this.index].GetValue("iAirDamage", i);
+			return i;
+		}
+		public set( const int val )		//{ AirDamage[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("iAirDamage", val);
+		}
 	}
 	property int iSongPick
 	{
-		public get()				{ return SongPick[ this.index ]; }
-		public set( const int val )		{ SongPick[ this.index ] = val; }
+		public get()				//{ return SongPick[ this.index ]; }
+		{
+			int i; hPlayerFields[this.index].GetValue("iSongPick", i);
+			return i;
+		}
+		public set( const int val )		//{ SongPick[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("iSongPick", val);
+		}
 	}
 	property int iHealTarget
 	{
@@ -200,13 +259,27 @@ Methods
 	}
 	property int iOwnerBoss
 	{
-		public get()				{ return GetClientOfUserId(OwnerBoss[ this.index ]); }
-		public set( const int val )		{ OwnerBoss[ this.index ] = val; }
+		public get()				//{ return GetClientOfUserId(OwnerBoss[ this.index ]); }
+		{
+			int i; hPlayerFields[this.index].GetValue("iOwnerBoss", i);
+			return GetClientOfUserId(i);
+		}
+		public set( const int val )		//{ OwnerBoss[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("iOwnerBoss", val);
+		}
 	}
 	property int iUberTarget	/* please use userid on this; convert to client index if you want but userid is safer */
 	{
-		public get()				{ return UberTarget[ this.index ]; }
-		public set( const int val )		{ UberTarget[ this.index ] = val; }
+		public get()				//{ return UberTarget[ this.index ]; }
+		{
+			int i; hPlayerFields[this.index].GetValue("iUberTarget", i);
+			return i;
+		}
+		public set( const int val )		//{ UberTarget[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("iUberTarget", val);
+		}
 	}
 	property int bGlow
 	{
@@ -221,25 +294,40 @@ Methods
 	property bool bNearDispenser
 	{
 		public get() {
+			int player = this.index;
 			int medics=0;
 			for (int i=MaxClients ; i ; --i) {
 				if (!IsValidClient(i))
 					continue;
-				if (GetHealingTarget(i) is this.index)
+				if (GetHealingTarget(i) is player)
 					medics++;
 			}
-			return (GetEntProp(this.index, Prop_Send, "m_nNumHealers") > medics);
+			return (GetEntProp(player, Prop_Send, "m_nNumHealers") > medics);
 		}
 	}
 	property bool bIsMinion
 	{
-		public get()				{ return IsMinion[ this.index ]; }
-		public set( const bool val )		{ IsMinion[ this.index ] = val; }
+		public get()				//{ return IsMinion[ this.index ]; }
+		{
+			bool i; hPlayerFields[this.index].GetValue("bIsMinion", i);
+			return i;
+		}
+		public set( const bool val )		//{ IsMinion[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("bIsMinion", val);
+		}
 	}
 	property bool bInJump
 	{
-		public get()				{ return InJump[ this.index ]; }
-		public set( const bool val )		{ InJump[ this.index ] = val; }
+		public get()				//{ return InJump[ this.index ]; }
+		{
+			bool i; hPlayerFields[this.index].GetValue("bInJump", i);
+			return i;
+		}
+		public set( const bool val )		//{ InJump[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("bInJump", val);
+		}
 	}
 	property bool bNoMusic
 	{
@@ -255,7 +343,6 @@ Methods
 		{
 			if (not AreClientCookiesCached(this.index))
 				return;
-
 			int value;
 			if (val)
 				value = 1;
@@ -270,22 +357,42 @@ Methods
 	{
 		public get()
 		{
-			if (Glowtime[ this.index ] < 0.0)
-				Glowtime[ this.index ] = 0.0;
-			return Glowtime[ this.index ];
+			float i; hPlayerFields[this.index].GetValue("flGlowtime", i);
+			if (i < 0.0)
+				i = 0.0;
+			return i;
 		}
-		public set( const float val )		{ Glowtime[ this.index ] = val; }
+		public set( const float val )		//{ Glowtime[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("flGlowtime", val);
+		}
 	}
 	property float flLastHit
 	{
-		public get()				{ return LastHit[ this.index ]; }
-		public set( const float val )		{ LastHit[ this.index ] = val; }
+		public get()				//{ return LastHit[ this.index ]; }
+		{
+			float i; hPlayerFields[this.index].GetValue("flLastHit", i);
+			return i;
+		}
+		public set( const float val )		//{ LastHit[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("flLastHit", val);
+		}
 	}
 	property float flLastShot
 	{
-		public get()				{ return LastShot[ this.index ]; }
-		public set( const float val )		{ LastShot[ this.index ] = val; }
+		public get()				//{ return LastShot[ this.index ]; }
+		{
+			float i; hPlayerFields[this.index].GetValue("flLastShot", i);
+			return i;
+		}
+		public set( const float val )		//{ LastShot[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("flLastShot", val);
+		}
 	}
+	
+	
 	
 	public void ConvertToMinion(const float time)
 	{
@@ -314,7 +421,7 @@ Methods
 		hWep.iQuality = qual;
 		char atts[32][32];
 		int count = ExplodeString(att, " ; ", atts, 32, 32);
-		count &= ~1;	// odd numbered count results in error, remove the 1st bit so count will always be even.
+		count &= ~1;	// odd numbered attributes result in an error, remove the 1st bit so count will always be even.
 		if (count > 0) {
 			hWep.iNumAttribs = count/2;
 			int i2=0;
@@ -540,10 +647,10 @@ Methods
 		switch (TF2_GetPlayerClass(this.index))
 		{
 			case TFClass_Scout:	Format(helpstr, sizeof(helpstr), "Scout:\nThe Crit-a-Cola grants criticals instead of minicrits.\nThe Fan O' War removes 5pct rage on hit.\nPistols gain minicrits.\nCandycane drops a health pack on hit.\nMedics healing you get a speed-buff.\nSun-on-a-Stick puts Boss on fire.\nBackscatter crits whenever it would minicrit.");
-			case TFClass_Soldier:	Format(helpstr, sizeof(helpstr), "Soldier:\nThe Battalion's Backup nerfs Boss damage.\nThe Half-Zatoichi heals 35HP on hit + can overheal to +25. Honorbound is removed on hit.\nShotguns minicrit Boss in midair + lower rocketjump damage.\nDirect Hit crits when it would minicrit.\nReserve Shooter has faster weapon switch + damage buff.\nMantreads create greater rocketjumps + negates fall damage.\nRocketJumper replaced with stock Rocket Launcher.");
+			case TFClass_Soldier:	Format(helpstr, sizeof(helpstr), "Soldier:\nThe Battalion's Backup nerfs Boss damage.\nThe Half-Zatoichi heals 35HP on hit + can overheal to +25. Honorbound is removed on hit.\nShotguns minicrit Boss in midair + lower rocketjump damage.\nDirect Hit crits when it would minicrit.\nReserve Shooter has faster weapon switch + damage buff.\nGunboats blocks 75% of rocket jump dmg.\nMantreads create greater rocketjumps + negates fall damage.\nRocketJumper replaced with stock Rocket Launcher.");
 			case TFClass_Pyro:	Format(helpstr, sizeof(helpstr), "Pyro:\nThe Flare Gun is replaced by the MegaDetonator.\nAirblasting Bosses builds Rage and lengthens the Vagineer's uber.\nThird Degree gains uber for healers on hit.\nBackburner has Chargeable airblast.\nMannmelter crits do extra damage.");
 			case TFClass_DemoMan:	Format(helpstr, sizeof(helpstr), "Demoman:\nThe shields block at least one hit from Boss melees.\nUsing shields grants crits on all weapons.\nEyelander/reskins gain heads on hit.\nHalf-Zatoichi heals 35HP on hit and can overheal to +25. Honorbound is removed on hit.\nPersian Persuader gives 2x reserve ammo.\nBoots do stomp damage.\nLoch-n-Load does afterburn on hit.\nGrenade Launcher & Cannon reduces explosive jumping if the weapon is active.\nStickyJumper replaced with Sticky Launcher.\nDecapitator taunt gives 4 heads if Successful.");
-			case TFClass_Heavy:	Format(helpstr, sizeof(helpstr), "Heavy:\nNatascha, the KGB, and the Fists of Steel are replaced with the\nRocket Natascha, Gloves of Running, and Fists, respectively.\nThe Gloves of Running are fast but cause you to take more damage.\nThe Holiday Punch will remove any stun on you if you hit Hale while stunned.\nMiniguns get +25% damage boost when being healed by a medic.\nShotguns give damage back as health.\n");
+			case TFClass_Heavy:	Format(helpstr, sizeof(helpstr), "Heavy:\nthe KGB, and the Fists of Steel are replaced with the\nGloves of Running, and Fists, respectively.\nThe Gloves of Running are fast but cause you to take more damage.\nThe Holiday Punch will remove any stun on you if you hit Hale while stunned.\nMiniguns get +25% damage boost when being healed by a medic.\nShotguns give damage back as health.\n");
 			case TFClass_Engineer:	Format(helpstr, sizeof(helpstr), "Engineer:\nWrenches give an extra +25HP.\nGunslinger gives +55HP\nThe Frontier Justice gains crits only while your sentry is targetting Hale.\nThe Eureka Effect is disabled for now.\nTelefrags kill Bosses in one shot.");
 			case TFClass_Medic:	Format(helpstr, sizeof(helpstr), "Medic:\nCharge: Kritz+Uber+Ammo. Charge starts at 40percent.\nCharge lasts for 150 percent after activation.\nSyringe Guns: on hit: +5 to Uber.\nCrossbow: 100 percent crits, +150pct damage, +15 uber on hit.\nUber gives patient infinite ammo until Uber is depleted.\nhaving 90% or higher Uber protects you from one Melee hit from Boss.\nBlutsauger + Overdose are Unlocked + give 1 pct Uber on hit.\nHealing Heavies give them damage boost on Miniguns.");
 			case TFClass_Sniper:	Format(helpstr, sizeof(helpstr), "Sniper:\nJarate removes small pct of Boss Rage.\nBack-equipped weapons are replaced with SMG.\nSniper Rifles causes Certain Bosses to glow. Glow time scales with charge.\nAll Sniper melees climb walls, but has slower rate of fire.\nHuntsman carries 2x more ammo.\n");
@@ -558,7 +665,8 @@ Methods
 };
 
 methodmap BaseBoss < BaseFighter
-/* the methodmap/interface for all bosses to use. Use this if you're making a totally different boss
+/*
+the methodmap/interface for all bosses to use. Use this if you're making a totally different boss
 Property Organization
 Ints
 Bools
@@ -570,6 +678,7 @@ Methods
 	{
 		return view_as< BaseBoss >( BaseFighter(ind, uid) );
 	}
+	
 	///////////////////////////////
 	/* [ P R O P E R T I E S ] */
 
@@ -577,89 +686,188 @@ Methods
 	{
 		public get()
 		{
-			if (Health[ this.index ] < 0)
-				Health[ this.index ] = 0;
-			return Health[ this.index ];
+			int i; hPlayerFields[this.index].GetValue("iHealth", i);
+			if (i < 0)
+				i = 0;
+			return i; //Health[ this.index ];
 		}
-		public set( const int val )		{ Health[ this.index ] = val; }
+		public set( const int val )		//{ Health[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("iHealth", val);
+		}
 	}
 	property int iMaxHealth
 	{
-		public get()				{ return MaxHealth[ this.index ]; }
-		public set( const int val )		{ MaxHealth[ this.index ] = val; }
+		public get()				//{ return MaxHealth[ this.index ]; }
+		{
+			int i; hPlayerFields[this.index].GetValue("iMaxHealth", i);
+			return i;
+		}
+		public set( const int val )		//{ MaxHealth[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("iMaxHealth", val);
+		}
 	}
 	property int iType
 	{
-		public get()				{ return BossType[ this.index ]; }
-		public set( const int val )		{ BossType[ this.index ] = val; }
+		public get()				//{ return BossType[ this.index ]; }
+		{
+			int i; hPlayerFields[this.index].GetValue("iBossType", i);
+			return i;
+		}
+		public set( const int val )		//{ BossType[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("iBossType", val);
+		}
 	}
 	property int iClimbs
 	{
-		public get()				{ return ClimbCount[ this.index ]; }
-		public set( const int val )		{ ClimbCount[ this.index ] = val; }
+		public get()				//{ return ClimbCount[ this.index ]; }
+		{
+			int i; hPlayerFields[this.index].GetValue("iClimbs", i);
+			return i;
+		}
+		public set( const int val )		//{ ClimbCount[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("iClimbs", val);
+		}
 	}
 	property int iStabbed
 	{
-		public get()				{ return Stabbed[ this.index ]; }
-		public set( const int val )		{ Stabbed[ this.index ] = val; }
+		public get()				//{ return Stabbed[ this.index ]; }
+		{
+			int i; hPlayerFields[this.index].GetValue("iStabbed", i);
+			return i;
+		}
+		public set( const int val )		//{ Stabbed[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("iStabbed", val);
+		}
 	}
 	property int iMarketted
 	{
-		public get()				{ return Marketted[ this.index ]; }
-		public set( const int val )		{ Marketted[ this.index ] = val; }
+		public get()				//{ return Marketted[ this.index ]; }
+		{
+			int i; hPlayerFields[this.index].GetValue("iMarketted", i);
+			return i;
+		}
+		public set( const int val )		//{ Marketted[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("iMarketted", val);
+		}
 	}
 	property int iDifficulty
 	{
-		public get()				{ return Difficulty[ this.index ]; }
-		public set( const int val )		{ Difficulty[ this.index ] = val; }
+		public get()				//{ return Difficulty[ this.index ]; }
+		{
+			int i; hPlayerFields[this.index].GetValue("iDifficulty", i);
+			return i;
+		}
+		public set( const int val )		//{ Difficulty[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("iDifficulty", val);
+		}
 	}
 
 	property bool bIsBoss
 	{
-		public get()				{ return IsBoss[ this.index ]; }
-		public set( const bool val )		{ IsBoss[ this.index ] = val; }
+		public get()				//{ return IsBoss[ this.index ]; }
+		{
+			bool i; hPlayerFields[this.index].GetValue("bIsBoss", i);
+			return i;
+		}
+		public set( const bool val )		//{ IsBoss[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("bIsBoss", val);
+		}
 	}
 	property bool bSetOnSpawn
 	{
-		public get()				{ return IsToSpawnAsBoss[ this.index ]; }
-		public set( const bool val )		{ IsToSpawnAsBoss[ this.index ] = val; }
+		public get()				//{ return IsToSpawnAsBoss[ this.index ]; }
+		{
+			bool i; hPlayerFields[this.index].GetValue("bSetOnSpawn", i);
+			return i;
+		}
+		public set( const bool val )		//{ IsToSpawnAsBoss[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("bSetOnSpawn", val);
+		}
 	}
 	property bool bUsedUltimate
 	{
-		public get()				{ return UsedUltimate[ this.index ]; }
-		public set( const bool val )		{ UsedUltimate[ this.index ] = val; }
+		public get()				//{ return UsedUltimate[ this.index ]; }
+		{
+			bool i; hPlayerFields[this.index].GetValue("bUsedUltimate", i);
+			return i;
+		}
+		public set( const bool val )		//{ UsedUltimate[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("bUsedUltimate", val);
+		}
 	}
 
 	property float flSpeed
 	{
-		public get()				{ return fSpeed[ this.index ]; }
-		public set( const float val )		{ fSpeed[ this.index ] = val; }
+		public get()				//{ return fSpeed[ this.index ]; }
+		{
+			float i; hPlayerFields[this.index].GetValue("flSpeed", i);
+			return i;
+		}
+		public set( const float val )		//{ fSpeed[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("flSpeed", val);
+		}
 	}
 	property float flCharge
 	{
-		public get()				{ return flRightClick[ this.index ]; }
-		public set( const float val )		{ flRightClick[ this.index ] = val; }
+		public get()				//{ return flRightClick[ this.index ]; }
+		{
+			float i; hPlayerFields[this.index].GetValue("flRightClick", i);
+			return i;
+		}
+		public set( const float val )		//{ flRightClick[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("flRightClick", val);
+		}
 	}
 	property float flRAGE
 	{
 		public get() {		/* Rage should never exceed or "inceed" 0.0 and 100.0 */
-			if (flRage[ this.index ] > 100.0)
-				flRage[ this.index ] = 100.0;
-			else if (flRage[ this.index ] < 0.0)
-				flRage[ this.index ] = 0.0;
-			return flRage[ this.index ];
+			float i; hPlayerFields[this.index].GetValue("flRAGE", i);
+			if (i > 100.0)
+				i = 100.0;
+			else if (i < 0.0)
+				i = 0.0;
+			return i;
 		}
-		public set( const float val )		{ flRage[ this.index ] = val; }
+		public set( const float val )		//{ flRage[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("flRAGE", val);
+		}
 	}
 	property float flKillSpree
 	{
-		public get()				{ return fKillSpree[ this.index ]; }
-		public set( const float val )		{ fKillSpree[ this.index ] = val; }
+		public get()				//{ return fKillSpree[ this.index ]; }
+		{
+			float i; hPlayerFields[this.index].GetValue("flKillSpree", i);
+			return i;
+		}
+		public set( const float val )		//{ fKillSpree[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("flKillSpree", val);
+		}
 	}
 	property float flWeighDown
 	{
-		public get()				{ return WeighDown[ this.index ]; }
-		public set( const float val )		{ WeighDown[ this.index ] = val; }
+		public get()				//{ return WeighDown[ this.index ]; }
+		{
+			float i; hPlayerFields[this.index].GetValue("flWeighDown", i);
+			return i;
+		}
+		public set( const float val )		//{ WeighDown[ this.index ] = val; }
+		{
+			hPlayerFields[this.index].SetValue("flWeighDown", val);
+		}
 	}
 
 	public void ConvertToBoss()
@@ -688,8 +896,5 @@ Methods
 
 public int HintPanel(Menu menu, MenuAction action, int param1, int param2)
 {
-	if ( not IsValidClient(param1) )
-		return;
 	return;
 }
-//	EOF
