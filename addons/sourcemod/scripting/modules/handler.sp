@@ -681,9 +681,11 @@ public void ManageBossKillPlayer(const BaseBoss attacker, const BaseBoss victim,
 		switch (owner.iType) {
 			case -1: {}
 			case PlagueDoc: {
-				victim.iOwnerBoss = owner.userid;
-				victim.ConvertToMinion(0.4);
-			}
+				if ( !(deathflags & TF_DEATHFLAG_DEADRINGER) ) {
+					victim.iOwnerBoss = owner.userid;
+					victim.ConvertToMinion(0.4);
+				}
+			}		
 		}
 	}
 	if (victim.bIsMinion) {
