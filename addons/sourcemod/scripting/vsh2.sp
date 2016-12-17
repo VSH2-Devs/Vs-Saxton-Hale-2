@@ -627,7 +627,7 @@ public Action Timer_PlayerThink(Handle hTimer) //the main 'mechanics' of bosses
 			ManageBossThink(player); // in handler.sp
 			SetEntityHealth(i, player.iHealth);
 			if (player.iHealth <= 0)	// BUG PATCH: Bosses are not being 100% dead when the iHealth is at 0...
-				ForcePlayerSuicide(i);
+				SDKHooks_TakeDamage(player.index, 0, 0, 100.0, DMG_DIRECT, _, _, _); //ForcePlayerSuicide(i);
 		}
 		else ManageFighterThink(player);
 	}
