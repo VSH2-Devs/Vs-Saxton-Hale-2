@@ -103,7 +103,7 @@ public void ManageOnBossSelected(const BaseBoss base)
 	int extraBosses = gamemode.iPlaying / 6;
 	extraBosses = (extraBosses > 1) ? GetRandomInt(1, extraBosses) : extraBosses;
 	while (extraBosses-- > 0)
-		gamemode.FindNextBoss().MakeBossAndSwitch(GetRandomInt(Hale, MAXBOSS), true);
+		gamemode.FindNextBoss().MakeBossAndSwitch(GetRandomInt(Hale, MAXBOSS), false);
 }
 
 public void ManageOnTouchPlayer(const BaseBoss base, const BaseBoss victim)
