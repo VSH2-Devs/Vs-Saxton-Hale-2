@@ -656,6 +656,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 public void ManageBossKillPlayer(const BaseBoss attacker, const BaseBoss victim, Event event)	// To lazy to code this better lol
 {
 	//int dmgbits = event.GetInt("damagebits");
+	int deathflags = event.GetInt("death_flags");	
 	if (victim.bIsBoss)	// If victim is a boss, kill him off
 		SetPawnTimer(_BossDeath, 0.1, victim.userid);
 
@@ -664,7 +665,6 @@ public void ManageBossKillPlayer(const BaseBoss attacker, const BaseBoss victim,
 			case -1: {}
 			case Hale:
 			{
-				int deathflags = event.GetInt("death_flags");
 				if ( deathflags & TF_DEATHFLAG_DEADRINGER )
 					event.SetString("weapon", "fists");
 				else ToCHale(attacker).KilledPlayer(victim, event);
