@@ -185,6 +185,9 @@ methodmap CPlague < BaseBoss
 		//GLITCH: suiciding allows boss to become own minion.
 		if (this.userid is victim.userid)
 			return;
+		// PATCH: Hitting spy with active deadringer turns them into Minion...
+		else if (event.GetInt("death_flags") & TF_DEATHFLAG_DEADRINGER)
+			return ;
 		victim.iOwnerBoss = this.userid;
 		victim.ConvertToMinion(0.4);
 	}
