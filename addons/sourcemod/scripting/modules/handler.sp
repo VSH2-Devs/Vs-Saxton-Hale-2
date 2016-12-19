@@ -682,6 +682,8 @@ public void ManageBossKillPlayer(const BaseBoss attacker, const BaseBoss victim,
 			case -1: {}
 			case PlagueDoc: {
 				if ( !(deathflags & TF_DEATHFLAG_DEADRINGER) ) {
+					if (TF2_IsPlayerInCondition(victim.index, TFCond_Disguised))
+						TF2_RemovePlayerDisguise(victim.index); //event.SetInt("userid", victim.userid);	
 					victim.iOwnerBoss = owner.userid;
 					victim.ConvertToMinion(0.4);
 				}
