@@ -182,12 +182,15 @@ methodmap CPlague < BaseBoss
 	}
 	public void KilledPlayer(const BaseBoss victim, Event event)
 	{
-		//GLITCH: suiciding allows boss to become own minion.
+		// GLITCH: suiciding allows boss to become own minion.
 		if (this.userid is victim.userid)
 			return;
 		// PATCH: Hitting spy with active deadringer turns them into Minion...
 		else if (event.GetInt("death_flags") & TF_DEATHFLAG_DEADRINGER)
 			return ;
+		// PATCH: killing spy with teammate disguise kills both spy and the teammate he disguised as...
+		else if (TF2_IsPlayerInCondition(victim.index, TFCond_Disguised))
+			TF2_RemovePlayerDisguise(victim.index); //event.SetInt("userid", victim.userid);
 		victim.iOwnerBoss = this.userid;
 		victim.ConvertToMinion(0.4);
 	}
