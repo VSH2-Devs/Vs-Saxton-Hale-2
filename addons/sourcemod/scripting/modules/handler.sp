@@ -618,14 +618,14 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 				{
 					if (damagetype & DMG_CRIT)
 						damagetype &= ~DMG_CRIT;
-					damage *= 0.5;
+					damage = 85;
 					return Plugin_Changed;
 				}
 				if (TF2_IsPlayerInCondition(client, TFCond_Cloaked) or TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
 				{
 					if (damagetype & DMG_CRIT)
 						damagetype &= ~DMG_CRIT;
-					damage *= 0.5;
+					damage = 60;
 					return Plugin_Changed;
 				}
 			}
