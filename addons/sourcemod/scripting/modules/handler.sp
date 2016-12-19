@@ -1212,7 +1212,7 @@ public void ManageRoundEndBossInfo(ArrayList bosses, bool bossWon) //(const Base
 }
 public void ManageLastPlayer()
 {
-	BaseBoss currBoss = gamemode.GetRandomBoss(false);
+	BaseBoss currBoss = gamemode.GetRandomBoss(true);
 	switch (currBoss.iType) {
 		case -1: {}
 		case Hale:	ToCHale(currBoss).LastPlayerSoundClip();
