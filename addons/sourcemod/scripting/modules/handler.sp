@@ -1,5 +1,5 @@
 /*
-ALL NON-BOSS AND NON-MINION RELATED CODE IS NEAR THE BOTTOM. HAVE FUN CODING!
+ALL NON-BOSS AND NON-MINION RELATED CODE IS AT THE BOTTOM. HAVE FUN CODING!
 */
 
 
@@ -618,14 +618,14 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 				{
 					if (damagetype & DMG_CRIT)
 						damagetype &= ~DMG_CRIT;
-					damage = 85;
+					damage = 85.0;
 					return Plugin_Changed;
 				}
 				if (TF2_IsPlayerInCondition(client, TFCond_Cloaked) or TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
 				{
 					if (damagetype & DMG_CRIT)
 						damagetype &= ~DMG_CRIT;
-					damage = 60;
+					damage = 60.0;
 					return Plugin_Changed;
 				}
 			}
@@ -1374,6 +1374,8 @@ public void _SkipBossPanel()
 	for (int j=0; j<3; ++j)
 	{
 		upnext[j] = gamemode.FindNextBoss();
+		if (!upnext[j].userid)
+			continue;
 		upnext[j].bSetOnSpawn = true;
 		if (!j)
 			SkipBossPanelNotify(upnext[j].index);
