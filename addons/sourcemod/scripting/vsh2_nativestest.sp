@@ -35,6 +35,21 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_testvsh2_natives", CommandInfo, "clever command explanation heer.");
 }
 
+/* YOU NEED TO USE OnAllPluginsLoaded() BECAUSE WE NEED TO MAKE SURE THE VSH2 PLUGIN LOADS FIRST */
+
+public void OnAllPluginsLoaded()
+{
+	if (!VSH2_HookEx(OnCallDownloads, OnDownloadsCalled))
+		LogError("Error loading OnCallDownloads forwards for VSH2 Test plugin.");
+}
+
+public void OnDownloadsCalled()
+{
+	for (int i=0 ; i < 20 ; i += 5) {
+		PrintToServer("Forward OnDownloadsCalled called");
+	}
+}
+
 public Action CommandInfo(int client, int args)
 {	PrintToConsole(client, "calling natives command");
 	VSH2Player player = VSH2Player(client);
