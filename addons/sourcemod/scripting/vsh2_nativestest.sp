@@ -14,7 +14,7 @@ methodmap VSH2Derived < VSH2Player
 	
 	property int iNewProperty {
 		public get() {
-			return this.GetProperty("iNewProperty", i);
+			return this.GetProperty("iNewProperty");
 		}
 		public set(const int i) {
 			this.SetProperty("iNewProperty", i);
