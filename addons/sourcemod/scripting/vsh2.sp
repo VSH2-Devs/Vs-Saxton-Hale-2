@@ -1200,7 +1200,7 @@ public int Native_VSH2_setProperty(Handle plugin, int numParams)
 
 public int Native_Hook(Handle plugin, int numParams)
 {
-	VSH2HookType vsh2Hook = GetNativeCell(1);
+	int vsh2Hook = GetNativeCell(1);
 
 	Function Func = GetNativeFunction(2);
 	if (g_hForwards[vsh2Hook] != null)
@@ -1209,7 +1209,7 @@ public int Native_Hook(Handle plugin, int numParams)
 
 public int Native_HookEx(Handle plugin, int numParams)
 {
-	VSH2HookType vsh2Hook = GetNativeCell(1);
+	int vsh2Hook = GetNativeCell(1);
 	
 	Function Func = GetNativeFunction(2);
 	if (g_hForwards[vsh2Hook] != null)
@@ -1219,14 +1219,14 @@ public int Native_HookEx(Handle plugin, int numParams)
 
 public int Native_Unhook(Handle plugin, int numParams)
 {
-	VSH2HookType vsh2Hook = GetNativeCell(1);
+	int vsh2Hook = GetNativeCell(1);
 
 	if (g_hForwards[vsh2Hook] != null)
 		g_hForwards[vsh2Hook].Remove(plugin, GetNativeFunction(2));
 }
 public int Native_UnhookEx(Handle plugin, int numParams)
 {
-	VSH2HookType vsh2Hook = GetNativeCell(1);
+	int vsh2Hook = GetNativeCell(1);
 
 	if(g_hForwards[vsh2Hook] != null)
 		return g_hForwards[vsh2Hook].Remove(plugin, GetNativeFunction(2));
