@@ -5,6 +5,7 @@
 #include <tf2items>
 #include <sdkhooks>
 #include <morecolors>
+#include <vsh2>
 
 #undef REQUIRE_PLUGIN
 #tryinclude <tf2attributes>
