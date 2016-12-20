@@ -18,7 +18,7 @@
 #pragma semicolon			1
 #pragma newdecls			required
 
-#define PLUGIN_VERSION			"1.6.1 BETA"
+#define PLUGIN_VERSION			"1.6.2 BETA"
 #define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
 #define CODEFRAMES			(1.0/30.0)	/* 30 frames per second means 0.03333 seconds or 33.33 ms */
 
@@ -1106,6 +1106,12 @@ public int RegisterPlugin(const Handle pluginhndl, const char modulename[64] )
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	CreateNative("VSH2_RegisterPlugin", Native_RegisterPlugin);
+	CreateNative("VSH2_Hook", Native_Hook);
+	CreateNative("VSH2_HookEx", Native_HookEx);
+	
+	CreateNative("VSH2_Unhook", Native_Unhook);
+	CreateNative("VSH2_UnhookEx", Native_UnhookEx);
+	
 	CreateNative("VSH2Player.VSH2Player", Native_VSH2Instance);
 	
 	CreateNative("VSH2Player.userid.get", Native_VSH2GetUserid);
@@ -1114,7 +1120,39 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2Player.GetProperty", Native_VSH2_getProperty);
 	CreateNative("VSH2Player.SetProperty", Native_VSH2_setProperty);
 	
-
+	CreateNative("VSH2Player.ConvertToMinion", Native_VSH2_ConvertToMinion);
+	CreateNative("VSH2Player.SpawnWeapon", Native_VSH2_SpawnWep);
+	
+	/*CreateNative("VSH2Player.getAmmotable", Native_VSH2_getAmmotable);
+	CreateNative("VSH2Player.setAmmotable", Native_VSH2_setAmmotable);
+	CreateNative("VSH2Player.getCliptable", Native_VSH2_getCliptable);
+	CreateNative("VSH2Player.setCliptable", Native_VSH2_setCliptable);*/
+	CreateNative("VSH2Player.GetWeaponSlotIndex", Native_VSH2_GetWeaponSlotIndex);
+	CreateNative("VSH2Player.SetWepInvis", Native_VSH2_SetWepInvis);
+	CreateNative("VSH2Player.SetOverlay", Native_VSH2_SetOverlay);
+	CreateNative("VSH2Player.TeleToSpawn", Native_VSH2_TeleToSpawn);
+	CreateNative("VSH2Player.IncreaseHeadCount", Native_VSH2_IncreaseHeadCount);
+	CreateNative("VSH2Player.SpawnSmallHealthPack", Native_VSH2_SpawnSmallHealthPack);
+	CreateNative("VSH2Player.ForceTeamChange", Native_VSH2_ForceTeamChange);
+	CreateNative("VSH2Player.ClimbWall", Native_VSH2_ClimbWall);
+	CreateNative("VSH2Player.HelpPanelClass", Native_VSH2_HelpPanelClass);
+	CreateNative("VSH2Player.ConvertToBoss", Native_VSH2_ConvertToBoss);
+	CreateNative("VSH2Player.GiveRage", Native_VSH2_GiveRage);
+	CreateNative("VSH2Player.MakeBossAndSwitch", Native_VSH2_MakeBossAndSwitch);
+	
+	CreateNative("VSH2GameMode_GetProperty", Native_VSH2GameMode_GetProperty);
+	CreateNative("VSH2GameMode_SetProperty", Native_VSH2GameMode_SetProperty);
+	CreateNative("VSH2GameMode_FindNextBoss", Native_VSH2GameMode_FindNextBoss);
+	CreateNative("VSH2GameMode_GetRandomBoss", Native_VSH2GameMode_GetRandomBoss);
+	CreateNative("VSH2GameMode_GetBossByType", Native_VSH2GameMode_GetBossByType);
+	CreateNative("VSH2GameMode_CountMinions", Native_VSH2GameMode_CountMinions);
+	CreateNative("VSH2GameMode_CountBosses", Native_VSH2GameMode_CountBosses);
+	CreateNative("VSH2GameMode_GetTotalBossHealth", Native_VSH2GameMode_GetTotalBossHealth);
+	CreateNative("VSH2GameMode_SearchForItemPacks", Native_VSH2GameMode_SearchForItemPacks);
+	CreateNative("VSH2GameMode_UpdateBossHealth", Native_VSH2GameMode_UpdateBossHealth);
+	CreateNative("VSH2GameMode_GetBossType", Native_VSH2GameMode_GetBossType);
+	CreateNative("VSH2GameMode_GetTotalRedPlayers", Native_VSH2GameMode_GetTotalRedPlayers);
+	
 	RegPluginLibrary("VSH2");
 
 	return APLRes_Success;
@@ -1195,4 +1233,169 @@ public int Native_UnhookEx(Handle plugin, int numParams)
 	if(g_hForwards[vsh2Hook] != null)
 		return g_hForwards[vsh2Hook].Remove(plugin, GetNativeFunction(2));
 	return 0;
+}
+
+public int Native_VSH2_ConvertToMinion(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	float spawntime = view_as< float >( GetNativeCell(2) );
+	player.ConvertToMinion(spawntime);
+}
+public int Native_VSH2_SpawnWep(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	char classname[64]; GetNativeString(2, classname, 64);
+	int itemindex = GetNativeCell(3);
+	int level = GetNativeCell(4);
+	int quality = GetNativeCell(5);
+	char attributes[128]; GetNativeString(6, attributes, 128);
+	return player.SpawnWeapon(classname, itemindex, level, quality, attributes);
+}
+
+public int Native_VSH2_GetWeaponSlotIndex(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	int slot = GetNativeCell(2);
+	player.GetWeaponSlotIndex(slot);
+}
+
+public int Native_VSH2_SetWepInvis(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	int alpha = GetNativeCell(2);
+	player.SetWepInvis(alpha);
+}
+
+public int Native_VSH2_SetOverlay(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	char overlay[256]; GetNativeString(2, overlay, 256);
+	player.SetOverlay(overlay);
+}
+
+public int Native_VSH2_TeleToSpawn(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	int team = GetNativeCell(2);
+	player.TeleToSpawn(team);
+}
+
+public int Native_VSH2_IncreaseHeadCount(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	player.IncreaseHeadCount();
+}
+
+public int Native_VSH2_SpawnSmallHealthPack(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	int team = GetNativeCell(2);
+	player.SpawnSmallHealthPack(team);
+}
+
+public int Native_VSH2_ForceTeamChange(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	int team = GetNativeCell(2);
+	player.ForceTeamChange(team);
+}
+
+public int Native_VSH2_ClimbWall(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	int wep = GetNativeCell(2);
+	float spawntime = view_as< float >( GetNativeCell(3) );
+	float healthdmg = view_as< float >( GetNativeCell(4) );
+	bool attackdelay = GetNativeCell(5);
+	player.ClimbWall(wep, spawntime, healthdmg, attackdelay);
+}
+
+public int Native_VSH2_HelpPanelClass(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	player.HelpPanelClass();
+}
+
+public int Native_VSH2_ConvertToBoss(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	player.ConvertToBoss();
+}
+
+public int Native_VSH2_GiveRage(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	int dmg = GetNativeCell(2);
+	player.GiveRage(dmg);
+}
+
+public int Native_VSH2_MakeBossAndSwitch(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	int bossid = GetNativeCell(2);
+	bool callEvent = GetNativeCell(2);
+	player.MakeBossAndSwitch(bossid, callEvent);
+}
+
+public int Native_VSH2GameMode_GetProperty(Handle plugin, int numParams)
+{
+	char prop_name[64]; GetNativeString(1, prop_name, 64);
+	any item = GetNativeCellRef(2);
+	if (hGameModeFields.GetValue(prop_name, item)) {
+		SetNativeCellRef(2, item);
+		return true;
+	}
+	return false;
+}
+public int Native_VSH2GameMode_SetProperty(Handle plugin, int numParams)
+{
+	char prop_name[64]; GetNativeString(1, prop_name, 64);
+	any item = GetNativeCell(2);
+	hGameModeFields.SetValue(prop_name, item);
+}
+public int Native_VSH2GameMode_GetRandomBoss(Handle plugin, int numParams)
+{
+	bool alive = GetNativeCell(1);
+	return gamemode.GetRandomBoss(alive);
+}
+public int Native_VSH2GameMode_GetBossByType(Handle plugin, int numParams)
+{
+	bool alive = GetNativeCell(1);
+	int bossid = GetNativeCell(2);
+	return gamemode.GetBossByType(alive, bossid);
+}
+public int Native_VSH2GameMode_FindNextBoss(Handle plugin, int numParams)
+{
+	return gamemode.FindNextBoss();
+}
+public int Native_VSH2GameMode_CountMinions(Handle plugin, int numParams)
+{
+	bool alive = GetNativeCell(1);
+	return gamemode.CountMinions(alive);
+}
+public int Native_VSH2GameMode_CountBosses(Handle plugin, int numParams)
+{
+	bool alive = GetNativeCell(1);
+	return gamemode.CountBosses(alive);
+}
+public int Native_VSH2GameMode_GetTotalBossHealth(Handle plugin, int numParams)
+{
+	return gamemode.GetTotalBossHealth();
+}
+public int Native_VSH2GameMode_SearchForItemPacks(Handle plugin, int numParams)
+{
+	gamemode.SearchForItemPacks();
+}
+public int Native_VSH2GameMode_UpdateBossHealth(Handle plugin, int numParams)
+{
+	gamemode.UpdateBossHealth();
+}
+public int Native_VSH2GameMode_GetBossType(Handle plugin, int numParams)
+{
+	gamemode.GetBossType();
+}
+
+public int Native_VSH2GameMode_GetTotalRedPlayers(Handle plugin, int numParams)
+{
+	return gamemode.iPlaying;
 }
