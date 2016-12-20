@@ -18,7 +18,7 @@
 #pragma semicolon			1
 #pragma newdecls			required
 
-#define PLUGIN_VERSION			"1.6.2 BETA"
+#define PLUGIN_VERSION			"1.6.3 BETA"
 #define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
 #define CODEFRAMES			(1.0/30.0)	/* 30 frames per second means 0.03333 seconds or 33.33 ms */
 
@@ -1185,12 +1185,10 @@ public int Native_VSH2_getProperty(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
 	char prop_name[64]; GetNativeString(2, prop_name, 64);
-	any item = GetNativeCellRef(3);
-	if (hPlayerFields[player.index].GetValue(prop_name, item)) {
-		SetNativeCellRef(3, item);
-		return true;
-	}
-	return false;
+	any item;
+	if (hPlayerFields[player.index].GetValue(prop_name, item))
+		return item;
+	return 0;
 }
 public int Native_VSH2_setProperty(Handle plugin, int numParams)
 {
@@ -1340,12 +1338,11 @@ public int Native_VSH2_MakeBossAndSwitch(Handle plugin, int numParams)
 public int Native_VSH2GameMode_GetProperty(Handle plugin, int numParams)
 {
 	char prop_name[64]; GetNativeString(1, prop_name, 64);
-	any item = GetNativeCellRef(2);
+	any item;
 	if (hGameModeFields.GetValue(prop_name, item)) {
-		SetNativeCellRef(2, item);
-		return true;
+		return item;
 	}
-	return false;
+	return 0;
 }
 public int Native_VSH2GameMode_SetProperty(Handle plugin, int numParams)
 {
@@ -1356,17 +1353,17 @@ public int Native_VSH2GameMode_SetProperty(Handle plugin, int numParams)
 public int Native_VSH2GameMode_GetRandomBoss(Handle plugin, int numParams)
 {
 	bool alive = GetNativeCell(1);
-	return gamemode.GetRandomBoss(alive);
+	return view_as< int >(gamemode.GetRandomBoss(alive));
 }
 public int Native_VSH2GameMode_GetBossByType(Handle plugin, int numParams)
 {
 	bool alive = GetNativeCell(1);
 	int bossid = GetNativeCell(2);
-	return gamemode.GetBossByType(alive, bossid);
+	return view_as< int >(gamemode.GetBossByType(alive, bossid));
 }
 public int Native_VSH2GameMode_FindNextBoss(Handle plugin, int numParams)
 {
-	return gamemode.FindNextBoss();
+	return view_as< int >(gamemode.FindNextBoss());
 }
 public int Native_VSH2GameMode_CountMinions(Handle plugin, int numParams)
 {
