@@ -3,6 +3,40 @@
 #endif
 #define _vsh2_included
 
+enum VSH2HookType {
+	OnCallDownloads,
+	OnBossSelected,
+	OnTouchPlayer,
+	OnTouchBuilding,
+	OnBossThink,
+	OnBossModelTimer,
+	OnBossDeath,
+	OnBossEquipped,
+	OnBossInitialized,
+	OnMinionInitialized,
+	OnBossPlayIntro,
+	OnBossTakeDamage,
+	OnBossDealDamage,
+	OnPlayerKilled,
+	OnPlayerAirblasted,
+	OnTraceAttack,
+	OnBossMedicCall,
+	OnBossTaunt,
+	OnBossKillBuilding,
+	OnBossJarated,
+	OnHookSound,
+	OnMessageIntro,
+	OnBossPickUpItem,
+	OnVariablesReset,
+	OnUberDeployed,
+	OnMusic,
+	OnRoundEndInfo,
+	OnLastPlayer,
+	OnBossHealthCheck,
+	OnControlPointCapped,
+	OnPrepRedTeam,
+	OnRedPlayerThink
+};
 
 methodmap VSH2Player	
 {
@@ -226,8 +260,9 @@ methodmap VSH2Player
 	}
 	*/
 	
-	//public native void ConvertToMinion(const float respawn_time);
 };
+
+
 /**
  * Registers a plugin to be able to use VSH2's forwards
  * NOTE: The purpose of this native is to register boss subplugins, you don't need to register plugins to use forwards, simply hook what forward you need.
@@ -258,106 +293,5 @@ public __pl_vsh2_SetNTVOptional()
 	
 	MarkNativeAsOptional("VSH2Player.GetProperty");
 	MarkNativeAsOptional("VSH2Player.SetProperty");
-	/*
-	MarkNativeAsOptional("VSH2Player.iQueue.get");
-	MarkNativeAsOptional("VSH2Player.iQueue.set");
-	
-	MarkNativeAsOptional("VSH2Player.iPresetType.get");
-	MarkNativeAsOptional("VSH2Player.iPresetType.set");
-	
-	MarkNativeAsOptional("VSH2Player.iKills.get");
-	MarkNativeAsOptional("VSH2Player.iKills.set");
-	
-	MarkNativeAsOptional("VSH2Player.iHits.get");
-	MarkNativeAsOptional("VSH2Player.iHits.set");
-	
-	MarkNativeAsOptional("VSH2Player.iLives.get");
-	MarkNativeAsOptional("VSH2Player.iLives.set");
-	
-	MarkNativeAsOptional("VSH2Player.iState.get");
-	MarkNativeAsOptional("VSH2Player.iState.set");
-	
-	MarkNativeAsOptional("VSH2Player.iDamage.get");
-	MarkNativeAsOptional("VSH2Player.iDamage.set");
-	
-	MarkNativeAsOptional("VSH2Player.iAirDamage.get");
-	MarkNativeAsOptional("VSH2Player.iAirDamage.set");
-	
-	MarkNativeAsOptional("VSH2Player.iSongPick.get");
-	MarkNativeAsOptional("VSH2Player.iSongPick.set");
-	
-	MarkNativeAsOptional("VSH2Player.iHealTarget.get");
-	
-	MarkNativeAsOptional("VSH2Player.iOwnerBoss.get");
-	MarkNativeAsOptional("VSH2Player.iOwnerBoss.set");
-	
-	MarkNativeAsOptional("VSH2Player.iUberTarget.get");
-	MarkNativeAsOptional("VSH2Player.iUberTarget.set");
-	
-	MarkNativeAsOptional("VSH2Player.iGlow.get");
-	MarkNativeAsOptional("VSH2Player.iGlow.set");
-	
-	MarkNativeAsOptional("VSH2Player.bNearDispenser.get");
-	
-	MarkNativeAsOptional("VSH2Player.bIsMinion.get");
-	MarkNativeAsOptional("VSH2Player.bIsMinion.set");
-	
-	MarkNativeAsOptional("VSH2Player.bInJump.get");
-	MarkNativeAsOptional("VSH2Player.bInJump.set");
-	
-	MarkNativeAsOptional("VSH2Player.flGlowtime.get");
-	MarkNativeAsOptional("VSH2Player.flGlowtime.set");
-	
-	MarkNativeAsOptional("VSH2Player.flLastHit.get");
-	MarkNativeAsOptional("VSH2Player.flLastHit.set");
-	
-	MarkNativeAsOptional("VSH2Player.flLastShot.get");
-	MarkNativeAsOptional("VSH2Player.flLastShot.set");
-	
-	MarkNativeAsOptional("VSH2Player.iHealth.get");
-	MarkNativeAsOptional("VSH2Player.iHealth.set");
-	
-	MarkNativeAsOptional("VSH2Player.iMaxHealth.get");
-	MarkNativeAsOptional("VSH2Player.iMaxHealth.set");
-	
-	MarkNativeAsOptional("VSH2Player.iType.get");
-	MarkNativeAsOptional("VSH2Player.iType.set");
-	
-	MarkNativeAsOptional("VSH2Player.iClimbs.get");
-	MarkNativeAsOptional("VSH2Player.iClimbs.set");
-	
-	MarkNativeAsOptional("VSH2Player.iStabbed.get");
-	MarkNativeAsOptional("VSH2Player.iStabbed.set");
-	
-	MarkNativeAsOptional("VSH2Player.iMarketted.get");
-	MarkNativeAsOptional("VSH2Player.iMarketted.set");
-	
-	MarkNativeAsOptional("VSH2Player.iDifficulty.get");
-	MarkNativeAsOptional("VSH2Player.iDifficulty.set");
-	
-	MarkNativeAsOptional("VSH2Player.bIsBoss.get");
-	MarkNativeAsOptional("VSH2Player.bIsBoss.set");
-	
-	MarkNativeAsOptional("VSH2Player.bSetOnSpawn.get");
-	MarkNativeAsOptional("VSH2Player.bSetOnSpawn.set");
-	
-	MarkNativeAsOptional("VSH2Player.bUsedUltimate.get");
-	MarkNativeAsOptional("VSH2Player.bUsedUltimate.set");
-	
-	MarkNativeAsOptional("VSH2Player.flSpeed.get");
-	MarkNativeAsOptional("VSH2Player.flSpeed.set");
-	
-	MarkNativeAsOptional("VSH2Player.flCharge.get");
-	MarkNativeAsOptional("VSH2Player.flCharge.set");
-	
-	MarkNativeAsOptional("VSH2Player.flRAGE.get");
-	MarkNativeAsOptional("VSH2Player.flRAGE.set");
-	
-	MarkNativeAsOptional("VSH2Player.flKillSpree.get");
-	MarkNativeAsOptional("VSH2Player.flKillSpree.set");
-	
-	MarkNativeAsOptional("VSH2Player.flWeighDown.get");
-	MarkNativeAsOptional("VSH2Player.flWeighDown.set");
-	*/
 }
 #endif
