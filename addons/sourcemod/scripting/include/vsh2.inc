@@ -3,6 +3,119 @@
 #endif
 #define _vsh2_included
 
+methodmap VSH2Player	
+{
+	/** [ C O N S T R U C T O R ]
+	 * Constructs an instance of the BaseBoss internal methodmap
+	 * @param index			index (or the userid) of a player
+	 * @param userid		if using userid instead of player index, set this param to true
+	 * @return			a player instance of the VSH2Player methodmap
+	*/
+	public native VSH2Player(const int index, bool userid=false);
+
+	/* **** **** [ P R O P E R T I E S ] **** **** */
+	
+	/**
+	 * gets the userid of the vsh2 player instance
+	 * @return			the bare player userid integer
+	*/
+	property int userid {
+		public native get();
+	}
+	
+	/**
+	 * gets the index of the vsh2 player instance
+	 * @return			the bare player index integer
+	*/
+	property int index {
+		public native get();
+	}
+	
+	/**
+         * sets the property of the internal VSH2 methodmap
+         * NOTE: You can use this to create new properties which GetProperty can access!
+	 * @param prop_name		name of property you want to access data from.
+	 * @param item			reference to use of the variable to overwrite with data from the property.
+         * @return		
+        */
+	public native bool GetProperty(const char prop_name[64], any& item);
+	
+	/**
+         * sets the property of the internal VSH2 methodmap
+	 * NOTE: You can use this to create new properties which GetProperty can access!
+	 * @param prop_name		name of the property you want to override data from (works like StringMap).
+	 * @param value			data you want the property to hold.
+         * @noreturn
+        */	
+	public native void SetProperty(const char prop_name[64], any value);
+
+	/*		AVAILABLE PROPERTIES
+	property int iQueue
+	property int iPresetType
+	property int iKills
+	property int iHits
+	property int iLives
+	property int iState
+	property int iDamage
+	property int iAirDamage
+	property int iSongPick
+	property int iHealTarget	// returns -1 is there's no valid player
+	property int iOwnerBoss
+	property int iUberTarget	// please use userid on this; convert to client index if you want but userid is safer
+	property int bGlow		// use like a bool
+	property bool bNearDispenser
+	property bool bIsMinion
+	property bool bInJump
+	property float flGlowtime
+	property float flLastHit
+	property float flLastShot
+	
+	// 	ALL PROPERTIES AFTER THIS COMMENT ONLY ACCOUNT FOR BOSSES BUT CAN STILL APPLY ON NON-BOSSES AND MINIONS
+	property int iHealth
+	property int iMaxHealth
+	property int iType
+	property int iClimbs
+	property int iStabbed
+	property int iMarketted
+	property int iDifficulty
+	property bool bIsBoss
+	property bool bSetOnSpawn
+	property bool bUsedUltimate	// Not an overwatch reference lol; purpose is for a use-once ability but you can reset it
+	property float flSpeed	// if you boss needs a set amount of speed, use this obviously
+	property float flCharge
+	property float flRAGE
+	property float flKillSpree
+	property float flWeighDown
+	*/
+		
+	public native void ConvertToMinion(const float spawntime);
+	public native int SpawnWeapon(char[] name, const int index, const int level, const int qual, char[] att);
+	public native int GetWeaponSlotIndex(const int slot);
+	public native void SetWepInvis(const int alpha);
+	public native void SetOverlay(const char[] strOverlay);
+	public native void TeleToSpawn(int team=0);
+	public native void IncreaseHeadCount();
+	public native void SpawnSmallHealthPack(int ownerteam=0);
+	public native void ForceTeamChange(const int team);
+	public native void ClimbWall(const int weapon, const float upwardVel, const float health, const bool attackdelay);
+	public native void HelpPanelClass();
+	
+	// Boss oriented natives
+	public native void ConvertToBoss();
+	public native void GiveRage(const int damage);
+	public native void MakeBossAndSwitch(const int type, const bool callEvent);
+};
+
+
+/**
+ * Registers a plugin to be able to use VSH2's forwards
+ * NOTE: The purpose of this native is to register boss subplugins, you don't need to register plugins to use forwards, simply hook what forward you need.
+ * @param plugin_name			module name you want your calling plugin to be identified under
+ * @return				integer of the plugin array index
+ */
+native int VSH2_RegisterPlugin(const char plugin_name[64]);
+
+
 enum VSH2HookType {
 	OnCallDownloads,
 	OnBossSelected,
@@ -38,238 +151,54 @@ enum VSH2HookType {
 	OnRedPlayerThink
 };
 
-methodmap VSH2Player	
-{
-	/** [ C O N S T R U C T O R ]
-	 * Constructs an instance of the BaseBoss internal methodmap
-	 * @param index			index (or the userid) of a player
-	 * @param userid		if using userid instead of player index, set this param to true
-	 * @return			a player instance of the VSH2Player methodmap
-	*/
-	public native VSH2Player(const int index, bool userid=false);
+/*
+	IF YOU'RE USING THE HOOKING SYSTEM FOR A BOSS, YOU HAVE TO REGISTER YOUR PLUGIN WITH VSH2
+*/
 
-	/* **** **** [ P R O P E R T I E S ] **** **** */
-	
-	/**
-	 * gets the userid of the vsh2 player instance
-	 * @return			the bare player userid integer
-	*/
-	property int userid {
-		public native get();
-	}
-	
-	/**
-	 * gets the index of the vsh2 player instance
-	 * @return			the bare player index integer
-	*/
-	property int index {
-		public native get();
-	}
-	
-	/**
-         * sets the property of the internal VSH2 methodmap
-         * NOTE: You can use this to create new properties which GetProperty can access!
-	 * @param prop_name		name of property you want to access data from.
-	 * @param item			reference to use of the variable to overwrite with data from the property.
-         * @return		
-        */      	
-	public native bool GetProperty(const char prop_name[64], any& item);
-	
-	/**
-         * sets the property of the internal VSH2 methodmap
-	 * NOTE: You can use this to create new properties which GetProperty can access!
-	 * @param prop_name		name of the property you want to override data from (works like StringMap).
-	 * @param value			data you want the property to hold.
-         * @noreturn
-        */	
-	public native void SetProperty(const char prop_name[64], any value);
+typeset VSH2HookCB {		// Available Callbacks
+	function void (const int iModuleIndex, const VSH2Player Player);
 
-	/*		AVAILABLE PROPS
-	property int iQueue
-	{
-		public native get();
-		public native set( const int queue );
-	}
-	property int iPresetType
-	{
-		public native get();
-		public native set( const int bosstype );
-	}
-	property int iKills
-	{
-		public native get();
-		public native set( const int kills )
-	}
-	property int iHits
-	{
-		public native get();
-		public native set( const int hits );
-	}
-	property int iLives
-	{
-		public native get();
-		public native set( const int lives );
-	}
-	property int iState
-	{
-		public native get();
-		public native set( const int boss_state );
-	}
-	property int iDamage
-	{
-		public native get();
-		public native set( const int damage );
-	}
-	property int iAirDamage
-	{
-		public native get();
-		public native set( const int airstrike_damage );
-	}
-	property int iSongPick
-	{
-		public native get();
-		public native set( const int song_index );
-	}
-	property int iHealTarget	// returns -1 is there's no valid player
-	{
-		public native get();
-	}
-	property int iOwnerBoss
-	{
-		public native get();
-		public native set( const int boss_userid );
-	}
-	property int iUberTarget	// please use userid on this; convert to client index if you want but userid is safer
-	{
-		public native get();
-		public native set( const int userid );
-	}
-	property int bGlow		// use like a bool
-	{
-		public native get();
-		public native set( const int isGlow );
-	}
-	property bool bNearDispenser
-	{
-		public native get();
-	}
-	property bool bIsMinion
-	{
-		public native get();
-		public native set( const bool is_minion );
-	}
-	property bool bInJump
-	{
-		public native get();
-		public native set( const bool is_jumping );
-	}
+	function void (const int iModuleIndex, const VSH2Player Victim, const VSH2Player Attacker);
 
-	property float flGlowtime
-	{
-		public native get();
-		public native set( const float glowtime );
-	}
-	property float flLastHit
-	{
-		public native get();
-		public native set( const float lasthit_time );
-	}
-	property float flLastShot
-	{
-		public native get();
-		public native set( const float last_time_player_shot_something );
-	}
-	
-	// 	ALL PROPERTIES AFTER THIS COMMENT ONLY ACCOUNT FOR BOSSES BUT CAN STILL APPLY ON NON-BOSSES AND MINIONS
-	property int iHealth
-	{
-		public native get();
-		public native set( const int new_health );
-	}
-	property int iMaxHealth
-	{
-		public native get();
-		public native set( const int new_maxhealth );
-	}
-	property int iType
-	{
-		public native get();
-		public native set( const int boss_id );
-	}
-	property int iClimbs
-	{
-		public native get();
-		public native set( const int climb_amount );
-	}
-	property int iStabbed
-	{
-		public native get();
-		public native set( const int amount_of_times_stabbed );
-	}
-	property int iMarketted
-	{
-		public native get();
-		public native set( const int amount_of_times_market_gardened );
-	}
-	property int iDifficulty
-	{
-		public native get();
-		public native set( const int difficulty_setting );
-	}
-
-	property bool bIsBoss
-	{
-		public native get();
-		public native set( const bool is_boss );
-	}
-	property bool bSetOnSpawn
-	{
-		public native get();
-		public native set( const bool is_set_to_be_boss );
-	}
-	property bool bUsedUltimate	// Not an overwatch reference lol; purpose is for a use-once ability but you can reset it
-	{
-		public native get();
-		public native set( const bool used_rare_ability );
-	}
-
-	property float flSpeed	// if you boss needs a set amount of speed, use this obviously
-	{
-		public native get();
-		public native set( const float boss_speed );
-	}
-	property float flCharge
-	{
-		public native get();
-		public native set( const float ability_charge );
-	}
-	property float flRAGE
-	{
-		public native get();
-		public native set( const float hulk_smash_percent );
-	}
-	property float flKillSpree
-	{
-		public native get();
-		public native set( const float time_boss_has_to_kill_alot );
-	}
-	property float flWeighDown
-	{
-		public native get();
-		public native set( const float weight_percentage_charge );
-	}
-	*/
-	
+	function void (const int iModuleIndex, const VSH2Player Attacker, const int iBuildingRef);
 };
 
+native void VSH2_Hook(const VSH2HookType callbacktype, VSH2HookCB callback);
+native bool VSH2_HookEx(const VSH2HookType callbacktype, VSH2HookCB callback);
 
-/**
- * Registers a plugin to be able to use VSH2's forwards
- * NOTE: The purpose of this native is to register boss subplugins, you don't need to register plugins to use forwards, simply hook what forward you need.
- * @param plugin_name			module name you want your calling plugin to be identified under
- * @return				integer of the plugin array index
- */
-native int VSH2_RegisterPlugin(const char plugin_name[64]);
+native void VSH2_Unhook(const VSH2HookType callbacktype, VSH2HookCB callback);
+native bool VSH2_UnhookEx(const VSH2HookType callbacktype, VSH2HookCB callback);
+
+native bool VSH2GameMode_GetProperty(const char prop_name[64], any& item);
+native void VSH2GameMode_SetProperty(const char prop_name[64], any value);
+
+/*	Available properties
+property int iRoundState
+property int iSpecial
+property int iTotalMaxHealth
+property int iTimeLeft
+property int iRoundCount
+property int iHealthChecks
+property int iCaptures
+property bool bSteam		// Only useable if SteamTools is enabled and used.
+property bool bTF2Attribs	// Only useable if TF2Attributes is enabled and used
+property bool bPointReady
+property bool bMedieval
+property float flHealthTime
+property float flMusicTime
+property BaseBoss hNextBoss
+*/
+
+native VSH2Player VSH2GameMode_FindNextBoss();
+native VSH2Player VSH2GameMode_GetRandomBoss(const bool IsAlive);
+native VSH2Player VSH2GameMode_GetBossByType(const bool IsAlive, const int BossType);
+native int VSH2GameMode_CountMinions(const bool IsAlive);
+native int VSH2GameMode_CountBosses(const bool IsAlive);
+native int VSH2GameMode_GetTotalBossHealth();
+native void VSH2GameMode_SearchForItemPacks();
+native void VSH2GameMode_UpdateBossHealth();
+native void VSH2GameMode_GetBossType();
+native int VSH2GameMode_GetTotalRedPlayers();
 
 
 public SharedPlugin __pl_vsh2 = {
@@ -293,5 +222,38 @@ public __pl_vsh2_SetNTVOptional()
 	
 	MarkNativeAsOptional("VSH2Player.GetProperty");
 	MarkNativeAsOptional("VSH2Player.SetProperty");
+	
+	MarkNativeAsOptional("VSH2Player.ConvertToMinion");
+	MarkNativeAsOptional("VSH2Player.SpawnWeapon");
+	MarkNativeAsOptional("VSH2Player.GetWeaponSlotIndex");
+	MarkNativeAsOptional("VSH2Player.SetWepInvis");
+	MarkNativeAsOptional("VSH2Player.SetOverlay");
+	MarkNativeAsOptional("VSH2Player.TeleToSpawn");
+	MarkNativeAsOptional("VSH2Player.IncreaseHeadCount");
+	MarkNativeAsOptional("VSH2Player.SpawnSmallHealthPack");
+	MarkNativeAsOptional("VSH2Player.ForceTeamChange");
+	MarkNativeAsOptional("VSH2Player.ClimbWall");
+	MarkNativeAsOptional("VSH2Player.HelpPanelClass");
+	MarkNativeAsOptional("VSH2Player.ConvertToBoss");
+	MarkNativeAsOptional("VSH2Player.GiveRage");
+	MarkNativeAsOptional("VSH2Player.MakeBossAndSwitch");
+	
+	MarkNativeAsOptional("VSH2_Hook");
+	MarkNativeAsOptional("VSH2_HookEx");
+	MarkNativeAsOptional("VSH2_Unhook");
+	MarkNativeAsOptional("VSH2_UnhookEx");
+	
+	MarkNativeAsOptional("VSH2GameMode_GetProperty");
+	MarkNativeAsOptional("VSH2GameMode_SetProperty");
+	MarkNativeAsOptional("VSH2GameMode_FindNextBoss");
+	MarkNativeAsOptional("VSH2GameMode_GetRandomBoss");
+	MarkNativeAsOptional("VSH2GameMode_GetBossByType");
+	MarkNativeAsOptional("VSH2GameMode_CountMinions");
+	MarkNativeAsOptional("VSH2GameMode_CountBosses");
+	MarkNativeAsOptional("VSH2GameMode_GetTotalBossHealth");
+	MarkNativeAsOptional("VSH2GameMode_SearchForItemPacks");
+	MarkNativeAsOptional("VSH2GameMode_UpdateBossHealth");
+	MarkNativeAsOptional("VSH2GameMode_GetBossType");
+	MarkNativeAsOptional("VSH2GameMode_GetTotalRedPlayers");
 }
 #endif
