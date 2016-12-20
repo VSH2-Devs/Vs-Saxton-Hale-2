@@ -1192,3 +1192,15 @@ stock bool StrStarts(const char[] szStr, const char[] szSubStr, bool bCaseSensit
 {
 	return !StrContains(szStr, szSubStr, bCaseSensitive);
 }
+stock bool ValidateName(const char[] name)
+{
+	int length = strlen(name);
+	for (int i=0 ; i<length ; ++i) {
+		int holder = name[i];
+		// Invalid name, names may only contains numbers, underscores and normal letters
+		if (!(IsCharAlpha(holder) || IsCharNumeric(holder) || holder == '_'))
+			return false;
+	}
+	// A name is, of course, only valid if it's 1 or more chars long, though longer is recommended
+	return (length > 0);
+}
