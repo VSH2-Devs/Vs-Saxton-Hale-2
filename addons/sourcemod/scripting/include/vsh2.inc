@@ -1,8 +1,8 @@
 #if defined _vsh2_included
 	#endinput
 #endif
-
 #define _vsh2_included
+
 
 methodmap VSH2Player	
 {
@@ -31,181 +31,190 @@ methodmap VSH2Player
 	property int index {
 		public native get();
 	}
+	
+	public native bool GetProperty(const char prop_name[64], any& item);
+	public native void SetProperty(const char prop_name[64], any value);
 
-	property int m_iQueue
+	/*		AVAILABLE PROPS
+	property int iQueue
 	{
 		public native get();
 		public native set( const int queue );
 	}
-	property int m_iPresetType
+	property int iPresetType
 	{
 		public native get();
 		public native set( const int bosstype );
 	}
-	property int m_iKills
+	property int iKills
 	{
 		public native get();
 		public native set( const int kills )
 	}
-	property int m_iHits
+	property int iHits
 	{
 		public native get();
 		public native set( const int hits );
 	}
-	property int m_iLives
+	property int iLives
 	{
 		public native get();
 		public native set( const int lives );
 	}
-	property int m_iState
+	property int iState
 	{
 		public native get();
 		public native set( const int boss_state );
 	}
-	property int m_iDamage
+	property int iDamage
 	{
 		public native get();
 		public native set( const int damage );
 	}
-	property int m_iAirDamage
+	property int iAirDamage
 	{
 		public native get();
 		public native set( const int airstrike_damage );
 	}
-	property int m_iSongPick
+	property int iSongPick
 	{
 		public native get();
 		public native set( const int song_index );
 	}
-	property int m_iHealTarget	/* returns -1 is there's no valid player */
+	property int iHealTarget	// returns -1 is there's no valid player
 	{
 		public native get();
 	}
-	property int m_iOwnerBoss
+	property int iOwnerBoss
 	{
 		public native get();
 		public native set( const int boss_userid );
 	}
-	property int m_iUberTarget	/* please use userid on this; convert to client index if you want but userid is safer */
+	property int iUberTarget	// please use userid on this; convert to client index if you want but userid is safer
 	{
 		public native get();
 		public native set( const int userid );
 	}
-	property int m_iGlow		/* use like a bool */
+	property int bGlow		// use like a bool
 	{
 		public native get();
 		public native set( const int isGlow );
 	}
-	property bool m_bNearDispenser
+	property bool bNearDispenser
 	{
 		public native get();
 	}
-	property bool m_bIsMinion
+	property bool bIsMinion
 	{
 		public native get();
 		public native set( const bool is_minion );
 	}
-	property bool m_bInJump
+	property bool bInJump
 	{
 		public native get();
 		public native set( const bool is_jumping );
 	}
 
-	property float m_flGlowtime
+	property float flGlowtime
 	{
 		public native get();
 		public native set( const float glowtime );
 	}
-	property float m_flLastHit
+	property float flLastHit
 	{
 		public native get();
 		public native set( const float lasthit_time );
 	}
-	property float m_flLastShot
+	property float flLastShot
 	{
 		public native get();
 		public native set( const float last_time_player_shot_something );
 	}
 	
-	/* 	ALL PROPERTIES AFTER THIS COMMENT ONLY ACCOUNT FOR BOSSES BUT CAN STILL APPLY ON NON-BOSSES AND MINIONS 	 */
-	property int m_iHealth
+	// 	ALL PROPERTIES AFTER THIS COMMENT ONLY ACCOUNT FOR BOSSES BUT CAN STILL APPLY ON NON-BOSSES AND MINIONS
+	property int iHealth
 	{
 		public native get();
 		public native set( const int new_health );
 	}
-	property int m_iMaxHealth
+	property int iMaxHealth
 	{
 		public native get();
 		public native set( const int new_maxhealth );
 	}
-	property int m_iType
+	property int iType
 	{
 		public native get();
 		public native set( const int boss_id );
 	}
-	property int m_iClimbs
+	property int iClimbs
 	{
 		public native get();
 		public native set( const int climb_amount );
 	}
-	property int m_iStabbed
+	property int iStabbed
 	{
 		public native get();
 		public native set( const int amount_of_times_stabbed );
 	}
-	property int m_iMarketted
+	property int iMarketted
 	{
 		public native get();
 		public native set( const int amount_of_times_market_gardened );
 	}
-	property int m_iDifficulty
+	property int iDifficulty
 	{
 		public native get();
 		public native set( const int difficulty_setting );
 	}
 
-	property bool m_bIsBoss
+	property bool bIsBoss
 	{
 		public native get();
 		public native set( const bool is_boss );
 	}
-	property bool m_bSetOnSpawn
+	property bool bSetOnSpawn
 	{
 		public native get();
 		public native set( const bool is_set_to_be_boss );
 	}
-	property bool m_bUsedUltimate	/* Not an overwatch reference lol; purpose is for a use-once ability but you can reset it */
+	property bool bUsedUltimate	// Not an overwatch reference lol; purpose is for a use-once ability but you can reset it
 	{
 		public native get();
 		public native set( const bool used_rare_ability );
 	}
 
-	property float m_flSpeed	/* if you boss needs a set amount of speed, use this obviously */
+	property float flSpeed	// if you boss needs a set amount of speed, use this obviously
 	{
 		public native get();
 		public native set( const float boss_speed );
 	}
-	property float m_flCharge
+	property float flCharge
 	{
 		public native get();
 		public native set( const float ability_charge );
 	}
-	property float m_flRAGE
+	property float flRAGE
 	{
 		public native get();
 		public native set( const float hulk_smash_percent );
 	}
-	property float m_flKillSpree
+	property float flKillSpree
 	{
 		public native get();
 		public native set( const float time_boss_has_to_kill_alot );
 	}
-	property float m_flWeighDown
+	property float flWeighDown
 	{
 		public native get();
 		public native set( const float weight_percentage_charge );
 	}
+	*/
+	
+	//public native void ConvertToMinion(const float respawn_time);
 };
+
+native int VSH2_RegisterPlugin(const char plugin_name[64]);
 
 
 public SharedPlugin __pl_vsh2 = {
@@ -221,108 +230,114 @@ public SharedPlugin __pl_vsh2 = {
 #if !defined REQUIRE_PLUGIN
 public __pl_vsh2_SetNTVOptional()
 {
+	MarkNativeAsOptional("VSH2_RegisterPlugin");
 	MarkNativeAsOptional("VSH2Player.VSH2Player");
+	
 	MarkNativeAsOptional("VSH2Player.userid.get");
 	MarkNativeAsOptional("VSH2Player.index.get");
 	
-	MarkNativeAsOptional("VSH2Player.m_iQueue.get");
-	MarkNativeAsOptional("VSH2Player.m_iQueue.set");
+	MarkNativeAsOptional("VSH2Player.GetProperty");
+	MarkNativeAsOptional("VSH2Player.SetProperty");
+	/*
+	MarkNativeAsOptional("VSH2Player.iQueue.get");
+	MarkNativeAsOptional("VSH2Player.iQueue.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_iPresetType.get");
-	MarkNativeAsOptional("VSH2Player.m_iPresetType.set");
+	MarkNativeAsOptional("VSH2Player.iPresetType.get");
+	MarkNativeAsOptional("VSH2Player.iPresetType.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_iKills.get");
-	MarkNativeAsOptional("VSH2Player.m_iKills.set");
+	MarkNativeAsOptional("VSH2Player.iKills.get");
+	MarkNativeAsOptional("VSH2Player.iKills.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_iHits.get");
-	MarkNativeAsOptional("VSH2Player.m_iHits.set");
+	MarkNativeAsOptional("VSH2Player.iHits.get");
+	MarkNativeAsOptional("VSH2Player.iHits.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_iLives.get");
-	MarkNativeAsOptional("VSH2Player.m_iLives.set");
+	MarkNativeAsOptional("VSH2Player.iLives.get");
+	MarkNativeAsOptional("VSH2Player.iLives.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_iState.get");
-	MarkNativeAsOptional("VSH2Player.m_iState.set");
+	MarkNativeAsOptional("VSH2Player.iState.get");
+	MarkNativeAsOptional("VSH2Player.iState.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_iDamage.get");
-	MarkNativeAsOptional("VSH2Player.m_iDamage.set");
+	MarkNativeAsOptional("VSH2Player.iDamage.get");
+	MarkNativeAsOptional("VSH2Player.iDamage.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_iAirDamage.get");
-	MarkNativeAsOptional("VSH2Player.m_iAirDamage.set");
+	MarkNativeAsOptional("VSH2Player.iAirDamage.get");
+	MarkNativeAsOptional("VSH2Player.iAirDamage.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_iSongPick.get");
-	MarkNativeAsOptional("VSH2Player.m_iSongPick.set");
+	MarkNativeAsOptional("VSH2Player.iSongPick.get");
+	MarkNativeAsOptional("VSH2Player.iSongPick.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_iHealTarget.get");
+	MarkNativeAsOptional("VSH2Player.iHealTarget.get");
 	
-	MarkNativeAsOptional("VSH2Player.m_iOwnerBoss.get");
-	MarkNativeAsOptional("VSH2Player.m_iOwnerBoss.set");
+	MarkNativeAsOptional("VSH2Player.iOwnerBoss.get");
+	MarkNativeAsOptional("VSH2Player.iOwnerBoss.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_iUberTarget.get");
-	MarkNativeAsOptional("VSH2Player.m_iUberTarget.set");
+	MarkNativeAsOptional("VSH2Player.iUberTarget.get");
+	MarkNativeAsOptional("VSH2Player.iUberTarget.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_iGlow.get");
-	MarkNativeAsOptional("VSH2Player.m_iGlow.set");
+	MarkNativeAsOptional("VSH2Player.iGlow.get");
+	MarkNativeAsOptional("VSH2Player.iGlow.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_bNearDispenser.get");
+	MarkNativeAsOptional("VSH2Player.bNearDispenser.get");
 	
-	MarkNativeAsOptional("VSH2Player.m_bIsMinion.get");
-	MarkNativeAsOptional("VSH2Player.m_bIsMinion.set");
+	MarkNativeAsOptional("VSH2Player.bIsMinion.get");
+	MarkNativeAsOptional("VSH2Player.bIsMinion.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_bInJump.get");
-	MarkNativeAsOptional("VSH2Player.m_bInJump.set");
+	MarkNativeAsOptional("VSH2Player.bInJump.get");
+	MarkNativeAsOptional("VSH2Player.bInJump.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_flGlowtime.get");
-	MarkNativeAsOptional("VSH2Player.m_flGlowtime.set");
+	MarkNativeAsOptional("VSH2Player.flGlowtime.get");
+	MarkNativeAsOptional("VSH2Player.flGlowtime.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_flLastHit.get");
-	MarkNativeAsOptional("VSH2Player.m_flLastHit.set");
+	MarkNativeAsOptional("VSH2Player.flLastHit.get");
+	MarkNativeAsOptional("VSH2Player.flLastHit.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_flLastShot.get");
-	MarkNativeAsOptional("VSH2Player.m_flLastShot.set");
+	MarkNativeAsOptional("VSH2Player.flLastShot.get");
+	MarkNativeAsOptional("VSH2Player.flLastShot.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_iHealth.get");
-	MarkNativeAsOptional("VSH2Player.m_iHealth.set");
+	MarkNativeAsOptional("VSH2Player.iHealth.get");
+	MarkNativeAsOptional("VSH2Player.iHealth.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_iMaxHealth.get");
-	MarkNativeAsOptional("VSH2Player.m_iMaxHealth.set");
+	MarkNativeAsOptional("VSH2Player.iMaxHealth.get");
+	MarkNativeAsOptional("VSH2Player.iMaxHealth.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_iType.get");
-	MarkNativeAsOptional("VSH2Player.m_iType.set");
+	MarkNativeAsOptional("VSH2Player.iType.get");
+	MarkNativeAsOptional("VSH2Player.iType.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_iClimbs.get");
-	MarkNativeAsOptional("VSH2Player.m_iClimbs.set");
+	MarkNativeAsOptional("VSH2Player.iClimbs.get");
+	MarkNativeAsOptional("VSH2Player.iClimbs.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_iStabbed.get");
-	MarkNativeAsOptional("VSH2Player.m_iStabbed.set");
+	MarkNativeAsOptional("VSH2Player.iStabbed.get");
+	MarkNativeAsOptional("VSH2Player.iStabbed.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_iMarketted.get");
-	MarkNativeAsOptional("VSH2Player.m_iMarketted.set");
+	MarkNativeAsOptional("VSH2Player.iMarketted.get");
+	MarkNativeAsOptional("VSH2Player.iMarketted.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_iDifficulty.get");
-	MarkNativeAsOptional("VSH2Player.m_iDifficulty.set");
+	MarkNativeAsOptional("VSH2Player.iDifficulty.get");
+	MarkNativeAsOptional("VSH2Player.iDifficulty.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_bIsBoss.get");
-	MarkNativeAsOptional("VSH2Player.m_bIsBoss.set");
+	MarkNativeAsOptional("VSH2Player.bIsBoss.get");
+	MarkNativeAsOptional("VSH2Player.bIsBoss.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_bSetOnSpawn.get");
-	MarkNativeAsOptional("VSH2Player.m_bSetOnSpawn.set");
+	MarkNativeAsOptional("VSH2Player.bSetOnSpawn.get");
+	MarkNativeAsOptional("VSH2Player.bSetOnSpawn.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_bUsedUltimate.get");
-	MarkNativeAsOptional("VSH2Player.m_bUsedUltimate.set");
+	MarkNativeAsOptional("VSH2Player.bUsedUltimate.get");
+	MarkNativeAsOptional("VSH2Player.bUsedUltimate.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_flSpeed.get");
-	MarkNativeAsOptional("VSH2Player.m_flSpeed.set");
+	MarkNativeAsOptional("VSH2Player.flSpeed.get");
+	MarkNativeAsOptional("VSH2Player.flSpeed.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_flCharge.get");
-	MarkNativeAsOptional("VSH2Player.m_flCharge.set");
+	MarkNativeAsOptional("VSH2Player.flCharge.get");
+	MarkNativeAsOptional("VSH2Player.flCharge.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_flRAGE.get");
-	MarkNativeAsOptional("VSH2Player.m_flRAGE.set");
+	MarkNativeAsOptional("VSH2Player.flRAGE.get");
+	MarkNativeAsOptional("VSH2Player.flRAGE.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_flKillSpree.get");
-	MarkNativeAsOptional("VSH2Player.m_flKillSpree.set");
+	MarkNativeAsOptional("VSH2Player.flKillSpree.get");
+	MarkNativeAsOptional("VSH2Player.flKillSpree.set");
 	
-	MarkNativeAsOptional("VSH2Player.m_flWeighDown.get");
-	MarkNativeAsOptional("VSH2Player.m_flWeighDown.set");
+	MarkNativeAsOptional("VSH2Player.flWeighDown.get");
+	MarkNativeAsOptional("VSH2Player.flWeighDown.set");
+	*/
 }
 #endif
