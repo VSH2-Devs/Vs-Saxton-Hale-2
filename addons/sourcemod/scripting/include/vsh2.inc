@@ -32,7 +32,22 @@ methodmap VSH2Player
 		public native get();
 	}
 	
+	/**
+         * sets the property of the internal VSH2 methodmap
+         * NOTE: You can use this to create new properties which GetProperty can access!
+	 * @param prop_name		name of property you want to access data from.
+	 * @param item			reference to use of the variable to overwrite with data from the property.
+         * @return		
+        */      	
 	public native bool GetProperty(const char prop_name[64], any& item);
+	
+	/**
+         * sets the property of the internal VSH2 methodmap
+	 * NOTE: You can use this to create new properties which GetProperty can access!
+	 * @param prop_name		name of the property you want to override data from (works like StringMap).
+	 * @param value			data you want the property to hold.
+         * @noreturn
+        */	
 	public native void SetProperty(const char prop_name[64], any value);
 
 	/*		AVAILABLE PROPS
@@ -218,7 +233,7 @@ native int VSH2_RegisterPlugin(const char plugin_name[64]);
 
 
 public SharedPlugin __pl_vsh2 = {
-	name = "vsh2",
+	name = "VSH2",
 	file = "vsh2.smx",
 #if defined REQUIRE_PLUGIN
 	required = 1,
