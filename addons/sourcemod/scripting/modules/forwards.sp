@@ -29,7 +29,7 @@ methodmap PrivateForward < Handle	//very useful ^^
 };
 
 PrivateForward
-	g_hForwards[VSH2HookType]	// I'm assuming this makes it the total size of the last value in the enum?
+	g_hForwards[OnRedPlayerThink+1]	// I'm assuming this makes it the total size of the last value in the enum?
 ;
 
 public void InitializedForwards()
