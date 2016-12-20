@@ -209,7 +209,9 @@ public void OnPluginStart()
 	//RegConsoleCmd("sm_offboss", MakeNotBoss);
 	gamemode = VSHGameMode();
 	gamemode.Init();
-
+	
+	InitializedForwards();	// in forwards.sp
+	
 	RegAdminCmd("sm_setspecial", SetNextSpecial, ADMFLAG_GENERIC);
 	RegAdminCmd("sm_halespecial", SetNextSpecial, ADMFLAG_GENERIC);
 	RegAdminCmd("sm_hale_special", SetNextSpecial, ADMFLAG_GENERIC);
