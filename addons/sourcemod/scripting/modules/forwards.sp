@@ -34,5 +34,5 @@ PrivateForward
 
 public void InitializedForwards()
 {
-	
+	g_hForwards[OnCallDownloads] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell) );
 }
