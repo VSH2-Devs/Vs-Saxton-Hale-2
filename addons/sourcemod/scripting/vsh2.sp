@@ -196,10 +196,10 @@ methodmap TF2Item < Handle
 //ArrayList ptrBosses ;
 
 #include "modules/stocks.inc"
+#include "modules/forwards.sp"
 #include "modules/handler.sp"	// Contains the game mode logic as well
 #include "modules/events.sp"
 #include "modules/commands.sp"
-#include "modules/forwards.sp"
 
 ArrayList g_hPluginsRegistered;
 
