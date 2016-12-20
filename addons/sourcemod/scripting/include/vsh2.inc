@@ -228,7 +228,12 @@ methodmap VSH2Player
 	
 	//public native void ConvertToMinion(const float respawn_time);
 };
-
+/**
+ * Registers a plugin to be able to use VSH2's forwards
+ * NOTE: The purpose of this native is to register boss subplugins, you don't need to register plugins to use forwards, simply hook what forward you need.
+ * @param plugin_name			module name you want your calling plugin to be identified under
+ * @return				integer of the plugin array index
+ */
 native int VSH2_RegisterPlugin(const char plugin_name[64]);
 
 
