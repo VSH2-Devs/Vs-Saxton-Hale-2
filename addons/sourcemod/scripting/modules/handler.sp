@@ -52,6 +52,8 @@ public void ManageDownloads()
 	AddHHHToDownloads	();
 	AddBunnyToDownloads	();
 	AddPlagueDocToDownloads	();
+	g_hForwards[OnCallDownloads].Start();
+	Call_Finish();
 }
 
 public void ManageMenu( Menu& menu )
