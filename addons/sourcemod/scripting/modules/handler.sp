@@ -734,6 +734,9 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 			victim.GiveRage(damage);
 		}
 	}
+	if (attacker.bIsMinion)		// Minions shouldn't have their damage tracked.
+		return;
+		
 	if (custom is TF_CUSTOM_TELEFRAG)
 		damage = (IsPlayerAlive(attacker.index) ? 9001 : 1);	// Telefrags normally 1-shot the boss but let's cap damage at 9k
 
