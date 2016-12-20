@@ -169,7 +169,7 @@ native bool VSH2_HookEx(const VSH2HookType callbacktype, VSH2HookCB callback);
 native void VSH2_Unhook(const VSH2HookType callbacktype, VSH2HookCB callback);
 native bool VSH2_UnhookEx(const VSH2HookType callbacktype, VSH2HookCB callback);
 
-native bool VSH2GameMode_GetProperty(const char prop_name[64], any& item);
+native any VSH2GameMode_GetProperty(const char prop_name[64]);
 native void VSH2GameMode_SetProperty(const char prop_name[64], any value);
 
 /*	Available properties
