@@ -38,7 +38,7 @@ methodmap VSH2Player
 	 * @param item			reference to use of the variable to overwrite with data from the property.
          * @return		
         */
-	public native bool GetProperty(const char prop_name[64], any& item);
+	public native any GetProperty(const char prop_name[64]);
 	
 	/**
          * sets the property of the internal VSH2 methodmap
