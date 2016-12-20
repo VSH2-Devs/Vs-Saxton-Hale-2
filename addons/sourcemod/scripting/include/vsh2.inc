@@ -116,8 +116,8 @@ methodmap VSH2Player
 native int VSH2_RegisterPlugin(const char plugin_name[64]);
 
 
-enum VSH2HookType {
-	OnCallDownloads,
+enum {		//VSH2HookType	
+	OnCallDownloads=0,
 	OnBossSelected,
 	OnTouchPlayer,
 	OnTouchBuilding,
@@ -163,11 +163,13 @@ typeset VSH2HookCB {		// Available Callbacks
 	function void (const int iModuleIndex, const VSH2Player Attacker, const int iBuildingRef);
 };
 
-native void VSH2_Hook(const VSH2HookType callbacktype, VSH2HookCB callback);
-native bool VSH2_HookEx(const VSH2HookType callbacktype, VSH2HookCB callback);
+// Use hooktype enum on these.
 
-native void VSH2_Unhook(const VSH2HookType callbacktype, VSH2HookCB callback);
-native bool VSH2_UnhookEx(const VSH2HookType callbacktype, VSH2HookCB callback);
+native void VSH2_Hook(const int callbacktype, VSH2HookCB callback);
+native bool VSH2_HookEx(const int callbacktype, VSH2HookCB callback);
+
+native void VSH2_Unhook(const int callbacktype, VSH2HookCB callback);
+native bool VSH2_UnhookEx(const int callbacktype, VSH2HookCB callback);
 
 native any VSH2GameMode_GetProperty(const char prop_name[64]);
 native void VSH2GameMode_SetProperty(const char prop_name[64], any value);
