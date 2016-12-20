@@ -4,7 +4,24 @@
 
 #pragma semicolon		1
 #pragma newdecls		required
-methodmap VSH2Derived < VSH2Player{	public VSH2Derived (const int x, bool userid=false)	{		return view_as< VSH2Derived >( VSH2Player(x, userid) );	}		property int iNewProperty {		public get()		{			int i; this.GetProperty("iNewProperty", i);			return i;		}		public set(const int i)		{			this.SetProperty("iNewProperty", i);		}	}};
+
+methodmap VSH2Derived < VSH2Player
+{
+	public VSH2Derived (const int x, bool userid=false)
+	{
+		return view_as< VSH2Derived >( VSH2Player(x, userid) );
+	}
+	
+	property int iNewProperty {
+		public get() {
+			int i; this.GetProperty("iNewProperty", i);
+			return i;
+		}
+		public set(const int i) {
+			this.SetProperty("iNewProperty", i);
+		}
+	}
+};
 
 public Plugin myinfo = {
 	name = "vsh2_natives_tester",
