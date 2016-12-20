@@ -18,7 +18,7 @@
 #pragma semicolon			1
 #pragma newdecls			required
 
-#define PLUGIN_VERSION			"1.5.7 BETA"
+#define PLUGIN_VERSION			"1.6.1 BETA"
 #define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
 #define CODEFRAMES			(1.0/30.0)	/* 30 frames per second means 0.03333 seconds or 33.33 ms */
 
@@ -199,6 +199,7 @@ methodmap TF2Item < Handle
 #include "modules/handler.sp"	// Contains the game mode logic as well
 #include "modules/events.sp"
 #include "modules/commands.sp"
+#include "modules/forwards.sp"
 
 ArrayList g_hPluginsRegistered;
 
@@ -1113,107 +1114,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2Player.GetProperty", Native_VSH2_getProperty);
 	CreateNative("VSH2Player.SetProperty", Native_VSH2_setProperty);
 	
-	/*CreateNative("VSH2Player.m_iQueue.get", Native_VSH2_getQueue);
-	CreateNative("VSH2Player.m_iQueue.set", Native_VSH2_setQueue);
-	
-	CreateNative("VSH2Player.m_iPresetType.get", Native_VSH2_getPreset);
-	CreateNative("VSH2Player.m_iPresetType.set", Native_VSH2_setPreset);
-	
-	CreateNative("VSH2Player.m_iKills.get", Native_VSH2_getKills);
-	CreateNative("VSH2Player.m_iKills.set", Native_VSH2_setKills);
-	
-	CreateNative("VSH2Player.m_iHits.get", Native_VSH2_getHits);
-	CreateNative("VSH2Player.m_iHits.set", Native_VSH2_setHits);
-	
-	CreateNative("VSH2Player.m_iLives.get", Native_VSH2_getLives);
-	CreateNative("VSH2Player.m_iLives.set", Native_VSH2_setLives);
-	
-	CreateNative("VSH2Player.m_iState.get", Native_VSH2_getState);
-	CreateNative("VSH2Player.m_iState.set", Native_VSH2_setState);
-	
-	CreateNative("VSH2Player.m_iDamage.get", Native_VSH2_getDamage);
-	CreateNative("VSH2Player.m_iDamage.set", Native_VSH2_setDamage);
-	
-	CreateNative("VSH2Player.m_iAirDamage.get", Native_VSH2_getAirDamage);
-	CreateNative("VSH2Player.m_iAirDamage.set", Native_VSH2_setAirDamage);
-	
-	CreateNative("VSH2Player.m_iSongPick.get", Native_VSH2_getSongPick);
-	CreateNative("VSH2Player.m_iSongPick.set", Native_VSH2_setSongPick);
-	
-	CreateNative("VSH2Player.m_iHealTarget.get", Native_VSH2_getHealTarget);
-	
-	CreateNative("VSH2Player.m_iOwnerBoss.get", Native_VSH2_getOwnerBoss);
-	CreateNative("VSH2Player.m_iOwnerBoss.set", Native_VSH2_setOwnerBoss);
-	
-	CreateNative("VSH2Player.m_iUberTarget.get", Native_VSH2_getUberTarget);
-	CreateNative("VSH2Player.m_iUberTarget.set", Native_VSH2_setUberTarget);
-	
-	CreateNative("VSH2Player.m_iGlow.get", Native_VSH2_getGlow);
-	CreateNative("VSH2Player.m_iGlow.set", Native_VSH2_setGlow);
-	
-	CreateNative("VSH2Player.m_bNearDispenser.get", Native_VSH2_getNearDispenser);
-	
-	CreateNative("VSH2Player.m_bIsMinion.get", Native_VSH2_getIsMinion);
-	CreateNative("VSH2Player.m_bIsMinion.set", Native_VSH2_setIsMinion);
-	
-	CreateNative("VSH2Player.m_bInJump.get", Native_VSH2_getInJump);
-	CreateNative("VSH2Player.m_bInJump.set", Native_VSH2_setInJump);
-	
-	CreateNative("VSH2Player.m_flGlowtime.get", Native_VSH2_getGlowtime);
-	CreateNative("VSH2Player.m_flGlowtime.set", Native_VSH2_setGlowtime);
-	
-	CreateNative("VSH2Player.m_flLastHit.get", Native_VSH2_getLastHit);
-	CreateNative("VSH2Player.m_flLastHit.set", Native_VSH2_setLastHit);
-	
-	CreateNative("VSH2Player.m_flLastShot.get", Native_VSH2_getLastShot);
-	CreateNative("VSH2Player.m_flLastShot.set", Native_VSH2_setLastShot);
-	
-	CreateNative("VSH2Player.m_iHealth.get", Native_VSH2_getHealth);
-	CreateNative("VSH2Player.m_iHealth.set", Native_VSH2_setHealth);
-	
-	CreateNative("VSH2Player.m_iMaxHealth.get", Native_VSH2_getMaxHealth);
-	CreateNative("VSH2Player.m_iMaxHealth.set", Native_VSH2_setMaxHealth);
-	
-	CreateNative("VSH2Player.m_iType.get", Native_VSH2_getType);
-	CreateNative("VSH2Player.m_iType.set", Native_VSH2_setType);
-	
-	CreateNative("VSH2Player.m_iClimbs.get", Native_VSH2_getClimbs);
-	CreateNative("VSH2Player.m_iClimbs.set", Native_VSH2_setClimbs);
-	
-	CreateNative("VSH2Player.m_iStabbed.get", Native_VSH2_getStabbed);
-	CreateNative("VSH2Player.m_iStabbed.set", Native_VSH2_setStabbed);
-	
-	CreateNative("VSH2Player.m_iMarketted.get", Native_VSH2_getMarketted);
-	CreateNative("VSH2Player.m_iMarketted.set", Native_VSH2_setMarketted);
-	
-	CreateNative("VSH2Player.m_iDifficulty.get", Native_VSH2_getDifficulty);
-	CreateNative("VSH2Player.m_iDifficulty.set", Native_VSH2_setDifficulty);
-	
-	CreateNative("VSH2Player.m_bIsBoss.get", Native_VSH2_getIsBoss);
-	CreateNative("VSH2Player.m_bIsBoss.set", Native_VSH2_setIsBoss);
-	
-	CreateNative("VSH2Player.m_bSetOnSpawn.get", Native_VSH2_getSetOnSpawn);
-	CreateNative("VSH2Player.m_bSetOnSpawn.set", Native_VSH2_setSetOnSpawn);
-	
-	CreateNative("VSH2Player.m_bUsedUltimate.get", Native_VSH2_getUsedUltimate);
-	CreateNative("VSH2Player.m_bUsedUltimate.set", Native_VSH2_setUsedUltimate);
-	
-	CreateNative("VSH2Player.m_flSpeed.get", Native_VSH2_getSpeed);
-	CreateNative("VSH2Player.m_flSpeed.set", Native_VSH2_setSpeed);
-	
-	CreateNative("VSH2Player.m_flCharge.get", Native_VSH2_getCharge);
-	CreateNative("VSH2Player.m_flCharge.set", Native_VSH2_setCharge);
-	
-	CreateNative("VSH2Player.m_flRAGE.get", Native_VSH2_getRAGE);
-	CreateNative("VSH2Player.m_flRAGE.set", Native_VSH2_setRAGE);
-	
-	CreateNative("VSH2Player.m_flKillSpree.get", Native_VSH2_getKillSpree);
-	CreateNative("VSH2Player.m_flKillSpree.set", Native_VSH2_setKillSpree);
-	
-	CreateNative("VSH2Player.m_flWeighDown.get", Native_VSH2_getWeighDown);
-	CreateNative("VSH2Player.m_flWeighDown.set", Native_VSH2_setWeighDown);*/
-	
-	//CreateNative("VSH2Player.ConvertToMinion", Native_VSH2_ConvertToMinion);
 
 	RegPluginLibrary("VSH2");
 
@@ -1262,374 +1162,37 @@ public int Native_VSH2_setProperty(Handle plugin, int numParams)
 	hPlayerFields[player.index].SetValue(prop_name, item);
 }
 
-/*
-public int Native_VSH2_getQueue(Handle plugin, int numParams)
+public int Native_Hook(Handle plugin, int numParams)
 {
-	BaseBoss player = GetNativeCell(1);
-	return player.iQueue;
-}
-public int Native_VSH2_setQueue(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.iQueue = GetNativeCell(2);
+	VSH2HookType vsh2Hook = GetNativeCell(1);
+
+	Function Func = GetNativeFunction(2);
+	if (g_hForwards[vsh2Hook] != null)
+		g_hForwards[vsh2Hook].Add(plugin, Func);
 }
 
-public int Native_VSH2_getPreset(Handle plugin, int numParams)
+public int Native_HookEx(Handle plugin, int numParams)
 {
-	BaseBoss player = GetNativeCell(1);
-	return player.iPresetType;
-}
-public int Native_VSH2_setPreset(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.iPresetType = GetNativeCell(2);
-}
-
-public int Native_VSH2_getKills(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.iKills;
-}
-public int Native_VSH2_setKills(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.iKills = GetNativeCell(2);
+	VSH2HookType vsh2Hook = GetNativeCell(1);
+	
+	Function Func = GetNativeFunction(2);
+	if (g_hForwards[vsh2Hook] != null)
+		return g_hForwards[vsh2Hook].Add(plugin, Func);
+	return 0;
 }
 
-public int Native_VSH2_getHits(Handle plugin, int numParams)
+public int Native_Unhook(Handle plugin, int numParams)
 {
-	BaseBoss player = GetNativeCell(1);
-	return player.iHits;
-}
-public int Native_VSH2_setHits(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.iHits = GetNativeCell(2);
-}
+	VSH2HookType vsh2Hook = GetNativeCell(1);
 
-public int Native_VSH2_getLives(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.iLives;
+	if (g_hForwards[vsh2Hook] != null)
+		g_hForwards[vsh2Hook].Remove(plugin, GetNativeFunction(2));
 }
-public int Native_VSH2_setLives(Handle plugin, int numParams)
+public int Native_UnhookEx(Handle plugin, int numParams)
 {
-	BaseBoss player = GetNativeCell(1);
-	player.iLives = GetNativeCell(2);
-}
+	VSH2HookType vsh2Hook = GetNativeCell(1);
 
-public int Native_VSH2_getState(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.iState;
+	if(g_hForwards[vsh2Hook] != null)
+		return g_hForwards[vsh2Hook].Remove(plugin, GetNativeFunction(2));
+	return 0;
 }
-public int Native_VSH2_setState(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.iState = GetNativeCell(2);
-}
-
-public int Native_VSH2_getDamage(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.iDamage;
-}
-public int Native_VSH2_setDamage(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.iDamage = GetNativeCell(2);
-}
-
-public int Native_VSH2_getAirDamage(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.iAirDamage;
-}
-public int Native_VSH2_setAirDamage(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.iAirDamage = GetNativeCell(2);
-}
-
-public int Native_VSH2_getSongPick(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.iSongPick;
-}
-public int Native_VSH2_setSongPick(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.iSongPick = GetNativeCell(2);
-}
-
-public int Native_VSH2_getHealTarget(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.iHealTarget;
-}
-
-public int Native_VSH2_getOwnerBoss(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.iOwnerBoss;
-}
-public int Native_VSH2_setOwnerBoss(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.iOwnerBoss = GetNativeCell(2);
-}
-
-public int Native_VSH2_getUberTarget(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.iUberTarget;
-}
-public int Native_VSH2_setUberTarget(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.iUberTarget = GetNativeCell(2);
-}
-
-public int Native_VSH2_getGlow(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.bGlow;
-}
-public int Native_VSH2_setGlow(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.bGlow = GetNativeCell(2);
-}
-
-public int Native_VSH2_getNearDispenser(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.bNearDispenser;
-}
-
-public int Native_VSH2_getIsMinion(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.bIsMinion;
-}
-public int Native_VSH2_setIsMinion(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.bIsMinion = GetNativeCell(2);
-}
-
-public int Native_VSH2_getInJump(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.bInJump;
-}
-public int Native_VSH2_setInJump(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.bInJump = GetNativeCell(2);
-}
-
-public int Native_VSH2_getGlowtime(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return view_as< int >(player.flGlowtime);
-}
-public int Native_VSH2_setGlowtime(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.flGlowtime = GetNativeCell(2);
-}
-
-public int Native_VSH2_getLastHit(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return view_as< int >(player.flLastHit);
-}
-public int Native_VSH2_setLastHit(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.flLastHit = GetNativeCell(2);
-}
-
-public int Native_VSH2_getLastShot(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return view_as< int >(player.flLastShot);
-}
-public int Native_VSH2_setLastShot(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.flLastShot = GetNativeCell(2);
-}
-
-public int Native_VSH2_getHealth(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.iHealth;
-}
-public int Native_VSH2_setHealth(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.iHealth = GetNativeCell(2);
-}
-
-public int Native_VSH2_getMaxHealth(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.iMaxHealth;
-}
-public int Native_VSH2_setMaxHealth(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.iMaxHealth = GetNativeCell(2);
-}
-
-public int Native_VSH2_getType(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.iType;
-}
-public int Native_VSH2_setType(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.iType = GetNativeCell(2);
-}
-
-public int Native_VSH2_getClimbs(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.iClimbs;
-}
-public int Native_VSH2_setClimbs(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.iClimbs = GetNativeCell(2);
-}
-
-public int Native_VSH2_getStabbed(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.iStabbed;
-}
-public int Native_VSH2_setStabbed(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.iStabbed = GetNativeCell(2);
-}
-
-public int Native_VSH2_getMarketted(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.iMarketted;
-}
-public int Native_VSH2_setMarketted(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.iMarketted = GetNativeCell(2);
-}
-
-public int Native_VSH2_getDifficulty(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return player.iDifficulty;
-}
-public int Native_VSH2_setDifficulty(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.iDifficulty = GetNativeCell(2);
-}
-
-public int Native_VSH2_getIsBoss(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return view_as< int >(player.bIsBoss);
-}
-public int Native_VSH2_setIsBoss(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.bIsBoss = GetNativeCell(2);
-}
-
-public int Native_VSH2_getSetOnSpawn(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return view_as< int >(player.bSetOnSpawn);
-}
-public int Native_VSH2_setSetOnSpawn(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.bSetOnSpawn = GetNativeCell(2);
-}
-
-public int Native_VSH2_getUsedUltimate(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return view_as< int >(player.bUsedUltimate);
-}
-public int Native_VSH2_setUsedUltimate(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.bUsedUltimate = GetNativeCell(2);
-}
-
-public int Native_VSH2_getSpeed(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return view_as< int >(player.flSpeed);
-}
-public int Native_VSH2_setSpeed(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.flSpeed = GetNativeCell(2);
-}
-
-public int Native_VSH2_getCharge(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return view_as< int >(player.flCharge);
-}
-public int Native_VSH2_setCharge(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.flCharge = GetNativeCell(2);
-}
-
-public int Native_VSH2_getRAGE(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return view_as< int >(player.flRAGE);
-}
-public int Native_VSH2_setRAGE(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.flRAGE = GetNativeCell(2);
-}
-
-public int Native_VSH2_getKillSpree(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return view_as< int >(player.flKillSpree);
-}
-public int Native_VSH2_setKillSpree(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.flKillSpree = GetNativeCell(2);
-}
-
-public int Native_VSH2_getWeighDown(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	return view_as< int >(player.flWeighDown);
-}
-public int Native_VSH2_setWeighDown(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.flWeighDown = GetNativeCell(2);
-}
-
-public int Native_VSH2_ConvertToMinion(Handle plugin, int numParams)
-{
-	BaseBoss player = GetNativeCell(1);
-	player.ConvertToMinion(GetNativeCell(2));
-}
-*/
