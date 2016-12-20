@@ -14,8 +14,7 @@ methodmap VSH2Derived < VSH2Player
 	
 	property int iNewProperty {
 		public get() {
-			int i; this.GetProperty("iNewProperty", i);
-			return i;
+			return this.GetProperty("iNewProperty", i);
 		}
 		public set(const int i) {
 			this.SetProperty("iNewProperty", i);
@@ -42,19 +41,18 @@ public Action CommandInfo(int client, int args)
 	if (player) {
 		PrintToConsole(client, "VSH2Player methodmap Constructor is working");
 		PrintToConsole(client, "player.index = %d | player.userid = %d", player.index, player.userid);
-		int damage; player.GetProperty("iDamage", damage);
+		int damage = player.GetProperty("iDamage");
 		PrintToConsole(client, "players damage is %d", damage);
 		
-		int boss_status;
 		player.SetProperty("iState", 999);
-		player.GetProperty("iState", boss_status);
+		int boss_status = player.GetProperty("iState");
 		PrintToConsole(client, "players state is %d", boss_status);
 		VSH2Derived deriver = VSH2Derived(client);
 		PrintToConsole(client, "made derived");
 		deriver.iNewProperty = 643;
 		PrintToConsole(client, "made new property and initialized it to %d", deriver.iNewProperty);
 		deriver.SetProperty("iState", 3245);
-		deriver.GetProperty("iState", boss_status);
+		boss_status = deriver.GetProperty("iState");
 		PrintToConsole(client, "testing inheritance and boss status is %d", boss_status);
 	}
 	return Plugin_Handled;
