@@ -199,6 +199,8 @@ methodmap TF2Item < Handle
 #include "modules/events.sp"
 #include "modules/commands.sp"
 
+ArrayList g_hPluginsRegistered;
+
 public void OnPluginStart()
 {
 	//RegConsoleCmd("sm_onboss", MakeBoss);
@@ -344,6 +346,7 @@ public void OnPluginStart()
 	AddMultiTargetFilter("@!boss", HaleTargetFilter, "all non-Boss players", false);
 	AddMultiTargetFilter("@!hale", HaleTargetFilter, "all non-Boss players", false);
 	hPlayerFields[0] = new StringMap();	// This will be freed when plugin is unloaded again
+	g_hPluginsRegistered = new ArrayList();
 }
 public bool HaleTargetFilter(const char[] pattern, Handle clients)
 {
@@ -1047,14 +1050,69 @@ public void _MusicPlay()
 }*/
 
 
+stock Handle FindPluginByName(const char name[64])	// searches in linear time or O(n) but it only searches when vsh plugin's loaded
+{
+	char dictVal[64];
+	Handle thisPlugin;
+	StringMap pluginMap;
+	int arraylen = g_hPluginsRegistered.Length;
+	for (int i=0 ; i<arraylen ; ++i) {
+		pluginMap = g_hPluginsRegistered.Get(i);
+		if ( pluginMap.GetString("PluginName", dictVal, 64) )
+		{
+			if ( !strcmp(name, dictVal, false) ) {
+				pluginMap.GetValue("PluginHandle", thisPlugin);
+				return thisPlugin;
+			}
+		}
+	}
+	return null;
+}
+
+stock Handle GetPluginByIndex(const int index)
+{
+	Handle thisPlugin;
+	StringMap pluginMap = g_hPluginsRegistered.Get(index);
+	if ( pluginMap.GetValue("PluginHandle", thisPlugin) )
+		return thisPlugin;
+	return null;
+}
+
+public int RegisterPlugin(const Handle pluginhndl, const char modulename[64] )
+{
+	if (!ValidateName(modulename)) {
+		LogError("VSH2 :: Register Plugin  **** Invalid Name For Plugin Registration ****");
+		return -1;
+	}
+	else if (FindPluginByName(modulename) != null) {
+		LogError("VSH2 :: Register Plugin  **** Plugin Already Registered ****");
+		return -1;
+	}
+	
+	// create dictionary to hold necessary data about plugin
+	StringMap PluginMap = new StringMap();
+	PluginMap.SetValue("PluginHandle", pluginhndl);
+	PluginMap.SetString("PluginName", modulename);
+
+	// push to global vector
+	g_hPluginsRegistered.Push(PluginMap);
+
+	return g_hPluginsRegistered.Length-1;	// Return the index of registered plugin!
+}
+
+
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
+	CreateNative("VSH2_RegisterPlugin", Native_RegisterPlugin);
 	CreateNative("VSH2Player.VSH2Player", Native_VSH2Instance);
 	
 	CreateNative("VSH2Player.userid.get", Native_VSH2GetUserid);
 	CreateNative("VSH2Player.index.get", Native_VSH2GetIndex);
 	
-	CreateNative("VSH2Player.m_iQueue.get", Native_VSH2_getQueue);
+	CreateNative("VSH2Player.GetProperty", Native_VSH2_getProperty);
+	CreateNative("VSH2Player.SetProperty", Native_VSH2_setProperty);
+	
+	/*CreateNative("VSH2Player.m_iQueue.get", Native_VSH2_getQueue);
 	CreateNative("VSH2Player.m_iQueue.set", Native_VSH2_setQueue);
 	
 	CreateNative("VSH2Player.m_iPresetType.get", Native_VSH2_getPreset);
@@ -1152,11 +1210,20 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2Player.m_flKillSpree.set", Native_VSH2_setKillSpree);
 	
 	CreateNative("VSH2Player.m_flWeighDown.get", Native_VSH2_getWeighDown);
-	CreateNative("VSH2Player.m_flWeighDown.set", Native_VSH2_setWeighDown);
+	CreateNative("VSH2Player.m_flWeighDown.set", Native_VSH2_setWeighDown);*/
+	
+	//CreateNative("VSH2Player.ConvertToMinion", Native_VSH2_ConvertToMinion);
 
 	RegPluginLibrary("VSH2");
 
 	return APLRes_Success;
+}
+
+public int Native_RegisterPlugin(Handle plugin, int numParams)
+{
+	char ModuleName[64]; GetNativeString(1, ModuleName, sizeof(ModuleName));
+	int plugin_index = RegisterPlugin(plugin, ModuleName );		// ALL PROPS TO COOKIES.NET AKA COOKIES.IO
+	return plugin_index;
 }
 
 public int Native_VSH2Instance(Handle plugin, int numParams)
@@ -1175,7 +1242,26 @@ public int Native_VSH2GetIndex(Handle plugin, int numParams)
 	BaseBoss player = GetNativeCell(1);
 	return player.index;
 }
+public int Native_VSH2_getProperty(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	char prop_name[64]; GetNativeString(2, prop_name, 64);
+	any item = GetNativeCellRef(3);
+	if (hPlayerFields[player.index].GetValue(prop_name, item)) {
+		SetNativeCellRef(3, item);
+		return true;
+	}
+	return false;
+}
+public int Native_VSH2_setProperty(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	char prop_name[64]; GetNativeString(2, prop_name, 64);
+	any item = GetNativeCell(3);
+	hPlayerFields[player.index].SetValue(prop_name, item);
+}
 
+/*
 public int Native_VSH2_getQueue(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
@@ -1539,3 +1625,10 @@ public int Native_VSH2_setWeighDown(Handle plugin, int numParams)
 	BaseBoss player = GetNativeCell(1);
 	player.flWeighDown = GetNativeCell(2);
 }
+
+public int Native_VSH2_ConvertToMinion(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	player.ConvertToMinion(GetNativeCell(2));
+}
+*/
