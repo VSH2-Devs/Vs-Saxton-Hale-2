@@ -161,6 +161,9 @@ typeset VSH2HookCB {		// Available Callbacks
 	function void (const int iModuleIndex, const VSH2Player Player);
 	function void (const int iModuleIndex, const VSH2Player Victim, const VSH2Player Attacker);
 	function void (const int iModuleIndex, const VSH2Player Attacker, const int iBuildingRef);
+	
+	function void (const VSH2Player Player);
+	function void (const VSH2Player Victim, const VSH2Player Attacker);
 };
 
 // Use hooktype enum on these.
