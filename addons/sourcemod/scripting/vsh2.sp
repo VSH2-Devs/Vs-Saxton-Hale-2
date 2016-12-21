@@ -210,7 +210,7 @@ public void OnPluginStart()
 	gamemode = VSHGameMode();
 	gamemode.Init();
 	
-	InitializedForwards();	// in forwards.sp
+	InitializeForwards();	// in forwards.sp
 	
 	RegAdminCmd("sm_setspecial", SetNextSpecial, ADMFLAG_GENERIC);
 	RegAdminCmd("sm_halespecial", SetNextSpecial, ADMFLAG_GENERIC);
