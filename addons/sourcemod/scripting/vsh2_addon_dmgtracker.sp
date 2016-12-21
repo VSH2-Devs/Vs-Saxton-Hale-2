@@ -2,7 +2,7 @@
 
 #include <sourcemod>
 #include <sdktools>
-#include <colors>
+#include <morecolors>
 #include <vsh2>
 
 int RGBA[MAXPLAYERS+1][4];
