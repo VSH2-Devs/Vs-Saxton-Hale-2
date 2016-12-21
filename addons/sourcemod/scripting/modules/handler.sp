@@ -52,8 +52,7 @@ public void ManageDownloads()
 	AddHHHToDownloads	();
 	AddBunnyToDownloads	();
 	AddPlagueDocToDownloads	();
-	g_hForwards[OnCallDownloads].Start();
-	Call_Finish();
+	Call_OnCallDownloads();	// in forwards.sp
 }
 
 public void ManageMenu( Menu& menu )
@@ -99,6 +98,8 @@ public void ManageDisconnect(const int client)
 public void ManageOnBossSelected(const BaseBoss base)
 {
 	ManageBossHelp(base);
+	Call_OnBossSelected(base);
+	/*
 	if (gamemode.iPlaying < 10 or GetRandomInt(0, 3) > 0)
 		return;
 
@@ -106,6 +107,7 @@ public void ManageOnBossSelected(const BaseBoss base)
 	extraBosses = (extraBosses > 1) ? GetRandomInt(1, extraBosses) : extraBosses;
 	while (extraBosses-- > 0)
 		gamemode.FindNextBoss().MakeBossAndSwitch(GetRandomInt(Hale, MAXBOSS), false);
+	*/
 }
 
 public void ManageOnTouchPlayer(const BaseBoss base, const BaseBoss victim)
@@ -113,6 +115,7 @@ public void ManageOnTouchPlayer(const BaseBoss base, const BaseBoss victim)
 	switch ( base.iType ) {
 		case -1: {}
 	}
+	Call_OnTouchPlayer(base, victim);
 }
 
 public void ManageOnTouchBuilding(const BaseBoss base, const int building)
@@ -120,6 +123,7 @@ public void ManageOnTouchBuilding(const BaseBoss base, const int building)
 	switch ( base.iType ) {
 		case -1: {}
 	}
+	Call_OnTouchBuilding(base, EntIndexToEntRef(building));
 }
 
 public void ManageBossHelp(const BaseBoss base)
@@ -146,6 +150,7 @@ public void ManageBossThink(const BaseBoss base)
 		case Bunny:		ToCBunny(base).Think();
 		case PlagueDoc:		ToCPlague(base).Think();
 	}
+	Call_OnBossThink(base);
 	/* Adding this so bosses can take minicrits if airborne */
 	TF2_AddCondition(base.index, TFCond_GrapplingHookSafeFall, 0.2);
 }
@@ -161,6 +166,7 @@ public void ManageBossModels(const BaseBoss base)
 		case Bunny:		ToCBunny(base).SetModel();
 		case PlagueDoc:		ToCPlague(base).SetModel();
 	}
+	Call_OnBossModelTimer(base);
 }
 
 public void ManageBossDeath(const BaseBoss base)
@@ -174,6 +180,7 @@ public void ManageBossDeath(const BaseBoss base)
 		case Bunny:		ToCBunny(base).Death();
 	}
 	toggle(gamemode.iHealthBarState);
+	Call_OnBossDeath(base);
 }
 
 public void ManageBossEquipment(const BaseBoss base)
@@ -187,6 +194,7 @@ public void ManageBossEquipment(const BaseBoss base)
 		case Bunny:		ToCBunny(base).Equip();
 		case PlagueDoc:		ToCPlague(base).Equip();
 	}
+	Call_OnBossEquipped(base);
 }
 
 public void ManageBossTransition(const BaseBoss base) /* whatever stuff needs initializing should be done here */
@@ -210,6 +218,7 @@ public void ManageBossTransition(const BaseBoss base) /* whatever stuff needs in
 		case HHHjr: ToCHHHJr(base).flCharge = -1000.0;
 	}
 	ManageBossEquipment(base);
+	Call_OnBossInitialized(base);
 }
 
 public void ManageMinionTransition(const BaseBoss base)
@@ -267,6 +276,7 @@ public void ManageMinionTransition(const BaseBoss base)
 			SetEntityRenderColor(base.index, 30, 160, 255, 255);
 		}
 	}
+	Call_OnMinionInitialized(base);
 }
 
 public void ManagePlayBossIntro(const BaseBoss base)
@@ -280,14 +290,14 @@ public void ManagePlayBossIntro(const BaseBoss base)
 		case Bunny:	ToCBunny(base).PlaySpawnClip();
 		case PlagueDoc:	ToCPlague(base).PlaySpawnClip();
 	}
+	Call_OnBossPlayIntro(base);
 }
 
 public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	switch ( victim.iType ) {
 		case -1: {}
-		default:
-		{
+		default: {
 			char trigger[32];
 			if (GetEdictClassname(attacker, trigger, sizeof(trigger)) and not strcmp(trigger, "trigger_hurt", false))
 			{
@@ -608,9 +618,9 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 					Entire team is pretty much screwed if all the medics just die.
 				*/
 				if (GetMediCharge(medigun) >= 0.90) {
-					SetMediCharge(medigun, 50.0);
-					damage *= 0.25;
-					ScaleVector(damageForce, 10.0);
+					SetMediCharge(medigun, 0.5);
+					damage *= 10;
+					TF2_AddCondition(client, TFCond_Bonked, 0.1);
 					return Plugin_Changed;
 				}
 			}
