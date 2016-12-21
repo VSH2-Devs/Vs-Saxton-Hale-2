@@ -41,12 +41,20 @@ public void OnAllPluginsLoaded()
 {
 	if (!VSH2_HookEx(OnCallDownloads, OnDownloadsCalled))
 		LogError("Error loading OnCallDownloads forwards for VSH2 Test plugin.");
+	if (!VSH2_HookEx(OnBossSelected, BossSelected))
+		LogError("Error loading OnCallDownloads forwards for VSH2 Test plugin.");
 }
 
 public void OnDownloadsCalled()
 {
 	for (int i=0 ; i < 20 ; i += 5) {
 		PrintToServer("Forward OnDownloadsCalled called");
+	}
+}
+public void BossSelected(const VSH2Player base)
+{
+	for (int i=0 ; i < 20 ; i += 5) {
+		PrintToServer("Forward BossSelected called");
 	}
 }
 
