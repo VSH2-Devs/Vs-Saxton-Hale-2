@@ -1459,17 +1459,15 @@ public void ManageOnBossCap(char sCappers[MAXPLAYERS+1], const int CappingTeam)
 public void _SkipBossPanel()
 {
 	BaseBoss upnext[3];
-	for (int j=0; j<3; ++j)
-	{
-		if (not IsValidClient(j))
-			continue;
+	for (int j=0; j<3; ++j) {
 		upnext[j] = gamemode.FindNextBoss();
 		if (!upnext[j].userid)
 			continue;
 		upnext[j].bSetOnSpawn = true;
-		if (!j)
+		if (!j)	// If up next to become a boss.
 			SkipBossPanelNotify(upnext[j].index);
-		else if (!IsFakeClient(j)) CPrintToChat(upnext[j].index, "{olive}[VSH]{default} You are going to be a Boss soon! Type {olive}/halenext{default} to check/reset your queue points.");
+		else if (!IsFakeClient(upnext[j].index))
+			CPrintToChat(upnext[j].index, "{olive}[VSH]{default} You are going to be a Boss soon! Type {olive}/halenext{default} to check/reset your queue points.");
 	}
 	for (int n=MaxClients ; n ; --n) {	// Ughhh, reset shit...
 		if (not IsValidClient(n))
