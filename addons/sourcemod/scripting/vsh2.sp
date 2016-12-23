@@ -239,10 +239,10 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_ff2_hp", Command_GetHPCmd);
 	RegConsoleCmd("sm_ff2hp", Command_GetHPCmd);
 	
-	RegConsoleCmd("sm_setboss", SetBossMenu, "sets your boss");
-	RegConsoleCmd("sm_sethale", SetBossMenu, "sets your boss");
-	RegConsoleCmd("sm_ff2boss", SetBossMenu, "sets your boss");
-	RegConsoleCmd("sm_haleboss", SetBossMenu, "sets your boss");
+	RegConsoleCmd("sm_setboss", SetBossMenu, "Sets your boss.");
+	RegConsoleCmd("sm_sethale", SetBossMenu, "Sets your boss.");
+	RegConsoleCmd("sm_ff2boss", SetBossMenu, "Sets your boss.");
+	RegConsoleCmd("sm_haleboss", SetBossMenu, "Sets your boss.");
 	
 	RegConsoleCmd("sm_halemusic", MusicTogglePanelCmd);
 	RegConsoleCmd("sm_hale_music", MusicTogglePanelCmd);
@@ -259,14 +259,14 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_ff2_help", HelpPanelCmd);
 	
 	RegAdminCmd("sm_reloadbosscfg", CmdReloadCFG, ADMFLAG_GENERIC);
-	RegAdminCmd("sm_hale_select", CommandBossSelect, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss");
-	RegAdminCmd("sm_ff2_select", CommandBossSelect, ADMFLAG_VOTE, "ff2_select <target> - Select a player to be next boss");
-	RegAdminCmd("sm_boss_select", CommandBossSelect, ADMFLAG_VOTE, "boss_select <target> - Select a player to be next boss");
+	RegAdminCmd("sm_hale_select", CommandBossSelect, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss.");
+	RegAdminCmd("sm_ff2_select", CommandBossSelect, ADMFLAG_VOTE, "ff2_select <target> - Select a player to be next boss.");
+	RegAdminCmd("sm_boss_select", CommandBossSelect, ADMFLAG_VOTE, "boss_select <target> - Select a player to be next boss.");
 	RegAdminCmd("sm_healthbarcolor", ChangeHealthBarColor, ADMFLAG_GENERIC);
 	
-	RegAdminCmd("sm_hale_force", ForceBossRealtime, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss");
-	RegAdminCmd("sm_boss_force", ForceBossRealtime, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss");
-	RegAdminCmd("sm_ff2_force", ForceBossRealtime, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss");
+	RegAdminCmd("sm_boss_force", ForceBossRealtime, ADMFLAG_VOTE, "boss_force <target> <bossID> - Force a player to the boss team as the specified boss. (Setup time only)");
+	RegAdminCmd("sm_hale_force", ForceBossRealtime, ADMFLAG_VOTE, "hale_force <target> <bossID> - Force a player to the boss team as the specified boss. (Setup time only)");
+	RegAdminCmd("sm_ff2_force", ForceBossRealtime, ADMFLAG_VOTE, "ff2_force <target> <bossID> - Force a player to the boss team as the specified boss. (Setup time only)");
 	
 	AddCommandListener(BlockSuicide, "explode");
 	AddCommandListener(BlockSuicide, "kill");
@@ -342,9 +342,9 @@ public void OnPluginStart()
 	AddCommandListener(cdVoiceMenu, "voicemenu");
 	AddNormalSoundHook(HookSound);
 	
-	PointCookie = RegClientCookie("vsh2_queuepoints", "Amount of VSH2 Queue points player has", CookieAccess_Protected);
-	BossCookie = RegClientCookie("vsh2_presetbosses", "Preset bosses for VSH2 players", CookieAccess_Protected);
-	MusicCookie = RegClientCookie("vsh2_music_settings", "HaleMusic setting", CookieAccess_Public);
+	PointCookie = RegClientCookie("vsh2_queuepoints", "Amount of VSH2 Queue points a player has.", CookieAccess_Protected);
+	BossCookie = RegClientCookie("vsh2_presetbosses", "Preset bosses for VSH2 players.", CookieAccess_Protected);
+	MusicCookie = RegClientCookie("vsh2_music_settings", "HaleMusic setting.", CookieAccess_Public);
 
 	ManageDownloads(); // in handler.sp
 
@@ -360,8 +360,12 @@ public void OnPluginStart()
 	AddMultiTargetFilter("@minions", MinionTargetFilter, "the Minions", false);
 	AddMultiTargetFilter("@!boss", HaleTargetFilter, "all non-Boss players", false);
 	AddMultiTargetFilter("@!hale", HaleTargetFilter, "all non-Boss players", false);
+	AddMultiTargetFilter("@!minion", MinionTargetFilter, "all non-Minions", false);
+	AddMultiTargetFilter("@!minions", MinionTargetFilter, "all non-Minions", false);
+
 	hPlayerFields[0] = new StringMap();	// This will be freed when plugin is unloaded again
 	g_hPluginsRegistered = new ArrayList();
+	
 }
 public bool HaleTargetFilter(const char[] pattern, Handle clients)
 {
