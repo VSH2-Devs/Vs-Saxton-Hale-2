@@ -117,7 +117,7 @@ ConVar
 	bEnabled = null
 ;
 
-ConVar cvarVSH2[VersionNumber+1];
+ConVar cvarVSH2[VersionNumber+1]; //Don't change this. Simply place any new CVARs above VersionNumber in the enum.
 
 Handle
 	hHudText,
