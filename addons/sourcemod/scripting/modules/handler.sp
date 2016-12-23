@@ -1404,13 +1404,15 @@ public void _SkipBossPanel()
 	BaseBoss upnext[3];
 	for (int j=0; j<3; ++j)
 	{
+		if (not IsValidClient(j))
+			continue;
 		upnext[j] = gamemode.FindNextBoss();
 		if (!upnext[j].userid)
 			continue;
 		upnext[j].bSetOnSpawn = true;
 		if (!j)
 			SkipBossPanelNotify(upnext[j].index);
-		else CPrintToChat(upnext[j].index, "{olive}[VSH]{default} You are going to be a Boss soon! Type {olive}/halenext{default} to check/reset your queue points.");
+		else if (!IsFakeClient(j)) CPrintToChat(upnext[j].index, "{olive}[VSH]{default} You are going to be a Boss soon! Type {olive}/halenext{default} to check/reset your queue points.");
 	}
 	for (int n=MaxClients ; n ; --n) {	// Ughhh, reset shit...
 		if (not IsValidClient(n))

@@ -1160,7 +1160,7 @@ stock int GetClip(const int client, const int slot)
 }
 stock void SkipBossPanelNotify(const int client, bool newchoice = true)
 {
-	if (!bEnabled.BoolValue or !IsValidClient(client) or IsVoteInProgress())
+	if (!bEnabled.BoolValue or !IsValidClient(client) or IsFakeClient(client) or IsVoteInProgress())
 		return;
 
 	Panel panel = new Panel();
