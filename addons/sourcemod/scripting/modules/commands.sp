@@ -258,7 +258,7 @@ public Action ForceBossRealtime(int client, int args)
 	for (int i=0; i<target_count; i++) {
 		if ( IsClientInGame(target_list[i]) ) {
 			player = BaseBoss(target_list[i]);
-			player.MakeBossAndSwitch(bosstype, false);
+			player.MakeBossAndSwitch(bosstype, true);
 			CPrintToChat(player.index, "{orange}[VSH 2]{default} an Admin has forced you to be a Boss!");
 		}
 	}
