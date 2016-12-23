@@ -654,6 +654,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 						case 406, 1099: HitsRequired = 1;
 					}
 					TF2_AddCondition(client, TFCond_Bonked, 0.1);
+					TF2_AddCondition(client, TFCond_SpeedBuffAlly, 1.0);
 					if (victim.iHits >= HitsRequired) {
 						TF2_RemoveWearable(client, ent);
 						EmitSoundToAll("player/spy_shield_break.wav", client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
