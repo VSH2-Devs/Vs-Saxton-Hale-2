@@ -13,7 +13,8 @@ enum /* Bosses */	/* When you add custom Bosses, add to the anonymous enum as th
 	PlagueDoc = 5,
 };
 
-#define MAXBOSS		5	// When adding new bosses, increase the MAXBOSS define for the newest boss id
+//#define MAXBOSS		5	// When adding new bosses, increase the MAXBOSS define for the newest boss id
+#define MAXBOSS		PlagueDoc + (g_hPluginsRegistered.Length-1)
 
 #include "modules/bosses.sp"
 
@@ -179,8 +180,8 @@ public void ManageBossDeath(const BaseBoss base)
 		case HHHjr:		ToCHHHJr(base).Death();
 		case Bunny:		ToCBunny(base).Death();
 	}
-	toggle(gamemode.iHealthBarState);
 	Call_OnBossDeath(base);
+	toggle(gamemode.iHealthBarState);
 }
 
 public void ManageBossEquipment(const BaseBoss base)
@@ -297,7 +298,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 {
 	switch ( victim.iType ) {
 		case -1: {}
-		default: {
+		case Hale, Vagineer, CBS, HHHjr, Bunny, PlagueDoc: {
 			char trigger[32];
 			if (GetEdictClassname(attacker, trigger, sizeof(trigger)) and not strcmp(trigger, "trigger_hurt", false))
 			{
@@ -565,6 +566,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				}
 			}
 		}
+		default: return Call_OnBossTakeDamage(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 	}
 	return Plugin_Continue;
 }
@@ -574,8 +576,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 	BaseBoss fighter = BaseBoss(attacker);
 	switch ( fighter.iType ) {
 		case -1: {}
-		default:
-		{
+		case Hale, Vagineer, CBS, HHHjr, Bunny, PlagueDoc: {
 			if (damagetype & DMG_CRIT)
 				damagetype &= ~DMG_CRIT;
 
@@ -661,6 +662,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 				}
 			}
 		}
+		default: return Call_OnBossDealDamage(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 	}
 	return Plugin_Continue;
 }
@@ -715,6 +717,7 @@ public void ManageBossKillPlayer(const BaseBoss attacker, const BaseBoss victim,
 			}
 		}
 	}
+	Call_OnPlayerKilled(attacker, victim, event);
 }
 public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Event event)
 {
@@ -728,8 +731,7 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 		BaseBoss ownerBoss = BaseBoss(victim.iOwnerBoss);
 		switch ( ownerBoss.iType ) {
 			case -1: {}
-			case PlagueDoc:
-			{
+			case PlagueDoc: {
 				// Didn't work...
 				//SDKHooks_TakeDamage(ownerBoss.index, attacker.index, attacker.index, float(damage), DMG_DIRECT, weapon, nullvec, nullvec);
 				ownerBoss.iHealth -= damage;
@@ -740,8 +742,7 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 	}
 	switch ( victim.iType ) {
 		case -1: {}
-		default:
-		{
+		default: {
 			victim.iHealth -= damage;
 			victim.GiveRage(damage);
 		}
@@ -801,6 +802,7 @@ public void ManagePlayerAirblast(const BaseBoss airblaster, const BaseBoss airbl
 			else airblasted.flRAGE += cvarVSH2[AirblastRage].FloatValue;
 		}
 	}
+	Call_OnPlayerAirblasted(airblaster, airblasted, event);
 }
 
 public void ManageTraceHit(const BaseBoss victim, const BaseBoss attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup)
@@ -808,6 +810,7 @@ public void ManageTraceHit(const BaseBoss victim, const BaseBoss attacker, int& 
 	switch ( victim.iType ) {
 		case -1: {}
 	}
+	Call_OnTraceAttack(victim, attacker, inflictor, damage, damagetype, ammotype, hitbox, hitgroup);
 }
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
@@ -859,6 +862,7 @@ public void ManageBossMedicCall(const BaseBoss base)
 			DoTaunt(base.index, "", 0);
 		}
 	}
+	Call_OnBossMedicCall(base);
 }
 public void ManageBossTaunt(const BaseBoss base)
 {
@@ -871,6 +875,7 @@ public void ManageBossTaunt(const BaseBoss base)
 		case Bunny:	ToCBunny(base).RageAbility();
 		case PlagueDoc:	ToCPlague(base).RageAbility();
 	}
+	Call_OnBossTaunt(base);
 }
 public void ManageBuildingDestroyed(const BaseBoss base, const int building, const int objecttype, Event event)
 {
@@ -884,6 +889,7 @@ public void ManageBuildingDestroyed(const BaseBoss base, const int building, con
 			}
 		}
 	}
+	Call_OnBossKillBuilding(base, building, event);
 }
 public void ManagePlayerJarated(const BaseBoss attacker, const BaseBoss victim)
 {
@@ -892,6 +898,7 @@ public void ManagePlayerJarated(const BaseBoss attacker, const BaseBoss victim)
 		case Hale, Vagineer, CBS, HHHjr, Bunny, PlagueDoc:
 			victim.flRAGE -= cvarVSH2[JarateRage].FloatValue;
 	}
+	Call_OnBossJarated(victim, attacker);
 }
 public Action HookSound(int clients[64], int& numClients, char sample[FULLPATH], int& entity, int& channel, float& volume, int& level, int& pitch, int& flags)
 {
@@ -915,7 +922,7 @@ public Action HookSound(int clients[64], int& numClients, char sample[FULLPATH],
 
 			if ( not strncmp(sample, "vo", 2, false) )
 			{
-				if (StrContains(sample, "positivevocalization01", false) not_eq -1) //For backstab sound
+				if (StrContains(sample, "positivevocalization01", false) not_eq -1)	// For backstab sound
 					return Plugin_Continue;
 				if (StrContains(sample, "engineer_moveup", false) not_eq -1)
 					Format(sample, FULLPATH, "%s%i.wav", VagineerJump, GetRandomInt(1, 2));
@@ -1001,6 +1008,7 @@ public void ManageMessageIntro(ArrayList bosses)//(const BaseBoss base[34])		// 
 		AcceptEntityInput(ent, "Open");
 		AcceptEntityInput(ent, "Unlock");
 	}
+	Call_OnMessageIntro(bosses);
 	int i;
 	BaseBoss base;
 	int len = bosses.Length;
@@ -1035,11 +1043,11 @@ public void ManageBossPickUpItem(const BaseBoss base, const char item[64])
 	//	return;
 	switch (base.iType) {
 		case -1: {}
-		case Hale:
-		{
+		case Hale: {
 			
 		}
 	}
+	Call_OnBossPickUpItem(base, item);
 }
 
 public void ManageResetVariables(const BaseBoss base)
@@ -1068,6 +1076,7 @@ public void ManageResetVariables(const BaseBoss base)
 	base.iLives = (gamemode.bMedieval ? cvarVSH2[MedievalLives].IntValue : 0);
 	base.iHealth = 0;
 	base.iMaxHealth = 0;
+	Call_OnVariablesReset(base);
 }
 public void ManageEntityCreated(const int entity, const char[] classname)
 {
@@ -1100,6 +1109,7 @@ public void ManageUberDeploy(const BaseBoss medic, const BaseBoss patient)
 				medic.iUberTarget = patient.userid;
 			}
 			else medic.iUberTarget = 0;
+			Call_OnUberDeployed(medic, patient);
 			CreateTimer(0.1, TimerLazor, EntIndexToEntRef(medigun), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
@@ -1175,6 +1185,7 @@ public void ManageMusic(char song[FULLPATH], float& time)
 			}
 		}
 	}
+	Call_OnMusic(song, time);
 }
 public void StopBackGroundMusic()
 {
@@ -1190,6 +1201,7 @@ public void ManageRoundEndBossInfo(ArrayList bosses, bool bossWon) //(const Base
 	gameMessage[0] = '\0';
 	int i=0;
 	BaseBoss base;
+	Call_OnRoundEndInfo(bosses, bossWon);
 	int len = bosses.Length;
 	for (i=0 ; i<len ; ++i) { //for (i=0 ; i<34 ; ++i) {
 		base = bosses.Get(i);
@@ -1235,6 +1247,7 @@ public void ManageLastPlayer()
 		case CBS:	ToCChristian(currBoss).LastPlayerSoundClip();
 		case Bunny:	ToCBunny(currBoss).LastPlayerSoundClip();
 	}
+	Call_OnLastPlayer();
 }
 public void ManageBossCheckHealth(const BaseBoss base)
 {
@@ -1250,6 +1263,7 @@ public void ManageBossCheckHealth(const BaseBoss base)
 			case Bunny:	PrintCenterTextAll("The Easter Bunny showed his current HP: %i of %i", base.iHealth, base.iMaxHealth);
 			case PlagueDoc:	PrintCenterTextAll("The Plague Doctor showed his current HP: %i of %i", base.iHealth, base.iMaxHealth);
 		}
+		Call_OnBossHealthCheck(base);
 		LastBossTotalHealth = base.iHealth;
 		return;
 	}
@@ -1273,6 +1287,7 @@ public void ManageBossCheckHealth(const BaseBoss base)
 				case Bunny:	Format(gameMessage, MAXMESSAGE, "%s\nThe Easter Bunny's current health is: %i of %i", gameMessage, boss.iHealth, boss.iMaxHealth);
 				case PlagueDoc:	Format(gameMessage, MAXMESSAGE, "%s\nPlague Doctor's current health is: %i of %i", gameMessage, boss.iHealth, boss.iMaxHealth);
 			}
+			Call_OnBossHealthCheck(boss);
 			totalHealth += boss.iHealth;
 		}
 		PrintCenterTextAll(gameMessage);
@@ -1381,6 +1396,7 @@ public void ManageOnBossCap(char sCappers[MAXPLAYERS+1], const int CappingTeam)
 		case RED:	{}	// Code pertaining to red team here
 		case BLU:	{}	// Code pertaining to blu team and/or bosses here
 	}
+	Call_OnControlPointCapped(sCappers, CappingTeam);
 }
 
 public void _SkipBossPanel()
@@ -1551,6 +1567,7 @@ public void PrepPlayers(const BaseBoss player)
 	if (gamemode.bTF2Attribs and cvarVSH2[HealthRegenForPlayers].BoolValue)
 		TF2Attrib_SetByDefIndex( client, 57, GetClientHealth(client)/50.0+cvarVSH2[HealthRegenAmount].FloatValue );
 #endif
+	Call_OnPrepRedTeam(player);
 }
 
 public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDefinitionIndex, Handle& hItem)
@@ -1940,6 +1957,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 			}
 		}
 	}
+	Call_OnRedPlayerThink(fighter);
 }
 public void _RespawnPlayer(const int userid)	// too many temp funcs just to call as a timer. No wonder sourcepawn needs lambda funcs...
 {
