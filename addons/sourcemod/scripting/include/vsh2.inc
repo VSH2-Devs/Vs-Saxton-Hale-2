@@ -137,11 +137,12 @@ enum {		//VSH2HookType
 	OnBossTaunt,
 	OnBossKillBuilding,
 	OnBossJarated,
-	OnHookSound,
+	//OnHookSound,
 	OnMessageIntro,
 	OnBossPickUpItem,
 	OnVariablesReset,
 	OnUberDeployed,
+	OnUberLoop,
 	OnMusic,
 	OnRoundEndInfo,
 	OnLastPlayer,
@@ -155,24 +156,74 @@ enum {		//VSH2HookType
 	IF YOU'RE USING THE HOOKING SYSTEM FOR A BOSS, YOU HAVE TO REGISTER YOUR PLUGIN WITH VSH2 BECAUSE YOU NEED THE MODULE INDEX TRACKED
 */
 
-typeset VSH2HookCB {		// Available Callbacks
-	function void ();
-	function void (const int iModuleIndex);
-	function void (const int iModuleIndex, const VSH2Player Player);
-	function void (const int iModuleIndex, const VSH2Player Victim, const VSH2Player Attacker);
-	function void (const int iModuleIndex, const VSH2Player Attacker, const int iBuildingRef);
-	
+typeset VSH2HookCB {
+	/*
+		OnBossSelected
+		OnBossThink
+		OnBossModelTimer
+		OnBossDeath
+		OnBossEquipped
+		OnBossInitialized
+		OnMinionInitialized
+		OnBossPlayIntro
+		OnBossMedicCall
+		OnBossTaunt
+		OnVariablesReset
+		OnBossHealthCheck
+		OnPrepRedTeam
+		OnRedPlayerThink
+	*/
 	function void (const VSH2Player Player);
+	
+	/*
+		OnTouchPlayer
+		OnBossJarated
+		OnUberDeployed	// Victim is uber target, attacker is medic
+		OnUberLoop	// Victim is uber target, attacker is medic
+	*/
 	function void (const VSH2Player Victim, const VSH2Player Attacker);
+	
+	//	OnTouchBuilding
+	function void (const VSH2Player Attacker, const int BuildingRef);
+	
+	//	OnBossKillBuilding
+	function void (const VSH2Player Attacker, const int building, Event event);
+	
+	//	OnBossTakeDamage , OnBossDealDamage
+	function Action (VSH2Player Victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom);
+	
+	/*
+		OnPlayerKilled
+		OnPlayerAirblasted
+	*/
+	function void (const VSH2Player player, const VSH2Player victim, Event event);
+	
+	//	OnTraceAttack
+	function void (const VSH2Player player, const VSH2Player attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup);
+	
+	//	OnMessageIntro
+	function void (ArrayList bossArray);
+	
+	//	OnMusic
+	function void (char song[PLATFORM_MAX_PATH], float& time);
+	
+	//	OnRoundEndInfo
+	function void (ArrayList bosses, bool bosswin);
+	
+	//	OnControlPointCapped
+	function void (char cappers[MAXPLAYERS+1], const int team);
+	
+	//	OnCallDownloads , OnLastPlayer
+	function void ();
 };
 
 // Use hooktype enum on these.
-
 native void VSH2_Hook(const int callbacktype, VSH2HookCB callback);
 native bool VSH2_HookEx(const int callbacktype, VSH2HookCB callback);
 
 native void VSH2_Unhook(const int callbacktype, VSH2HookCB callback);
 native bool VSH2_UnhookEx(const int callbacktype, VSH2HookCB callback);
+
 
 native any VSH2GameMode_GetProperty(const char prop_name[64]);
 native void VSH2GameMode_SetProperty(const char prop_name[64], any value);
@@ -191,7 +242,7 @@ property bool bPointReady
 property bool bMedieval
 property float flHealthTime
 property float flMusicTime
-property BaseBoss hNextBoss
+property VSH2Player hNextBoss
 */
 
 native VSH2Player VSH2GameMode_FindNextBoss();
