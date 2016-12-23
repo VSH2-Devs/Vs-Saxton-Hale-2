@@ -18,7 +18,7 @@
 #pragma semicolon			1
 #pragma newdecls			required
 
-#define PLUGIN_VERSION			"1.6.4 BETA"
+#define PLUGIN_VERSION			"1.6.8 BETA"
 #define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
 #define CODEFRAMES			(1.0/30.0)	/* 30 frames per second means 0.03333 seconds or 33.33 ms */
 
@@ -194,14 +194,12 @@ methodmap TF2Item < Handle
 };
 
 //ArrayList ptrBosses ;
+ArrayList g_hPluginsRegistered;
 
 #include "modules/stocks.inc"
-#include "modules/forwards.sp"
 #include "modules/handler.sp"	// Contains the game mode logic as well
 #include "modules/events.sp"
 #include "modules/commands.sp"
-
-ArrayList g_hPluginsRegistered;
 
 public void OnPluginStart()
 {
@@ -974,6 +972,7 @@ public Action TimerLazor(Handle timer, any medigunid)
 			{
 				TF2_AddCondition(target, TFCond_CritOnWin, 0.5);
 				BaseBoss(client).iUberTarget = GetClientUserId(target);
+				Call_OnUberLoop(BaseBoss(client), BaseBoss(target));
 			}
 			else BaseBoss(client).iUberTarget = 0;
 		}
