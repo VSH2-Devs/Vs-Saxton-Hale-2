@@ -64,6 +64,7 @@ public void ManageMenu( Menu& menu )
 	AddHHHToMenu	(menu);
 	AddBunnyToMenu	(menu);
 	AddPlagueToMenu	(menu);
+	Call_OnBossMenu(menu);
 }
 
 public void ManageDisconnect(const int client)
