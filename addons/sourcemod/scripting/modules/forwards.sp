@@ -66,6 +66,7 @@ void InitializeForwards()
 	g_hForwards[OnControlPointCapped] = new PrivateForward( CreateForward(ET_Ignore, Param_String, Param_Cell) );
 	g_hForwards[OnPrepRedTeam] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell) );
 	g_hForwards[OnRedPlayerThink] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell) );
+	g_hForwards[OnBossMenu] = new PrivateForward( CreateForward(ET_Ignore, Param_CellByRef) );
 }
 
 void Call_OnCallDownloads()
@@ -309,5 +310,11 @@ void Call_OnRedPlayerThink(const BaseBoss player)
 {
 	g_hForwards[OnRedPlayerThink].Start();
 	Call_PushCell(player);
+	Call_Finish();
+}
+void Call_OnBossMenu(Menu& menu)
+{
+	g_hForwards[OnBossMenu].Start();
+	Call_PushCellRef(menu);
 	Call_Finish();
 }
