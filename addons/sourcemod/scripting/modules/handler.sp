@@ -14,7 +14,7 @@ enum /* Bosses */	/* When you add custom Bosses, add to the anonymous enum as th
 };
 
 //#define MAXBOSS		5	// When adding new bosses, increase the MAXBOSS define for the newest boss id
-#define MAXBOSS		PlagueDoc + (g_hPluginsRegistered.Length-1)
+#define MAXBOSS		PlagueDoc + (g_hPluginsRegistered.Length)
 
 #include "modules/bosses.sp"
 
