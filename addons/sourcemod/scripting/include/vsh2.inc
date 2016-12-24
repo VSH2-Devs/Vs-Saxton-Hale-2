@@ -196,10 +196,10 @@ typeset VSH2HookCB {
 		OnPlayerKilled
 		OnPlayerAirblasted
 	*/
-	function void (const VSH2Player player, const VSH2Player victim, Event event);
+	function void (const VSH2Player Player, const VSH2Player Victim, Event event);
 	
 	//	OnTraceAttack
-	function void (const VSH2Player player, const VSH2Player attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup);
+	function void (const VSH2Player Victim, const VSH2Player attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup);
 	
 	//	OnMessageIntro
 	function void (ArrayList bossArray);
@@ -215,6 +215,9 @@ typeset VSH2HookCB {
 	
 	//	OnCallDownloads , OnLastPlayer
 	function void ();
+	
+	//	OnBossPickUpItem
+	function void (const VSH2Player Player, const char item[64]);
 };
 
 // Use hooktype enum on these.
