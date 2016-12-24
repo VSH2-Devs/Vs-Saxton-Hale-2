@@ -148,6 +148,7 @@ enum {		//VSH2HookType
 	OnLastPlayer,
 	OnBossHealthCheck,
 	OnControlPointCapped,
+	OnBossMenu,
 	OnPrepRedTeam,
 	OnRedPlayerThink
 };
@@ -218,6 +219,9 @@ typeset VSH2HookCB {
 	
 	//	OnBossPickUpItem
 	function void (const VSH2Player Player, const char item[64]);
+	
+	//	OnBossMenu
+	function void (Menu& menu);
 };
 
 // Use hooktype enum on these.
