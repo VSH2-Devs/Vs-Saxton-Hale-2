@@ -9,6 +9,7 @@
 
 #undef REQUIRE_PLUGIN
 #tryinclude <tf2attributes>
+#tryinclude <goomba>
 #define REQUIRE_PLUGIN
 
 #undef REQUIRE_EXTENSIONS
@@ -18,7 +19,7 @@
 #pragma semicolon			1
 #pragma newdecls			required
 
-#define PLUGIN_VERSION			"1.6.8 BETA"
+#define PLUGIN_VERSION			"1.7.0 BETA"
 #define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
 #define CODEFRAMES			(1.0/30.0)	/* 30 frames per second means 0.03333 seconds or 33.33 ms */
 
@@ -102,7 +103,13 @@ enum /*CvarName*/
 	MultiCapture,
 	MultiCapAmount,
 	DemoShieldCrits,
-	MultiBossHandicap
+	CanBossGoomba,
+	CanMantreadsGoomba,
+	GoombaDamageAdd,
+	GoombaLifeMultiplier,
+	GoombaReboundPower,
+	MultiBossHandicap,
+	VersionNumber
 };
 
 // cvar + handles
@@ -110,7 +117,7 @@ ConVar
 	bEnabled = null
 ;
 
-ConVar cvarVSH2[MultiBossHandicap+1];
+ConVar cvarVSH2[VersionNumber+1]; //Don't change this. Simply place any new CVARs above VersionNumber in the enum.
 
 Handle
 	hHudText,
@@ -232,10 +239,10 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_ff2_hp", Command_GetHPCmd);
 	RegConsoleCmd("sm_ff2hp", Command_GetHPCmd);
 	
-	RegConsoleCmd("sm_setboss", SetBossMenu, "sets your boss");
-	RegConsoleCmd("sm_sethale", SetBossMenu, "sets your boss");
-	RegConsoleCmd("sm_ff2boss", SetBossMenu, "sets your boss");
-	RegConsoleCmd("sm_haleboss", SetBossMenu, "sets your boss");
+	RegConsoleCmd("sm_setboss", SetBossMenu, "Sets your boss.");
+	RegConsoleCmd("sm_sethale", SetBossMenu, "Sets your boss.");
+	RegConsoleCmd("sm_ff2boss", SetBossMenu, "Sets your boss.");
+	RegConsoleCmd("sm_haleboss", SetBossMenu, "Sets your boss.");
 	
 	RegConsoleCmd("sm_halemusic", MusicTogglePanelCmd);
 	RegConsoleCmd("sm_hale_music", MusicTogglePanelCmd);
@@ -252,14 +259,14 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_ff2_help", HelpPanelCmd);
 	
 	RegAdminCmd("sm_reloadbosscfg", CmdReloadCFG, ADMFLAG_GENERIC);
-	RegAdminCmd("sm_hale_select", CommandBossSelect, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss");
-	RegAdminCmd("sm_ff2_select", CommandBossSelect, ADMFLAG_VOTE, "ff2_select <target> - Select a player to be next boss");
-	RegAdminCmd("sm_boss_select", CommandBossSelect, ADMFLAG_VOTE, "boss_select <target> - Select a player to be next boss");
+	RegAdminCmd("sm_hale_select", CommandBossSelect, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss.");
+	RegAdminCmd("sm_ff2_select", CommandBossSelect, ADMFLAG_VOTE, "ff2_select <target> - Select a player to be next boss.");
+	RegAdminCmd("sm_boss_select", CommandBossSelect, ADMFLAG_VOTE, "boss_select <target> - Select a player to be next boss.");
 	RegAdminCmd("sm_healthbarcolor", ChangeHealthBarColor, ADMFLAG_GENERIC);
 	
-	RegAdminCmd("sm_hale_force", ForceBossRealtime, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss");
-	RegAdminCmd("sm_boss_force", ForceBossRealtime, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss");
-	RegAdminCmd("sm_ff2_force", ForceBossRealtime, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss");
+	RegAdminCmd("sm_boss_force", ForceBossRealtime, ADMFLAG_VOTE, "boss_force <target> <bossID> - Force a player to the boss team as the specified boss. (Setup time only)");
+	RegAdminCmd("sm_hale_force", ForceBossRealtime, ADMFLAG_VOTE, "hale_force <target> <bossID> - Force a player to the boss team as the specified boss. (Setup time only)");
+	RegAdminCmd("sm_ff2_force", ForceBossRealtime, ADMFLAG_VOTE, "ff2_force <target> <bossID> - Force a player to the boss team as the specified boss. (Setup time only)");
 	
 	AddCommandListener(BlockSuicide, "explode");
 	AddCommandListener(BlockSuicide, "kill");
@@ -270,35 +277,41 @@ public void OnPluginStart()
 	rageHUD = CreateHudSynchronizer();
 	timeleftHUD = CreateHudSynchronizer();
 
-	bEnabled = CreateConVar("vsh2_enabled", "1", "Enable VSH 2 plugin", FCVAR_NONE, true, 0.0, true, 1.0);
-	cvarVSH2[PointType] = CreateConVar("vsh2_point_type", "0", "Select condition to enable point (0 - alive players, 1 - time)", FCVAR_NONE, true, 0.0, true, 1.0);
-	cvarVSH2[PointDelay] = CreateConVar("vsh2_point_delay", "6", "Addition (for each player) delay before point's activation.", FCVAR_NONE);
-	cvarVSH2[AliveToEnable] = CreateConVar("vsh2_point_alive", "5", "Enable control points when there are X people left alive.", FCVAR_NONE, true, 1.0, true, 32.0);
-	cvarVSH2[FirstRound] = CreateConVar("vsh2_firstround", "0", "if 1, allows the first round to start with VSH2 enabled", FCVAR_NONE, true, 0.0, true, 1.0);
-	cvarVSH2[DamagePoints] = CreateConVar("vsh2_damage_points", "600", "amount of damage needed to gain 1 point score", FCVAR_NONE);
-	cvarVSH2[DamageForQueue] = CreateConVar("vsh2_damage_queue", "1", "allow damage to influence increase of queue points", FCVAR_NONE, true, 0.0, true, 1.0);
-	cvarVSH2[QueueGained] = CreateConVar("vsh2_queue_gain", "10", "how much queue to give at end of round", FCVAR_NONE, true, 0.0, true, 9999.0);
-	cvarVSH2[EnableMusic] = CreateConVar("vsh2_enable_music", "1", "enable or disable background music", FCVAR_NONE, true, 0.0, true, 1.0);
-	cvarVSH2[MusicVolume] = CreateConVar("vsh2_music_volume", "0.5", "how loud the music should be", FCVAR_NONE, true, 0.0, true, 20.0);
-	cvarVSH2[HealthPercentForLastGuy] = CreateConVar("vsh2_health_percentage_last_guy", "51", "if the health bar is lower than x out of 255, the last player timer will stop", FCVAR_NONE, true, 0.0, true, 255.0);
-	cvarVSH2[HealthRegenForPlayers] = CreateConVar("vsh2_health_regen", "0", "allow non-boss and non-minion players to have health regen", FCVAR_NONE, true, 0.0, true, 1.0);
-	cvarVSH2[HealthRegenAmount] = CreateConVar("vsh2_health_regen_amount", "2.0", "if health regen is allowed, how much health regen should players get?", FCVAR_NONE);
-	cvarVSH2[MedigunReset] = CreateConVar("vsh2_medigun_reset_amount", "0.31", "how much uber percentage should mediguns, after uber, reset to?", FCVAR_NONE, true, 0.0, true, 1.0);
-	cvarVSH2[StopTickleTime] = CreateConVar("vsh2_stop_tickle_time", "3.0", "how much time for the ticklefists tickle to be removed from boss", FCVAR_NONE);
-	cvarVSH2[AirStrikeDamage] = CreateConVar("vsh2_airstrike_damage", "200", "how much damage using the airstrike needed to gain clipsize", FCVAR_NONE);
-	cvarVSH2[AirblastRage] = CreateConVar("vsh2_airblast_rage", "8.0", "how much rage should airblast give/remove? (negative number to remove rage)", FCVAR_NONE, true, 0.0, true, 100.0);
-	cvarVSH2[JarateRage] = CreateConVar("vsh2_jarate_rage", "8.0", "how much rage should jarate give/remove? (negative number to add rage)", FCVAR_NONE, true, 0.0, true, 100.0);
-	cvarVSH2[FanoWarRage] = CreateConVar("vsh2_fanowar_rage", "5.0", "how much rage should the fanowar give/remove? (negative number to add rage)", FCVAR_NONE);
-	cvarVSH2[LastPlayerTime] = CreateConVar("vsh2_lastplayer_time", "180", "how many seconds to give the last player to fight the Boss(es) until said seconds are over", FCVAR_NONE);
-	cvarVSH2[EngieBuildings] = CreateConVar("vsh2_killbuilding_engiedeath", "0", "if 0, no building dies when engie dies. If 1, only sentry dies. If 2, all buildings die.", FCVAR_NONE, true, 0.0, true, 2.0);
-	cvarVSH2[MedievalLives] = CreateConVar("vsh2_medievalmode_lives", "3", "amount of lives red players are entitled during Medieval Mode", FCVAR_NONE, true, 0.0, true, 99.0);
-	cvarVSH2[MedievalRespawnTime] = CreateConVar("vsh2_medievalmode_respawntime", "5.0", "how long it takes for players to respawn after dying in medieval mode", FCVAR_NONE, true, 1.0, true, 999.0);
-	cvarVSH2[PermOverheal] = CreateConVar("vsh2_permanent_overheal", "1", "set if Mediguns give permanent overheal", FCVAR_NONE, true, 0.0, true, 1.0);
-	cvarVSH2[MultiCapture] = CreateConVar("vsh2_multiple_cp_captures", "0", "if enabled, allow control points to be captured more than once instead of ending the round.", FCVAR_NONE, true, 0.0, true, 1.0);
-	cvarVSH2[MultiCapAmount] = CreateConVar("vsh2_multiple_cp_capture_amount", "3", "if vsh2_allow_multiple_cp_captures is enabled, how many times must a team capture a Control Point to win", FCVAR_NONE, true, 1.0, true, 999.0);
-	cvarVSH2[DemoShieldCrits] = CreateConVar("vsh2_demoman_shield_crits", "3", "Sets Demoman Shield crit behaviour. 0 - No crits, 1 - Mini-crits, 2 - Crits, 3 - Scale with Charge Meter (Losing the Shield results in no more (mini)crits.)", FCVAR_NONE, true, 0.0, true, 3.0);
+	bEnabled = CreateConVar("vsh2_enabled", "1", "Enable VSH 2 plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	cvarVSH2[VersionNumber] = CreateConVar("vsh2_version_number", PLUGIN_VERSION, "VSH 2 Plugin Version Number. (DO NOT TOUCH)", FCVAR_NOTIFY|FCVAR_DONTRECORD|FCVAR_CHEAT);
+	cvarVSH2[PointType] = CreateConVar("vsh2_point_type", "0", "Select condition to enable point (0 - alive players, 1 - time)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	cvarVSH2[PointDelay] = CreateConVar("vsh2_point_delay", "6", "Addition (for each player) delay before point's activation.", FCVAR_NOTIFY);
+	cvarVSH2[AliveToEnable] = CreateConVar("vsh2_point_alive", "5", "Enable control points when there are X people left alive.", FCVAR_NOTIFY, true, 1.0, true, 32.0);
+	cvarVSH2[FirstRound] = CreateConVar("vsh2_firstround", "0", "If 1, allows the first round to start with VSH2 enabled.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	cvarVSH2[DamagePoints] = CreateConVar("vsh2_damage_points", "600", "Amount of damage needed to gain 1 point on the scoreboard.", FCVAR_NOTIFY, true, 1.0);
+	cvarVSH2[DamageForQueue] = CreateConVar("vsh2_damage_queue", "1", "Allow damage to influence increase of queue points.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	cvarVSH2[QueueGained] = CreateConVar("vsh2_queue_gain", "10", "How many queue points to give at the end of each round.", FCVAR_NOTIFY, true, 0.0, true, 9999.0);
+	cvarVSH2[EnableMusic] = CreateConVar("vsh2_enable_music", "1", "Enable or disable background music.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	cvarVSH2[MusicVolume] = CreateConVar("vsh2_music_volume", "0.5", "How loud the background music should be, if enabled.", FCVAR_NOTIFY, true, 0.0, true, 20.0);
+	cvarVSH2[HealthPercentForLastGuy] = CreateConVar("vsh2_health_percentage_last_guy", "51", "If the health bar is lower than x out of 255, the last player timer will stop.", FCVAR_NOTIFY, true, 0.0, true, 255.0);
+	cvarVSH2[HealthRegenForPlayers] = CreateConVar("vsh2_health_regen", "0", "Allow non-boss and non-minion players to have passive health regen.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	cvarVSH2[HealthRegenAmount] = CreateConVar("vsh2_health_regen_amount", "2.0", "If health regen is enabled, how much health regen per second should players get?", FCVAR_NOTIFY);
+	cvarVSH2[MedigunReset] = CreateConVar("vsh2_medigun_reset_amount", "0.31", "How much Uber percentage should Mediguns, after Uber, reset to?", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	cvarVSH2[StopTickleTime] = CreateConVar("vsh2_stop_tickle_time", "3.0", "How long in seconds the tickle effect from the Holiday Punch lasts before being removed.", FCVAR_NOTIFY, true, 0.01);
+	cvarVSH2[AirStrikeDamage] = CreateConVar("vsh2_airstrike_damage", "200", "How much damage needed for the Airstrike to gain +1 clipsize.", FCVAR_NOTIFY);
+	cvarVSH2[AirblastRage] = CreateConVar("vsh2_airblast_rage", "8.0", "How much Rage should airblast give/remove? (negative number to remove rage)", FCVAR_NOTIFY, true, 0.0, true, 100.0);
+	cvarVSH2[JarateRage] = CreateConVar("vsh2_jarate_rage", "8.0", "How much rage should Jarate give/remove? (negative number to add rage)", FCVAR_NOTIFY, true, 0.0, true, 100.0);
+	cvarVSH2[FanoWarRage] = CreateConVar("vsh2_fanowar_rage", "5.0", "How much rage should the Fan o' War give/remove? (negative number to add rage)", FCVAR_NOTIFY);
+	cvarVSH2[LastPlayerTime] = CreateConVar("vsh2_lastplayer_time", "180", "How many seconds to give the last player to fight the Boss(es) before a stalemate.", FCVAR_NOTIFY);
+	cvarVSH2[EngieBuildings] = CreateConVar("vsh2_killbuilding_engiedeath", "0", "If 0, no building dies when engie dies. If 1, only sentry dies. If 2, all buildings die.", FCVAR_NOTIFY, true, 0.0, true, 2.0);
+	cvarVSH2[MedievalLives] = CreateConVar("vsh2_medievalmode_lives", "3", "Amount of lives red players are entitled during Medieval Mode.", FCVAR_NOTIFY, true, 0.0, true, 99.0);
+	cvarVSH2[MedievalRespawnTime] = CreateConVar("vsh2_medievalmode_respawntime", "5.0", "How long it takes for players to respawn after dying in medieval mode (if they have live left).", FCVAR_NOTIFY, true, 1.0, true, 999.0);
+	cvarVSH2[PermOverheal] = CreateConVar("vsh2_permanent_overheal", "1", "If enabled, Mediguns give permanent overheal.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	cvarVSH2[MultiCapture] = CreateConVar("vsh2_multiple_cp_captures", "0", "If enabled, allow control points to be captured more than once instead of ending the round instantly.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	cvarVSH2[MultiCapAmount] = CreateConVar("vsh2_multiple_cp_capture_amount", "3", "If vsh2_allow_multiple_cp_captures is enabled, how many times must a team capture a Control Point to win.", FCVAR_NOTIFY, true, 1.0, true, 999.0);
+	cvarVSH2[DemoShieldCrits] = CreateConVar("vsh2_demoman_shield_crits", "3", "Sets Demoman Shield crit behaviour. 0 - No crits, 1 - Mini-crits, 2 - Crits, 3 - Scale with Charge Meter (Losing the Shield results in no more (mini)crits.)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
+	cvarVSH2[CanBossGoomba] = CreateConVar("vsh2_goomba_can_boss_stomp", "0", "Can the Boss Goomba Stomp other players? (Requires Goomba Stomp plugin). NOTE: All the CVARs in VSH2 controlling Goomba damage, lifemultiplier and rebound power are for NON-BOSS PLAYERS STOMPING THE BOSS. If you enable this CVAR, use the Goomba Stomp plugin config file to control the Boss' Goomba Variables. Not recommended to enable this unless you've coded your own Goomba Stomp behaviour.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	cvarVSH2[CanMantreadsGoomba] = CreateConVar("vsh2_goomba_can_mantreads_stomp", "0", "Can Soldiers/Demomen Goomba Stomp the Boss while using the Mantreads/Booties? (Requires Goomba Stomp plugin). NOTE: Enabling this may cause 'double' Stomps (Goomba Stomp and Mantreads stomp together).", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	cvarVSH2[GoombaDamageAdd] = CreateConVar("vsh2_goomba_damage_add", "450.0", "How much damage to add to a Goomba Stomp on the Boss. (Requires Goomba Stomp plugin).", FCVAR_NOTIFY, true, 0.0, false);
+	cvarVSH2[GoombaLifeMultiplier] = CreateConVar("vsh2_goomba_boss_life_multiplier", "0.025", "What percentage of the Boss' CURRENT HP to deal as damage on a Goomba Stomp. (Requires Goomba Stomp plugin).", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	cvarVSH2[GoombaReboundPower] = CreateConVar("vsh2_rebound_power", "300.0", "How much upwards velocity (in Hammer Units) should players recieve upon Goomba Stomping the Boss? (Requires Goomba Stomp plugin).", FCVAR_NOTIFY, true, 0.0, false);
 	cvarVSH2[MultiBossHandicap] = CreateConVar("vsh2_multiboss_handicap", "500", "How much Health is removed on every individual boss in a multiboss round at the start of said round. 0 disables it.", FCVAR_NONE, true, 0.0, true, 99999.0);
-	
+
 #if defined _steamtools_included
 	gamemode.bSteam = LibraryExists("SteamTools");
 #endif
@@ -329,9 +342,9 @@ public void OnPluginStart()
 	AddCommandListener(cdVoiceMenu, "voicemenu");
 	AddNormalSoundHook(HookSound);
 	
-	PointCookie = RegClientCookie("vsh2_queuepoints", "Amount of VSH2 Queue points player has", CookieAccess_Protected);
-	BossCookie = RegClientCookie("vsh2_presetbosses", "Preset bosses for VSH2 players", CookieAccess_Protected);
-	MusicCookie = RegClientCookie("vsh2_music_settings", "HaleMusic setting", CookieAccess_Public);
+	PointCookie = RegClientCookie("vsh2_queuepoints", "Amount of VSH2 Queue points a player has.", CookieAccess_Protected);
+	BossCookie = RegClientCookie("vsh2_presetbosses", "Preset bosses for VSH2 players.", CookieAccess_Protected);
+	MusicCookie = RegClientCookie("vsh2_music_settings", "HaleMusic setting.", CookieAccess_Public);
 
 	ManageDownloads(); // in handler.sp
 
@@ -347,8 +360,12 @@ public void OnPluginStart()
 	AddMultiTargetFilter("@minions", MinionTargetFilter, "the Minions", false);
 	AddMultiTargetFilter("@!boss", HaleTargetFilter, "all non-Boss players", false);
 	AddMultiTargetFilter("@!hale", HaleTargetFilter, "all non-Boss players", false);
+	AddMultiTargetFilter("@!minion", MinionTargetFilter, "all non-Minions", false);
+	AddMultiTargetFilter("@!minions", MinionTargetFilter, "all non-Minions", false);
+
 	hPlayerFields[0] = new StringMap();	// This will be freed when plugin is unloaded again
 	g_hPluginsRegistered = new ArrayList();
+	
 }
 public bool HaleTargetFilter(const char[] pattern, Handle clients)
 {
@@ -435,6 +452,13 @@ float
 
 public void OnConfigsExecuted()
 {
+	//Config checker taken from VSH1
+	static char szOldVersion[PATH];
+	cvarVSH2[VersionNumber].GetString(_strbuffer(szOldVersion));
+	if (StrEqual(szOldVersion, PLUGIN_VERSION)) 
+		LogError("[VSH2] Warning: your config may be outdated. Back up your tf/cfg/sourcemod/VSHv2.cfg file and delete it, and this plugin will generate a new one that you can then modify to your original values.");
+	cvarVSH2[VersionNumber].SetString(PLUGIN_VERSION, false, true);
+
 	if ( IsVSHMap() ) {
 		tf_arena_use_queue = GetConVarInt(FindConVar("tf_arena_use_queue"));
 		mp_teams_unbalance_limit = GetConVarInt(FindConVar("mp_teams_unbalance_limit"));
@@ -730,6 +754,16 @@ public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& dam
 
 	return Plugin_Continue;
 }
+#if defined _goomba_included_
+public Action OnStomp(int attacker, int victim, float& damageMultiplier, float& damageAdd, float& JumpPower)
+{
+	if (!bEnabled.BoolValue)
+	{
+		return Plugin_Continue;
+	}
+	return ManageOnGoombaStomp(attacker, victim, damageMultiplier, damageAdd, JumpPower);
+}
+#endif
 public Action RemoveEnt(Handle timer, any entid)
 {
 	int ent = EntRefToEntIndex(entid);

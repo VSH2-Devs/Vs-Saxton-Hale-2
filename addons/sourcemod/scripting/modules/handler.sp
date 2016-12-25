@@ -655,6 +655,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 						case 406, 1099: HitsRequired = 1;
 					}
 					TF2_AddCondition(client, TFCond_Bonked, 0.1);
+					TF2_AddCondition(client, TFCond_SpeedBuffAlly, 1.0);
 					if (victim.iHits >= HitsRequired) {
 						TF2_RemoveWearable(client, ent);
 						EmitSoundToAll("player/spy_shield_break.wav", client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
@@ -667,7 +668,63 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 	}
 	return Plugin_Continue;
 }
-
+#if defined _goomba_included_
+public Action ManageOnGoombaStomp(int attacker, int client, float& damageMultiplier, float& damageAdd, float& JumpPower)
+{
+	BaseBoss boss = BaseBoss(client);
+	if (boss.bIsBoss) //Players Stomping the Boss
+	{
+		switch (boss.iType)
+		{
+			case -1: {} // Ignore if not boss at all.
+			default: //Default behaviour for Goomba Stompoing the Boss
+			{
+				if (IsValidEntity(FindPlayerBack(attacker, { 444, 405, 608 }, 3)) && !cvarVSH2[CanMantreadsGoomba].BoolValue)
+				{
+					return Plugin_Handled; // Prevent goomba stomp for mantreads/demo boots if being able to is disabled.
+				}
+				
+				damageAdd = float(cvarVSH2[GoombaDamageAdd].IntValue);
+				damageMultiplier = cvarVSH2[GoombaLifeMultiplier].FloatValue;
+				JumpPower = cvarVSH2[GoombaReboundPower].FloatValue;
+				
+				//PrintToChatAll("%N Just Goomba stomped %N(The Boss)!", attacker, client);
+				CPrintToChatAllEx(attacker, "{olive}>> {teamcolor}%N {default}just goomba stomped {unique}%N{default}!", attacker, client);
+				return Plugin_Changed;
+			}
+		}
+   		return Plugin_Continue;
+	}
+	boss = BaseBoss(attacker);
+	if ( boss.bIsBoss ) //The Boss(es) Stomping a player
+	{
+		switch (boss.iType)
+		{
+			case -1: {} // Ignore if not boss at all.
+			default: //Default behaviour for the Boss Goomba Stomping other players.
+			{
+				if (!cvarVSH2[CanBossGoomba].BoolValue)
+				{
+					return Plugin_Handled; //Block the Boss from Goomba Stomping if disabled.
+				}
+				if (RemoveDemoShield(client)) // If the demo had a shield to break
+				{
+					EmitSoundToAll("player/spy_shield_break.wav", client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
+					TF2_AddCondition(client, TFCond_Bonked, 0.1);
+					TF2_AddCondition(client, TFCond_SpeedBuffAlly, 1.0);
+					damageAdd = 0.0;
+					damageMultiplier = 0.0;
+					//JumpPower = 0.0;
+					return Plugin_Changed;
+				}
+				//PrintToChatAll("%N(The Boss) just got stomped by %N!", client, attacker);
+			}
+		}
+		return Plugin_Continue;
+	}
+	return Plugin_Continue;
+}
+#endif
 public void ManageBossKillPlayer(const BaseBoss attacker, const BaseBoss victim, Event event)	// To lazy to code this better lol
 {
 	//int dmgbits = event.GetInt("damagebits");
@@ -1403,15 +1460,15 @@ public void ManageOnBossCap(char sCappers[MAXPLAYERS+1], const int CappingTeam)
 public void _SkipBossPanel()
 {
 	BaseBoss upnext[3];
-	for (int j=0; j<3; ++j)
-	{
+	for (int j=0; j<3; ++j) {
 		upnext[j] = gamemode.FindNextBoss();
 		if (!upnext[j].userid)
 			continue;
 		upnext[j].bSetOnSpawn = true;
-		if (!j)
+		if (!j)	// If up next to become a boss.
 			SkipBossPanelNotify(upnext[j].index);
-		else CPrintToChat(upnext[j].index, "{olive}[VSH]{default} You are going to be a Boss soon! Type {olive}/halenext{default} to check/reset your queue points.");
+		else if (!IsFakeClient(upnext[j].index))
+			CPrintToChat(upnext[j].index, "{olive}[VSH]{default} You are going to be a Boss soon! Type {olive}/halenext{default} to check/reset your queue points.");
 	}
 	for (int n=MaxClients ; n ; --n) {	// Ughhh, reset shit...
 		if (not IsValidClient(n))

@@ -844,6 +844,19 @@ stock int GetSlotFromWeapon(const int iClient, const int iWeapon)
 	}
 	return -1;
 }
+stock bool RemoveDemoShield(int iClient) //Taken from VSH1
+{
+	int iEnt = MaxClients + 1;
+	while ((iEnt = FindEntityByClassname(iEnt, "tf_wearable_demoshield")) != -1)
+	{
+		if (GetEntPropEnt(iEnt, Prop_Send, "m_hOwnerEntity") == iClient && !GetEntProp(iEnt, Prop_Send, "m_bDisguiseWearable"))
+		{
+			TF2_RemoveWearable(iClient, iEnt);
+			return true; //Returns true if Shield was removed...
+		}
+	}
+	return false; //...and returns False if one wasn't found.
+}
 stock void RemovePlayerBack(int client, int[] indices, int len)
 {
 	if (len <= 0)
@@ -1160,7 +1173,7 @@ stock int GetClip(const int client, const int slot)
 }
 stock void SkipBossPanelNotify(const int client, bool newchoice = true)
 {
-	if (!bEnabled.BoolValue or !IsValidClient(client) or IsVoteInProgress())
+	if (!bEnabled.BoolValue or !IsValidClient(client) or IsFakeClient(client) or IsVoteInProgress())
 		return;
 
 	Panel panel = new Panel();
