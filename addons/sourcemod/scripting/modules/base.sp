@@ -434,6 +434,8 @@ Methods
 
 		int entity = hWep.GiveNamedItem(this.index);
 		delete hWep;
+		
+		SetEntProp(entity, Prop_Send, "m_bValidatedAttachedEntity", 1); //Visible weapon worldmodels
 		EquipPlayerWeapon(this.index, entity);
 		return entity;
 	}
