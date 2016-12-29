@@ -1141,6 +1141,12 @@ public void ManageEntityCreated(const int entity, const char[] classname)
 	if ( StrContains(classname, "rune") not_eq -1 )	// Special request
 		CreateTimer( 0.1, RemoveEnt, EntIndexToEntRef(entity) );
 	
+	if (!cvarVSH2[DroppedWeapons].BoolValue && StrEqual(classname, "tf_dropped_weapon")) //Remove dropped weapons to avoid bad things
+	{
+		AcceptEntityInput(entity, "kill");
+		return;
+	}
+	
 	if (gamemode.iRoundState is StateRunning and not strcmp(classname, "tf_projectile_pipe", false))
 		SDKHook(entity, SDKHook_SpawnPost, OnEggBombSpawned);
 }
