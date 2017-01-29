@@ -1,9 +1,9 @@
 # VSH 2 #
 
 #### Current STABLE Version: *2.0.0*
-[![Master Build Status](https://travis-ci.org/Starblaster64/Vs-Saxton-Hale-2.svg?branch=master)](https://travis-ci.org/Starblaster64/Vs-Saxton-Hale-2)
+[![Master Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=master)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
 #### Current UNSTABLE Version: *2.0.0*
-[![Develop Build Status](https://travis-ci.org/Starblaster64/Vs-Saxton-Hale-2.svg?branch=develop)](https://travis-ci.org/Starblaster64/Vs-Saxton-Hale-2)
+[![Develop Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=develop)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
 ======
 VSH2 is half-rewrite of VSH 1. VSH and FF2 were made as very bad frameworks and shoddy, hacky coding. VSH2 combines the best of both FF2 and VSH by not only having multiplayer boss support but also to make it easier to add new bosses and to give those bosses truly unique abilities and mechanics by giving the developer full, uninhibited power through code rather than configs.
 
@@ -23,7 +23,7 @@ VSH2 is half-rewrite of VSH 1. VSH and FF2 were made as very bad frameworks and 
 * Dependencies: TF2Items, MoreColors
  * Optional: TF2Attributes, SteamTools
 * Compile plugin into .smx and put in addons/sourcemod/plugins folder
-* Take a look at the [Wiki](https://github.com/Starblaster64/Vs-Saxton-Hale-2/wiki) to get started making your own boss!
+* Take a look at the [Wiki](https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki) to get started making your own boss!
 
 ### Who do I talk to? ###
 
@@ -32,6 +32,6 @@ VSH2 is half-rewrite of VSH 1. VSH and FF2 were made as very bad frameworks and 
 
 
 ## Issue Progress ##
-[![Issues/PRs in Ready](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=ready&title=Ready)](https://overv.io/Starblaster64/Vs-Saxton-Hale-2/)
-[![Issues/PRs in In Progress](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=in%20progress&title=In%20Progress)](https://overv.io/Starblaster64/Vs-Saxton-Hale-2/)
-[![Issues/PRs in On Hold](https://badge.waffle.io/Starblaster64/Vs-Saxton-Hale-2.svg?label=on%20hold&title=On%20Hold)](https://overv.io/Starblaster64/Vs-Saxton-Hale-2/)
+[![Issues/PRs in Ready](https://badge.waffle.io/VSH2-Devs/Vs-Saxton-Hale-2.svg?label=ready&title=Ready)](https://overv.io/VSH2-Devs/Vs-Saxton-Hale-2/)
+[![Issues/PRs in In Progress](https://badge.waffle.io/VSH2-Devs/Vs-Saxton-Hale-2.svg?label=in%20progress&title=In%20Progress)](https://overv.io/VSH2-Devs/Vs-Saxton-Hale-2/)
+[![Issues/PRs in On Hold](https://badge.waffle.io/VSH2-Devs/Vs-Saxton-Hale-2.svg?label=on%20hold&title=On%20Hold)](https://overv.io/VSH2-Devs/Vs-Saxton-Hale-2/)
