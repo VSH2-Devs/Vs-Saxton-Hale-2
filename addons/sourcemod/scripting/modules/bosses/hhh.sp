@@ -187,7 +187,7 @@ methodmap CHHHJr < BaseBoss
 		TF2_RemoveAllWeapons(this.index);
 		char attribs[128];
 
-		Format(attribs, sizeof(attribs), "68 ; 2.0 ; 2 ; 2.86 ; 259 ; 1.0 ; 252 ; 0.6 ; 551 ; 1");
+		Format(attribs, sizeof(attribs), "68 ; 2.0 ; 2 ; 2.86 ; 259 ; 1.0 ; 252 ; 0.7 ; 551 ; 1");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_sword", 266, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
