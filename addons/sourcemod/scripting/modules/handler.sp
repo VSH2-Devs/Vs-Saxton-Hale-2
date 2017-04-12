@@ -1513,7 +1513,7 @@ public void PrepPlayers(const BaseBoss player)
 #if defined _tf2attributes_included
 	if (gamemode.bTF2Attribs and IsValidEntity(FindPlayerBack(client, { 444 }, 1)))    //  Fixes mantreads to have jump height again
         {
-            TF2Attrib_SetByDefIndex(client, 58, 1.8);             //  "self dmg push force increased"
+            //TF2Attrib_SetByDefIndex(client, 58, 1.8);             //  "self dmg push force increased"
         }
 #endif
 	int weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
