@@ -1,0 +1,34 @@
+"Updater"
+{
+	"Information"
+	{
+		"Version"
+		{
+			"Latest"	"2.0.1"
+		}
+		
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.0.1:"
+		"Notes"	"patched tankers dropping weapons by killing off all dropped weapons"
+	}
+	
+	"Files"
+	{
+		"Source"	"Path_SM/scripting/vsh2.sp"
+		"Source"	"Path_SM/scripting/vsh2_addon_dmgtracker.sp"
+		"Source"	"Path_SM/scripting/modules/base.sp"
+		"Source"	"Path_SM/scripting/modules/bosses.sp"
+		"Source"	"Path_SM/scripting/modules/commands.sp"
+		"Source"	"Path_SM/scripting/modules/events.sp"
+		"Source"	"Path_SM/scripting/modules/forwards.sp"
+		"Source"	"Path_SM/scripting/modules/gamemode.sp"
+		"Source"	"Path_SM/scripting/modules/handler.sp"
+		"Source"	"Path_SM/scripting/modules/stocks.inc"
+		"Source"	"Path_SM/scripting/modules/bosses/bunny.sp"
+		"Source"    "Path_SM/scripting/modules/bosses/cbs.sp"
+		"Source"    "Path_SM/scripting/modules/bosses/hale.sp"
+		"Source"    "Path_SM/scripting/modules/bosses/hhh.sp"
+		"Source"    "Path_SM/scripting/modules/bosses/plague.sp"
+		"Source"    "Path_SM/scripting/modules/bosses/vagineer.sp"
+		"Source"    "Path_SM/scripting/include/vsh2.inc"
+	}
+}
