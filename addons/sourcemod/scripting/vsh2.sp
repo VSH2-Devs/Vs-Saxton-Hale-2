@@ -16,10 +16,16 @@
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 
+#undef REQUIRE_PLUGIN
+#tryinclude <updater>
+#define REQUIRE_PLUGIN
+
+#define UPDATE_URL			"https://raw.githubusercontent.com/VSH2-Devs/Vs-Saxton-Hale-2/master/updater.txt"
+
 #pragma semicolon			1
 #pragma newdecls			required
 
-#define PLUGIN_VERSION			"2.0.0"
+#define PLUGIN_VERSION			"2.0.1"
 #define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
 #define CODEFRAMES			(1.0/30.0)	/* 30 frames per second means 0.03333 seconds or 33.33 ms */
 
@@ -110,6 +116,7 @@ enum /*CvarName*/
 	GoombaReboundPower,
 	MultiBossHandicap,
 	DroppedWeapons,
+	BlockEureka,
 	VersionNumber
 };
 
@@ -428,6 +435,10 @@ public void OnLibraryAdded(const char[] name)
 	if (not strcmp(name, "tf2attributes", false))
 		gamemode.bTF2Attribs = true;
 #endif
+#if defined _updater_included
+	if( !strcmp(name, "updater") )
+		Updater_AddPlugin(UPDATE_URL);
+#endif
 }
 public void OnLibraryRemoved(const char[] name)
 {
@@ -438,6 +449,14 @@ public void OnLibraryRemoved(const char[] name)
 #if defined _tf2attributes_included
 	if (not strcmp(name, "tf2attributes", false))
 		gamemode.bTF2Attribs = false;
+#endif
+}
+//	UPDATER Stuff
+public void OnAllPluginsLoaded()
+{
+#if defined _updater_included
+	if( LibraryExists("updater") )
+		Updater_AddPlugin(UPDATE_URL);
 #endif
 }
 
