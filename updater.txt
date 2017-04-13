@@ -8,7 +8,7 @@
 		}
 		
 		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.0.1:"
-		"Notes"	"patched tankers dropping weapons by killing off all dropped weapons"
+		"Notes"	"first updater implementation"
 	}
 	
 	"Files"
