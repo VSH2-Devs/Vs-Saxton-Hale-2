@@ -1585,22 +1585,19 @@ public void PrepPlayers(const BaseBoss player)
 		weapon = player.SpawnWeapon("tf_weapon_smg", 16, 1, 0, "");
 	}
 	weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
-	if (weapon > MaxClients and IsValidEdict(weapon))
-	{
+	if (weapon > MaxClients and IsValidEdict(weapon)) {
 		index = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
-		switch (index) {
-			case 331:
-			{
+		switch( index ) {
+			case 331: {
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
 				weapon = player.SpawnWeapon("tf_weapon_fists", 195, 1, 6, "");
 			}
 			case 357: SetPawnTimer(_NoHonorBound, 1.0, player.userid);
-			case 589:	// Allow eureka effect, for now.....
-			{
-				/*if ( !GetConVarBool(cvarEnableEurekaEffect) ) {
+			case 589: {	// Allow eureka effect, for now...
+				if( !cvarVSH2[BlockEureka].BoolValue ) {
 					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
 					weapon = player.SpawnWeapon("tf_weapon_wrench", 7, 1, 0, "26 ; 25 ; 92 ; 1.5 ; 6 ; 0.5 ; 80 ; 1.5 ; 113 ; 25");
-				}*/
+				}
 			}
 		}
 	}
