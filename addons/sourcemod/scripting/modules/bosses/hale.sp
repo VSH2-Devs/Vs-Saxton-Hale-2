@@ -58,6 +58,7 @@ static const char HaleMatsV2[][] = {
 
 #define HALE_JUMPCHARGE		(25*1.0)
 #define HALERAGEDIST		800.0
+#define HALE_WEIGHDOWN_TIME	3.0
 
 
 methodmap CHale < BaseBoss
@@ -131,7 +132,7 @@ methodmap CHale < BaseBoss
 			this.flWeighDown = 0.0;
 		else this.flWeighDown += 0.1;
 
-		if ( (buttons & IN_DUCK) and this.flWeighDown >= 1.0 )
+		if ( (buttons & IN_DUCK) and this.flWeighDown >= HALE_WEIGHDOWN_TIME )
 		{
 			float ang[3]; GetClientEyeAngles(this.index, ang);
 			if ( ang[0] > 60.0 ) {
