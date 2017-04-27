@@ -372,15 +372,16 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 
 				return Plugin_Changed;
 			}
-			if ( not damagecustom	// Detects if boss is damaged by Rock Paper Scissors
+			// Detects if boss is damaged by Rock Paper Scissors
+			/*if ( not damagecustom
 				and TF2_IsPlayerInCondition(victim.index, TFCond_Taunting)
 				and TF2_IsPlayerInCondition(attacker, TFCond_Taunting) )
 			{
 				damage = victim.iHealth+0.2;
 				BaseBoss(attacker).iDamage += RoundFloat(damage);	// If necessary, just cheat by using the arrays.
 				return Plugin_Changed;
-			}
-			else if (damagecustom is TF_CUSTOM_TELEFRAG) {
+			}*/
+			if (damagecustom is TF_CUSTOM_TELEFRAG) {
 				damage = victim.iHealth+0.2;
 				return Plugin_Changed;
 			}
