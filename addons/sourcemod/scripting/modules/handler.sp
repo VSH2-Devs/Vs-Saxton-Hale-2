@@ -393,10 +393,10 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				int health = GetClientHealth(attacker);
 				int newHealth;
 				int maxhp = GetEntProp(attacker, Prop_Data, "m_iMaxHealth");
-				if (health < maxhp) {
+				if( health < RoundFloat(maxhp*1.5) ) {
 					newHealth = RoundFloat(damage+health);
-					if (damage+health > maxhp)
-						newHealth = maxhp;
+					if (damage+health > RoundFloat(maxhp*1.5))
+						newHealth = RoundFloat(maxhp*1.5);
 					SetEntityHealth( attacker, newHealth );
 				}
 			}
