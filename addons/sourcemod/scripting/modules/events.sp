@@ -63,7 +63,7 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	if (!victim.bIsBoss and !victim.bIsMinion)	// Patch: Don't want multibosses playing last-player sound clips when a BOSS dies...
 		SetPawnTimer(CheckAlivePlayers, 0.2);
 	
-	if (gamemode.bMedieval and !victim.bIsBoss and !victim.bIsMinion and victim.iLives and gamemode.iRoundState is StateRunning)
+	if ( (gamemode.bMedieval or cvarVSH2[ForceLives].BoolValue) and !victim.bIsBoss and !victim.bIsMinion and victim.iLives and gamemode.iRoundState is StateRunning)
 	{
 		SetPawnTimer(_RespawnPlayer, cvarVSH2[MedievalRespawnTime].FloatValue, victim.userid);
 		victim.iLives--;
