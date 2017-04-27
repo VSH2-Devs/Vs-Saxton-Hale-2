@@ -265,7 +265,7 @@ methodmap CBunny < BaseBoss
 		GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
 		
 		TF2_RemoveWeaponSlot(this.index, TFWeaponSlot_Primary);
-		int weapon = this.SpawnWeapon("tf_weapon_grenadelauncher", 19, 100, 5, "6 ; 0.1 ; 411 ; 150.0 ; 413 ; 1.0 ; 37 ; 0.0 ; 280 ; 17 ; 477 ; 1.0 ; 467 ; 1.0 ; 181 ; 2.0 ; 252 ; 0.7");
+		int weapon = this.SpawnWeapon("tf_weapon_grenadelauncher", 19, 100, 5, "2 ; 1.25 ; 6 ; 0.1 ; 411 ; 150.0 ; 413 ; 1.0 ; 37 ; 0.0 ; 280 ; 17 ; 477 ; 1.0 ; 467 ; 1.0 ; 181 ; 2.0 ; 252 ; 0.7");
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", weapon);
 		SetEntProp(weapon, Prop_Send, "m_iClip1", 50);
 		SetWeaponAmmo(weapon, 0);
@@ -291,7 +291,7 @@ methodmap CBunny < BaseBoss
 		{
 			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
 			distance = GetVectorDistance(pos, pos2);
-			if (distance < VAGRAGEDIST/2) {
+			if (distance < VAGRAGEDIST) {
 				SetEntProp(i, Prop_Send, "m_bDisabled", 1);
 				AttachParticle(i, "yikes_fx", 75.0);
 				SetVariantInt(1);
