@@ -86,7 +86,7 @@ methodmap CChristian < BaseBoss
 			this.flWeighDown = 0.0;
 		else this.flWeighDown += 0.1;
 
-		if ( (buttons & IN_DUCK) and this.flWeighDown >= 1.0 )
+		if ( (buttons & IN_DUCK) and this.flWeighDown >= HALE_WEIGHDOWN_TIME )
 		{
 			float ang[3]; GetClientEyeAngles(this.index, ang);
 			if ( ang[0] > 60.0 ) {
