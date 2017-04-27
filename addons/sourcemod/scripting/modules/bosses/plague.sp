@@ -79,7 +79,7 @@ methodmap CPlague < BaseBoss
 			this.flWeighDown = 0.0;
 		else this.flWeighDown += 0.1;
 
-		if ( (buttons & IN_DUCK) and this.flWeighDown >= 1.0 )
+		if ( (buttons & IN_DUCK) and this.flWeighDown >= HALE_WEIGHDOWN_TIME )
 		{
 			float ang[3]; GetClientEyeAngles(this.index, ang);
 			if ( ang[0] > 60.0 ) {
@@ -198,7 +198,7 @@ methodmap CPlague < BaseBoss
 	{
 		if ( IsVoteInProgress() )
 			return ;
-		char helpstr[] = "Plague Doctor:Kill enemies and turn them into loyal Zombies!\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Powerup Minions): taunt when Rage is full to powerup your Zombies.";
+		char helpstr[] = "Plague Doctor:Kill enemies and turn them into loyal Zombies!\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Powerup Minions): taunt when Rage is full to give powerups to your Zombies.";
 		Panel panel = new Panel();
 		panel.SetTitle (helpstr);
 		panel.DrawItem( "Exit" );
