@@ -190,7 +190,7 @@ methodmap CChristian < BaseBoss
 		{
 			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
 			distance = GetVectorDistance(pos, pos2);
-			if (distance < CBSRAGEDIST/2) {
+			if (distance < CBSRAGEDIST) {
 				SetEntProp(i, Prop_Send, "m_bDisabled", 1);
 				AttachParticle(i, "yikes_fx", 75.0);
 				SetVariantInt(1);
