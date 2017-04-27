@@ -13,6 +13,8 @@
 	
 	"Files"
 	{
+		"Plugin"	"Path_SM/plugins/vsh2.smx"
+		
 		"Source"	"Path_SM/scripting/vsh2.sp"
 		"Source"	"Path_SM/scripting/vsh2_addon_dmgtracker.sp"
 		"Source"	"Path_SM/scripting/modules/base.sp"
