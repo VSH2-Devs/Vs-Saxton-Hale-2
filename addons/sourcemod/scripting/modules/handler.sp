@@ -1131,7 +1131,7 @@ public void ManageResetVariables(const BaseBoss base)
 	base.flLastHit = 0.0;
 	base.iState = -1;
 	base.iHits = 0;
-	base.iLives = (gamemode.bMedieval ? cvarVSH2[MedievalLives].IntValue : 0);
+	base.iLives = ((gamemode.bMedieval or cvarVSH2[ForceLives].BoolValue) ? cvarVSH2[MedievalLives].IntValue : 0);
 	base.iHealth = 0;
 	base.iMaxHealth = 0;
 	Call_OnVariablesReset(base);
@@ -1797,7 +1797,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 		return;
 	}
 	if (not (buttons & IN_SCORE)) {
-		if (gamemode.bMedieval)
+		if (gamemode.bMedieval or cvarVSH2[ForceLives].BoolValue)
 			ShowSyncHudText(i, rageHUD, "Damage: %d | Lives: %d", fighter.iDamage, fighter.iLives);
 		else ShowSyncHudText(i, rageHUD, "Damage: %d", fighter.iDamage);
 	}
