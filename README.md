@@ -1,8 +1,8 @@
 # VSH 2 #
 
-#### Current STABLE Version: *2.0.1*
+#### Current STABLE Version: *2.0.2*
 [![Master Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=master)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
-#### Current UNSTABLE Version: *2.0.1*
+#### Current UNSTABLE Version: *2.0.2*
 [![Develop Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=develop)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
 ======
 VSH2 is half-rewrite of VSH 1. VSH and FF2 were made as very bad frameworks and shoddy, hacky coding. VSH2 combines the best of both FF2 and VSH by not only having multiplayer boss support but also to make it easier to add new bosses and to give those bosses truly unique abilities and mechanics by giving the developer full, uninhibited power through code rather than configs.
