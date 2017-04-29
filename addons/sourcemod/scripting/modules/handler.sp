@@ -1596,7 +1596,7 @@ public void PrepPlayers(const BaseBoss player)
 			case 589: {	// Allow eureka effect, for now...
 				if( !cvarVSH2[BlockEureka].BoolValue ) {
 					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
-					weapon = player.SpawnWeapon("tf_weapon_wrench", 7, 1, 0, "26 ; 25 ; 92 ; 1.5 ; 6 ; 0.5 ; 80 ; 1.5 ; 113 ; 25");
+					weapon = player.SpawnWeapon("tf_weapon_wrench", 7, 1, 0, "");
 				}
 			}
 		}
