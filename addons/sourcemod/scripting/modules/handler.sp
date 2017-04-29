@@ -455,7 +455,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					{
 						float chargelevel = (IsValidEntity(weapon) && weapon > MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
 						float add = 10 + (chargelevel / 10);
-						if (TF2_IsPlayerInCondition(attacker, view_as<TFCond>(46)))
+						if ( TF2_IsPlayerInCondition(attacker, view_as< TFCond >(46)) )
 							add /= 3;
 						float rage = GetEntPropFloat(attacker, Prop_Send, "m_flRageMeter");
 						SetEntPropFloat(attacker, Prop_Send, "m_flRageMeter", (rage + add > 100) ? 100.0 : rage + add);
@@ -646,20 +646,24 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 			int ent = -1;
 			while ((ent = FindEntityByClassname(ent, "tf_wearable_demoshield")) != -1)
 			{
-				if (GetOwner(ent) is client and !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable") and weapon is GetPlayerWeaponSlot(attacker, 2))
+				if ( GetOwner(ent) is client
+					and damage >= float(GetClientHealth(client))
+					and !TF2_IsPlayerInCondition(client, TFCond_Ubercharged)
+					and !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable") )
+					//and weapon is GetPlayerWeaponSlot(attacker, 2) )
 				{
 					victim.iHits++;
-					int HitsRequired = 0;
-					switch (GetItemIndex(ent)) {
-						case 131, 1144: HitsRequired = 2;	// 2 hits for normal and festive Chargin' Targe
-						case 406, 1099: HitsRequired = 1;
-					}
+					//int HitsRequired = 0;
+					//switch (GetItemIndex(ent)) {
+					//	case 131, 1144: HitsRequired = 2;	// 2 hits for normal and festive Chargin' Targe
+					//	case 406, 1099: HitsRequired = 1;
+					//}
 					TF2_AddCondition(client, TFCond_Bonked, 0.1);
 					TF2_AddCondition(client, TFCond_SpeedBuffAlly, 1.0);
-					if (victim.iHits >= HitsRequired) {
+					//if (victim.iHits >= HitsRequired) {
 						TF2_RemoveWearable(client, ent);
 						EmitSoundToAll("player/spy_shield_break.wav", client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
-					}
+					//}
 					break;
 				}
 			}
