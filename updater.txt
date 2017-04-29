@@ -4,11 +4,13 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.0.2"
+			"Latest"	"2.0.3"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.0.2:"
-		"Notes"	"patching eureka effect wrench replacement having overpowered stats."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.0.3:"
+		"Notes"	"changed magic constant for multi-boss randomizing code."
+		"Notes" "patched demo shields being destroyed while demoman is ubered."
+		"Notes" "reformed demo shield code so that shields block only fatal hits."
 	}
 	
 	"Files"
