@@ -4,11 +4,11 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.0.1"
+			"Latest"	"2.0.2"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.0.1:"
-		"Notes"	"first updater implementation"
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.0.2:"
+		"Notes"	"patching eureka effect wrench replacement having overpowered stats."
 	}
 	
 	"Files"
