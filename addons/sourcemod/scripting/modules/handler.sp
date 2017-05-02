@@ -647,10 +647,10 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 			while ((ent = FindEntityByClassname(ent, "tf_wearable_demoshield")) != -1)
 			{
 				if ( GetOwner(ent) is client
-					and damage >= float(GetClientHealth(client))
+					/*and damage >= float(GetClientHealth(client))*/
 					and !TF2_IsPlayerInCondition(client, TFCond_Ubercharged)
-					and !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable") )
-					//and weapon is GetPlayerWeaponSlot(attacker, 2) )
+					and !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable")
+					and weapon is GetPlayerWeaponSlot(attacker, 2) )
 				{
 					victim.iHits++;
 					//int HitsRequired = 0;
@@ -661,8 +661,8 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 					TF2_AddCondition(client, TFCond_Bonked, 0.1);
 					TF2_AddCondition(client, TFCond_SpeedBuffAlly, 1.0);
 					//if (victim.iHits >= HitsRequired) {
-						TF2_RemoveWearable(client, ent);
-						EmitSoundToAll("player/spy_shield_break.wav", client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
+					TF2_RemoveWearable(client, ent);
+					EmitSoundToAll("player/spy_shield_break.wav", client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
 					//}
 					break;
 				}
