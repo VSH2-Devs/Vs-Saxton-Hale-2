@@ -420,7 +420,7 @@ public Action BlockSuicide(int client, const char[] command, int argc)
 		BaseBoss player = BaseBoss(client);
 		if (player.bIsBoss) {
 			float flhp_percent = float(player.iHealth) / float(player.iMaxHealth);
-			if (flhp_percent > 0.15) {	// Allow bosses to suicide if their health is under 15%.
+			if (flhp_percent > 0.3) {	// Allow bosses to suicide if their total health is under 3%.
 				CPrintToChat(client, "Do not suicide as a Boss. Please Use '!resetq' instead.");
 				return Plugin_Handled;
 			}
