@@ -351,7 +351,7 @@ public void OnPluginStart()
 	HookEvent("arena_round_start", ArenaRoundStart);
 	HookEvent("teamplay_point_captured", PointCapture, EventHookMode_Post);
 	
-	AddCommandListener(DoTaunt, "+taunt");
+	//AddCommandListener(DoTaunt, "+taunt");
 	AddCommandListener(cdVoiceMenu, "voicemenu");
 	AddNormalSoundHook(HookSound);
 	
