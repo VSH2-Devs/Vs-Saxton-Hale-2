@@ -514,7 +514,7 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_WeaponSwitchPost, OnWeaponSwitchPost);
 	
 	flHolstered[client][0] = flHolstered[client][1] = flHolstered[client][2] = 0.0;
-	//SDKHook(client, SDKHook_PreThink, OnPreThink);
+	SDKHook(client, SDKHook_PreThinkPost, OnPreThinkPost);
 	
 	if (hPlayerFields[client] != null)
 		delete hPlayerFields[client] ;
@@ -726,22 +726,24 @@ public Action CmdReloadCFG(int client, int args)
 	ReplyToCommand(client, "**** Reloading VSH 2 ConVar Config ****");
 	return Plugin_Handled;
 }
-
-/*
-public void OnPreThink(int client) //powers the HUD and riding mechanics
+public void OnPreThinkPost(int client)
 {
-	if ( not bEnabled.BoolValue )
+	if( not bEnabled.BoolValue )
 		return;
-	if ( IsClientObserver(client) or !IsPlayerAlive(client) )
+	if( IsClientObserver(client) or not IsPlayerAlive(client) )
 		return;
-
-	BaseBoss player = BaseBoss(client);
-	if (player.bIsBoss) {
-
-	}
-	return;
+	
+	//BaseBoss player = BaseBoss(client);
+	if( IsNearSpencer(client) ) {
+		if( TF2_IsPlayerInCondition(client, TFCond_Cloaked) ) {
+			float cloak = GetEntPropFloat(client, Prop_Send, "m_flCloakMeter") - 0.5;
+			if( cloak < 0.0 )
+				cloak = 0.0;
+			SetEntPropFloat(client, Prop_Send, "m_flCloakMeter", cloak);
+		}
+	} return;
 }
-*/
+
 
 public Action TraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &ammotype, int hitbox, int hitgroup)
 {
