@@ -114,10 +114,9 @@ methodmap CVagineer < BaseBoss
 		float jmp = this.flCharge;
 		if (jmp > 0.0)
 			jmp *= 4.0;
-		if (this.flRAGE is 100.0 or RoundFloat(this.flRAGE) is 100)
-			ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL", RoundFloat(jmp));
-		else
-			ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %i", RoundFloat(jmp), RoundFloat(this.flRAGE));
+		if (this.flRAGE >= 100.0)
+                        ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp));
+                else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", RoundFloat(jmp), this.flRAGE);
 
 		if (TF2_IsPlayerInCondition(this.index, TFCond_Ubercharged))
 			SetEntProp(this.index, Prop_Data, "m_takedamage", 0);
