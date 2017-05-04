@@ -138,9 +138,9 @@ methodmap CHHHJr < BaseBoss
 		float jmp = this.flCharge;
 		if (jmp > 0.0)
 			jmp *= 2.0;
-		if (this.flRAGE is 100.0 or RoundFloat(this.flRAGE) is 100)
-			ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i | Rage: FULL", RoundFloat(jmp), this.iClimbs);
-		else ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i| Rage: %i", RoundFloat(jmp), this.iClimbs, RoundFloat(this.flRAGE));
+		if (this.flRAGE >= 100.0)
+			ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp), this.iClimbs);
+		else ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i| Rage: %0.1f", RoundFloat(jmp), this.iClimbs, this.flRAGE);
 	}
 	public void SetModel ()
 	{
