@@ -465,12 +465,12 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 
 						damage *= (ministatus) ? 2.222222 : 3.0;
 						if (wepindex == 230) {
-							victim.flRAGE -= (damage/4.0);
+							victim.flRAGE -= (damage * 0.035);
 						}
 						return Plugin_Changed;
 					}
 					else if (wepindex == 230)
-						victim.flRAGE -= (damage*3.0/4.0);
+						victim.flRAGE -= (damage * 0.035);
 				}
 				case 132, 266, 482, 1082: IncrementHeadCount(attacker);
 				case 355, 648: victim.flRAGE -= cvarVSH2[FanoWarRage].FloatValue;
