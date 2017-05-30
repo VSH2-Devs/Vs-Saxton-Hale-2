@@ -790,7 +790,7 @@ stock void SpawnRandomAmmo()
 		GetEntPropVector(iEnt, Prop_Send, "m_vecOrigin", vPos);
 		GetEntPropVector(iEnt, Prop_Send, "m_angRotation", vAng);
 
-		int iEnt2 = !GetRandomInt(0, 3) ? CreateEntityByName("item_ammopack_medium") : CreateEntityByName("item_ammopack_small");
+		int iEnt2 = CreateEntityByName("item_ammopack_small");
 		TeleportEntity(iEnt2, vPos, vAng, NULL_VECTOR);
 		DispatchSpawn(iEnt2);
 		SetEntProp(iEnt2, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? 2 : 0, 4);
@@ -808,7 +808,7 @@ stock void SpawnRandomHealth()
 		GetEntPropVector(iEnt, Prop_Send, "m_vecOrigin", vPos);
 		GetEntPropVector(iEnt, Prop_Send, "m_angRotation", vAng);
 
-		int iEnt2 = !GetRandomInt(0, 4) ? CreateEntityByName("item_healthkit_medium") : CreateEntityByName("item_healthkit_small");
+		int iEnt2 = CreateEntityByName("item_healthkit_small");
 		TeleportEntity(iEnt2, vPos, vAng, NULL_VECTOR);
 		DispatchSpawn(iEnt2);
 		SetEntProp(iEnt2, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? 2 : 0, 4);
