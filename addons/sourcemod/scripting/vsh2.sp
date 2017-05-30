@@ -267,6 +267,9 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_ff2help", HelpPanelCmd);
 	RegConsoleCmd("sm_ff2_help", HelpPanelCmd);
 	
+	RegConsoleCmd("sm_resetq", ResetQueue);
+	RegConsoleCmd("sm_resetqueue", ResetQueue);
+	
 	RegAdminCmd("sm_reloadbosscfg", CmdReloadCFG, ADMFLAG_GENERIC);
 	RegAdminCmd("sm_hale_select", CommandBossSelect, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss.");
 	RegAdminCmd("sm_ff2_select", CommandBossSelect, ADMFLAG_VOTE, "ff2_select <target> - Select a player to be next boss.");
@@ -276,6 +279,10 @@ public void OnPluginStart()
 	RegAdminCmd("sm_boss_force", ForceBossRealtime, ADMFLAG_VOTE, "boss_force <target> <bossID> - Force a player to the boss team as the specified boss. (Setup time only)");
 	RegAdminCmd("sm_hale_force", ForceBossRealtime, ADMFLAG_VOTE, "hale_force <target> <bossID> - Force a player to the boss team as the specified boss. (Setup time only)");
 	RegAdminCmd("sm_ff2_force", ForceBossRealtime, ADMFLAG_VOTE, "ff2_force <target> <bossID> - Force a player to the boss team as the specified boss. (Setup time only)");
+	
+	RegAdminCmd("sm_hale_addpoints", CommandAddPoints, ADMFLAG_GENERIC);
+	RegAdminCmd("sm_vsh2_addpoints", CommandAddPoints, ADMFLAG_GENERIC);
+	RegAdminCmd("sm_ff2_addpoints", CommandAddPoints, ADMFLAG_GENERIC);
 	
 	AddCommandListener(BlockSuicide, "explode");
 	AddCommandListener(BlockSuicide, "kill");
