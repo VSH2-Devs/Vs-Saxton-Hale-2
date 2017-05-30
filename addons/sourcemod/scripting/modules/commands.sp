@@ -10,6 +10,20 @@ public Action QueuePanelCmd(int client, int args)
 	QueuePanel(client);
 	return Plugin_Handled;
 }
+
+public Action ResetQueue(int client, int args)
+{
+	if( !bEnabled.BoolValue )
+		return Plugin_Continue;
+	if( !client ) {
+		ReplyToCommand(client, "[VSH 2] You can only use this command ingame.");
+		return Plugin_Handled;
+	}
+	BaseBoss(client).iQueue = 0;
+	CPrintToChat(client, "{olive}[VSH 2]{default} Your Queue has been set to 0!");
+	return Plugin_Handled;
+}
+
 public void QueuePanel(const int client)
 {
 	Panel panel = new Panel();
@@ -324,6 +338,7 @@ public Action HelpPanelCmd(int client, int args)
 	panel.DrawItem("Show Boss' health (/halehp)");
 	panel.DrawItem("Show help about the Mode (/halehelp)");
 	panel.DrawItem("Who is the next Hale? (/halenext)");
+	panel.DrawItem("Reset Queue Points? (/resetq)");
 	panel.Send(client, HelpPanelH, 9001);
 	delete panel;
 	return Plugin_Handled;
@@ -350,6 +365,10 @@ public int HelpPanelH(Menu menu, MenuAction action, int param1, int param2)
 				else player.HelpPanelClass();
 			}
 			case 3: QueuePanel(param1);
+			case 4: {
+				BaseBoss(param1).iQueue = 0;
+				CPrintToChat(param1, "{olive}[VSH 2]{default} Your Queue has been set to 0!");
+			}
 			default: return;
 		}
 	}
