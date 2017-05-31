@@ -451,6 +451,10 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 							}
 						}
 					}
+					if( wepindex == 402 ) {
+						if( damagecustom is TF_CUSTOM_HEADSHOT )
+							IncrementHeadCount(attacker);
+					}
 					if (wepindex == 752 and gamemode.iRoundState not_eq StateEnding)
 					{
 						float chargelevel = (IsValidEntity(weapon) && weapon > MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
