@@ -400,7 +400,24 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					SetEntityHealth( attacker, newHealth );
 				}
 			}
-
+			if( cvarVSH2[Anchoring].BoolValue ) {
+				int iFlags = GetEntityFlags(victim.index);
+#if defined _tf2attributes_included
+				if (gamemode.bTF2Attribs) {
+					// If Hale is ducking on the ground, it's harder to knock him back
+					if( (iFlags & (FL_ONGROUND|FL_DUCKING)) == (FL_ONGROUND|FL_DUCKING) )
+						TF2Attrib_SetByDefIndex(victim.index, 252, 0.0);
+					else TF2Attrib_RemoveByDefIndex(victim.index, 252);
+				}
+				else {
+					// Does not protect against sentries or FaN, but does against miniguns and rockets
+					if( (iFlags & (FL_ONGROUND|FL_DUCKING)) == (FL_ONGROUND|FL_DUCKING) )
+						damagetype |= DMG_PREVENT_PHYSICS_FORCE;
+				}
+#else				if( (iFlags & (FL_ONGROUND|FL_DUCKING)) == (FL_ONGROUND|FL_DUCKING) )
+					damagetype |= DMG_PREVENT_PHYSICS_FORCE;
+#endif
+			}
 			switch (wepindex) {
 				case 593:	//Third Degree
 				{
