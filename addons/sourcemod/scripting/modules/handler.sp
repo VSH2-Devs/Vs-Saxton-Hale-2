@@ -414,7 +414,8 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					if( (iFlags & (FL_ONGROUND|FL_DUCKING)) == (FL_ONGROUND|FL_DUCKING) )
 						damagetype |= DMG_PREVENT_PHYSICS_FORCE;
 				}
-#else				if( (iFlags & (FL_ONGROUND|FL_DUCKING)) == (FL_ONGROUND|FL_DUCKING) )
+#else
+				if( (iFlags & (FL_ONGROUND|FL_DUCKING)) == (FL_ONGROUND|FL_DUCKING) )
 					damagetype |= DMG_PREVENT_PHYSICS_FORCE;
 #endif
 			}
