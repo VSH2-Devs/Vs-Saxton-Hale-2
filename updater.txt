@@ -1,0 +1,38 @@
+"Updater"
+{
+	"Information"
+	{
+		"Version"
+		{
+			"Latest"	"2.0.3"
+		}
+		
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.0.3:"
+		"Notes"	"changed magic constant for multi-boss randomizing code."
+		"Notes" "patched demo shields being destroyed while demoman is ubered."
+		"Notes" "reformed demo shield code so that shields block only fatal hits."
+	}
+	
+	"Files"
+	{
+		"Plugin"	"Path_SM/plugins/vsh2.smx"
+		
+		"Source"	"Path_SM/scripting/vsh2.sp"
+		"Source"	"Path_SM/scripting/vsh2_addon_dmgtracker.sp"
+		"Source"	"Path_SM/scripting/modules/base.sp"
+		"Source"	"Path_SM/scripting/modules/bosses.sp"
+		"Source"	"Path_SM/scripting/modules/commands.sp"
+		"Source"	"Path_SM/scripting/modules/events.sp"
+		"Source"	"Path_SM/scripting/modules/forwards.sp"
+		"Source"	"Path_SM/scripting/modules/gamemode.sp"
+		"Source"	"Path_SM/scripting/modules/handler.sp"
+		"Source"	"Path_SM/scripting/modules/stocks.inc"
+		"Source"	"Path_SM/scripting/modules/bosses/bunny.sp"
+		"Source"    "Path_SM/scripting/modules/bosses/cbs.sp"
+		"Source"    "Path_SM/scripting/modules/bosses/hale.sp"
+		"Source"    "Path_SM/scripting/modules/bosses/hhh.sp"
+		"Source"    "Path_SM/scripting/modules/bosses/plague.sp"
+		"Source"    "Path_SM/scripting/modules/bosses/vagineer.sp"
+		"Source"    "Path_SM/scripting/include/vsh2.inc"
+	}
+}

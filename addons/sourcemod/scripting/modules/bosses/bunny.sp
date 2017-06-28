@@ -1,13 +1,33 @@
-
 //defines
+
+//models
 #define BunnyModel		"models/player/saxton_hale/easter_demo.mdl"
-#define BunnyModelPrefix	"models/player/saxton_hale/easter_demo"
+// #define BunnyModelPrefix	"models/player/saxton_hale/easter_demo"
 
 #define EggModel		"models/player/saxton_hale/w_easteregg.mdl"
-#define EggModelPrefix		"models/player/saxton_hale/w_easteregg"
+// #define EggModelPrefix		"models/player/saxton_hale/w_easteregg"
 //#define ReloadEggModel	"models/player/saxton_hale/c_easter_cannonball.mdl"
 //#define ReloadEggModelPrefix	"models/player/saxton_hale/c_easter_cannonball"
 
+//materials
+static const char BunnyMaterials[][] = {
+	"materials/models/player/easter_demo/demoman_head_red.vmt",
+	"materials/models/player/easter_demo/easter_body.vmt",
+	"materials/models/player/easter_demo/easter_body.vtf",
+	"materials/models/player/easter_demo/easter_rabbit.vmt",
+	"materials/models/player/easter_demo/easter_rabbit.vtf",
+	"materials/models/player/easter_demo/easter_rabbit_normal.vtf",
+	"materials/models/player/easter_demo/eyeball_r.vmt"
+	// "materials/models/player/easter_demo/demoman_head_blue_invun.vmt", // This is for the new version of easter demo which VSH isn't using
+	// "materials/models/player/easter_demo/demoman_head_red_invun.vmt",
+	// "materials/models/player/easter_demo/easter_rabbit_blue.vmt",
+	// "materials/models/player/easter_demo/easter_rabbit_blue.vtf",
+	// "materials/models/player/easter_demo/easter_rabbit_invun.vmt",
+	// "materials/models/player/easter_demo/easter_rabbit_invun.vtf",
+	// "materials/models/player/easter_demo/easter_rabbit_invun_blue.vmt",
+	// "materials/models/player/easter_demo/easter_rabbit_invun_blue.vtf",
+	// "materials/models/player/easter_demo/eyeball_invun.vmt"
+};
 
 //Easter Bunny voicelines
 char BunnyWin[][] = {
@@ -159,8 +179,8 @@ methodmap CBunny < BaseBoss
 		if ( flags & FL_ONGROUND )
 			this.flWeighDown = 0.0;
 		else this.flWeighDown += 0.1;
-
-		if ( (buttons & IN_DUCK) and this.flWeighDown >= 1.0 )
+		
+		if ( (buttons & IN_DUCK) and this.flWeighDown >= HALE_WEIGHDOWN_TIME )
 		{
 			float ang[3]; GetClientEyeAngles(this.index, ang);
 			if ( ang[0] > 60.0 ) {
@@ -177,9 +197,9 @@ methodmap CBunny < BaseBoss
 		float jmp = this.flCharge;
 		if (jmp > 0.0)
 			jmp *= 4.0;
-		if (this.flRAGE is 100.0 or RoundFloat(this.flRAGE) is 100)
-			ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL", RoundFloat(jmp));
-		else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %i", RoundFloat(jmp), RoundFloat(this.flRAGE));
+		if (this.flRAGE >= 100.0)
+			ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp));
+		else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", RoundFloat(jmp), this.flRAGE);
 	}
 	public void SetModel ()
 	{
@@ -245,7 +265,7 @@ methodmap CBunny < BaseBoss
 		GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
 		
 		TF2_RemoveWeaponSlot(this.index, TFWeaponSlot_Primary);
-		int weapon = this.SpawnWeapon("tf_weapon_grenadelauncher", 19, 100, 5, "6 ; 0.1 ; 411 ; 150.0 ; 413 ; 1.0 ; 37 ; 0.0 ; 280 ; 17 ; 477 ; 1.0 ; 467 ; 1.0 ; 181 ; 2.0 ; 252 ; 0.7");
+		int weapon = this.SpawnWeapon("tf_weapon_grenadelauncher", 19, 100, 5, "2 ; 1.25 ; 6 ; 0.1 ; 411 ; 150.0 ; 413 ; 1.0 ; 37 ; 0.0 ; 280 ; 17 ; 477 ; 1.0 ; 467 ; 1.0 ; 181 ; 2.0 ; 252 ; 0.7");
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", weapon);
 		SetEntProp(weapon, Prop_Send, "m_iClip1", 50);
 		SetWeaponAmmo(weapon, 0);
@@ -271,7 +291,7 @@ methodmap CBunny < BaseBoss
 		{
 			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
 			distance = GetVectorDistance(pos, pos2);
-			if (distance < VAGRAGEDIST/2) {
+			if (distance < VAGRAGEDIST) {
 				SetEntProp(i, Prop_Send, "m_bDisabled", 1);
 				AttachParticle(i, "yikes_fx", 75.0);
 				SetVariantInt(1);
@@ -345,73 +365,27 @@ public CBunny ToCBunny (const BaseBoss guy)
 
 public void AddBunnyToDownloads()
 {
-	char s[PLATFORM_MAX_PATH];
+	// char s[PLATFORM_MAX_PATH];
 	
-	int i;
-	PrecacheModel(BunnyModel, true);
-	PrecacheModel(EggModel, true);
-	for (i = 0; i < sizeof(extensions); i++) {
-		Format(s, PLATFORM_MAX_PATH, "%s%s", BunnyModelPrefix, extensions[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "%s%s", EggModelPrefix, extensions[i]);
-		CheckDownload(s);
-	}
-	for (i = 0; i < sizeof(extensionsb); i++)
-	{
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/easter_demo/easter_body%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/easter_demo/easter_rabbit%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/easter_demo/demoman_head_red%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/easter_demo/easter_rabbit_normal%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/easter_demo/eyeball_r%s", extensionsb[i]);
-		CheckDownload(s);
+	// int i;
+	PrepareModel(BunnyModel);
+	PrepareModel(EggModel);
 
-		Format(s, PLATFORM_MAX_PATH, "materials/models/props_easteregg/c_easteregg%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/props_easteregg/c_easteregg_gold%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/saxton_hale/hale_egg%s", extensionsb[i]);
-		CheckDownload(s);
-	}
-	for (i = 0; i < sizeof(BunnyWin); i++)
-	{
-		PrecacheSound(BunnyWin[i], true);
-	}
-	for (i = 0; i < sizeof(BunnyJump); i++)
-	{
-		PrecacheSound(BunnyJump[i], true);
-	}
-	for (i = 0; i < sizeof(BunnyRage); i++)
-	{
-		PrecacheSound(BunnyRage[i], true);
-	}
-	for (i = 0; i < sizeof(BunnyFail); i++)
-	{
-		PrecacheSound(BunnyFail[i], true);
-	}
-	for (i = 0; i < sizeof(BunnyKill); i++)
-	{
-		PrecacheSound(BunnyKill[i], true);
-	}
-	for (i = 0; i < sizeof(BunnySpree); i++)
-	{
-		PrecacheSound(BunnySpree[i], true);
-	}
-	for (i = 0; i < sizeof(BunnyLast); i++)
-	{
-		PrecacheSound(BunnyLast[i], true);
-	}
-	for (i = 0; i < sizeof(BunnyPain); i++)
-	{
-		PrecacheSound(BunnyPain[i], true);
-	}
-	for (i = 0; i < sizeof(BunnyStart); i++)
-	{
-		PrecacheSound(BunnyStart[i], true);
-	}
+	DownloadMaterialList(BunnyMaterials, sizeof(BunnyMaterials));
+
+	PrepareMaterial("materials/models/props_easteregg/c_easteregg");
+	CheckDownload("materials/models/props_easteregg/c_easteregg_gold.vmt");
+
+	PrecacheSoundList(BunnyWin, sizeof(BunnyWin));
+	PrecacheSoundList(BunnyJump, sizeof(BunnyJump));
+	PrecacheSoundList(BunnyRage, sizeof(BunnyRage));
+	PrecacheSoundList(BunnyFail, sizeof(BunnyFail));
+	PrecacheSoundList(BunnyKill, sizeof(BunnyKill));
+	PrecacheSoundList(BunnySpree, sizeof(BunnySpree));
+	PrecacheSoundList(BunnyLast, sizeof(BunnyLast));
+	PrecacheSoundList(BunnyPain, sizeof(BunnyPain));
+	PrecacheSoundList(BunnyStart, sizeof(BunnyStart));
+	PrecacheSoundList(BunnyRandomVoice, sizeof(BunnyRandomVoice));
 }
 
 public void AddBunnyToMenu ( Menu& menu )

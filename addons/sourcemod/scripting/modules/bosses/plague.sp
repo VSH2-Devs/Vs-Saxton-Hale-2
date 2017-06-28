@@ -1,8 +1,7 @@
-
 #define PlagueModel			"models/player/medic.mdl"
-#define PlagueModelPrefix		"models/player/medic"
+// #define PlagueModelPrefix		"models/player/medic"
 #define ZombieModel			"models/player/scout.mdl"
-#define ZombieModelPrefix		"models/player/scout"
+// #define ZombieModelPrefix		"models/player/scout"
 
 
 //voicelines
@@ -80,7 +79,7 @@ methodmap CPlague < BaseBoss
 			this.flWeighDown = 0.0;
 		else this.flWeighDown += 0.1;
 
-		if ( (buttons & IN_DUCK) and this.flWeighDown >= 1.0 )
+		if ( (buttons & IN_DUCK) and this.flWeighDown >= HALE_WEIGHDOWN_TIME )
 		{
 			float ang[3]; GetClientEyeAngles(this.index, ang);
 			if ( ang[0] > 60.0 ) {
@@ -97,9 +96,9 @@ methodmap CPlague < BaseBoss
 		float jmp = this.flCharge;
 		if (jmp > 0.0)
 			jmp *= 4.0;
-		if (this.flRAGE is 100.0 or RoundFloat(this.flRAGE) is 100)
-			ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL", RoundFloat(jmp));
-		else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %i", RoundFloat(jmp), RoundFloat(this.flRAGE));
+		if (this.flRAGE >= 100.0)
+			ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp));
+		else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", RoundFloat(jmp), this.flRAGE);
 	}
 	public void SetModel ()
 	{
@@ -162,8 +161,16 @@ methodmap CPlague < BaseBoss
 			minion = BaseBoss(i);
 			if (minion.bIsMinion) {
 #if defined _tf2attributes_included
-				TF2Attrib_SetByDefIndex(i, attribute, value);
-				SetPawnTimer(TF2AttribsRemove, 10.0, i);
+				if (gamemode.bTF2Attribs) {
+					TF2Attrib_SetByDefIndex(i, attribute, value);
+					SetPawnTimer(TF2AttribsRemove, 10.0, i);
+				}
+				else {
+					char pdapower[32];
+					Format(pdapower, sizeof(pdapower), "%i ; %f", attribute, value);
+					int wep = minion.SpawnWeapon("tf_weapon_builder", 28, 5, 10, pdapower);
+					SetPawnTimer( RemoveWepFromSlot, 10.0, i, GetSlotFromWeapon(i, wep) );
+				}
 #else
 				char pdapower[32];
 				Format(pdapower, sizeof(pdapower), "%i ; %f", attribute, value);
@@ -175,9 +182,15 @@ methodmap CPlague < BaseBoss
 	}
 	public void KilledPlayer(const BaseBoss victim, Event event)
 	{
-		//GLITCH: suiciding allows boss to become own minion.
+		// GLITCH: suiciding allows boss to become own minion.
 		if (this.userid is victim.userid)
 			return;
+		// PATCH: Hitting spy with active deadringer turns them into Minion...
+		else if (event.GetInt("death_flags") & TF_DEATHFLAG_DEADRINGER)
+			return ;
+		// PATCH: killing spy with teammate disguise kills both spy and the teammate he disguised as...
+		else if (TF2_IsPlayerInCondition(victim.index, TFCond_Disguised))
+			TF2_RemovePlayerDisguise(victim.index); //event.SetInt("userid", victim.userid);
 		victim.iOwnerBoss = this.userid;
 		victim.ConvertToMinion(0.4);
 	}
@@ -185,7 +198,7 @@ methodmap CPlague < BaseBoss
 	{
 		if ( IsVoteInProgress() )
 			return ;
-		char helpstr[] = "Plague Doctor:Kill enemies and turn them into loyal Zombies!\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Powerup Minions): taunt when Rage is full to powerup your Zombies.";
+		char helpstr[] = "Plague Doctor:Kill enemies and turn them into loyal Zombies!\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Powerup Minions): taunt when Rage is full to give powerups to your Zombies.";
 		Panel panel = new Panel();
 		panel.SetTitle (helpstr);
 		panel.DrawItem( "Exit" );
@@ -201,15 +214,13 @@ public CPlague ToCPlague (const BaseBoss guy)
 
 public void AddPlagueDocToDownloads()
 {
-	char s[PLATFORM_MAX_PATH];
+	// char s[PLATFORM_MAX_PATH];
 	
-	int i;
+	// int i;
+
 	PrecacheModel(PlagueModel, true);
 	PrecacheModel(ZombieModel, true);
-	for (i=0 ; i < sizeof(extensions) ; i++) {
-		Format(s, PLATFORM_MAX_PATH, "%s%s", ZombieModelPrefix, extensions[i]);
-		CheckDownload(s);
-	}
+
 	PrecacheSound(PlagueIntro, true);
 	PrecacheSound(PlagueRage1, true);
 	PrecacheSound(PlagueRage2, true);

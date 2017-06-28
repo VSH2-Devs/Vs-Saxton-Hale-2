@@ -4,12 +4,26 @@ public Action QueuePanelCmd(int client, int args)
 		return Plugin_Continue;
 
 	if (!client) {
-		ReplyToCommand(client, "[VSH2] You can only use this command ingame.");
+		ReplyToCommand(client, "[VSH 2] You can only use this command ingame.");
 		return Plugin_Handled;
 	}
 	QueuePanel(client);
 	return Plugin_Handled;
 }
+
+public Action ResetQueue(int client, int args)
+{
+	if( !bEnabled.BoolValue )
+		return Plugin_Continue;
+	if( !client ) {
+		ReplyToCommand(client, "[VSH 2] You can only use this command ingame.");
+		return Plugin_Handled;
+	}
+	BaseBoss(client).iQueue = 0;
+	CPrintToChat(client, "{olive}[VSH 2]{default} Your Queue has been set to 0!");
+	return Plugin_Handled;
+}
+
 public void QueuePanel(const int client)
 {
 	Panel panel = new Panel();
@@ -130,21 +144,21 @@ public Action CommandBossSelect(int client, int args)
 	if (not bEnabled.BoolValue)
 		return Plugin_Continue;
 	if (args < 1) {
-		ReplyToCommand(client, "[VSH2] Usage: boss_select <target>");
+		ReplyToCommand(client, "[VSH 2] Usage: boss_select <target>");
 		return Plugin_Handled;
 	}
 	char targetname[32]; GetCmdArg(1, targetname, sizeof(targetname));
 	if ( !strcmp(targetname, "@me", false) and IsValidClient(client) ) {
 		gamemode.hNextBoss = BaseBoss(client);
-		ReplyToCommand(client, "[VSH2] You've set yourself as the next Boss!");
+		ReplyToCommand(client, "[VSH 2] You've set yourself as the next Boss!");
 	}
 	else {
 		int target = FindTarget(client, targetname);
 		if (IsValidClient(target)) {
 			gamemode.hNextBoss = BaseBoss(target);
-			ReplyToCommand(client, "[VSH2] %N is set as next Boss!", gamemode.hNextBoss.index);
+			ReplyToCommand(client, "[VSH 2] %N is set as next Boss!", gamemode.hNextBoss.index);
 		}
-		else gamemode.hNextBoss = SPNULL;
+		else gamemode.hNextBoss = view_as< BaseBoss >(0);
 	}
 	return Plugin_Handled;
 }
@@ -201,10 +215,10 @@ public int MusicTogglePanelH(Menu menu, MenuAction action, int param1, int param
 			BaseBoss player = BaseBoss(param1);
 			if (param2 == 1) {
 				player.bNoMusic = false;
-				CPrintToChat(param1, "{olive}[VSH2]{default} You've turned On the VS Saxton Hale Music.");
+				CPrintToChat(param1, "{olive}[VSH 2]{default} You've turned On the VS Saxton Hale Music.");
 			} else {
 				player.bNoMusic = true;
-				CPrintToChat(param1, "{olive}[VSH2]{default} You've turned Off the VS Saxton Hale Music.\nWhen the music stops, it won't play again.");
+				CPrintToChat(param1, "{olive}[VSH 2]{default} You've turned Off the VS Saxton Hale Music.\nWhen the music stops, it won't play again.");
 			}
 		}
 	}
@@ -216,15 +230,15 @@ public Action ForceBossRealtime(int client, int args)
 		return Plugin_Continue;
 
 	if (!client) {
-		ReplyToCommand(client, "[VSH2] You can only use this command ingame.");
+		ReplyToCommand(client, "[VSH 2] You can only use this command ingame.");
 		return Plugin_Handled;
 	}
 	if (args < 2) {
-		ReplyToCommand(client, "[VSH2] Usage: boss_force <target> <boss id>");
+		ReplyToCommand(client, "[VSH 2] Usage: boss_force <target> <boss id>");
 		return Plugin_Handled;
 	}
 	if (gamemode.iRoundState > StateStarting) {
-		ReplyToCommand(client, "[VSH2] You can't force a boss after a round started...");
+		ReplyToCommand(client, "[VSH 2] You can't force a boss after a round started...");
 		return Plugin_Handled;
 	}
 	
@@ -256,19 +270,13 @@ public Action ForceBossRealtime(int client, int args)
 	}
 	BaseBoss player;
 	for (int i=0; i<target_count; i++) {
-		if ( IsClientInGame(target_list[i]) )
-		{
+		if ( IsClientInGame(target_list[i]) ) {
 			player = BaseBoss(target_list[i]);
-			player.bSetOnSpawn = true;
-			player.iType = bosstype;
-			ManageOnBossSelected(player);
-			player.ConvertToBoss();
-			if (GetClientTeam(player.index) is RED)
-				player.ForceTeamChange(BLU);
-			CPrintToChat(player.index, "{orange}[VSH2]{default} an Admin has forced you to be a Boss!");
+			player.MakeBossAndSwitch(bosstype, true);
+			CPrintToChat(player.index, "{orange}[VSH 2]{default} an Admin has forced you to be a Boss!");
 		}
 	}
-	ReplyToCommand(client, "[VSH2] Forced %s as a Boss", target_name);
+	ReplyToCommand(client, "[VSH 2] Forced %s as a Boss", target_name);
 	return Plugin_Handled;
 }
 
@@ -276,6 +284,7 @@ public Action CommandAddPoints(int client, int args)
 {
 	if ( !bEnabled.BoolValue )
 		return Plugin_Continue;
+
 	if (args < 2) {
 		ReplyToCommand(client, "[VSH] Usage: hale_addpoints <target> <points>");
 		return Plugin_Handled;
@@ -310,7 +319,7 @@ public Action CommandAddPoints(int client, int args)
 			LogAction(client, target_list[i], "\"%L\" added %d VSH2 queue points to \"%L\"", client, points, target_list[i]);
 		}
 	}
-	ReplyToCommand(client, "[VSH2] Added %d queue points to %s", points, target_name);
+	ReplyToCommand(client, "[VSH 2] Added %d queue points to %s", points, target_name);
 	return Plugin_Handled;
 }
 
@@ -319,7 +328,7 @@ public Action HelpPanelCmd(int client, int args)
 	if (!bEnabled.BoolValue)
 		return Plugin_Continue;
 	if (!client) {
-		ReplyToCommand(client, "[VSH2] You can only use this command ingame.");
+		ReplyToCommand(client, "[VSH 2] You can only use this command ingame.");
 		return Plugin_Handled;
 	}
 	char strHelp[512];
@@ -329,6 +338,7 @@ public Action HelpPanelCmd(int client, int args)
 	panel.DrawItem("Show Boss' health (/halehp)");
 	panel.DrawItem("Show help about the Mode (/halehelp)");
 	panel.DrawItem("Who is the next Hale? (/halenext)");
+	panel.DrawItem("Reset Queue Points? (/resetq)");
 	panel.Send(client, HelpPanelH, 9001);
 	delete panel;
 	return Plugin_Handled;
@@ -355,6 +365,10 @@ public int HelpPanelH(Menu menu, MenuAction action, int param1, int param2)
 				else player.HelpPanelClass();
 			}
 			case 3: QueuePanel(param1);
+			case 4: {
+				BaseBoss(param1).iQueue = 0;
+				CPrintToChat(param1, "{olive}[VSH 2]{default} Your Queue has been set to 0!");
+			}
 			default: return;
 		}
 	}

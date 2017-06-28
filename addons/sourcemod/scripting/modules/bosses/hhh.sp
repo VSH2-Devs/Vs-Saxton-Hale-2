@@ -1,6 +1,5 @@
-
 #define HHHModel			"models/player/saxton_hale/hhh_jr_mk3.mdl"
-#define HHHModelPrefix			"models/player/saxton_hale/hhh_jr_mk3"
+// #define HHHModelPrefix			"models/player/saxton_hale/hhh_jr_mk3"
 
 //HHH voicelines
 #define HHHLaught			"vo/halloween_boss/knight_laugh"
@@ -139,9 +138,9 @@ methodmap CHHHJr < BaseBoss
 		float jmp = this.flCharge;
 		if (jmp > 0.0)
 			jmp *= 2.0;
-		if (this.flRAGE is 100.0 or RoundFloat(this.flRAGE) is 100)
-			ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i | Rage: FULL", RoundFloat(jmp), this.iClimbs);
-		else ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i| Rage: %i", RoundFloat(jmp), this.iClimbs, RoundFloat(this.flRAGE));
+		if (this.flRAGE >= 100.0)
+			ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp), this.iClimbs);
+		else ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i| Rage: %0.1f", RoundFloat(jmp), this.iClimbs, this.flRAGE);
 	}
 	public void SetModel ()
 	{
@@ -188,7 +187,7 @@ methodmap CHHHJr < BaseBoss
 		TF2_RemoveAllWeapons(this.index);
 		char attribs[128];
 
-		Format(attribs, sizeof(attribs), "68 ; 2.0 ; 2 ; 2.86 ; 259 ; 1.0 ; 252 ; 0.6 ; 551 ; 1");
+		Format(attribs, sizeof(attribs), "68 ; 2.0 ; 2 ; 2.86 ; 259 ; 1.0 ; 252 ; 0.7 ; 551 ; 1");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_sword", 266, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
@@ -226,7 +225,7 @@ methodmap CHHHJr < BaseBoss
 		{
 			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
 			distance = GetVectorDistance(pos, pos2);
-			if (distance < HALERAGEDIST/2) {
+			if (distance < HALERAGEDIST) {
 				SetEntProp(i, Prop_Send, "m_bDisabled", 1);
 				AttachParticle(i, "yikes_fx", 75.0);
 				SetVariantInt(1);
@@ -301,20 +300,16 @@ public void AddHHHToDownloads()
 	char s[PLATFORM_MAX_PATH];
 	
 	int i;
-	PrecacheModel(HHHModel, true);
-	for (i = 0; i < sizeof(extensions); i++) {
-		Format(s, PLATFORM_MAX_PATH, "%s%s", HHHModelPrefix, extensions[i]);
-		CheckDownload(s);
-	}
+
+	PrepareModel(HHHModel);
+
 	for (i = 1; i <= 4; i++) {
 		Format(s, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHLaught, i);
 		PrecacheSound(s, true);
 		Format(s, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHAttack, i);
 		PrecacheSound(s, true);
-
 		Format(s, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHPain, i);
-		if ( FileExists(s) )
-			PrecacheSound(s, true);
+		PrecacheSound(s, true);
 
 	}
 	PrecacheSound(HHHRage, true);
@@ -349,5 +344,5 @@ public void StunHHH(const int userid, const int targetid)
 	int target = GetClientOfUserId(targetid);
 	if ( not IsValidClient(target) or not IsPlayerAlive(target))
 		target = 0;
-	TF2_StunPlayer(userid, 2.0, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, target);
+	TF2_StunPlayer(client, 2.0, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, target);
 }

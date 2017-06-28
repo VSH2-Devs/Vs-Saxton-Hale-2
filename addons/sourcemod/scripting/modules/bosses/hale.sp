@@ -1,7 +1,26 @@
-
 //defines
-#define HaleModel		"models/player/saxtonhale.mdl"
-#define HaleModelPrefix		"models/player/saxtonhale"
+
+//models
+// #define HaleModel		"models/player/saxton_hale/saxton_hale.mdl"
+// #define HaleModelPrefix		"models/player/saxton_hale/saxton_hale"
+#define HaleModel				"models/player/saxton_test4/saxton_hale_test4.mdl"
+
+//materials
+static const char HaleMatsV2[][] = {
+	"materials/models/player/saxton_test4/eyeball_l.vmt",
+	"materials/models/player/saxton_test4/eyeball_r.vmt",
+	"materials/models/player/saxton_test4/halebody.vmt",
+	"materials/models/player/saxton_test4/halebody.vtf",
+	"materials/models/player/saxton_test4/halebodyexponent.vtf",
+	"materials/models/player/saxton_test4/halehead.vmt",
+	"materials/models/player/saxton_test4/halehead.vtf",
+	"materials/models/player/saxton_test4/haleheadexponent.vtf",
+	"materials/models/player/saxton_test4/halenormal.vtf",
+	"materials/models/player/saxton_test4/halephongmask.vtf"
+	//"materials/models/player/saxton_test4/halegibs.vmt",
+	//"materials/models/player/saxton_test4/halegibs.vtf"
+};
+
 
 //Saxton Hale voicelines
 #define HaleComicArmsFallSound	"saxton_hale/saxton_hale_responce_2.wav"
@@ -39,6 +58,7 @@
 
 #define HALE_JUMPCHARGE		(25*1.0)
 #define HALERAGEDIST		800.0
+#define HALE_WEIGHDOWN_TIME	3.0
 
 
 methodmap CHale < BaseBoss
@@ -112,7 +132,7 @@ methodmap CHale < BaseBoss
 			this.flWeighDown = 0.0;
 		else this.flWeighDown += 0.1;
 
-		if ( (buttons & IN_DUCK) and this.flWeighDown >= 1.0 )
+		if ( (buttons & IN_DUCK) and this.flWeighDown >= HALE_WEIGHDOWN_TIME )
 		{
 			float ang[3]; GetClientEyeAngles(this.index, ang);
 			if ( ang[0] > 60.0 ) {
@@ -129,9 +149,9 @@ methodmap CHale < BaseBoss
 		float jmp = this.flCharge;
 		if (jmp > 0.0)
 			jmp *= 4.0;
-		if (this.flRAGE is 100.0 or RoundFloat(this.flRAGE) is 100)
-			ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL", RoundFloat(jmp));
-		else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %i", RoundFloat(jmp), RoundFloat(this.flRAGE));
+		if (this.flRAGE >= 100.0)
+                        ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp));
+                else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", RoundFloat(jmp), this.flRAGE);
 	}
 	public void SetModel ()
 	{
@@ -339,151 +359,84 @@ public void AddHaleToDownloads()
 	char s[PLATFORM_MAX_PATH];
 
 	int i;
-	PrecacheModel(HaleModel, true);
-	for (i = 0; i < sizeof(extensions); i++) {
-		Format(s, PLATFORM_MAX_PATH, "%s%s", HaleModelPrefix, extensions[i]);
-		CheckDownload(s);
-	}
-	for (i = 0; i < sizeof(extensionsb); i++) {
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/saxton_hale/eye%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/saxton_hale/hale_head%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/saxton_hale/hale_body%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/saxton_hale/hale_misc%s", extensionsb[i]);
-		CheckDownload(s);
+	
+	PrepareModel(HaleModel);
+	DownloadMaterialList(HaleMatsV2, sizeof(HaleMatsV2));
 
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/saxton-hale/eyeball_l%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/saxton-hale/eyeball_r%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/saxton-hale/saxton%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/saxton-hale/saxton-hale%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/saxton-hale/saxton-hale-normals%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/saxton_hale/hale_misc_normal%s", extensionsb[i]);
-		CheckDownload(s);
-		Format(s, PLATFORM_MAX_PATH, "materials/models/player/saxton_hale/hale_body_normal%s", extensionsb[i]);
-		CheckDownload(s);
-	}
-	PrecacheSound(HaleComicArmsFallSound, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", HaleComicArmsFallSound);
-	CheckDownload(s);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", HaleKSpree);
-	PrecacheSound(HaleKSpree, true);
-	CheckDownload(s);
+	PrepareSound(HaleComicArmsFallSound);
+	PrepareSound(HaleKSpree);
+	
 	for (i = 1; i <= 4; i++) {
 		Format(s, PLATFORM_MAX_PATH, "%s0%i.wav", HaleLastB, i);
 		PrecacheSound(s, true);
 	}
+
+	PrepareSound(HaleKillMedic);
+	PrepareSound(HaleKillSniper1);
+	PrepareSound(HaleKillSniper2);
+	PrepareSound(HaleKillSpy1);
+	PrepareSound(HaleKillSpy2);
+	PrepareSound(HaleKillEngie1);
+	PrepareSound(HaleKillEngie2);
+	PrepareSound(HaleKillDemo132);
+	PrepareSound(HaleKillHeavy132);
+	PrepareSound(HaleKillScout132);
+	PrepareSound(HaleKillSpy132);
+	PrepareSound(HaleKillPyro132);
+	PrepareSound(HaleKillDemo132);
+	PrepareSound(HaleKillDemo132);
+	PrepareSound(HaleKillDemo132);
+	PrepareSound(HaleKillDemo132);
+	PrepareSound(HaleKillDemo132);
+	PrepareSound(HaleSappinMahSentry132);
+	PrepareSound(HaleKillLast132);
 	
-	PrecacheSound(HaleKillMedic, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", HaleKillMedic);
-	CheckDownload(s);
-	PrecacheSound(HaleKillSniper1, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", HaleKillSniper1);
-	CheckDownload(s);
-	PrecacheSound(HaleKillSniper2, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", HaleKillSniper2);
-	CheckDownload(s);
-	PrecacheSound(HaleKillSpy1, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", HaleKillSpy1);
-	CheckDownload(s);
-	PrecacheSound(HaleKillSpy2, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", HaleKillSpy2);
-	CheckDownload(s);
-	PrecacheSound(HaleKillEngie1, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", HaleKillEngie1);
-	CheckDownload(s);
-	PrecacheSound(HaleKillEngie2, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", HaleKillEngie2);
-	CheckDownload(s);
-	PrecacheSound(HaleKillDemo132, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", HaleKillDemo132);
-	CheckDownload(s);
-	PrecacheSound(HaleKillHeavy132, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", HaleKillHeavy132);
-	CheckDownload(s);
-	PrecacheSound(HaleKillScout132, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", HaleKillScout132);
-	CheckDownload(s);
-	PrecacheSound(HaleKillSpy132, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", HaleKillSpy132);
-	CheckDownload(s);
-	PrecacheSound(HaleKillPyro132, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", HaleKillPyro132);
-	CheckDownload(s);
-	PrecacheSound(HaleSappinMahSentry132, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", HaleSappinMahSentry132);
-	CheckDownload(s);
-	PrecacheSound(HaleKillLast132, true);
-	Format(s, PLATFORM_MAX_PATH, "sound/%s", HaleKillLast132);
-	CheckDownload(s);
-	
-	for (i = 1; i <= 5; i++) {
-		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleJump, i);
-		PrecacheSound(s, true);
-		Format(s, PLATFORM_MAX_PATH, "sound/%s", s);
-		CheckDownload(s);
-		
-		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleWin, i);
-		PrecacheSound(s, true);
-		Format(s, PLATFORM_MAX_PATH, "sound/%s", s);
-		CheckDownload(s);
-		
-		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleJump132, i);
-		PrecacheSound(s, true);
-		Format(s, PLATFORM_MAX_PATH, "sound/%s", s);
-		CheckDownload(s);
-		
-		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillEngie132, i);
-		PrecacheSound(s, true);
-		Format(s, PLATFORM_MAX_PATH, "sound/%s", s);
-		CheckDownload(s);
-		
-		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillKSpree132, i);
-		PrecacheSound(s, true);
-		Format(s, PLATFORM_MAX_PATH, "sound/%s", s);
-		CheckDownload(s);
+	for (i = 1; i <= 5; i++)
+	{
+		if (i <= 2)
+		{
+			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleJump, i);
+			PrepareSound(s);
 
-		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleFail, i);
-		PrecacheSound(s, true);
-		Format(s, PLATFORM_MAX_PATH, "sound/%s", s);
-		CheckDownload(s);
+			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleWin, i);
+			PrepareSound(s);
 
+			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleJump132, i);
+			PrepareSound(s);
 
-		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleRageSound, i);
-		PrecacheSound(s, true);
-		Format(s, PLATFORM_MAX_PATH, "sound/%s", s);
-		CheckDownload(s);
+			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillEngie132, i);
+			PrepareSound(s);
 
-		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleStubbed132, i);
-		PrecacheSound(s, true);
-		Format(s, PLATFORM_MAX_PATH, "sound/%s", s);
-		CheckDownload(s);
+			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillKSpree132, i);
+			PrepareSound(s);
+		}
+
+		if (i <= 3)
+		{
+			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleFail, i);
+			PrepareSound(s);
+		}
+
+		if (i <= 4)
+		{
+			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleRageSound, i);
+			PrepareSound(s);
+
+			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleStubbed132, i);
+			PrepareSound(s);
+		}
 
 		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleRoundStart, i);
-		PrecacheSound(s, true);
-		Format(s, PLATFORM_MAX_PATH, "sound/%s", s);
-		CheckDownload(s);
+		PrepareSound(s);
 
 		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleKSpreeNew, i);
-		PrecacheSound(s, true);
-		Format(s, PLATFORM_MAX_PATH, "sound/%s", s);
-		CheckDownload(s);
-		
+		PrepareSound(s);
+
 		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleLastMan, i);
-		PrecacheSound(s, true);
-		Format(s, PLATFORM_MAX_PATH, "sound/%s", s);
-		CheckDownload(s);
-		
+		PrepareSound(s);
+
 		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleStart132, i);
-		PrecacheSound(s, true);
-		Format(s, PLATFORM_MAX_PATH, "sound/%s", s);
-		CheckDownload(s);
+		PrepareSound(s);
 	}
 }
 

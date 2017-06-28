@@ -1,42 +1,45 @@
-
+/*
 int
-	state,			/* Sets the round state of the gamemode */
-	BossSpecial = -1,	/* preset the next boss type */
-	HealthBar = -1,		/* obviously handles the boss healthbar */
+	state,			// Sets the round state of the gamemode
+	BossSpecial = -1,	// preset the next boss type
+	HealthBar = -1,		// obviously handles the boss healthbar
 	TotalMaxHealth,
-	TimeLeft,		/* How many minutes to countdown! */
-	RoundCount,		/* number of rounds played */
-	HealthChecks
+	TimeLeft,		// How many minutes to countdown!
+	RoundCount,		// number of rounds played
+	HealthChecks,		// self explanatory
+	NumCaps			// number of times control point has been capped
 ;
 
 float
-	HealthTime,		/* for health check time */
+	HealthTime,		// for health check time
 	MusicTime
 ;
 bool
-	PointReady
+	PointReady,
+	Medieval
 ;
 
-BaseBoss preselected;		/* The next player chosen as boss */
-
+BaseBoss preselected;		// The next player chosen as boss
+*/
+/*
 #if defined _steamtools_included
 bool steamtools;
 #endif
-
-//Handle
-//	hMusicTimer		/* bool for music timer */
-//;
-
-enum /* VSH2 Round States */
-{
+*/
+/*
+Handle
+	hMusicTimer		// bool for music timer
+;
+*/
+enum {	/* VSH2 Round States */
 	StateDisabled = -1,
 	StateStarting = 0,
 	StateRunning = 1,
 	StateEnding = 2,
 };
 
-/*enum
-{
+/*
+enum {
 	Skill_Normal = 0,
 	Skill_AllCrits,
 	Skill_RuneKing,
@@ -58,24 +61,40 @@ public int AllowedDifficulties[] = {
 	Skill_RuneAgility,
 	Skill_RuneStrength,
 	Skill_MiniCrits
-};*/
+};
+*/
 
-methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONLY */
+StringMap hGameModeFields ;
+
+methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should be handled HERE ONLY */
 {
 	public VSHGameMode()
 	{
-		preselected = SPNULL;
+		hGameModeFields = new StringMap();
 	}
-
 	property int iRoundState
 	{
-		public get()			{ return state; }
-		public set(const int val)	{ state = val; }
+		public get()			//{ return state; }
+		{
+			int i; hGameModeFields.GetValue("iRoundState", i);
+			return i;
+		}
+		public set(const int val)	//{ state = val; }
+		{
+			hGameModeFields.SetValue("iRoundState", val);
+		}
 	}
 	property int iSpecial
 	{
-		public get()			{ return BossSpecial; }
-		public set(const int val)	{ BossSpecial = val; }
+		public get()			//{ return BossSpecial; }
+		{
+			int i; hGameModeFields.GetValue("iSpecial", i);
+			return i;
+		}
+		public set(const int val)	//{ BossSpecial = val; }
+		{
+			hGameModeFields.SetValue("iSpecial", val);
+		}
 	}
 	property int iPlaying
 	{
@@ -83,17 +102,28 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		{
 			int playing = 0;
 			for (int i=MaxClients ; i ; --i) {
-				if (not IsClientInGame(i) or not IsPlayerAlive(i) or BaseBoss(i).bIsBoss)
+				if (not IsClientInGame(i))
 					continue;
-				playing++;
+				else if (not IsPlayerAlive(i))
+					continue;
+				if (BaseBoss(i).bIsBoss)
+					continue;
+				++playing;
 			}
 			return playing;
 		}
 	}
 	property int iHealthBar
 	{
-		public get()			{ return HealthBar; }
-		public set(const int val)	{ HealthBar = val; }
+		public get()			//{ return HealthBar; }
+		{
+			int i; hGameModeFields.GetValue("iHealthBar", i);
+			return i;
+		}
+		public set(const int val)	//{ HealthBar = val; }
+		{
+			hGameModeFields.SetValue("iHealthBar", val);
+		}
 	}
 	property int iHealthBarState
 	{
@@ -115,64 +145,189 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 	}
 	property int iTotalMaxHealth
 	{
-		public get()			{ return TotalMaxHealth; }
-		public set(const int val)	{ TotalMaxHealth = val; }
+		public get()			//{ return TotalMaxHealth; }
+		{
+			int i; hGameModeFields.GetValue("iTotalMaxHealth", i);
+			return i;
+		}
+		public set(const int val)	//{ TotalMaxHealth = val; }
+		{
+			hGameModeFields.SetValue("iTotalMaxHealth", val);
+		}
 	}
 	property int iTimeLeft
 	{
-		public get()			{ return TimeLeft; }
-		public set(const int val)	{ TimeLeft = val; }
+		public get()			//{ return TimeLeft; }
+		{
+			int i; hGameModeFields.GetValue("iTimeLeft", i);
+			return i;
+		}
+		public set(const int val)	//{ TimeLeft = val; }
+		{
+			hGameModeFields.SetValue("iTimeLeft", val);
+		}
 	}
 	property int iRoundCount
 	{
-		public get()			{ return RoundCount; }
-		public set(const int val)	{ RoundCount = val; }
+		public get()			//{ return RoundCount; }
+		{
+			int i; hGameModeFields.GetValue("iRoundCount", i);
+			return i;
+		}
+		public set(const int val)	//{ RoundCount = val; }
+		{
+			hGameModeFields.SetValue("iRoundCount", val);
+		}
 	}
 	property int iHealthChecks
 	{
-		public get()			{ return HealthChecks; }
-		public set(const int val)	{ HealthChecks = val; }
+		public get()			//{ return HealthChecks; }
+		{
+			int i; hGameModeFields.GetValue("iHealthChecks", i);
+			return i;
+		}
+		public set(const int val)	//{ HealthChecks = val; }
+		{
+			hGameModeFields.SetValue("iHealthChecks", val);
+		}
+	}
+	property int iCaptures
+	{
+		public get()			//{ return NumCaps; }
+		{
+			int i; hGameModeFields.GetValue("iCaptures", i);
+			return i;
+		}
+		public set(const int val)	//{ NumCaps = val; }
+		{
+			hGameModeFields.SetValue("iCaptures", val);
+		}
 	}
 	
 #if defined _steamtools_included
 	property bool bSteam
 	{
-		public get()			{ return steamtools; }
-		public set(const bool val)	{ steamtools = val; }
+		public get()			//{ return steamtools; }
+		{
+			bool i; hGameModeFields.GetValue("bSteam", i);
+			return i;
+		}
+		public set(const bool val)	//{ steamtools = val; }
+		{
+			hGameModeFields.SetValue("bSteam", val);
+		}
+	}
+#endif
+#if defined _tf2attributes_included
+	property bool bTF2Attribs
+	{
+		public get()
+		{
+			bool i; hGameModeFields.GetValue("bTF2Attribs", i);
+			return i;
+		}
+		public set(const bool val)
+		{
+			hGameModeFields.SetValue("bTF2Attribs", val);
+		}
 	}
 #endif
 	property bool bPointReady
 	{
-		public get()			{ return PointReady; }
-		public set(const bool val)	{ PointReady = val; }
+		public get()			//{ return PointReady; }
+		{
+			bool i; hGameModeFields.GetValue("bPointReady", i);
+			return i;
+		}
+		public set(const bool val)	//{ PointReady = val; }
+		{
+			hGameModeFields.SetValue("bPointReady", val);
+		}
+	}
+	property bool bMedieval
+	{
+		public get()			//{ return Medieval; }
+		{
+			bool i; hGameModeFields.GetValue("bMedieval", i);
+			return i;
+		}
+		public set(const bool val)	//{ Medieval = val; }
+		{
+			hGameModeFields.SetValue("bMedieval", val);
+		}
 	}
 
 	property float flHealthTime
 	{
-		public get()			{ return HealthTime; }
-		public set(const float val)	{ HealthTime = val; }
+		public get()			//{ return HealthTime; }
+		{
+			float i; hGameModeFields.GetValue("flHealthTime", i);
+			return i;
+		}
+		public set(const float val)	//{ HealthTime = val; }
+		{
+			hGameModeFields.SetValue("flHealthTime", val);
+		}
 	}
 	property float flMusicTime
 	{
-		public get()			{ return MusicTime; }
-		public set(const float val)	{ MusicTime = val; }
+		public get()			//{ return MusicTime; }
+		{
+			float i; hGameModeFields.GetValue("flMusicTime", i);
+			return i;
+		}
+		public set(const float val)	//{ MusicTime = val; }
+		{
+			hGameModeFields.SetValue("flMusicTime", val);
+		}
 	}
 
 	property BaseBoss hNextBoss
 	{
 		public get()
-		{
+		/*{
 			if (!preselected.userid or !IsClientValid(preselected.index))
-				return SPNULL;
+				return view_as< BaseBoss >(0);
 			return preselected;
+		}*/
+		{
+			BaseBoss i; hGameModeFields.GetValue("hNextBoss", i);
+			if (!i or !i.index)
+				return view_as< BaseBoss >(0);
+			return i;
 		}
-		public set(const BaseBoss val)	{ preselected = val; }
+		public set(const BaseBoss val)	//{ preselected = val; }
+		{
+			hGameModeFields.SetValue("hNextBoss", val);
+		}
 	}
-	/*property Handle hMusic
+	/*
+	property Handle hMusic
 	{
 		public get()			{ return hMusicTimer; }
 		public set(const Handle val)	{ hMusicTimer = val; }
-	}*/
+	}
+	*/
+	
+	public void Init()	// When adding a new property, make sure you initialize it to a default 
+	{
+		this.iRoundState = 0;
+		this.iSpecial = -1;
+		this.iHealthBar = 0;
+		this.iTotalMaxHealth = 0;
+		this.iTimeLeft = 0;
+		this.iRoundCount = 0;
+		this.iHealthChecks = 0;
+		this.iCaptures = 0;
+#if defined _steamtools_included
+		this.bSteam = false;
+#endif
+		this.bPointReady = false;
+		this.bMedieval = false;
+		this.flHealthTime = 0.0;
+		this.flMusicTime = 0.0;
+		this.hNextBoss = view_as< BaseBoss >(0);
+	}
 
 	public BaseBoss GetRandomBoss(const bool balive)
 	{
@@ -180,14 +335,14 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		for (int i=MaxClients ; i ; --i) {
 			if (not IsValidClient(i) )
 				continue;
-			if (balive and not IsPlayerAlive(i))
+			else if (balive and not IsPlayerAlive(i))
 				continue;
 			boss = BaseBoss(i);
 			if (not boss.bIsBoss)
 				continue;
 			else return boss;
 		}
-		return SPNULL;
+		return view_as< BaseBoss >(0);
 	}
 	public BaseBoss GetBossByType(const bool balive, const int type)
 	{
@@ -195,7 +350,7 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		for (int i=MaxClients ; i ; --i) {
 			if (not IsValidClient(i) )
 				continue;
-			if (balive and not IsPlayerAlive(i))
+			else if (balive and not IsPlayerAlive(i))
 				continue;
 			boss = BaseBoss(i);
 			if (not boss.bIsBoss)
@@ -203,7 +358,7 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 			if (boss.iType is type)
 				return boss;
 		}
-		return SPNULL;
+		return view_as< BaseBoss >(0);
 	}
 	public void CheckArena(const bool type)
 	{
@@ -220,9 +375,10 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		int points = -999;
 		BaseBoss boss;
 		for (int i=MaxClients ; i ; --i) {
-			if ( not IsValidClient(i) or GetClientTeam(i) <= int(TFTeam_Spectator) )
+			if ( not IsValidClient(i) )
 				continue;
-
+			else if ( GetClientTeam(i) <= int(TFTeam_Spectator) )
+				continue;
 			boss = BaseBoss(i);
 			if (boss.iQueue >= points and not boss.bSetOnSpawn) {
 				tBoss = boss;
@@ -238,7 +394,7 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		for (int i=MaxClients ; i ; --i) {
 			if (not IsValidClient(i) )
 				continue;
-			if (balive and not IsPlayerAlive(i))
+			else if (balive and not IsPlayerAlive(i))
 				continue;
 			boss = BaseBoss(i);
 			if (not boss.bIsMinion)
@@ -254,7 +410,7 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 		for (int i=MaxClients ; i ; --i) {
 			if (not IsValidClient(i) )
 				continue;
-			if (balive and not IsPlayerAlive(i))
+			else if (balive and not IsPlayerAlive(i))
 				continue;
 			boss = BaseBoss(i);
 			if (not boss.bIsBoss)
@@ -364,13 +520,35 @@ methodmap VSHGameMode		/* all game mode oriented code should be handled HERE ONL
 			boss = BaseBoss(i);
 			if (not boss.bIsBoss)
 				{continue;}
-			if (not IsPlayerAlive(i))
-				{boss.iHealth = 0;}
 			bosscount++;
 			totalHealth += boss.iHealth;
+			if (not IsPlayerAlive(i))
+				totalHealth -= boss.iHealth;
 		}
 		if (bosscount)
 			this.iHealthBarPercent = RoundToCeil( float(totalHealth)/float(this.iTotalMaxHealth)*255.0 );
+	}
+	public void GetBossType()
+	{
+		if (this.hNextBoss and this.hNextBoss.iPresetType > -1) {
+			this.iSpecial = this.hNextBoss.iPresetType;
+			if ( this.iSpecial > MAXBOSS)
+				this.iSpecial = MAXBOSS;
+			return;
+		}
+		BaseBoss boss = this.FindNextBoss();
+		if (boss.iPresetType > -1 and this.iSpecial is -1) {
+			this.iSpecial = boss.iPresetType;
+			boss.iPresetType = -1;
+			if ( this.iSpecial > MAXBOSS )
+				this.iSpecial = MAXBOSS;
+			return;
+		}
+		if (this.iSpecial > -1) {	// Clamp the chosen special so we don't error out.
+			if ( this.iSpecial > MAXBOSS)
+				this.iSpecial = MAXBOSS;
+		}
+		else this.iSpecial = GetRandomInt(Hale, MAXBOSS);
 	}
 };
 

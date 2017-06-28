@@ -1,3 +1,5 @@
+public char extensions[][] = { ".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd", ".phy" };
+public char extensionsb[2][5] = { ".vtf", ".vmt" };
 
 stock int GetHealingTarget(const int client)
 {
@@ -31,20 +33,81 @@ stock void SetMediCharge(const int medigun, const float val)
 }
 stock bool IsNearSpencer(const int client)
 {
-	int medics = 0, healers = GetEntProp(client, Prop_Send, "m_nNumHealers");
-	if (healers) {
-		for (int i=MaxClients ; i ; --i) {
-			if (IsValidClient(i) && GetHealingTarget(i) == client)
-				medics++;
-		}
+	int medics = 0;
+	for (int i=MaxClients ; i ; --i) {
+		if (IsValidClient(i) && GetHealingTarget(i) == client)
+			medics++;
 	}
-	return (healers > medics);
+	return (GetEntProp(client, Prop_Send, "m_nNumHealers") > medics);
 }
+//Prepare content stocks
 stock void CheckDownload(const char[] dlpath)
 {
 	if ( FileExists(dlpath) )
 		AddFileToDownloadsTable(dlpath);
 }
+//Following 'Prepare' stocks taken from VSH1
+//'Prepare' stocks will precache AND add to the downloads table (if file exists).
+stock void PrepareSound(const char[] szSoundPath) //For single custom sound files
+{
+	PrecacheSound(szSoundPath, true);
+	char s[PLATFORM_MAX_PATH];
+	Format(s, sizeof(s), "sound/%s", szSoundPath);
+	CheckDownload(s);
+}
+stock void DownloadSoundList(const char[][] szFileList, int iSize) //For arrays of custom sounds
+{
+	for (int i = 0; i < iSize; i++)
+	{
+		PrepareSound(szFileList[i]);
+	}
+}
+stock void PrecacheSoundList(const char[][] szFileList, int iSize) //For arrays of stock TF2 sounds
+{
+	for (int i = 0; i < iSize; i++)
+	{
+		PrecacheSound(szFileList[i], true);
+	}
+}
+stock void PrepareMaterial(const char[] szMaterialPath) //For single custom materials, omit file extensions as it prepares VMT + VTF
+{
+	char s[PLATFORM_MAX_PATH];
+	Format(s, sizeof(s), "%s%s", szMaterialPath, ".vtf");
+	CheckDownload(s);
+	Format(s, sizeof(s), "%s%s", szMaterialPath, ".vmt");
+	CheckDownload(s);
+}
+stock void DownloadMaterialList(const char[][] szFileList, int iSize) //For arrays of custom materials
+{
+	char s[PLATFORM_MAX_PATH];
+	for (int i = 0; i < iSize; i++)
+	{
+		strcopy(s, sizeof(s), szFileList[i]);
+		CheckDownload(s);
+	}
+}
+stock int PrepareModel(const char[] szModelPath, bool bMdlOnly = false) //For custom models, do NOT omit .MDL extension
+{
+	char szBase[PLATFORM_MAX_PATH];
+	char szPath[PLATFORM_MAX_PATH];
+	int i;
+	strcopy(szBase, sizeof(szBase), szModelPath);
+	SplitString(szBase, ".mdl", szBase, sizeof(szBase)); //Kind of redundant, but eh.
+	
+	if (!bMdlOnly)
+	{
+		for (i = 0; i < sizeof(extensions); i++)
+		{
+			Format(szPath, PLATFORM_MAX_PATH, "%s%s", szBase, extensions[i]);
+			CheckDownload(szPath);
+		}
+	}
+	else
+		CheckDownload(szModelPath);
+	
+	return PrecacheModel(szModelPath, true);
+}
+//End 'Prepare' stocks
 public bool TraceRayDontHitSelf(int entity, int mask, any data)
 {
 	return (entity != data);
@@ -727,7 +790,7 @@ stock void SpawnRandomAmmo()
 		GetEntPropVector(iEnt, Prop_Send, "m_vecOrigin", vPos);
 		GetEntPropVector(iEnt, Prop_Send, "m_angRotation", vAng);
 
-		int iEnt2 = !GetRandomInt(0, 3) ? CreateEntityByName("item_ammopack_medium") : CreateEntityByName("item_ammopack_small");
+		int iEnt2 = CreateEntityByName("item_ammopack_small");
 		TeleportEntity(iEnt2, vPos, vAng, NULL_VECTOR);
 		DispatchSpawn(iEnt2);
 		SetEntProp(iEnt2, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? 2 : 0, 4);
@@ -745,7 +808,7 @@ stock void SpawnRandomHealth()
 		GetEntPropVector(iEnt, Prop_Send, "m_vecOrigin", vPos);
 		GetEntPropVector(iEnt, Prop_Send, "m_angRotation", vAng);
 
-		int iEnt2 = !GetRandomInt(0, 4) ? CreateEntityByName("item_healthkit_medium") : CreateEntityByName("item_healthkit_small");
+		int iEnt2 = CreateEntityByName("item_healthkit_small");
 		TeleportEntity(iEnt2, vPos, vAng, NULL_VECTOR);
 		DispatchSpawn(iEnt2);
 		SetEntProp(iEnt2, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? 2 : 0, 4);
@@ -780,6 +843,19 @@ stock int GetSlotFromWeapon(const int iClient, const int iWeapon)
 			{return i;}
 	}
 	return -1;
+}
+stock bool RemoveDemoShield(int iClient) //Taken from VSH1
+{
+	int iEnt = MaxClients + 1;
+	while ((iEnt = FindEntityByClassname(iEnt, "tf_wearable_demoshield")) != -1)
+	{
+		if (GetEntPropEnt(iEnt, Prop_Send, "m_hOwnerEntity") == iClient && !GetEntProp(iEnt, Prop_Send, "m_bDisguiseWearable"))
+		{
+			TF2_RemoveWearable(iClient, iEnt);
+			return true; //Returns true if Shield was removed...
+		}
+	}
+	return false; //...and returns False if one wasn't found.
 }
 stock void RemovePlayerBack(int client, int[] indices, int len)
 {
@@ -1097,7 +1173,7 @@ stock int GetClip(const int client, const int slot)
 }
 stock void SkipBossPanelNotify(const int client, bool newchoice = true)
 {
-	if (!bEnabled.BoolValue or !IsValidClient(client) or IsVoteInProgress())
+	if (!bEnabled.BoolValue or !IsValidClient(client) or IsFakeClient(client) or IsVoteInProgress())
 		return;
 
 	Panel panel = new Panel();
@@ -1109,4 +1185,35 @@ stock void SkipBossPanelNotify(const int client, bool newchoice = true)
 	panel.DrawItem(strNotify);
 	panel.Send(client, SkipHalePanelH, 30);
 	delete panel;
+}
+stock void _SetCapOwner(const int iCapTeam, float flEnableTime = 30.0)
+{
+	int i = -1;
+	int cap_master = FindEntityByClassname(-1, "team_control_point_master");
+	while ( (i = FindEntityByClassname(i, "team_control_point")) != -1 )
+	{
+		if (IsValidEntity(i)) {	//Adapted from Arena:Respawn
+			SetVariantInt(iCapTeam);
+			AcceptEntityInput(i, "SetOwner", -1, cap_master); //Must have team_control_point_master as the activator, less it will just ignore the Input
+			SetVariantInt(1);
+			AcceptEntityInput(i, "SetLocked");
+			SetPawnTimer(EnableCap, flEnableTime);
+		}
+	}
+}
+stock bool StrStarts(const char[] szStr, const char[] szSubStr, bool bCaseSensitive = true)
+{
+	return !StrContains(szStr, szSubStr, bCaseSensitive);
+}
+stock bool ValidateName(const char[] name)
+{
+	int length = strlen(name);
+	for (int i=0 ; i<length ; ++i) {
+		int holder = name[i];
+		// Invalid name, names may only contains numbers, underscores and normal letters
+		if (!(IsCharAlpha(holder) || IsCharNumeric(holder) || holder == '_'))
+			return false;
+	}
+	// A name is, of course, only valid if it's 1 or more chars long, though longer is recommended
+	return (length > 0);
 }
