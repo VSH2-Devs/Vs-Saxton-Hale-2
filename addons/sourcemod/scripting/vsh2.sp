@@ -119,6 +119,7 @@ enum /*CvarName*/
 	BlockEureka,
 	ForceLives,
 	Anchoring,
+	BlockRageSuicide,
 	VersionNumber
 };
 
@@ -332,7 +333,7 @@ public void OnPluginStart()
 	cvarVSH2[BlockEureka] = CreateConVar("vsh2_allow_eureka_effect", "0", "Enables/Disables the Eureka Effect for Engineers", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[ForceLives] = CreateConVar("vsh2_force_player_lives", "0", "Forces the gamemode to apply Medieval Mode lives on players, whether or not medieval mode is enabled", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[Anchoring] = CreateConVar("vsh2_allow_boss_anchor", "0", "When enabled, reduces all knockback bosses experience when crouching.", FCVAR_NONE, true, 0.0, true, 1.0);
-        
+	cvarVSH2[BlockRageSuicide] = CreateConVar("vsh2_block_raged_suicide", "1", "when enables, stops raged players from suiciding.", FCVAR_NONE, true, 0.0, true, 1.0);
 	
 #if defined _steamtools_included
 	gamemode.bSteam = LibraryExists("SteamTools");
@@ -432,6 +433,14 @@ public Action BlockSuicide(int client, const char[] command, int argc)
 			if (flhp_percent > 0.3) {	// Allow bosses to suicide if their total health is under 3%.
 				CPrintToChat(client, "Do not suicide as a Boss. Please Use '!resetq' instead.");
 				return Plugin_Handled;
+			}
+		}
+		else {
+			// stop rage-stunned players from suiciding.
+			if( cvarVSH2[BlockRageSuicide].BoolValue ) {
+				int stunflags = GetEntProp(client, Prop_Send, "m_iStunFlags");
+				if( stunflags & (TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT) )
+					return Plugin_Handled;
 			}
 		}
 	}
