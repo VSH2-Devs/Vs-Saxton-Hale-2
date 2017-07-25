@@ -1027,7 +1027,7 @@ public void _ResetMediCharge(const int entid)
 	if (medigun > MaxClients and IsValidEntity(medigun))
 		SetMediCharge(medigun, GetMediCharge(medigun)+cvarVSH2[MedigunReset].FloatValue);
 }
-public Action TimerLazor(Handle timer, any medigunid)
+public Action Timer_UberLoop(Handle timer, any medigunid)
 {
 	int medigun = EntRefToEntIndex(medigunid);
 	if (medigun and IsValidEntity(medigun) and gamemode.iRoundState is StateRunning)
