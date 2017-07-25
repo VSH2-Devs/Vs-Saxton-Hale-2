@@ -1200,7 +1200,7 @@ public void ManageUberDeploy(const BaseBoss medic, const BaseBoss patient)
 			}
 			else medic.iUberTarget = 0;
 			Call_OnUberDeployed(medic, patient);
-			CreateTimer(0.1, TimerLazor, EntIndexToEntRef(medigun), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(0.1, Timer_UberLoop, EntIndexToEntRef(medigun), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
 }
