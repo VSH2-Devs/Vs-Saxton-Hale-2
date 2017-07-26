@@ -323,6 +323,39 @@ public Action CommandAddPoints(int client, int args)
 	return Plugin_Handled;
 }
 
+public Action CommandSetPoints(int client, int args)
+{
+	if ( !bEnabled.BoolValue )
+		return Plugin_Continue;
+		
+	if (args < 2) {
+		ReplyToCommand(client, "[VSH] Usage: hale_setpoints <target> <points>");
+		return Plugin_Handled;
+	}
+	char targetname[32]; GetCmdArg(1, targetname, sizeof(targetname));
+	char s2[32]; GetCmdArg(2, s2, sizeof(s2));
+	int points = StringToInt(s2);
+	char target_name[MAX_TARGET_LENGTH];
+	int target_list[MAXPLAYERS], target_count;
+	bool tn_is_ml;
+	
+	if ( (target_count = ProcessTargetString( targetname, client, target_list, MAXPLAYERS, 0, target_name, sizeof(target_name), tn_is_ml)) <= 0 ) {
+		ReplyToTargetError(client, target_count);
+		return Plugin_Handled;
+	}
+	
+	BaseBoss player;
+	for (int i=0; i<target_count; i++) {
+		if ( IsClientInGame(target_list[i]) ) {
+			player = BaseBoss(target_list[i]);
+			player.iQueue = points;
+			LogAction(client, target_list[i], "\"%L\" set %d VSH2 queue points to \"%L\"", client, points, target_list[i]);
+		}
+	}
+	ReplyToCommand(client, "[VSH 2] Added %d queue points to %s", points, target_name);
+	return Plugin_Handled;
+}
+
 public Action HelpPanelCmd(int client, int args)
 {
 	if (!bEnabled.BoolValue)
