@@ -138,6 +138,7 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 	gamemode.bMedieval = (FindEntityByClassname(-1, "tf_logic_medieval") != -1 or FindConVar("tf_medieval").BoolValue);
 	gamemode.CheckArena(cvarVSH2[PointType].BoolValue);
 	gamemode.bPointReady = false;
+	gamemode.iTimeLeft = 0;
 	gamemode.iCaptures = 0;
 	gamemode.GetBossType();		// in gamemode.sp
 
