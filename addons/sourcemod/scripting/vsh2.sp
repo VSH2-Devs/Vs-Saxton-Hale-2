@@ -286,6 +286,10 @@ public void OnPluginStart()
 	RegAdminCmd("sm_vsh2_addpoints", CommandAddPoints, ADMFLAG_GENERIC);
 	RegAdminCmd("sm_ff2_addpoints", CommandAddPoints, ADMFLAG_GENERIC);
 	
+	RegAdminCmd("sm_hale_setpoints", CommandSetPoints, ADMFLAG_GENERIC);
+	RegAdminCmd("sm_vsh2_setpoints", CommandSetPoints, ADMFLAG_GENERIC);
+	RegAdminCmd("sm_ff2_setpoints", CommandSetPoints, ADMFLAG_GENERIC);
+	
 	AddCommandListener(BlockSuicide, "explode");
 	AddCommandListener(BlockSuicide, "kill");
 	AddCommandListener(BlockSuicide, "jointeam");
