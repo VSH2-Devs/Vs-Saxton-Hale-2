@@ -181,60 +181,7 @@ methodmap CVagineer < BaseBoss
 			this.SetModel(); //MakeModelTimer(null);
 		}
 		TF2_AddCondition(this.index, TFCond_Ubercharged, 10.0);
-		int i;
-		float pos[3], pos2[3], distance;
-		GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
-
-		for ( i = MaxClients ; i; --i )
-		{
-			if ( not IsValidClient(i) or not IsPlayerAlive(i) or i is this.index )
-				continue;
-			else if (GetClientTeam(i) is GetClientTeam(this.index))
-				continue;
-
-			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
-			distance = GetVectorDistance(pos, pos2);
-			if (not TF2_IsPlayerInCondition(i, TFCond_Ubercharged) and distance < VAGRAGEDIST)
-			{
-				int flags = TF_STUNFLAGS_GHOSTSCARE;
-				flags |= TF_STUNFLAG_NOSOUNDOREFFECT;
-				CreateTimer(5.0, RemoveEnt, EntIndexToEntRef(AttachParticle(i, "yikes_fx", 75.0)));
-				TF2_StunPlayer(i, 5.0, _, flags, this.index);
-			}
-		}
-		i = -1;
-		while ((i = FindEntityByClassname(i, "obj_sentrygun")) not_eq -1)
-		{
-			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
-			distance = GetVectorDistance(pos, pos2);
-			if (distance < VAGRAGEDIST) {
-				SetEntProp(i, Prop_Send, "m_bDisabled", 1);
-				AttachParticle(i, "yikes_fx", 75.0);
-				SetVariantInt(1);
-				AcceptEntityInput(i, "RemoveHealth");
-				SetPawnTimer(EnableSG, 8.0, EntIndexToEntRef(i)); //CreateTimer(8.0, EnableSG, EntIndexToEntRef(i));
-			}
-		}
-		i = -1;
-		while ((i = FindEntityByClassname(i, "obj_dispenser")) not_eq -1)
-		{
-			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
-			distance = GetVectorDistance(pos, pos2);
-			if (distance < VAGRAGEDIST) {
-				SetVariantInt(1);
-				AcceptEntityInput(i, "RemoveHealth");
-			}
-		}
-		i = -1;
-		while ((i = FindEntityByClassname(i, "obj_teleporter")) not_eq -1)
-		{
-			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
-			distance = GetVectorDistance(pos, pos2);
-			if (distance < VAGRAGEDIST) {
-				SetVariantInt(1);
-				AcceptEntityInput(i, "RemoveHealth");
-			}
-		}
+		this.DoGenericStun(VAGRAGEDIST);
 		if (GetRandomInt(0, 2))
 			strcopy(snd, PLATFORM_MAX_PATH, VagineerRageSound);
 		else
