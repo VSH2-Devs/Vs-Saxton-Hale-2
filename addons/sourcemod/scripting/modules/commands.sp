@@ -406,3 +406,46 @@ public int HelpPanelH(Menu menu, MenuAction action, int param1, int param2)
 		}
 	}
 }
+public Action MenuDoClassRush(int client, int args)
+{
+	if (!bEnabled.BoolValue)
+		return Plugin_Continue;
+	if (!client) {
+		ReplyToCommand(client, "[VSH 2] You can only use this command ingame.");
+		return Plugin_Handled;
+	}
+	
+	Menu rush = new Menu(MenuHandler_ClassRush);
+	rush.SetTitle("VSH2 Class Rush Menu");
+	rush.AddItem("1", "**** Scout ****");
+	rush.AddItem("2", "**** Sniper ****");
+	rush.AddItem("3", "**** Soldier ****");
+	rush.AddItem("4", "**** Demoman ****");
+	rush.AddItem("5", "**** Medic ****");
+	rush.AddItem("6", "**** Heavy ****");
+	rush.AddItem("7", "**** Pyro ****");
+	rush.AddItem("8", "**** Spy ****");
+	rush.AddItem("9", "**** Engineer ****");
+	//rush.ExitBackButton = true;
+	rush.Display(client, MENU_TIME_FOREVER);
+	return Plugin_Handled;
+}
+
+public int MenuHandler_ClassRush(Menu menu, MenuAction action, int client, int pick)
+{
+	char info[32]; GetMenuItem(menu, pick, info, sizeof(info));
+	if (action == MenuAction_Select) {
+		int classtype = StringToInt(info);
+		for( int i=MaxClients ; i ; --i ) {
+			if( !IsValidClient(i) )
+				continue;
+			else if( !IsPlayerAlive(i) or GetClientTeam(i) == BLU )
+				continue;
+			TF2_SetPlayerClass( i, view_as< TFClassType >(classtype), _, true );
+			TF2_RegeneratePlayer(i);
+			SetPawnTimer( PrepPlayers, 0.2, BaseBoss(i) );
+		}
+	}
+	else if (action == MenuAction_End)
+		delete menu;
+}
