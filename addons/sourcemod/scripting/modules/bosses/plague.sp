@@ -194,6 +194,25 @@ methodmap CPlague < BaseBoss
 		victim.iOwnerBoss = this.userid;
 		victim.ConvertToMinion(0.4);
 	}
+	public void RecruitMinion(const BaseBoss base)
+	{
+		TF2_SetPlayerClass(base.index, TFClass_Scout, _, false);
+		TF2_RemoveAllWeapons(base.index);
+#if defined _tf2attributes_included
+		if (gamemode.bTF2Attribs)
+			TF2Attrib_RemoveAll(base.index);
+#endif
+		int weapon = base.SpawnWeapon("tf_weapon_bat", 572, 100, 5, "6 ; 0.5 ; 57 ; 15.0 ; 26 ; 75.0 ; 49 ; 1.0 ; 68 ; -2.0");
+		SetEntPropEnt(base.index, Prop_Send, "m_hActiveWeapon", weapon);
+		TF2_AddCondition(base.index, TFCond_Ubercharged, 3.0);
+		SetEntityHealth(base.index, 200);
+		SetVariantString(ZombieModel);
+		AcceptEntityInput(base.index, "SetCustomModel");
+		SetEntProp(base.index, Prop_Send, "m_bUseClassAnimations", 1);
+		SetEntProp(base.index, Prop_Send, "m_nBody", 0);
+		SetEntityRenderMode(base.index, RENDER_TRANSCOLOR);
+		SetEntityRenderColor(base.index, 30, 160, 255, 255);
+	}
 	public void Help()
 	{
 		if ( IsVoteInProgress() )
