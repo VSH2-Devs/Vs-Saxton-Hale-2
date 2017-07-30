@@ -1049,17 +1049,17 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 		return Plugin_Continue;
 	
 	BaseBoss base = BaseBoss(client);
-	switch (base.iType) {
-		case -1: {}
-		case HHHjr: {
-			if (base.iClimbs < 10) {
-				base.ClimbWall(weapon, 600.0, 0.0, false);
-				base.flWeighDown = 0.0;
-				base.iClimbs++;
+	if (base.bIsBoss) {	
+		switch (base.iType) {
+			case -1: {}
+			case HHHjr: {
+				if (base.iClimbs < 10) {
+					base.ClimbWall(weapon, 600.0, 0.0, false);
+					base.flWeighDown = 0.0;
+					base.iClimbs++;
+				}
 			}
-		}
-	}
-	if (base.bIsBoss) {	// Fuck random crits
+		} // Fuck random crits
 		if (TF2_IsPlayerCritBuffed(base.index))
 			return Plugin_Continue;
 		result = false;
@@ -1071,7 +1071,8 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 			case -1: {}
 			case PlagueDoc: base.ClimbWall(weapon, 400.0, 0.0, false);
 		}
-
+                result = false;
+                return Plugin_Changed;
 	}
 	if (not base.bIsBoss and not base.bIsMinion) {
 		if (TF2_GetPlayerClass(base.index) is TFClass_Sniper and IsWeaponSlotActive(base.index, TFWeaponSlot_Melee))
