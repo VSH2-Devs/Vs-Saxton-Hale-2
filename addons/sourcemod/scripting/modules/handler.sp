@@ -1859,25 +1859,20 @@ public void ManageFighterThink(const BaseBoss fighter)
 		{
 			int medigun = GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary);
 			char mediclassname[32];
-			if (IsValidEdict(medigun) and GetEdictClassname(medigun, mediclassname, sizeof(mediclassname)) and !strcmp(mediclassname, "tf_weapon_medigun", false) )
-			{
-				SetHudTextParams(-1.0, 0.83, 0.35, 255, 255, 255, 255, 0, 0.2, 0.0, 0.1);
-				int charge = RoundToFloor(GetMediCharge(medigun)*100);
-				if (not (buttons & IN_SCORE))
-					ShowSyncHudText(i, jumpHUD, "Ubercharge: %i", charge);
+			if (medigun > MaxClients and IsValidEdict(medigun) ) {
+				GetEdictClassname(medigun, mediclassname, sizeof(mediclassname));
+				if( !strcmp(mediclassname, "tf_weapon_medigun", false) ) {
+					SetHudTextParams(-1.0, 0.83, 0.35, 255, 255, 255, 255, 0, 0.2, 0.0, 0.1);
+					int charge = RoundToFloor(GetMediCharge(medigun)*100);
+					if (not (buttons & IN_SCORE))
+						ShowSyncHudText(i, jumpHUD, "Ubercharge: %i", charge);
+					int healtarget = GetHealingTarget(i);
+					if( IsValidClient(healtarget) and TF2_GetPlayerClass(healtarget) is TFClass_Scout )
+						TF2_AddCondition(i, TFCond_SpeedBuffAlly, 0.2);
+					if (GetEntProp(medigun, Prop_Send, "m_bChargeRelease") && GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel") > 0.0)
+						TF2_AddCondition(i, TFCond_Ubercharged, 1.0); // Fixes Ubercharges ending prematurely on Medics.
+				}
 			}
-
-			if (weapon is GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary))
-			{
-				int healtarget = GetHealingTarget(i);
-				if (IsValidClient(healtarget) and TF2_GetPlayerClass(healtarget) is TFClass_Scout)
-					TF2_AddCondition(i, TFCond_SpeedBuffAlly, 0.2);
-				if (GetEntProp(medigun, Prop_Send, "m_bChargeRelease") && GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel") > 0.0)
-					TF2_AddCondition(i, TFCond_Ubercharged, 1.0); //Fixes Ubercharges ending prematurely on Medics.
-			}
-			//float oober = GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel");
-			//if ( GetHealingTarget(i) == -1 && TF2_IsPlayerInCondition(i, TFCond_Ubercharged) && oober <= 0)
-			//	TF2_RemoveCondition(i, TFCond_Ubercharged);
 		}
 		case TFClass_Soldier:
 		{
