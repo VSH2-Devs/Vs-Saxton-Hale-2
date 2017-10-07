@@ -4,13 +4,13 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.0.3"
+			"Latest"	"2.0.7"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.0.3:"
-		"Notes"	"changed magic constant for multi-boss randomizing code."
-		"Notes" "patched demo shields being destroyed while demoman is ubered."
-		"Notes" "reformed demo shield code so that shields block only fatal hits."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.0.7:"
+		"Notes"	"code has been formatted to be consistent."
+		"Notes"	"boss code has been shortened using DRY (don't repeat yourself) method."
+		"Notes"	"added four new cvars that control max and min limits for ammo packs and/or health kits."
 	}
 	
 	"Files"
