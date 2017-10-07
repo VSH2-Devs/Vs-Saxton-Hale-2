@@ -470,9 +470,9 @@ stock bool VectorCompare (const float v1[3], const float v2[3])
 stock bool OnlyScoutsLeft(const int team)
 {
 	for (int i=MaxClients ; i ; --i) {
-		if ( not IsValidClient(i) or not IsPlayerAlive(i) )
+		if ( ! IsValidClient(i) or ! IsPlayerAlive(i) )
 			continue;
-		if (GetClientTeam(i) is team and TF2_GetPlayerClass(i) != TFClass_Scout)
+		if (GetClientTeam(i) == team and TF2_GetPlayerClass(i) != TFClass_Scout)
 			return false;
 	}
 	return true;
@@ -818,17 +818,17 @@ stock int GetTeamPlayerCount(const int team)
 {
 	int count = 0;
 	for (int i=MaxClients ; i ; --i) {
-		if (IsValidClient(i) and GetClientTeam(i) is team)
+		if (IsValidClient(i) and GetClientTeam(i) == team)
 			{count++;}
 	}
 	return count;
 }
 stock int GetClientCloakIndex(const int client)
 {
-	if (not IsValidClient(client))
+	if (! IsValidClient(client))
 		return -1;
 	int wep = GetPlayerWeaponSlot(client, 4);
-	if (not IsValidEntity(wep))
+	if (! IsValidEntity(wep))
 		return -1;
 	char classname[32];
 	GetEntityClassname(wep, classname, sizeof(classname));
@@ -839,7 +839,7 @@ stock int GetClientCloakIndex(const int client)
 stock int GetSlotFromWeapon(const int iClient, const int iWeapon)
 {
 	for (int i=0; i<5; i++) {
-		if ( iWeapon is GetPlayerWeaponSlot(iClient, i) )
+		if ( iWeapon == GetPlayerWeaponSlot(iClient, i) )
 			{return i;}
 	}
 	return -1;
@@ -862,16 +862,16 @@ stock void RemovePlayerBack(int client, int[] indices, int len)
 	if (len <= 0)
 		return;
 	int edict = MaxClients+1;
-	while ((edict = FindEntityByClassname(edict, "tf_wearable")) not_eq -1)
+	while ((edict = FindEntityByClassname(edict, "tf_wearable")) != -1)
 	{
 		char netclass[32];
 		if (GetEntityNetClass(edict, netclass, sizeof(netclass)) and StrEqual(netclass, "CTFWearable"))
 		{
 			int idx = GetItemIndex(edict);
-			if (GetOwner(edict) is client and not GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
+			if (GetOwner(edict) == client and ! GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
 			{
 				for (int i = 0; i < len; i++) {
-					if (idx is indices[i]) {
+					if (idx == indices[i]) {
 						TF2_RemoveWearable(client, edict);
 						//AcceptEntityInput(edict, "Kill");
 					}
@@ -886,10 +886,10 @@ stock void RemovePlayerBack(int client, int[] indices, int len)
 		if (GetEntityNetClass(edict, netclass, sizeof(netclass)) and StrEqual(netclass, "CTFPowerupBottle"))
 		{
 			int idx = GetItemIndex(edict);
-			if (GetOwner(edict) is client and not GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
+			if (GetOwner(edict) == client and ! GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
 			{
 				for (int i=0; i < len; i++) {
-					if (idx is indices[i]) {
+					if (idx == indices[i]) {
 						TF2_RemoveWearable(client, edict);
 						//AcceptEntityInput(edict, "Kill");
 					}
@@ -912,7 +912,7 @@ stock int FindPlayerBack(int client, int[] indices, int len)
 			if (GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
 			{
 				for (int i = 0; i < len; i++) {
-					if (idx is indices[i])
+					if (idx == indices[i])
 						return edict;
 				}
 			}
@@ -928,7 +928,7 @@ stock int FindPlayerBack(int client, int[] indices, int len)
 			if (GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
 			{
 				for (int i = 0; i < len; i++) {
-					if (idx is indices[i])
+					if (idx == indices[i])
 						return edict;
 				}
 			}
@@ -940,7 +940,7 @@ stock int FindSentry(const int client)
 {
 	int i = -1;
 	while ( (i = FindEntityByClassname(i, "obj_sentrygun")) not_eq -1 )
-		if (GetEntPropEnt(i, Prop_Send, "m_hBuilder") is client)
+		if (GetEntPropEnt(i, Prop_Send, "m_hBuilder") == client)
 			return i;
 	return -1;
 }
@@ -972,7 +972,7 @@ public void _NoHonorBound(const int userid)
 		char classname[32];
 		if ( IsValidEdict(active) )
 			GetEdictClassname(active, classname, sizeof(classname));
-		if ( index is 357 and active is weapon and not strcmp(classname, "tf_weapon_katana", false) )
+		if ( index == 357 and active == weapon and ! strcmp(classname, "tf_weapon_katana", false) )
 		{
 			SetEntProp(weapon, Prop_Send, "m_bIsBloody", 1);
 			if (GetEntProp(client, Prop_Send, "m_iKillCountSinceLastDeploy") < 1)
@@ -1059,7 +1059,7 @@ stock TF2Item PrepareItemHandle(TF2Item hItem, char[] name = "", int index = -1,
 }
 stock bool IsWeaponSlotActive(const int client, const int slot)
 {
-	return GetPlayerWeaponSlot(client, slot) is GetActiveWep(client);
+	return GetPlayerWeaponSlot(client, slot) == GetActiveWep(client);
 }
 public void _StopTickle(const int userid)
 {
