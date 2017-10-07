@@ -75,9 +75,9 @@ Methods
 	public BaseFighter(const int ind, bool uid=false)
 	{
 		int player=0;	// If you're using a userid and you know 100% it's valid, then set uid to true
-		if (uid and GetClientOfUserId(ind) > 0)
+		if( uid and GetClientOfUserId(ind) > 0 )
 			player = ( ind );
-		else if ( IsClientValid(ind) )
+		else if( IsClientValid(ind) )
 			player = GetClientUserId(ind);
 		return view_as< BaseFighter >( player );
 	}
@@ -95,9 +95,9 @@ Methods
 	{
 		public get() {
 			int player = this.index;
-			if (!player)
+			if( !player )
 				return 0;
-			else if (not AreClientCookiesCached(player) or IsFakeClient(player)) {	// If the coookies aren't cached yet, use array
+			else if( !AreClientCookiesCached(player) or IsFakeClient(player) ) {	// If the coookies aren't cached yet, use array
 				int i; hPlayerFields[player].GetValue("iQueue", i);
 				return i; //return Queue[player];
 			}
@@ -109,9 +109,9 @@ Methods
 		}
 		public set( const int val ) {
 			int player = this.index;
-			if (!player)
+			if( !player )
 				return;
-			else if (not AreClientCookiesCached(player) or IsFakeClient(player)) {
+			else if( !AreClientCookiesCached(player) or IsFakeClient(player) ) {
 				hPlayerFields[player].SetValue("iQueue", val); //Queue[player] = val;
 				return;
 			}
@@ -126,9 +126,9 @@ Methods
 		public get()
 		{
 			int player = this.index;
-			if (!player)
+			if( !player )
 				return -1;
-			if (not AreClientCookiesCached(player)) {
+			if( !AreClientCookiesCached(player) ) {
 				int i; hPlayerFields[player].GetValue("iPresetType", i);
 				return i; //return PresetBossType[player];
 			}
@@ -141,9 +141,9 @@ Methods
 		public set( const int val )
 		{
 			int player = this.index;
-			if (!player)
+			if( !player )
 				return;
-			else if (not AreClientCookiesCached(player)) {
+			else if( !AreClientCookiesCached(player) ) {
 				hPlayerFields[player].SetValue("iPresetType", val); //PresetBossType[player] = val;
 				return;
 			}
@@ -170,7 +170,7 @@ Methods
 		public get()
 		{
 			int i; hPlayerFields[this.index].GetValue("iHits", i);
-			if (i < 0)	// No unsigned integers yet, clamp Hits to 0 if under
+			if( i<0 )	// No unsigned integers yet, clamp Hits to 0 if under
 				i = 0;
 			return i;
 		}
@@ -184,7 +184,7 @@ Methods
 		public get()
 		{
 			int i; hPlayerFields[this.index].GetValue("iLives", i);
-			if ( i < 0 )
+			if( i < 0 )
 				i = 0;
 			//if (Lives[this.index] < 0)
 			//	Lives[this.index] = 0;
@@ -247,11 +247,11 @@ Methods
 	{
 		public get() {
 			int medigun = GetPlayerWeaponSlot(this.index, TFWeaponSlot_Secondary);
-			if (not IsValidEdict(medigun) or not IsValidEntity(medigun))
+			if( !IsValidEdict(medigun) or !IsValidEntity(medigun) )
 				return -1;
 			char s[32]; GetEdictClassname(medigun, s, sizeof(s));
-			if ( not strcmp(s, "tf_weapon_medigun", false) ) {
-				if ( GetEntProp(medigun, Prop_Send, "m_bHealing") )
+			if( !strcmp(s, "tf_weapon_medigun", false) ) {
+				if( GetEntProp(medigun, Prop_Send, "m_bHealing") )
 					return GetEntPropEnt( medigun, Prop_Send, "m_hHealingTarget" );
 			}
 			return -1;
@@ -296,13 +296,16 @@ Methods
 		public get() {
 			int player = this.index;
 			int medics=0;
-			for (int i=MaxClients ; i ; --i) {
-				if (!IsValidClient(i))
-					continue;
-				if (GetHealingTarget(i) is player)
-					medics++;
+			int healers = GetEntProp(player, Prop_Send, "m_nNumHealers");
+			if( healers ) {
+				for( int i=MaxClients ; i ; --i ) {
+					if( !IsValidClient(i) )
+						continue;
+					if( GetHealingTarget(i) == player )
+						medics++;
+				}
 			}
-			return (GetEntProp(player, Prop_Send, "m_nNumHealers") > medics);
+			return( healers > medics );
 		}
 	}
 	property bool bIsMinion
@@ -333,18 +336,18 @@ Methods
 	{
 		public get()
 		{
-			if (not AreClientCookiesCached(this.index))
+			if( !AreClientCookiesCached(this.index) )
 				return false;
 			char musical[6];
 			GetClientCookie(this.index, MusicCookie, musical, sizeof(musical));
-			return (StringToInt(musical) == 1);
+			return( StringToInt(musical) == 1 );
 		}
 		public set( const bool val )
 		{
-			if (not AreClientCookiesCached(this.index))
+			if( !AreClientCookiesCached(this.index) )
 				return;
 			int value;
-			if (val)
+			if( val )
 				value = 1;
 			else value = 0;
 			char musical[6];
@@ -358,7 +361,7 @@ Methods
 		public get()
 		{
 			float i; hPlayerFields[this.index].GetValue("flGlowtime", i);
-			if (i < 0.0)
+			if( i<0.0 )
 				i = 0.0;
 			return i;
 		}
@@ -412,7 +415,7 @@ Methods
 	public int SpawnWeapon(char[] name, const int index, const int level, const int qual, char[] att)
 	{
 		TF2Item hWep = new TF2Item(OVERRIDE_ALL|FORCE_GENERATION);
-		if ( !hWep )
+		if( !hWep )
 			return -1;
 
 		hWep.SetClassname(name);
@@ -422,10 +425,10 @@ Methods
 		char atts[32][32];
 		int count = ExplodeString(att, " ; ", atts, 32, 32);
 		count &= ~1;	// odd numbered attributes result in an error, remove the 1st bit so count will always be even.
-		if (count > 0) {
+		if( count>0 ) {
 			hWep.iNumAttribs = count/2;
 			int i2=0;
-			for (int i=0 ; i<count ; i+=2) {
+			for( int i=0 ; i<count ; i+=2 ) {
 				hWep.SetAttribute( i2, StringToInt(atts[i]), StringToFloat(atts[i+1]) );
 				i2++;
 			}
@@ -446,7 +449,7 @@ Methods
 	public int getAmmotable(const int wepslot)
 	{
 		int weapon = GetPlayerWeaponSlot(this.index, wepslot);
-		if (weapon > MaxClients and IsValidEntity(weapon))
+		if( weapon > MaxClients and IsValidEntity(weapon) )
 			return AmmoTable[weapon];
 		return -1;
 	}
@@ -461,7 +464,7 @@ Methods
 	public void setAmmotable(const int wepslot, const int val)
 	{
 		int weapon = GetPlayerWeaponSlot(this.index, wepslot);
-		if (weapon > MaxClients and IsValidEntity(weapon))
+		if( weapon > MaxClients and IsValidEntity(weapon) )
 			AmmoTable[weapon] = val;
 	}
 	/**
@@ -473,7 +476,7 @@ Methods
 	public int getCliptable(const int wepslot)
 	{
 		int weapon = GetPlayerWeaponSlot(this.index, wepslot);
-		if (weapon > MaxClients and IsValidEntity(weapon))
+		if( weapon > MaxClients and IsValidEntity(weapon) )
 			return ClipTable[weapon];
 		return -1;
 	}
@@ -488,7 +491,7 @@ Methods
 	public void setCliptable(const int wepslot, const int val)
 	{
 		int weapon = GetPlayerWeaponSlot(this.index, wepslot);
-		if (weapon > MaxClients and IsValidEntity(weapon))
+		if( weapon > MaxClients and IsValidEntity(weapon) )
 			ClipTable[weapon] = val;
 	}
 	public int GetWeaponSlotIndex(const int slot)
@@ -500,13 +503,12 @@ Methods
 	{
 		int transparent = alpha;
 		int entity;
-		for (int i=0; i<5; i++) {
+		for( int i=0; i<5; i++ ) {
 			entity = GetPlayerWeaponSlot(this.index, i); 
-			if ( IsValidEdict(entity) and IsValidEntity(entity) )
-			{
-				if (transparent > 255)
+			if( IsValidEdict(entity) and IsValidEntity(entity) ) {
+				if( transparent > 255 )
 					transparent = 255;
-				if (transparent < 0)
+				if( transparent < 0 )
 					transparent = 0;
 				SetEntityRenderMode(entity, RENDER_TRANSCOLOR); 
 				SetEntityRenderColor(entity, 150, 150, 150, transparent); 
@@ -524,12 +526,11 @@ Methods
 		int iEnt = -1;
 		float vPos[3], vAng[3];
 		ArrayList hArray = new ArrayList();
-		while ((iEnt = FindEntityByClassname(iEnt, "info_player_teamspawn")) not_eq -1)
-		{
-			if (team <= 1)
+		while( (iEnt = FindEntityByClassname(iEnt, "info_player_teamspawn")) != -1 ) {
+			if( team <= 1 )
 				hArray.Push(iEnt);
 			else {
-				if (GetEntProp(iEnt, Prop_Send, "m_iTeamNum") is team)
+				if( GetEntProp(iEnt, Prop_Send, "m_iTeamNum") == team )
 					hArray.Push(iEnt);
 			}
 		}
@@ -541,7 +542,7 @@ Methods
 		GetEntPropVector(iEnt, Prop_Send, "m_angRotation", vAng);
 		TeleportEntity(this.index, vPos, vAng, nullvec);
 
-		/*if (Special == VSHSpecial_HHH) //reserved for HHH boss
+		/*if( Special == VSHSpecial_HHH ) //reserved for HHH boss
 		{
 			CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(AttachParticle(iEnt, "ghost_appearation", _, false)));
 			EmitSoundToAll("misc/halloween/spell_teleport.wav", _, _, SNDLEVEL_GUNFIRE, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, vPos, nullvec, false, 0.0);
@@ -549,7 +550,7 @@ Methods
 	}
 	public void IncreaseHeadCount()
 	{
-		if (not TF2_IsPlayerInCondition(this.index, TFCond_DemoBuff))
+		if( !TF2_IsPlayerInCondition(this.index, TFCond_DemoBuff) )
 			TF2_AddCondition(this.index, TFCond_DemoBuff, -1.0);
 		int heads = GetEntProp(this.index, Prop_Send, "m_iDecapitations");
 		SetEntProp(this.index, Prop_Send, "m_iDecapitations", ++heads);
@@ -563,10 +564,10 @@ Methods
 	}
 	public void SpawnSmallHealthPack(int ownerteam=0)
 	{
-		if (not IsValidClient(this.index) or not IsPlayerAlive(this.index))
+		if( !IsValidClient(this.index) or !IsPlayerAlive(this.index) )
 			return;
 		int healthpack = CreateEntityByName("item_healthkit_small");
-		if ( IsValidEntity(healthpack) ) {
+		if( IsValidEntity(healthpack) ) {
 			float pos[3]; GetClientAbsOrigin(this.index, pos);
 			pos[2] += 20.0;
 			DispatchKeyValue(healthpack, "OnPlayerTouch", "!self,Kill,,0,-1");  //for safety, though it normally doesn't respawn
@@ -583,7 +584,7 @@ Methods
 	{
 		// Living Spectator Bug:
 		// If you force a player onto a team with their tfclass not set, they'll appear as a "living" spectator
-		if (TF2_GetPlayerClass(this.index) > TFClass_Unknown) {
+		if( TF2_GetPlayerClass(this.index) > TFClass_Unknown ) {
 			SetEntProp(this.index, Prop_Send, "m_lifeState", 2);
 			ChangeClientTeam(this.index, team);
 			SetEntProp(this.index, Prop_Send, "m_lifeState", 0);
@@ -593,7 +594,7 @@ Methods
 	public void ClimbWall(const int weapon, const float upwardvel, const float health, const bool attackdelay)
 	//Credit to Mecha the Slag
 	{
-		if ( GetClientHealth(this.index) <= health )	// Have to baby players so they don't accidentally kill themselves trying to escape
+		if( GetClientHealth(this.index) <= health )	// Have to baby players so they don't accidentally kill themselves trying to escape
 			return;
 
 		int client = this.index;
@@ -606,27 +607,27 @@ Methods
 		//Check for colliding entities
 		TR_TraceRayFilter(vecClientEyePos, vecClientEyeAng, MASK_PLAYERSOLID, RayType_Infinite, TraceRayDontHitSelf, client);
 
-		if ( not TR_DidHit(null) )
+		if( !TR_DidHit(null) )
 			return;
 
 		int TRIndex = TR_GetEntityIndex(null);
 		GetEdictClassname(TRIndex, classname, sizeof(classname));
-		if (not StrEqual(classname, "worldspawn"))
+		if( !StrEqual(classname, "worldspawn") )
 			return;
 
 		float fNormal[3];
 		TR_GetPlaneNormal(null, fNormal);
 		GetVectorAngles(fNormal, fNormal);
 
-		if (fNormal[0] >= 30.0 && fNormal[0] <= 330.0)
+		if( fNormal[0] >= 30.0 and fNormal[0] <= 330.0 )
 			return;
-		if (fNormal[0] <= -30.0)
+		if( fNormal[0] <= -30.0 )
 			return;
 
 		float pos[3]; TR_GetEndPosition(pos);
 		float distance = GetVectorDistance(vecClientEyePos, pos);
 
-		if (distance >= 100.0)
+		if( distance >= 100.0 )
 			return;
 
 		float fVelocity[3];
@@ -636,16 +637,15 @@ Methods
 		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, fVelocity);
 		SDKHooks_TakeDamage(client, client, client, health, DMG_CLUB, GetPlayerWeaponSlot(client, TFWeaponSlot_Melee));
 
-		if (attackdelay)
+		if( attackdelay )
 			SetPawnTimer(NoAttacking, 0.1, EntIndexToEntRef(weapon));
 	}
 	public void HelpPanelClass()
 	{
-		if ( IsVoteInProgress() )
+		if( IsVoteInProgress() )
 			return ;
 		char helpstr[512];
-		switch (TF2_GetPlayerClass(this.index))
-		{
+		switch( TF2_GetPlayerClass(this.index) ) {
 			case TFClass_Scout:	Format(helpstr, sizeof(helpstr), "Scout:\nThe Crit-a-Cola grants criticals instead of minicrits.\nThe Fan O' War removes 5pct rage on hit.\nPistols gain minicrits.\nCandycane drops a health pack on hit.\nMedics healing you get a speed-buff.\nSun-on-a-Stick puts Boss on fire.\nBackscatter crits whenever it would minicrit.");
 			case TFClass_Soldier:	Format(helpstr, sizeof(helpstr), "Soldier:\nThe Battalion's Backup nerfs Boss damage.\nThe Half-Zatoichi heals 35HP on hit + can overheal to +25. Honorbound is removed on hit.\nShotguns minicrit Boss in midair + lower rocketjump damage.\nDirect Hit crits when it would minicrit.\nReserve Shooter has faster weapon switch + damage buff.\nGunboats blocks 75% of rocket jump dmg.\nMantreads create greater rocketjumps + negates fall damage.\nRocketJumper replaced with stock Rocket Launcher.");
 			case TFClass_Pyro:	Format(helpstr, sizeof(helpstr), "Pyro:\nThe Flare Gun is replaced by the MegaDetonator.\nAirblasting Bosses builds Rage and lengthens the Vagineer's uber.\nThird Degree gains uber for healers on hit.\nBackburner has Chargeable airblast.\nMannmelter crits do extra damage.");
@@ -687,7 +687,7 @@ Methods
 		public get()
 		{
 			int i; hPlayerFields[this.index].GetValue("iHealth", i);
-			if (i < 0)
+			if( i<0 )
 				i = 0;
 			return i; //Health[ this.index ];
 		}
@@ -834,9 +834,9 @@ Methods
 	{
 		public get() {		/* Rage should never exceed or "inceed" 0.0 and 100.0 */
 			float i; hPlayerFields[this.index].GetValue("flRAGE", i);
-			if (i > 100.0)
+			if( i > 100.0 )
 				i = 100.0;
-			else if (i < 0.0)
+			else if( i < 0.0 )
 				i = 0.0;
 			return i;
 		}
@@ -885,10 +885,10 @@ Methods
 	{
 		this.bSetOnSpawn = true;
 		this.iType = type;
-		if (callEvent)
+		if( callEvent )
 			ManageOnBossSelected(this);
 		this.ConvertToBoss();
-		if (GetClientTeam(this.index) is RED)
+		if( GetClientTeam(this.index) == RED )
 			this.ForceTeamChange(BLU);
 	}
 	public void DoGenericStun(const float rageDist)
@@ -896,23 +896,23 @@ Methods
 		int i;
 		float pos[3], pos2[3], distance;
 		GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
-		for (i=MaxClients ; i ; --i) {
-			if ( not IsValidClient(i) or not IsPlayerAlive(i) or i is this.index )
+		for( i=MaxClients ; i ; --i ) {
+			if( !IsValidClient(i) or !IsPlayerAlive(i) or i == this.index )
 				continue;
-			else if (GetClientTeam(i) is GetClientTeam(this.index))
+			else if( GetClientTeam(i) == GetClientTeam(this.index) )
 				continue;
 			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
 			distance = GetVectorDistance(pos, pos2);
-			if (not TF2_IsPlayerInCondition(i, TFCond_Ubercharged) and distance < rageDist) {
+			if( !TF2_IsPlayerInCondition(i, TFCond_Ubercharged) and distance < rageDist ) {
 				CreateTimer(5.0, RemoveEnt, EntIndexToEntRef(AttachParticle(i, "yikes_fx", 75.0)));
 				TF2_StunPlayer(i, 5.0, _, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, this.index);
 			}
 		}
 		i = -1;
-		while ((i = FindEntityByClassname(i, "obj_sentrygun")) not_eq -1) {
+		while( (i = FindEntityByClassname(i, "obj_sentrygun")) != -1 ) {
 			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
 			distance = GetVectorDistance(pos, pos2);
-			if (distance < rageDist) {
+			if( distance < rageDist ) {
 				SetEntProp(i, Prop_Send, "m_bDisabled", 1);
 				AttachParticle(i, "yikes_fx", 75.0);
 				SetVariantInt(1);
@@ -921,19 +921,19 @@ Methods
 			}
 		}
 		i = -1;
-		while ((i = FindEntityByClassname(i, "obj_dispenser")) not_eq -1) {
+		while( (i = FindEntityByClassname(i, "obj_dispenser")) != -1 ) {
 			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
 			distance = GetVectorDistance(pos, pos2);
-			if (distance < rageDist) {
+			if( distance < rageDist ) {
 				SetVariantInt(1);
 				AcceptEntityInput(i, "RemoveHealth");
 			}
 		}
 		i = -1;
-		while ((i = FindEntityByClassname(i, "obj_teleporter")) not_eq -1) {
+		while( (i = FindEntityByClassname(i, "obj_teleporter")) != -1 ) {
 			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
 			distance = GetVectorDistance(pos, pos2);
-			if (distance < rageDist) {
+			if( distance < rageDist ) {
 				SetVariantInt(1);
 				AcceptEntityInput(i, "RemoveHealth");
 			}
