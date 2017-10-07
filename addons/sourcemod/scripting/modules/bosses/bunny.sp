@@ -113,11 +113,9 @@ char BunnyRandomVoice[][] = {
 
 methodmap CBunny < BaseBoss
 {
-	public CBunny(const int ind, bool uid = false)
+	public CBunny(const int ind, bool uid=false)
 	{
-		if (uid)
-			return view_as<CBunny>( BaseBoss(ind, true) );
-		return view_as<CBunny>( BaseBoss(ind) );
+		return view_as<CBunny>( BaseBoss(ind, uid) );
 	}
 
 	public void PlaySpawnClip()
@@ -128,7 +126,7 @@ methodmap CBunny < BaseBoss
 
 	public void Think ()
 	{
-		if ( not IsPlayerAlive(this.index) )
+		if( !IsPlayerAlive(this.index) )
 			return;
 
 		int buttons = GetClientButtons(this.index);
@@ -140,24 +138,23 @@ methodmap CBunny < BaseBoss
 		float speed = HALESPEED + 0.7 * (100-health*100/this.iMaxHealth);
 		SetEntPropFloat(this.index, Prop_Send, "m_flMaxspeed", speed);
 		
-		if (this.flGlowtime > 0.0) {
+		if( this.flGlowtime > 0.0 ) {
 			this.bGlow = 1;
 			this.flGlowtime -= 0.1;
 		}
-		else if (this.flGlowtime <= 0.0)
+		else if( this.flGlowtime <= 0.0 )
 			this.bGlow = 0;
 
-		if ( ((buttons & IN_DUCK) or (buttons & IN_ATTACK2)) and (this.flCharge >= 0.0) )
-		{
-			if (this.flCharge+2.5 < HALE_JUMPCHARGE)
+		if( ((buttons & IN_DUCK) or (buttons & IN_ATTACK2)) and (this.flCharge >= 0.0) ) {
+			if( this.flCharge+2.5 < HALE_JUMPCHARGE )
 				this.flCharge += 2.5;
 			else this.flCharge = HALE_JUMPCHARGE;
 		}
-		else if (this.flCharge < 0.0)
+		else if( this.flCharge < 0.0 )
 			this.flCharge += 2.5;
 		else {
 			float EyeAngles[3]; GetClientEyeAngles(this.index, EyeAngles);
-			if ( this.flCharge > 1.0 and EyeAngles[0] < -5.0 ) {
+			if( this.flCharge > 1.0 and EyeAngles[0] < -5.0 ) {
 				float vel[3]; GetEntPropVector(this.index, Prop_Data, "m_vecVelocity", vel);
 				vel[2] = 750 + this.flCharge * 13.0;
 
@@ -173,17 +170,16 @@ methodmap CBunny < BaseBoss
 			}
 			else this.flCharge = 0.0;
 		}
-		if (OnlyScoutsLeft(RED))
+		if( OnlyScoutsLeft(RED) )
 			this.flRAGE += 0.5;
 
-		if ( flags & FL_ONGROUND )
+		if( flags & FL_ONGROUND )
 			this.flWeighDown = 0.0;
 		else this.flWeighDown += 0.1;
 		
-		if ( (buttons & IN_DUCK) and this.flWeighDown >= HALE_WEIGHDOWN_TIME )
-		{
+		if( (buttons & IN_DUCK) and this.flWeighDown >= HALE_WEIGHDOWN_TIME ) {
 			float ang[3]; GetClientEyeAngles(this.index, ang);
-			if ( ang[0] > 60.0 ) {
+			if( ang[0] > 60.0 ) {
 				//float fVelocity[3];
 				//GetEntPropVector(this.index, Prop_Data, "m_vecVelocity", fVelocity);
 				//fVelocity[2] = -500.0;
@@ -195,9 +191,9 @@ methodmap CBunny < BaseBoss
 		}
 		SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
 		float jmp = this.flCharge;
-		if (jmp > 0.0)
+		if( jmp > 0.0 )
 			jmp *= 4.0;
-		if (this.flRAGE >= 100.0)
+		if( this.flRAGE >= 100.0 )
 			ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp));
 		else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", RoundFloat(jmp), this.flRAGE);
 	}
@@ -218,33 +214,7 @@ methodmap CBunny < BaseBoss
 
 	public void Equip ()
 	{
-		TF2_RemovePlayerDisguise(this.index);
-		int ent = -1;
-		while ((ent = FindEntityByClassname(ent, "tf_wearable_demoshield")) not_eq -1)
-		{
-			if (GetOwner(ent) is this.index) {
-				TF2_RemoveWearable(this.index, ent);
-				AcceptEntityInput(ent, "Kill");
-			}
-		}
-		ent = -1;
-		while ((ent = FindEntityByClassname(ent, "tf_wearable")) not_eq -1)
-		{
-			if (GetOwner(ent) is this.index) {
-				TF2_RemoveWearable(this.index, ent);
-				AcceptEntityInput(ent, "Kill");
-			}
-		}
-		ent = -1;
-		while ((ent = FindEntityByClassname(ent, "tf_powerup_bottle")) not_eq -1)
-		{
-			if (GetOwner(ent) is this.index) {
-				TF2_RemoveWearable(this.index, ent);
-				AcceptEntityInput(ent, "Kill");
-			}
-		}
-
-		TF2_RemoveAllWeapons(this.index);
+		this.RemoveAllItems();
 		char attribs[128];
 
 		Format(attribs, sizeof(attribs), "68 ; 2.0 ; 2 ; 2.77 ; 259 ; 1.0 ; 326 ; 1.3 ; 252 ; 0.6");
@@ -254,8 +224,8 @@ methodmap CBunny < BaseBoss
 	public void RageAbility()
 	{
 		TF2_AddCondition(this.index, view_as<TFCond>(42), 4.0);
-		if ( not GetEntProp(this.index, Prop_Send, "m_bIsReadyToHighFive")
-			and not IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
+		if( !GetEntProp(this.index, Prop_Send, "m_bIsReadyToHighFive")
+			and !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
 		{
 			TF2_RemoveCondition(this.index, TFCond_Taunting);
 			this.SetModel(); //MakeModelTimer(null);
@@ -279,11 +249,11 @@ methodmap CBunny < BaseBoss
 		EmitSoundToAll(snd, this.index); EmitSoundToAll(snd, this.index);
 		SpawnManyAmmoPacks(victim.index, EggModel, 1);
 		float curtime = GetGameTime();
-		if ( curtime <= this.flKillSpree )
+		if( curtime <= this.flKillSpree )
 			this.iKills++;
 		else this.iKills = 0;
 		
-		if (this.iKills is 3 and GetLivingPlayers(RED) not_eq 1) {
+		if( this.iKills == 3 and GetLivingPlayers(RED) != 1 ) {
 			strcopy(snd, PLATFORM_MAX_PATH, BunnySpree[GetRandomInt(0, sizeof(BunnySpree)-1)]);
 			EmitSoundToAll(snd, this.index); EmitSoundToAll(snd, this.index);
 			this.iKills = 0;
@@ -292,8 +262,8 @@ methodmap CBunny < BaseBoss
 	}
 	public void Help()
 	{
-		if ( IsVoteInProgress() )
-			return ;
+		if( IsVoteInProgress() )
+			return;
 		char helpstr[] = "The Easter Bunny:\nI think he wants to give out candy? Maybe?\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Happy Easter, Fools): taunt when Rage Meter is full.\nNearby enemies are stunned.";
 		Panel panel = new Panel();
 		panel.SetTitle (helpstr);
@@ -351,14 +321,14 @@ stock void SpawnManyAmmoPacks(const int client, const char[] model, int skin=0, 
 	ang[2] = 0.0;
 	GetClientAbsOrigin(client, pos);
 	pos[2] += offsz;
-	for (int i=0; i<num; i++) {
+	for( int i=0 ; i<num ; i++ ) {
 		vel[0] = GetRandomFloat(-400.0, 400.0);
 		vel[1] = GetRandomFloat(-400.0, 400.0);
 		vel[2] = GetRandomFloat(300.0, 500.0);
 		pos[0] += GetRandomFloat(-5.0, 5.0);
 		pos[1] += GetRandomFloat(-5.0, 5.0);
 		int ent = CreateEntityByName("tf_ammo_pack");
-		if (!IsValidEntity(ent))
+		if( !IsValidEntity(ent) )
 			continue;
 		SetEntityModel(ent, model);
 		DispatchKeyValue(ent, "OnPlayerTouch", "!self,Kill,,0,-1"); //for safety, but it shouldn't act like a normal ammopack
@@ -380,8 +350,7 @@ stock void SpawnManyAmmoPacks(const int client, const char[] model, int skin=0, 
 public Action Timer_SetEggBomb(Handle timer, any ref)
 {
 	int entity = EntRefToEntIndex(ref);
-	if (FileExists(EggModel) and IsModelPrecached(EggModel) and IsValidEntity(entity))
-	{
+	if( FileExists(EggModel) and IsModelPrecached(EggModel) and IsValidEntity(entity) ) {
 		int att = AttachProjectileModel(entity, EggModel);
 		SetEntProp(att, Prop_Send, "m_nSkin", 0);
 		SetEntityRenderMode(entity, RENDER_TRANSCOLOR);
