@@ -2,7 +2,7 @@ methodmap PrivateForward < Handle	//very useful ^^
 {
 	public PrivateForward( const Handle forw )
 	{
-		if (forw != null)
+		if( forw != null )
 			return view_as<PrivateForward>( forw );
 		return null;
 	}
