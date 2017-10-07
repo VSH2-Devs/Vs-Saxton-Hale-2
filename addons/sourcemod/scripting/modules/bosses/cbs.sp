@@ -19,11 +19,9 @@
 
 methodmap CChristian < BaseBoss
 {
-	public CChristian(const int ind, bool uid = false)
+	public CChristian(const int ind, bool uid=false)
 	{
-		if (uid)
-			return view_as<CChristian>( BaseBoss(ind, true) );
-		return view_as<CChristian>( BaseBoss(ind) );
+		return view_as<CChristian>( BaseBoss(ind, uid) );
 	}
 
 	public void PlaySpawnClip()
@@ -34,7 +32,7 @@ methodmap CChristian < BaseBoss
 
 	public void Think ()
 	{
-		if ( not IsPlayerAlive(this.index) )
+		if( !IsPlayerAlive(this.index) )
 			return;
 
 		int buttons = GetClientButtons(this.index);
@@ -46,24 +44,23 @@ methodmap CChristian < BaseBoss
 		float speed = HALESPEED + 0.7 * (100-health*100/this.iMaxHealth);
 		SetEntPropFloat(this.index, Prop_Send, "m_flMaxspeed", speed);
 		
-		if (this.flGlowtime > 0.0) {
+		if( this.flGlowtime > 0.0 ) {
 			this.bGlow = 1;
 			this.flGlowtime -= 0.1;
 		}
-		else if (this.flGlowtime <= 0.0)
+		else if( this.flGlowtime <= 0.0 )
 			this.bGlow = 0;
 
-		if ( ((buttons & IN_DUCK) or (buttons & IN_ATTACK2)) and (this.flCharge >= 0.0) )
-		{
-			if (this.flCharge+2.5 < HALE_JUMPCHARGE)
+		if( ((buttons & IN_DUCK) or (buttons & IN_ATTACK2)) and (this.flCharge >= 0.0) ) {
+			if( this.flCharge+2.5 < HALE_JUMPCHARGE )
 				this.flCharge += 2.5;
 			else this.flCharge = HALE_JUMPCHARGE;
 		}
-		else if (this.flCharge < 0.0)
+		else if( this.flCharge < 0.0 )
 			this.flCharge += 2.5;
 		else {
 			float EyeAngles[3]; GetClientEyeAngles(this.index, EyeAngles);
-			if ( this.flCharge > 1.0 and EyeAngles[0] < -5.0 ) {
+			if( this.flCharge > 1.0 and EyeAngles[0] < -5.0 ) {
 				float vel[3]; GetEntPropVector(this.index, Prop_Data, "m_vecVelocity", vel);
 				vel[2] = 750 + this.flCharge * 13.0;
 
@@ -79,17 +76,17 @@ methodmap CChristian < BaseBoss
 			}
 			else this.flCharge = 0.0;
 		}
-		if (OnlyScoutsLeft(RED))
+		if( OnlyScoutsLeft(RED) )
 			this.flRAGE += 0.5;
 
-		if ( flags & FL_ONGROUND )
+		if( flags & FL_ONGROUND )
 			this.flWeighDown = 0.0;
 		else this.flWeighDown += 0.1;
 
-		if ( (buttons & IN_DUCK) and this.flWeighDown >= HALE_WEIGHDOWN_TIME )
+		if( (buttons & IN_DUCK) and this.flWeighDown >= HALE_WEIGHDOWN_TIME )
 		{
 			float ang[3]; GetClientEyeAngles(this.index, ang);
-			if ( ang[0] > 60.0 ) {
+			if( ang[0] > 60.0 ) {
 				//float fVelocity[3];
 				//GetEntPropVector(this.index, Prop_Data, "m_vecVelocity", fVelocity);
 				//fVelocity[2] = -500.0;
@@ -101,9 +98,9 @@ methodmap CChristian < BaseBoss
 		}
 		SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
 		float jmp = this.flCharge;
-		if (jmp > 0.0)
+		if( jmp > 0.0 )
 			jmp *= 4.0;
-		if (this.flRAGE >= 100.0)
+		if( this.flRAGE >= 100.0 )
                         ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp));
                 else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", RoundFloat(jmp), this.flRAGE);
 	}
@@ -122,33 +119,7 @@ methodmap CChristian < BaseBoss
 
 	public void Equip ()
 	{
-		TF2_RemovePlayerDisguise(this.index);
-		int ent = -1;
-		while ((ent = FindEntityByClassname(ent, "tf_wearable_demoshield")) not_eq -1)
-		{
-			if (GetOwner(ent) is this.index) {
-				TF2_RemoveWearable(this.index, ent);
-				AcceptEntityInput(ent, "Kill");
-			}
-		}
-		ent = -1;
-		while ((ent = FindEntityByClassname(ent, "tf_wearable")) not_eq -1)
-		{
-			if (GetOwner(ent) is this.index) {
-				TF2_RemoveWearable(this.index, ent);
-				AcceptEntityInput(ent, "Kill");
-			}
-		}
-		ent = -1;
-		while ((ent = FindEntityByClassname(ent, "tf_powerup_bottle")) not_eq -1)
-		{
-			if (GetOwner(ent) is this.index) {
-				TF2_RemoveWearable(this.index, ent);
-				AcceptEntityInput(ent, "Kill");
-			}
-		}
-
-		TF2_RemoveAllWeapons(this.index);
+		this.RemoveAllItems();
 		char attribs[128];
 
 		Format(attribs, sizeof(attribs), "68 ; 2.0 ; 2 ; 2.86 ; 259 ; 1.0");
@@ -158,15 +129,15 @@ methodmap CChristian < BaseBoss
 	public void RageAbility()
 	{
 		TF2_AddCondition(this.index, view_as<TFCond>(42), 4.0);
-		if ( not GetEntProp(this.index, Prop_Send, "m_bIsReadyToHighFive")
-			and not IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
+		if( !GetEntProp(this.index, Prop_Send, "m_bIsReadyToHighFive")
+			and !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
 		{
 			TF2_RemoveCondition(this.index, TFCond_Taunting);
 			this.SetModel(); //MakeModelTimer(null);
 		}
 		this.DoGenericStun(CBSRAGEDIST);
 
-		if (GetRandomInt(0, 1))
+		if( GetRandomInt(0, 1) )
 			Format(snd, PLATFORM_MAX_PATH, "%s", CBS1);
 		else Format(snd, PLATFORM_MAX_PATH, "%s", CBS3);
 		EmitSoundToAll(snd);
@@ -181,23 +152,19 @@ methodmap CChristian < BaseBoss
 	public void KilledPlayer(const BaseBoss victim, Event event)
 	{
 		int living = GetLivingPlayers(RED);
-
-		if (not GetRandomInt(0, 3) and living not_eq 1) {
-			switch (TF2_GetPlayerClass(victim.index))
-			{
-				case TFClass_Spy:
-				{
+		if( !GetRandomInt(0, 3) and living != 1 ) {
+			switch( TF2_GetPlayerClass(victim.index) ) {
+				case TFClass_Spy: {
 					strcopy(snd, PLATFORM_MAX_PATH, "vo/sniper_dominationspy04.mp3");
 					EmitSoundToAll(snd);
 				}
 			}
 		}
 		int weapon = GetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon");
-		if (weapon is GetPlayerWeaponSlot(this.index, TFWeaponSlot_Melee))
-		{
+		if( weapon == GetPlayerWeaponSlot(this.index, TFWeaponSlot_Melee) ) {
 			TF2_RemoveWeaponSlot(this.index, TFWeaponSlot_Melee);
 			int clubindex;
-			switch ( GetRandomInt(0, 6) ) {
+			switch( GetRandomInt(0, 6) ) {
 				case 0: clubindex = 171;
 				case 1: clubindex = 3;
 				case 2: clubindex = 232;
@@ -211,14 +178,14 @@ methodmap CChristian < BaseBoss
 		}
 
 		float curtime = GetGameTime();
-		if ( curtime <= this.flKillSpree )
+		if( curtime <= this.flKillSpree )
 			this.iKills++;
 		else this.iKills = 0;
 		
-		if (this.iKills is 3 and living not_eq 1) {
-			if (not GetRandomInt(0, 3))
+		if( this.iKills == 3 and living != 1 ) {
+			if( !GetRandomInt(0, 3) )
 				Format(snd, PLATFORM_MAX_PATH, CBS0);
-			else if (not GetRandomInt(0, 3))
+			else if( !GetRandomInt(0, 3) )
 				Format(snd, PLATFORM_MAX_PATH, CBS1);
 			else Format(snd, PLATFORM_MAX_PATH, "%s%02i.mp3", CBS2, GetRandomInt(1, 9));
 			EmitSoundToAll(snd);
@@ -228,8 +195,8 @@ methodmap CChristian < BaseBoss
 	}
 	public void Help()
 	{
-		if ( IsVoteInProgress() )
-			return ;
+		if( IsVoteInProgress() )
+			return;
 		char helpstr[] = "Christian Brutal Sniper:\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Huntsman Bow): taunt when Rage is full (9 arrows).\nVery close-by enemies are stunned.";
 		Panel panel = new Panel();
 		panel.SetTitle (helpstr);
@@ -239,7 +206,7 @@ methodmap CChristian < BaseBoss
 	}
 	public void LastPlayerSoundClip()
 	{
-		if (not GetRandomInt(0, 2))
+		if( !GetRandomInt(0, 2) )
 			Format(snd, PLATFORM_MAX_PATH, "%s", CBS0);
 		else Format(snd, PLATFORM_MAX_PATH, "%s%i.mp3", CBS4, GetRandomInt(1, 25));
 		EmitSoundToAll(snd);
@@ -254,11 +221,9 @@ public CChristian ToCChristian (const BaseBoss guy)
 public void AddCBSToDownloads()
 {
 	char s[PLATFORM_MAX_PATH];
-	
 	int i;
 
 	PrepareModel(CBSModel);
-
 	PrepareMaterial("materials/models/player/saxton_hale/sniper_red");
 	PrepareMaterial("materials/models/player/saxton_hale/sniper_lens");
 	PrepareMaterial("materials/models/player/saxton_hale/sniper_head");
@@ -270,10 +235,8 @@ public void AddCBSToDownloads()
 	PrecacheSound(CBSJump1, true);
 	PrepareSound(CBSTheme);
 
-	for (i = 1; i <= 25; i++)
-	{
-		if (i <= 9)
-		{
+	for( i=1 ; i <= 25 ; i++ ) {
+		if( i <= 9 ) {
 			Format(s, PLATFORM_MAX_PATH, "%s%02i.mp3", CBS2, i);
 			PrecacheSound(s, true);
 		}
