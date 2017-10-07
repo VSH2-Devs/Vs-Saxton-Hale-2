@@ -781,37 +781,50 @@ stock void SpawnRandomAmmo()
 {
 	int iEnt = MaxClients+1;
 	float vPos[3], vAng[3];
-	while ( (iEnt = FindEntityByClassname(iEnt, "info_player_teamspawn")) != -1 )
-	{
-		if ( GetRandomInt(0, 4) )
-			continue;
-
+	int spawned;
+	int maxlim = cvarVSH2[AmmoKitLimitMax].IntValue;
+	int minlim = cvarVSH2[AmmoKitLimitMin].IntValue;
+	while( (iEnt = FindEntityByClassname(iEnt, "info_player_teamspawn")) != -1 ) {
+		if( minlim )
+			if( spawned >= minlim )
+				if( GetRandomInt(0, 3) )
+					continue;
+		if( maxlim )
+			if( spawned >= maxlim )
+				break;
 		// Technically you'll never find a map without a spawn point.
 		GetEntPropVector(iEnt, Prop_Send, "m_vecOrigin", vPos);
 		GetEntPropVector(iEnt, Prop_Send, "m_angRotation", vAng);
-
-		int iEnt2 = CreateEntityByName("item_ammopack_small");
-		TeleportEntity(iEnt2, vPos, vAng, NULL_VECTOR);
-		DispatchSpawn(iEnt2);
-		SetEntProp(iEnt2, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? 2 : 0, 4);
+		int ammo = CreateEntityByName("item_ammopack_small");
+		TeleportEntity(ammo, vPos, vAng, NULL_VECTOR);
+		DispatchSpawn(ammo);
+		SetEntProp(ammo, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? 2 : 0, 4);
+		++spawned;
 	}
 }
 stock void SpawnRandomHealth()
 {
 	int iEnt = MaxClients+1;
 	float vPos[3], vAng[3];
-	while ( (iEnt = FindEntityByClassname(iEnt, "info_player_teamspawn")) != -1 )
-	{
-		if ( GetRandomInt(0, 4) )
-			{continue;}
+	int spawned;
+	int maxlim = cvarVSH2[HealthKitLimitMax].IntValue;
+	int minlim = cvarVSH2[HealthKitLimitMin].IntValue;
+	while( (iEnt = FindEntityByClassname(iEnt, "info_player_teamspawn")) != -1 ) {
+		if( minlim )
+			if( spawned >= minlim )
+				if( GetRandomInt(0, 3) )
+					continue;
+		if( maxlim )
+			if( spawned >= maxlim )
+				break;
 		// Technically you'll never find a map without a spawn point.
 		GetEntPropVector(iEnt, Prop_Send, "m_vecOrigin", vPos);
 		GetEntPropVector(iEnt, Prop_Send, "m_angRotation", vAng);
-
-		int iEnt2 = CreateEntityByName("item_healthkit_small");
-		TeleportEntity(iEnt2, vPos, vAng, NULL_VECTOR);
-		DispatchSpawn(iEnt2);
-		SetEntProp(iEnt2, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? 2 : 0, 4);
+		int healthkit = CreateEntityByName("item_healthkit_small");
+		TeleportEntity(healthkit, vPos, vAng, NULL_VECTOR);
+		DispatchSpawn(healthkit);
+		SetEntProp(healthkit, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? 2 : 0, 4);
+		++spawned;
 	}
 }
 stock int GetTeamPlayerCount(const int team)
