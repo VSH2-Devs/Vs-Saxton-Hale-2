@@ -1808,7 +1808,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 		return;
 	}
 
-	else if( living == 2 and not TF2_IsPlayerInCondition(i, TFCond_Cloaked) )
+	else if( living == 2 and ! TF2_IsPlayerInCondition(i, TFCond_Cloaked) )
 		TF2_AddCondition(i, TFCond_Buffed, 0.2);
 							/* THIS section really needs cleaning! */
 	TFCond cond = TFCond_CritOnWin;
