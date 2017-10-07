@@ -939,6 +939,36 @@ Methods
 			}
 		}
 	}
+	public void RemoveAllItems()
+	{
+		int client = this.index;
+		TF2_RemovePlayerDisguise(client);
+		
+		int ent = -1;
+		while( (ent = FindEntityByClassname(ent, "tf_wearable_demoshield")) != -1 ) {
+			if( GetOwner(ent) == client ) {
+				TF2_RemoveWearable(client, ent);
+				AcceptEntityInput(ent, "Kill");
+			}
+		}
+		
+		ent = -1;
+		while( (ent = FindEntityByClassname(ent, "tf_wearable")) != -1 ) {
+			if( GetOwner(ent) == client ) {
+				TF2_RemoveWearable(client, ent);
+				AcceptEntityInput(ent, "Kill");
+			}
+		}
+		
+		ent = -1;
+		while( (ent = FindEntityByClassname(ent, "tf_powerup_bottle")) != -1 ) {
+			if( GetOwner(ent) == client ) {
+				TF2_RemoveWearable(client, ent);
+				AcceptEntityInput(ent, "Kill");
+			}
+		}
+		TF2_RemoveAllWeapons(client);
+	}
 };
 
 
