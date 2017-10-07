@@ -387,7 +387,7 @@ public void OnPluginStart()
 }
 public bool HaleTargetFilter(const char[] pattern, Handle clients)
 {
-	bool non = StrContains(pattern, "!", false) not_eq -1;
+	bool non = StrContains(pattern, "!", false) != -1;
 	for( int i=MaxClients ; i ; i-- ) {
 		if( IsClientValid(i) and FindValueInArray(clients, i) == -1 ) {
 			if( bEnabled.BoolValue and BaseBoss(i).bIsBoss ) {
@@ -402,7 +402,7 @@ public bool HaleTargetFilter(const char[] pattern, Handle clients)
 }
 public bool MinionTargetFilter(const char[] pattern, Handle clients)
 {
-	bool non = StrContains(pattern, "!", false) not_eq -1;
+	bool non = StrContains(pattern, "!", false) != -1;
 	for( int i=MaxClients ; i ; i-- ) {
 		if( IsClientValid(i) and FindValueInArray(clients, i) == -1 ) {
 			if( bEnabled.BoolValue and BaseBoss(i).bIsMinion ) {
@@ -582,14 +582,14 @@ public Action OnTouch(int client, int other)
 		BaseBoss player = BaseBoss(client);
 		BaseBoss victim = BaseBoss(other);
 
-		if ( player.bIsBoss and not victim.bIsBoss )
+		if ( player.bIsBoss and !victim.bIsBoss )
 			ManageOnTouchPlayer(player, victim); // in handler.sp
 	}
 	else if( other > MaxClients ) {
 		BaseBoss player = BaseBoss(client);
 		if( IsValidEntity(other) and player.bIsBoss ) {
 			char ent[5];
-			if( GetEntityClassname(other, ent, sizeof(ent)), not StrContains(ent, "obj_") )
+			if( GetEntityClassname(other, ent, sizeof(ent)), !StrContains(ent, "obj_") )
 			{
 				if( GetEntProp(other, Prop_Send, "m_iTeamNum") != GetClientTeam(client) )
 					ManageOnTouchBuilding(player, other); // in handler.sp
