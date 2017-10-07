@@ -101,12 +101,12 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 		public get()
 		{
 			int playing = 0;
-			for (int i=MaxClients ; i ; --i) {
-				if (not IsClientInGame(i))
+			for( int i=MaxClients ; i ; --i ) {
+				if( !IsClientInGame(i) )
 					continue;
-				else if (not IsPlayerAlive(i))
+				else if( !IsPlayerAlive(i) )
 					continue;
-				if (BaseBoss(i).bIsBoss)
+				if( BaseBoss(i).bIsBoss )
 					continue;
 				++playing;
 			}
@@ -136,9 +136,9 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 		public set(const int val)
 		{
 			int clamped = val;
-			if (clamped>255)
+			if( clamped>255 )
 				clamped = 255;
-			else if (clamped<0)
+			else if( clamped<0 )
 				clamped = 0;
 			SetEntProp(this.iHealthBar, Prop_Send, "m_iBossHealthPercentageByte", clamped);
 		}
@@ -286,13 +286,13 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 	{
 		public get()
 		/*{
-			if (!preselected.userid or !IsClientValid(preselected.index))
+			if( !preselected.userid or !IsClientValid(preselected.index) )
 				return view_as< BaseBoss >(0);
 			return preselected;
 		}*/
 		{
 			BaseBoss i; hGameModeFields.GetValue("hNextBoss", i);
-			if (!i or !i.index)
+			if( !i or !i.index )
 				return view_as< BaseBoss >(0);
 			return i;
 		}
@@ -332,13 +332,13 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 	public BaseBoss GetRandomBoss(const bool balive)
 	{
 		BaseBoss boss;
-		for (int i=MaxClients ; i ; --i) {
-			if (not IsValidClient(i) )
+		for( int i=MaxClients ; i ; --i ) {
+			if( !IsValidClient(i) )
 				continue;
-			else if (balive and not IsPlayerAlive(i))
+			else if( balive and !IsPlayerAlive(i) )
 				continue;
 			boss = BaseBoss(i);
-			if (not boss.bIsBoss)
+			if( !boss.bIsBoss )
 				continue;
 			else return boss;
 		}
@@ -347,22 +347,22 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 	public BaseBoss GetBossByType(const bool balive, const int type)
 	{
 		BaseBoss boss;
-		for (int i=MaxClients ; i ; --i) {
-			if (not IsValidClient(i) )
+		for( int i=MaxClients ; i ; --i ) {
+			if( !IsValidClient(i) )
 				continue;
-			else if (balive and not IsPlayerAlive(i))
+			else if( balive and !IsPlayerAlive(i) )
 				continue;
 			boss = BaseBoss(i);
-			if (not boss.bIsBoss)
+			if( !boss.bIsBoss )
 				continue;
-			if (boss.iType is type)
+			if( boss.iType==type )
 				return boss;
 		}
 		return view_as< BaseBoss >(0);
 	}
 	public void CheckArena(const bool type)
 	{
-		if (type)
+		if( type )
 			SetArenaCapEnableTime( float(45+cvarVSH2[PointDelay].IntValue*(this.iPlaying-1)) );
 		else {
 			SetArenaCapEnableTime(0.0);
@@ -374,13 +374,13 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 		BaseBoss tBoss;
 		int points = -999;
 		BaseBoss boss;
-		for (int i=MaxClients ; i ; --i) {
-			if ( not IsValidClient(i) )
+		for( int i=MaxClients ; i ; --i ) {
+			if( !IsValidClient(i) )
 				continue;
-			else if ( GetClientTeam(i) <= int(TFTeam_Spectator) )
+			else if( GetClientTeam(i) <= int(TFTeam_Spectator) )
 				continue;
 			boss = BaseBoss(i);
-			if (boss.iQueue >= points and not boss.bSetOnSpawn) {
+			if( boss.iQueue >= points and !boss.bSetOnSpawn ) {
 				tBoss = boss;
 				points = boss.iQueue;
 			}
@@ -391,56 +391,55 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 	{
 		BaseBoss boss;
 		int count=0;
-		for (int i=MaxClients ; i ; --i) {
-			if (not IsValidClient(i) )
+		for( int i=MaxClients ; i ; --i ) {
+			if( !IsValidClient(i) )
 				continue;
-			else if (balive and not IsPlayerAlive(i))
+			else if( balive and !IsPlayerAlive(i) )
 				continue;
 			boss = BaseBoss(i);
-			if (not boss.bIsMinion)
+			if( !boss.bIsMinion )
 				continue;
 			++count;
 		}
-		return (count);
+		return( count );
 	}
 	public int CountBosses(const bool balive)
 	{
 		BaseBoss boss;
 		int count=0;
-		for (int i=MaxClients ; i ; --i) {
-			if (not IsValidClient(i) )
+		for( int i=MaxClients ; i ; --i ) {
+			if( !IsValidClient(i) )
 				continue;
-			else if (balive and not IsPlayerAlive(i))
+			else if( balive and !IsPlayerAlive(i) )
 				continue;
 			boss = BaseBoss(i);
-			if (not boss.bIsBoss)
+			if( !boss.bIsBoss )
 				continue;
 			++count;
 		}
-		return (count);
+		return( count );
 	}
 	public int GetTotalBossHealth()
 	{
 		BaseBoss boss;
 		int count=0;
-		for (int i=MaxClients ; i ; --i) {
-			if (not IsValidClient(i) )
+		for( int i=MaxClients ; i ; --i ) {
+			if( !IsValidClient(i) )
 				continue;
 
 			boss = BaseBoss(i);
-			if (not boss.bIsBoss)
+			if( !boss.bIsBoss )
 				continue;
 			count += boss.iHealth;
 		}
-		return (count);
+		return( count );
 	}
 	public void SearchForItemPacks()
 	{
 		bool foundAmmo, foundHealth;
 		int ent = -1, count = 0;
 		float pos[3];
-		while ( (ent = FindEntityByClassname(ent, "item_ammopack_full")) != -1 )
-		{
+		while( (ent = FindEntityByClassname(ent, "item_ammopack_full")) != -1 ) {
 			GetEntPropVector(ent, Prop_Send, "m_vecOrigin", pos);
 			AcceptEntityInput(ent, "Kill");
 
@@ -454,8 +453,7 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 		}
 		ent = -1;
 		count = 0;
-		while ((ent = FindEntityByClassname(ent, "item_ammopack_medium")) != -1)
-		{
+		while( (ent = FindEntityByClassname(ent, "item_ammopack_medium")) != -1 ) {
 			//SetEntProp(ent, Prop_Send, "m_iTeamNum", manager.bMainEnable ? manager.iRedTeam : 0, 4);
 			GetEntPropVector(ent, Prop_Send, "m_vecOrigin", pos);
 			AcceptEntityInput(ent, "Kill");
@@ -466,31 +464,28 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 			vecPack.WriteFloat(pos[2]);
 			CreateTimer(0.2, SetSmallAmmoPack, vecPack, TIMER_DATA_HNDL_CLOSE);
 			count++;
-			if (!foundAmmo)
+			if( !foundAmmo )
 				foundAmmo = (count > 4);
 		}
 		ent = -1;
 		count = 0;
-		while ((ent = FindEntityByClassname(ent, "item_ammopack_small")) != -1)
-		{
+		while( (ent = FindEntityByClassname(ent, "item_ammopack_small")) != -1 ) {
 			count = 0;
 			count++;
-			if (!foundAmmo)
+			if( !foundAmmo )
 				foundAmmo = (count > 4);
 		}
 		ent = -1;
 		count = 0;
-		while ( (ent = FindEntityByClassname(ent, "item_healthkit_small")) != -1 )
-		{
+		while( (ent = FindEntityByClassname(ent, "item_healthkit_small")) != -1 ) {
 			SetEntProp(ent, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? 2 : 0, 4);
 			count++;
-			if (!foundHealth)
+			if( !foundHealth )
 				foundHealth = (count > 4); //true;
 		}
 		ent = -1;
 		count = 0;
-		while ( (ent = FindEntityByClassname(ent, "item_healthkit_medium")) != -1 )
-		{
+		while( (ent = FindEntityByClassname(ent, "item_healthkit_medium")) != -1 ) {
 			SetEntProp(ent, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? 2 : 0, 4);
 			count++;
 			if (!foundHealth)
@@ -498,54 +493,53 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 		}
 		ent = -1;
 		count = 0;
-		while ( (ent = FindEntityByClassname(ent, "item_healthkit_large")) != -1 )
-		{
+		while( (ent = FindEntityByClassname(ent, "item_healthkit_large")) != -1 ) {
 			SetEntProp(ent, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? 2 : 0, 4);
 			count++;
-			if (!foundHealth)
+			if( !foundHealth )
 				foundHealth = (count > 2); //true;
 		}
-		if (!foundAmmo)
+		if( !foundAmmo )
 			SpawnRandomAmmo();
-		if (!foundHealth)
+		if( !foundHealth )
 			SpawnRandomHealth();
 	}
 	public void UpdateBossHealth()
 	{
 		BaseBoss boss;
 		int totalHealth, bosscount;
-		for (int i=MaxClients; i ; --i) {
-			if (not IsValidClient(i))	// don't count dead bosses
-				{continue;}
+		for( int i=MaxClients; i ; --i ) {
+			if( !IsValidClient(i) )	// don't count dead bosses
+				continue;
 			boss = BaseBoss(i);
-			if (not boss.bIsBoss)
-				{continue;}
+			if( !boss.bIsBoss )
+				continue;
 			bosscount++;
 			totalHealth += boss.iHealth;
-			if (not IsPlayerAlive(i))
+			if( !IsPlayerAlive(i) )
 				totalHealth -= boss.iHealth;
 		}
-		if (bosscount)
+		if( bosscount )
 			this.iHealthBarPercent = RoundToCeil( float(totalHealth)/float(this.iTotalMaxHealth)*255.0 );
 	}
 	public void GetBossType()
 	{
-		if (this.hNextBoss and this.hNextBoss.iPresetType > -1) {
+		if( this.hNextBoss and this.hNextBoss.iPresetType > -1 ) {
 			this.iSpecial = this.hNextBoss.iPresetType;
-			if ( this.iSpecial > MAXBOSS)
+			if( this.iSpecial > MAXBOSS )
 				this.iSpecial = MAXBOSS;
 			return;
 		}
 		BaseBoss boss = this.FindNextBoss();
-		if (boss.iPresetType > -1 and this.iSpecial is -1) {
+		if( boss.iPresetType > -1 and this.iSpecial == -1 ) {
 			this.iSpecial = boss.iPresetType;
 			boss.iPresetType = -1;
-			if ( this.iSpecial > MAXBOSS )
+			if( this.iSpecial > MAXBOSS )
 				this.iSpecial = MAXBOSS;
 			return;
 		}
-		if (this.iSpecial > -1) {	// Clamp the chosen special so we don't error out.
-			if ( this.iSpecial > MAXBOSS)
+		if( this.iSpecial > -1 ) {	// Clamp the chosen special so we don't error out.
+			if( this.iSpecial > MAXBOSS )
 				this.iSpecial = MAXBOSS;
 		}
 		else this.iSpecial = GetRandomInt(Hale, MAXBOSS);
