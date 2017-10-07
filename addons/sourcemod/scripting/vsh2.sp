@@ -39,27 +39,15 @@
 #define RED 2
 #define BLU 3
 
-//Python+C style operators
+// Python + C style operators
 #define and				&&
-#define and_eq				&=
-#define bitand				&
-#define bitor				|
-#define compl				~
-#define not				!
-#define not_eq				!=
 #define or				||
-#define or_eq				|=
-#define xor				^
-#define xor_eq				^=
-#define bitl				<<
-#define bitr				>>
-#define is				==
 
-//functional-style typecasting
+// functional-style typecasting
 #define int(%1)				view_as<int>(%1)
 #define Handle(%1)			view_as<Handle>(%1)
 
-//misc.
+// misc.
 #define nullfunc			INVALID_FUNCTION
 #define nullvec				NULL_VECTOR
 #define nullstr				NULL_STRING
