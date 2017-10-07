@@ -488,7 +488,7 @@ stock int GetLivingPlayers(const int team)
 }
 stock void IncrementHeadCount(const int client)
 {
-	if (not TF2_IsPlayerInCondition(client, TFCond_DemoBuff))
+	if (! TF2_IsPlayerInCondition(client, TFCond_DemoBuff))
 		TF2_AddCondition(client, TFCond_DemoBuff, -1.0);
 	int decapitations = GetEntProp(client, Prop_Send, "m_iDecapitations");
 	SetEntProp(client, Prop_Send, "m_iDecapitations", decapitations+1);
