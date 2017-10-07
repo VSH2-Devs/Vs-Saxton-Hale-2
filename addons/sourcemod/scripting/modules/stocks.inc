@@ -694,16 +694,16 @@ stock bool IsVSHMap()	// just use arena maps as vsh/ff2 maps
 		{return true;}
 
 	BuildPath(Path_SM, config, FULLPATH, "configs/freak_fortress_2/maps.cfg");	// Compatibility :)
-	if (not FileExists(config)) {
+	if (! FileExists(config)) {
 		BuildPath(Path_SM, config, FULLPATH, "configs/saxton_hale/saxton_hale_maps.cfg");
-		if (not FileExists(config)) {
+		if (! FileExists(config)) {
 			LogError("[VSH 2] ERROR: **** Unable to find VSH/FF2 Compatibility Map Configs, Disabling VSH 2 ****");
 			return false;
 		}
 	}
 
 	File file = OpenFile(config, "r");
-	if ( not file ) {
+	if ( ! file ) {
 		LogError("[VSH 2] **** Error Reading Maps from %s Config, Disabling VSH Engine ****", config);
 		return false;
 	}
@@ -712,7 +712,7 @@ stock bool IsVSHMap()	// just use arena maps as vsh/ff2 maps
 	while ( file.ReadLine(config, sizeof(config)) and tries < 100 )
 	{
 		++tries;
-		if (tries is 100) {
+		if (tries == 100) {
 			LogError("[VSH 2] **** Breaking Loop Looking For a Map ****");
 			return false;
 		}
