@@ -51,7 +51,7 @@
 #define nullfunc			INVALID_FUNCTION
 #define nullvec				NULL_VECTOR
 #define nullstr				NULL_STRING
-#define toggle(%1)			%1 = not %1
+#define toggle(%1)			%1 = !(%1)
 
 #define _buffer(%1)			%1, sizeof(%1)
 #define _strbuffer(%1)			%1, sizeof(%1)
