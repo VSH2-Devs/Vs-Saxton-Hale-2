@@ -768,7 +768,7 @@ public void EnableCap()
 {
 	SetControlPoint(true);
 	int ent = -1;
-	while ((ent = FindEntityByClassname(ent, "func_door")) not_eq -1)
+	while ((ent = FindEntityByClassname(ent, "func_door")) != -1)
 	{
 		AcceptEntityInput(ent, "Open");
 		AcceptEntityInput(ent, "Unlock");
@@ -832,7 +832,7 @@ stock int GetClientCloakIndex(const int client)
 		return -1;
 	char classname[32];
 	GetEntityClassname(wep, classname, sizeof(classname));
-	if ( not strncmp(classname, "tf_wea", 6, false) )
+	if ( ! strncmp(classname, "tf_wea", 6, false) )
 		return GetItemIndex(wep);
 	return -1;
 }
@@ -939,7 +939,7 @@ stock int FindPlayerBack(int client, int[] indices, int len)
 stock int FindSentry(const int client)
 {
 	int i = -1;
-	while ( (i = FindEntityByClassname(i, "obj_sentrygun")) not_eq -1 )
+	while ( (i = FindEntityByClassname(i, "obj_sentrygun")) != -1 )
 		if (GetEntPropEnt(i, Prop_Send, "m_hBuilder") == client)
 			return i;
 	return -1;
