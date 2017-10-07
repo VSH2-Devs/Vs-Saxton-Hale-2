@@ -379,7 +379,7 @@ public int HelpPanelH(Menu menu, MenuAction action, int param1, int param2)
 	if( action == MenuAction_Select ) {
 		switch( param2 ) {
 			case 1: {
-				if( gamemode.iRoundState is StateRunning ) {
+				if( gamemode.iRoundState == StateRunning ) {
 					BaseBoss player = BaseBoss(param1);
 					ManageBossCheckHealth(player);
 				}
