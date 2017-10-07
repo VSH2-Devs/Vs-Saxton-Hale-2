@@ -108,6 +108,10 @@ enum /*CvarName*/
 	ForceLives,
 	Anchoring,
 	BlockRageSuicide,
+	HealthKitLimitMax,
+	HealthKitLimitMin,
+	AmmoKitLimitMax,
+	AmmoKitLimitMin,
 	VersionNumber
 };
 
@@ -329,7 +333,10 @@ public void OnPluginStart()
 	cvarVSH2[ForceLives] = CreateConVar("vsh2_force_player_lives", "0", "Forces the gamemode to apply Medieval Mode lives on players, whether or not medieval mode is enabled", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[Anchoring] = CreateConVar("vsh2_allow_boss_anchor", "0", "When enabled, reduces all knockback bosses experience when crouching.", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[BlockRageSuicide] = CreateConVar("vsh2_block_raged_suicide", "1", "when enables, stops raged players from suiciding.", FCVAR_NONE, true, 0.0, true, 1.0);
-	
+	cvarVSH2[HealthKitLimitMax] = CreateConVar("vsh2_spawn_health_kit_limit_max", "6", "max amount of health kits that can be produced in RED spawn. 0 for unlimited amount", FCVAR_NONE, true, 0.0, true, 50.0);
+	cvarVSH2[HealthKitLimitMin] = CreateConVar("vsh2_spawn_health_kit_limit_min", "4", "minimum amount of health kits that can be produced in RED spawn. 0 for no minimum limit", FCVAR_NONE, true, 0.0, true, 50.0);
+	cvarVSH2[AmmoKitLimitMax] = CreateConVar("vsh2_spawn_ammo_kit_limit_max", "6", "max amount of ammo kits that can be produced in RED spawn. 0 for unlimited amount", FCVAR_NONE, true, 0.0, true, 50.0);
+	cvarVSH2[AmmoKitLimitMin] = CreateConVar("vsh2_spawn_ammo_kit_limit_min", "4", "minimum amount of ammo kits that can be produced in RED spawn. 0 for no minimum limit", FCVAR_NONE, true, 0.0, true, 50.0);
 #if defined _steamtools_included
 	gamemode.bSteam = LibraryExists("SteamTools");
 #endif
