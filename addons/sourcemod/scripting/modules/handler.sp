@@ -1743,9 +1743,9 @@ public void ManageFighterThink(const BaseBoss fighter)
 	}
 	TFClassType TFClass = TF2_GetPlayerClass(i);
 	int weapon = GetActiveWep(i);
-	if( weapon <= MaxClients or not IsValidEntity(weapon) or !GetEdictClassname(weapon, wepclassname, sizeof(wepclassname)) )
+	if( weapon <= MaxClients or !IsValidEntity(weapon) or !GetEdictClassname(weapon, wepclassname, sizeof(wepclassname)) )
 		strcopy(wepclassname, sizeof(wepclassname), "");
-	bool validwep = ( not strncmp(wepclassname, "tf_wea", 6, false) );
+	bool validwep = ( !strncmp(wepclassname, "tf_wea", 6, false) );
 	int index = GetItemIndex(weapon);
 
 	switch( TFClass ) {
