@@ -109,10 +109,10 @@ public Action Command_damagetracker(int client, int args)
 
 public void OnClientPutInServer(int client)
 {
-	damageTracker[client] = 0;
+	damageTracker[client] = 1;
 	RGBA[client][RED] = 255;
-	RGBA[client][GREEN] = 255;
-	RGBA[client][BLUE] = 255;
+	RGBA[client][GREEN] = 90;
+	RGBA[client][BLUE] = 30;
 	RGBA[client][ALPHA] = 255;
 }
 
