@@ -488,13 +488,13 @@ stock int GetLivingPlayers(const int team)
 }
 stock void IncrementHeadCount(const int client, bool addhealth = true, int addheads = 1)
 {
-	if ( (TF2_GetPlayerClass(client) == TFClass_Demoman) and  ! TF2_IsPlayerInCondition(client, TFCond_DemoBuff) )
+	if ( (TF2_GetPlayerClass(client) == TFClass_DemoMan) and  ! TF2_IsPlayerInCondition(client, TFCond_DemoBuff) )
 		TF2_AddCondition(client, TFCond_DemoBuff, TFCondDuration_Infinite); //Apply this condition to Demomen to give them their glowing eye effect.
 	int decapitations = GetEntProp(client, Prop_Send, "m_iDecapitations");
 	SetEntProp(client, Prop_Send, "m_iDecapitations", decapitations + addheads);
 	if ( addhealth )
 	{
-		int health = GetclientHealth(client);
+		int health = GetClientHealth(client);
 		//health += (decapitations >= 4 ? 10 : 15);
 		if ( health + (15 * addheads) <= 300 ) //TODO: Replace this with an overheal calculation (MaxHP * 1.5) OR add a maxhealth arg. 
 			health += 15 * addheads;
