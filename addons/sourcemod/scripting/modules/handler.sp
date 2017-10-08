@@ -1715,7 +1715,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 		return;
 
 	int i = fighter.index;
-	char wepclassname[32];
+	char wepclassname[64];
 	int buttons = GetClientButtons(i);
 
 	SetHudTextParams(-1.0, 0.88, 0.35, 90, 255, 90, 255, 0, 0.35, 0.0, 0.1);
