@@ -446,7 +446,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					}
 					if( wepindex == 402 ) {	// bazaar bargain I think
 						if( damagecustom == TF_CUSTOM_HEADSHOT )
-							IncrementHeadCount(attacker);
+							IncrementHeadCount(attacker, false);
 					}
 					if( wepindex == 752 and gamemode.iRoundState != StateEnding ) {
 						float chargelevel = (IsValidEntity(weapon) && weapon > MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
