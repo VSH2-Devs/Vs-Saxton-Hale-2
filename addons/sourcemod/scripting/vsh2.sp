@@ -559,6 +559,7 @@ public void OnClientPutInServer(int client)
 	boss.flGlowtime = 0.0;
 	boss.flLastHit = 0.0;
 	boss.flLastShot = 0.0;
+	boss.iShieldDmg = 0;
 	
 	// BaseBoss properties
 	boss.iHealth = 0;
