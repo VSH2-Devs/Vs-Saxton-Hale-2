@@ -1827,6 +1827,17 @@ public void ManageFighterThink(const BaseBoss fighter)
 					ShowSyncHudText(i, jumpHUD, "Air Strike Damage: %i", fighter.iAirDamage);
 			}
 		}
+		case TFClass_DemoMan: {
+			int shield = GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary);
+			if( shield <= 0 ) {
+				SetHudTextParams(-1.0, 0.83, 0.35, 255, 255, 255, 255, 0, 0.2, 0.0, 0.1);
+				if( !(buttons & IN_SCORE) ) {
+					if( GetEntProp(i, Prop_Send, "m_bShieldEquipped") )
+						ShowSyncHudText(i, jumpHUD, "Shield: Active");
+					else ShowSyncHudText(i, jumpHUD, "Shield: Gone");
+				}
+			}
+		}
 	}
 	int living = GetLivingPlayers(RED);
 	if( living == 1 and !TF2_IsPlayerInCondition(i, TFCond_Cloaked) ) {
