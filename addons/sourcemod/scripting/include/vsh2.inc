@@ -33,10 +33,8 @@ methodmap VSH2Player
 	
 	/**
          * sets the property of the internal VSH2 methodmap
-         * NOTE: You can use this to create new properties which GetProperty can access!
 	 * @param prop_name		name of property you want to access data from.
-	 * @param item			reference to use of the variable to overwrite with data from the property.
-         * @return		
+         * @return			the data of the property.		
         */
 	public native any GetProperty(const char prop_name[64]);
 	
@@ -234,7 +232,6 @@ native bool VSH2_UnhookEx(const int callbacktype, VSH2HookCB callback);
 
 native any VSH2GameMode_GetProperty(const char prop_name[64]);
 native void VSH2GameMode_SetProperty(const char prop_name[64], any value);
-
 /*	Available properties
 property int iRoundState
 property int iSpecial
