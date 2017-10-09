@@ -25,7 +25,7 @@
 #pragma semicolon			1
 #pragma newdecls			required
 
-#define PLUGIN_VERSION			"2.0.7"
+#define PLUGIN_VERSION			"2.0.8"
 #define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
 #define CODEFRAMES			(1.0/30.0)	/* 30 frames per second means 0.03333 seconds or 33.33 ms */
 
@@ -112,6 +112,7 @@ enum /*CvarName*/
 	HealthKitLimitMin,
 	AmmoKitLimitMax,
 	AmmoKitLimitMin,
+	ShieldRegenDmgReq,
 	VersionNumber
 };
 
@@ -337,6 +338,8 @@ public void OnPluginStart()
 	cvarVSH2[HealthKitLimitMin] = CreateConVar("vsh2_spawn_health_kit_limit_min", "4", "minimum amount of health kits that can be produced in RED spawn. 0 for no minimum limit", FCVAR_NONE, true, 0.0, true, 50.0);
 	cvarVSH2[AmmoKitLimitMax] = CreateConVar("vsh2_spawn_ammo_kit_limit_max", "6", "max amount of ammo kits that can be produced in RED spawn. 0 for unlimited amount", FCVAR_NONE, true, 0.0, true, 50.0);
 	cvarVSH2[AmmoKitLimitMin] = CreateConVar("vsh2_spawn_ammo_kit_limit_min", "4", "minimum amount of ammo kits that can be produced in RED spawn. 0 for no minimum limit", FCVAR_NONE, true, 0.0, true, 50.0);
+	cvarVSH2[ShieldRegenDmgReq] = CreateConVar("vsh2_shield_regen_damage", "2000", "damage required for demoknights to regenerate their shield, put 0 to disable.", FCVAR_NONE, true, 0.0, true, 99999.0);
+	
 #if defined _steamtools_included
 	gamemode.bSteam = LibraryExists("SteamTools");
 #endif
