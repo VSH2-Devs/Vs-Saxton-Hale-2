@@ -290,6 +290,15 @@ Methods
 			SetEntProp(this.index, Prop_Send, "m_bGlowEnabled", boolean);
 		}
 	}
+	property int iShieldDmg {
+		public get() {
+			int i; hPlayerFields[this.index].GetValue("iShieldDmg", i);
+			return i;
+		}
+		public set( const int val ) {
+			hPlayerFields[this.index].SetValue("iShieldDmg", val);
+		}
+	}
 
 	property bool bNearDispenser
 	{
