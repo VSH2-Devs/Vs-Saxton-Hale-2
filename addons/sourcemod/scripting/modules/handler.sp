@@ -792,6 +792,35 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 		damage = (IsPlayerAlive(attacker.index) ? 9001 : 1);	// Telefrags normally 1-shot the boss but let's cap damage at 9k
 
 	attacker.iDamage += damage;
+	if( !GetEntProp(attacker.index, Prop_Send, "m_bShieldEquipped")
+		and GetPlayerWeaponSlot(attacker.index, TFWeaponSlot_Secondary) <= 0
+		and TF2_GetPlayerClass(attacker.index) == TFClass_DemoMan )
+	{
+		int iReqDmg = cvarVSH2[ShieldRegenDmgReq].IntValue;
+		if( iReqDmg>0 ) {
+			attacker.iShieldDmg += damage;
+			if( attacker.iShieldDmg >= iReqDmg ) {
+				// save data so we can get our shield back.
+				// save health, heads, and weapon data.
+				int client = attacker.index;
+				int health, heads, primclip, primammo;
+				health = GetClientHealth(client);
+				if( HasEntProp(client, Prop_Send, "m_iDecapitations") )
+					heads = GetEntProp(client, Prop_Send, "m_iDecapitations");
+				primammo = GetAmmo(client, TFWeaponSlot_Primary);
+				primclip = GetClip(client, TFWeaponSlot_Primary);
+				// "respawn" player.
+				TF2_RegeneratePlayer(client);
+				// reset old data
+				SetEntityHealth(client, health);
+				if( HasEntProp(client, Prop_Send, "m_iDecapitations") and heads>0 )
+					SetEntProp(client, Prop_Send, "m_iDecapitations", heads);
+				SetAmmo(client, TFWeaponSlot_Primary, primammo);
+				SetClip(client, TFWeaponSlot_Primary, primclip);
+				attacker.iShieldDmg = 0;
+			}
+		}
+	}
 	if( GetIndexOfWeaponSlot(attacker.index, TFWeaponSlot_Primary) == 1104 ) {	// Compatibility patch for Randomizer
 		if( weapon == TF_WEAPON_ROCKETLAUNCHER )
 			attacker.iAirDamage += damage;
@@ -1104,6 +1133,7 @@ public void ManageResetVariables(const BaseBoss base)
 	base.iLives = ((gamemode.bMedieval or cvarVSH2[ForceLives].BoolValue) ? cvarVSH2[MedievalLives].IntValue : 0);
 	base.iHealth = 0;
 	base.iMaxHealth = 0;
+	base.iShieldDmg = 0;
 	Call_OnVariablesReset(base);
 }
 public void ManageEntityCreated(const int entity, const char[] classname)
