@@ -236,6 +236,7 @@ public void AddHHHToDownloads()
 	PrecacheSound("vo/halloween_boss/knight_pain03.mp3", true);
 	PrecacheSound("vo/halloween_boss/knight_death01.mp3", true);
 	PrecacheSound("vo/halloween_boss/knight_death02.mp3", true);
+	PrecacheSound("misc/halloween/spell_teleport.wav", true);
 }
 
 public void AddHHHToMenu ( Menu& menu )
