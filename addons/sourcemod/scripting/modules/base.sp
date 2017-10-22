@@ -976,6 +976,15 @@ Methods
 				AcceptEntityInput(ent, "Kill");
 			}
 		}
+		
+		// Jungle / Inferno razorback patch.
+		ent = -1;
+		while( (ent = FindEntityByClassname(ent, "tf_wearable_razorback")) != -1 ) {
+			if( GetOwner(ent) == client ) {
+				TF2_RemoveWearable(client, ent);
+				AcceptEntityInput(ent, "Kill");
+			}
+		}
 		TF2_RemoveAllWeapons(client);
 	}
 };
