@@ -915,6 +915,24 @@ stock void RemovePlayerBack(int client, int[] indices, int len)
 			}
 		}
 	}
+	edict = MaxClients+1;
+	while ((edict = FindEntityByClassname(edict, "tf_wearable_razorback")) != -1)
+	{
+		char netclass[32];
+		if (GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearableRazorback"))
+		{
+			int idx = GetItemIndex(edict);
+			if (GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
+			{
+				for (int i = 0; i < len; i++) {
+					if (idx == indices[i]) {
+						TF2_RemoveWearable(client, edict);
+						//AcceptEntityInput(edict, "Kill");
+					}
+				}
+			}
+		}
+	}
 }
 stock int FindPlayerBack(int client, int[] indices, int len)
 {
@@ -948,6 +966,23 @@ stock int FindPlayerBack(int client, int[] indices, int len)
 				for (int i = 0; i < len; i++) {
 					if (idx == indices[i])
 						return edict;
+				}
+			}
+		}
+	}
+	edict = MaxClients+1;
+	while ((edict = FindEntityByClassname(edict, "tf_wearable_razorback")) != -1)
+	{
+		char netclass[32];
+		if (GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearableRazorback"))
+		{
+			int idx = GetItemIndex(edict);
+			if (GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
+			{
+				for (int i = 0; i < len; i++) {
+					if (idx == indices[i]) {
+						return edict;
+					}
 				}
 			}
 		}
