@@ -582,7 +582,8 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 			}
 			/*if( TF2_IsPlayerInCondition(client, TFCond_DefenseBuffMmmph) ) {
 				damage *= 9;
-				TF2_AddCondition(client, TFCond_Bonked, 0.1);
+				// Patch: Nov 14, 2017 - removing post-bonk slowdown.
+				TF2_AddCondition(client, TFCond_UberchargedOnTakeDamage, 0.1);
 				return Plugin_Changed;
 			}*/
 			if( TF2_IsPlayerInCondition(client, TFCond_CritMmmph) ) {
@@ -604,7 +605,8 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 				if( GetMediCharge(medigun) >= 0.90 ) {
 					SetMediCharge(medigun, 0.5);
 					damage *= 10;
-					TF2_AddCondition(client, TFCond_Bonked, 0.1);
+					// Patch: Nov 14, 2017 - removing post-bonk slowdown.
+					TF2_AddCondition(client, TFCond_UberchargedOnTakeDamage, 0.1);
 					return Plugin_Changed;
 				}
 			}
@@ -636,7 +638,8 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 					//	case 131, 1144: HitsRequired = 2;	// 2 hits for normal and festive Chargin' Targe
 					//	case 406, 1099: HitsRequired = 1;
 					//}
-					TF2_AddCondition(client, TFCond_Bonked, 0.1);
+					// Patch: Nov 14, 2017 - removing post-bonk slowdown.
+					TF2_AddCondition(client, TFCond_UberchargedOnTakeDamage, 0.1);
 					TF2_AddCondition(client, TFCond_SpeedBuffAlly, 1.0);
 					//if (victim.iHits >= HitsRequired) {
 					TF2_RemoveWearable(client, ent);
@@ -692,7 +695,8 @@ public Action ManageOnGoombaStomp(int attacker, int client, float& damageMultipl
 				if( RemoveDemoShield(client) ) // If the demo had a shield to break
 				{
 					EmitSoundToAll("player/spy_shield_break.wav", client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
-					TF2_AddCondition(client, TFCond_Bonked, 0.1);
+					// Patch: Nov 14, 2017 - removing post-bonk slowdown.
+					TF2_AddCondition(client, TFCond_UberchargedOnTakeDamage, 0.1);
 					TF2_AddCondition(client, TFCond_SpeedBuffAlly, 1.0);
 					damageAdd = 0.0;
 					damageMultiplier = 0.0;
@@ -904,9 +908,6 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 public void TF2_OnConditionAdded(int client, TFCond condition)
 {
 	BaseBoss player = BaseBoss(client);
-	if( condition==TFCond_LostFooting )
-		TF2_RemoveCondition(client, TFCond_LostFooting);
-	
 	if( !player.bIsBoss )
 		return;
 
