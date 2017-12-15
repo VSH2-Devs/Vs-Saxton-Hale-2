@@ -33,9 +33,3 @@ If you do require help in setting up the bosses or at least need some info on th
 
 * **Main Plugin Developer:** *Nergal the Ashurian/Assyrian* - https://forums.alliedmods.net/member.php?u=176545
 * **Repository Manager and Contributor:** *Starblaster 64* - https://forums.alliedmods.net/member.php?u=261662
-
-
-## Issue Progress ##
-[![Issues/PRs in Ready](https://badge.waffle.io/VSH2-Devs/Vs-Saxton-Hale-2.svg?label=ready&title=Ready)](https://overv.io/VSH2-Devs/Vs-Saxton-Hale-2/)
-[![Issues/PRs in In Progress](https://badge.waffle.io/VSH2-Devs/Vs-Saxton-Hale-2.svg?label=in%20progress&title=In%20Progress)](https://overv.io/VSH2-Devs/Vs-Saxton-Hale-2/)
-[![Issues/PRs in On Hold](https://badge.waffle.io/VSH2-Devs/Vs-Saxton-Hale-2.svg?label=on%20hold&title=On%20Hold)](https://overv.io/VSH2-Devs/Vs-Saxton-Hale-2/)
