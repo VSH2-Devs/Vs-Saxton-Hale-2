@@ -271,7 +271,7 @@ void Call_OnUberLoop(const BaseBoss player, const BaseBoss target)
 void Call_OnMusic(char song[PLATFORM_MAX_PATH], float& time)
 {
 	g_hForwards[OnMusic].Start();
-	Call_PushString(song);
+	Call_PushStringEx(song, PLATFORM_MAX_PATH, 0, SM_PARAM_COPYBACK);
 	Call_PushFloatRef(time);
 	Call_Finish();
 }
