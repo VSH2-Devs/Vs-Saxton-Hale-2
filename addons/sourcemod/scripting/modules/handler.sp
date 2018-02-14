@@ -1249,9 +1249,11 @@ public void ManageMusic(char song[FULLPATH], float& time)
 				strcopy(song, sizeof(song), HHHTheme);
 				time = 90.0;
 			}
+			default: {
+				Call_OnMusic(song, time);
+			}
 		}
 	}
-	Call_OnMusic(song, time);
 }
 public void StopBackGroundMusic()
 {
