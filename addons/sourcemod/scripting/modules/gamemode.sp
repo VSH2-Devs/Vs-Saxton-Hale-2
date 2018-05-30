@@ -331,21 +331,6 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 
 	public BaseBoss GetRandomBoss(const bool balive)
 	{
-		BaseBoss boss;
-		for( int i=MaxClients ; i ; --i ) {
-			if( !IsValidClient(i) )
-				continue;
-			else if( balive and !IsPlayerAlive(i) )
-				continue;
-			boss = BaseBoss(i);
-			if( !boss.bIsBoss )
-				continue;
-			else return boss;
-		}
-		return view_as< BaseBoss >(0);
-	}
-	public BaseBoss GetRandomBoss(const bool balive)
-	{
 		int count;
 		BaseBoss boss;
 		BaseBoss[] bosses = new BaseBoss[MaxClients];
@@ -360,6 +345,22 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 			bosses[count++] = boss;
 		}
 		return (!count ? view_as< BaseBoss >(0) : bosses[GetRandomInt(0, count-1)]);
+	}
+	public BaseBoss GetBossByType(const bool balive, const int type)
+	{
+		BaseBoss boss;
+		for( int i=MaxClients ; i ; --i ) {
+			if( !IsValidClient(i) )
+				continue;
+			else if( balive and !IsPlayerAlive(i) )
+				continue;
+			boss = BaseBoss(i);
+			if( !boss.bIsBoss )
+				continue;
+			if( boss.iType==type )
+				return boss;
+		}
+		return view_as< BaseBoss >(0);
 	}
 	public void CheckArena(const bool type)
 	{
