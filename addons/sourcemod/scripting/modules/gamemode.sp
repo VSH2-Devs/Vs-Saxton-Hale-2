@@ -331,7 +331,9 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 
 	public BaseBoss GetRandomBoss(const bool balive)
 	{
+		int count;
 		BaseBoss boss;
+		BaseBoss[] bosses = new BaseBoss[MaxClients];
 		for( int i=MaxClients ; i ; --i ) {
 			if( !IsValidClient(i) )
 				continue;
@@ -340,9 +342,9 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 			boss = BaseBoss(i);
 			if( !boss.bIsBoss )
 				continue;
-			else return boss;
+			bosses[count++] = boss;
 		}
-		return view_as< BaseBoss >(0);
+		return (!count ? view_as< BaseBoss >(0) : bosses[GetRandomInt(0, count-1)]);
 	}
 	public BaseBoss GetBossByType(const bool balive, const int type)
 	{
