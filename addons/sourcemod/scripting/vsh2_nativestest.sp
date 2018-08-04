@@ -41,9 +41,7 @@ public void OnPluginStart()
 //int ThisPluginIndex;
 public void OnAllPluginsLoaded()
 {
-	/*
-	ThisPluginIndex = VSH2_RegisterPlugin("test_plugin_boss");
-	*/
+	VSH2_RegisterPlugin("test_plugin_boss");
 }
 
 public Action CommandInfo(int client, int args)
@@ -177,14 +175,9 @@ public void fwdOnBossJarated(const VSH2Player Victim, const VSH2Player Attacker)
 	PrintToConsole(Victim.index, "fwdOnBossJarated:: ==> Attacker name: %N | Victim name: %N", Attacker.index, Victim.index);
 }
 
-public void fwdOnMessageIntro(ArrayList bossArray)
+public void fwdOnMessageIntro(const VSH2Player Boss, char message[512])
 {
-	int bosses = bossArray.Length;
-	VSH2Player boss;
-	for (int i=0 ; i<bosses ; ++i) {
-		boss = bossArray.Get(i);
-		PrintToConsole(boss.index, "fwdOnMessageIntro:: %N", boss.index);
-	}
+	PrintToConsole(Boss.index, "fwdOnMessageIntro:: %N", Boss.index);
 }
 
 public void fwdOnBossPickUpItem(const VSH2Player Player, const char item[64])
@@ -212,23 +205,18 @@ public void fwdOnMusic(char song[PLATFORM_MAX_PATH], float& time)
 		if ( IsClientInGame(i) )
 			PrintToConsole(i, "fwdOnMusic:: ==> Called");
 }
-public void fwdOnRoundEndInfo(ArrayList bossArray, bool bosswin)
+public void fwdOnRoundEndInfo(const VSH2Player Player, bool bossBool, char message[512])
 {
-	int bosses = bossArray.Length;
-	VSH2Player boss;
-	for (int i=0 ; i<bosses ; ++i) {
-		boss = bossArray.Get(i);
-		PrintToConsole(boss.index, "fwdOnRoundEndInfo:: %N", boss.index);
-	}
+	PrintToConsole(Player.index, "fwdOnRoundEndInfo:: %N", Player.index);
 }
-public void fwdOnLastPlayer()
+public void fwdOnLastPlayer(const VSH2Player Boss)
 {
 	for (int i=MaxClients ; i ; --i)
 		if ( IsClientInGame(i) )
 			PrintToConsole(i, "fwdOnLastPlayer:: ==> Called");
 }
 
-public void fwdOnBossHealthCheck(const VSH2Player Player)
+public void fwdOnBossHealthCheck(const VSH2Player Player, bool bossBool, char message[512])
 {
 	PrintToConsole(Player.index, "fwdOnBossHealthCheck:: %N", Player.index);
 }
@@ -245,8 +233,8 @@ public void fwdOnPrepRedTeam(const VSH2Player Player)
 
 public void fwdOnRedPlayerThink(const VSH2Player Player)
 {
-	int health = Player.GetProperty("iDamage");
-	Player.SetProperty("iDamage", ++health);
+	int dmg = Player.GetProperty("iDamage");
+	Player.SetProperty("iDamage", ++dmg);
 }
 
 

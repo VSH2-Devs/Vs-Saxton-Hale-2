@@ -54,18 +54,19 @@ void InitializeForwards()
 	g_hForwards[OnBossKillBuilding] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell, Param_Cell) );
 	g_hForwards[OnBossJarated] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell) );
 	//g_hForwards[OnHookSound] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell) );
-	g_hForwards[OnMessageIntro] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell) );
+	g_hForwards[OnMessageIntro] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_String) );
 	g_hForwards[OnBossPickUpItem] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_String) );
 	g_hForwards[OnVariablesReset] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell) );
 	g_hForwards[OnUberDeployed] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell) );
 	g_hForwards[OnUberLoop] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell) );
 	g_hForwards[OnMusic] = new PrivateForward( CreateForward(ET_Ignore, Param_String, Param_FloatByRef) );
-	g_hForwards[OnRoundEndInfo] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell) );
+	g_hForwards[OnRoundEndInfo] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell, Param_String) );
 	g_hForwards[OnLastPlayer] = new PrivateForward( CreateForward(ET_Ignore) );
-	g_hForwards[OnBossHealthCheck] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell) );
+	g_hForwards[OnBossHealthCheck] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell, Param_String) );
 	g_hForwards[OnControlPointCapped] = new PrivateForward( CreateForward(ET_Ignore, Param_String, Param_Cell) );
 	g_hForwards[OnPrepRedTeam] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell) );
 	g_hForwards[OnRedPlayerThink] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell) );
+	g_hForwards[OnPlayerHurt] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell, Param_Cell) );
 	g_hForwards[OnBossMenu] = new PrivateForward( CreateForward(ET_Ignore, Param_CellByRef) );
 }
 
@@ -188,6 +189,14 @@ void Call_OnPlayerAirblasted(const BaseBoss player, const BaseBoss victim, Event
 	Call_PushCell(event);
 	Call_Finish();
 }
+void Call_OnPlayerHurt(const BaseBoss player, const BaseBoss victim, Event event)
+{
+	g_hForwards[OnPlayerHurt].Start();
+	Call_PushCell(player);
+	Call_PushCell(victim);
+	Call_PushCell(event);
+	Call_Finish();
+}
 void Call_OnTraceAttack(const BaseBoss player, const BaseBoss attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup)
 {
 	g_hForwards[OnTraceAttack].Start();
@@ -234,10 +243,11 @@ void Call_OnBossJarated(const BaseBoss player, const BaseBoss attacker)
 	Call_PushCell(player);
 	Call_Finish();
 }*/
-void Call_OnMessageIntro(ArrayList bossArray)
+void Call_OnMessageIntro(const BaseBoss player, char message[MAXMESSAGE])
 {
 	g_hForwards[OnMessageIntro].Start();
-	Call_PushCell(bossArray);
+	Call_PushCell(player);
+	Call_PushStringEx(message, MAXMESSAGE, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 	Call_Finish();
 }
 void Call_OnBossPickUpItem(const BaseBoss player, const char item[64])
@@ -275,22 +285,26 @@ void Call_OnMusic(char song[PLATFORM_MAX_PATH], float& time)
 	Call_PushFloatRef(time);
 	Call_Finish();
 }
-void Call_OnRoundEndInfo(ArrayList bosses, bool bosswin)
+void Call_OnRoundEndInfo(const BaseBoss player, bool bosswin, char message[MAXMESSAGE])
 {
 	g_hForwards[OnRoundEndInfo].Start();
-	Call_PushCell(bosses);
+	Call_PushCell(player);
 	Call_PushCell(bosswin);
+	Call_PushStringEx(message, MAXMESSAGE, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 	Call_Finish();
 }
-void Call_OnLastPlayer()
+void Call_OnLastPlayer(const BaseBoss player)
 {
 	g_hForwards[OnLastPlayer].Start();
+	Call_PushCell(player);
 	Call_Finish();
 }
-void Call_OnBossHealthCheck(const BaseBoss player)
+void Call_OnBossHealthCheck(const BaseBoss player, const bool isBoss, char message[MAXMESSAGE])
 {
 	g_hForwards[OnBossHealthCheck].Start();
 	Call_PushCell(player);
+	Call_PushCell(isBoss);
+	Call_PushStringEx(message, MAXMESSAGE, SM_PARAM_STRING_UTF8|SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 	Call_Finish();
 }
 void Call_OnControlPointCapped(char cappers[MAXPLAYERS+1], const int team)

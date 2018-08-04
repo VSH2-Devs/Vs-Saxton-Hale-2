@@ -52,7 +52,7 @@ public char snd[FULLPATH]; //How is this even used?
 // public char extensions[][] = { ".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd", ".phy" };
 // public char extensionsb[2][5] = { ".vtf", ".vmt" };
 
-#define MAXMESSAGE	4096
+#define MAXMESSAGE	512
 public char gameMessage[MAXMESSAGE];	// Just incase...
 public char BackgroundSong[FULLPATH];
 

@@ -152,7 +152,7 @@ public Action Timer_Millisecond(Handle timer)
 			continue;
 		player = VSH2Player(i);
 		if (damageTracker[z] > 0) {
-			if (!player.GetProperty("bIsBoss")) {
+			if (!player.GetProperty("bIsBoss") && !(GetClientButtons(z) & IN_SCORE)) {
 				SetHudTextParams(0.0, 0.0, 0.2, RGBA[z][RED], RGBA[z][GREEN], RGBA[z][BLUE], RGBA[z][ALPHA]);
 				if(IsValidClient(hTop[0].index))
 					Format(first, sizeof(first), "[1] %N - %d\n", hTop[0].index, hTop[0].GetProperty("iDamage"));

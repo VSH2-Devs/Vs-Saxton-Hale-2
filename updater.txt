@@ -4,13 +4,15 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.0.7"
+			"Latest"	"2.0.9"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.0.7:"
-		"Notes"	"code has been formatted to be consistent."
-		"Notes"	"boss code has been shortened using DRY (don't repeat yourself) method."
-		"Notes"	"added four new cvars that control max and min limits for ammo packs and/or health kits."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.0.9:"
+		"Notes"	"Improved and finalized the boss forwards code (props to scags)."
+		"Notes"	"since the boss forwards have been improved, boss subplugins are now possible!"
+		"Notes"	"improved the VSH2 damage tracker add on to not flicker when looking at the scoreboard."
+		"Notes"	"fixed missing melee weapon crits."
+		"Notes"	"set some specific cvars to different defaults."
 	}
 	
 	"Files"

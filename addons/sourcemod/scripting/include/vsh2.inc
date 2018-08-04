@@ -33,8 +33,10 @@ methodmap VSH2Player
 	
 	/**
          * sets the property of the internal VSH2 methodmap
+         * NOTE: You can use this to create new properties which GetProperty can access!
 	 * @param prop_name		name of property you want to access data from.
-         * @return			the data of the property.		
+	 * @param item			reference to use of the variable to overwrite with data from the property.
+         * @return		
         */
 	public native any GetProperty(const char prop_name[64]);
 	
@@ -148,6 +150,7 @@ enum {		//VSH2HookType
 	OnControlPointCapped,
 	OnBossMenu,
 	OnPrepRedTeam,
+	OnPlayerHurt,
 	OnRedPlayerThink
 };
 
@@ -168,9 +171,9 @@ typeset VSH2HookCB {
 		OnBossMedicCall
 		OnBossTaunt
 		OnVariablesReset
-		OnBossHealthCheck
 		OnPrepRedTeam
 		OnRedPlayerThink
+		OnLastPlayer - Player is a random boss in this case.
 	*/
 	function void (const VSH2Player Player);
 	
@@ -194,6 +197,7 @@ typeset VSH2HookCB {
 	/*
 		OnPlayerKilled
 		OnPlayerAirblasted
+		OnPlayerHurt
 	*/
 	function void (const VSH2Player Player, const VSH2Player Victim, Event event);
 	
@@ -201,18 +205,21 @@ typeset VSH2HookCB {
 	function void (const VSH2Player Victim, const VSH2Player attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup);
 	
 	//	OnMessageIntro
-	function void (ArrayList bossArray);
+	function void (const VSH2Player Player, char message[512]);
+	
+	/*
+		OnBossHealthCheck 	bossBool determines if command user was the boss
+		OnRoundEndInfo 		bossBool determines if boss won the round
+	*/
+	function void (const VSH2Player Player, bool bossBool, char message[512]);
 	
 	//	OnMusic
 	function void (char song[PLATFORM_MAX_PATH], float& time);
 	
-	//	OnRoundEndInfo
-	function void (ArrayList bosses, bool bosswin);
-	
 	//	OnControlPointCapped
 	function void (char cappers[MAXPLAYERS+1], const int team);
 	
-	//	OnCallDownloads , OnLastPlayer
+	//	OnCallDownloads
 	function void ();
 	
 	//	OnBossPickUpItem
@@ -232,6 +239,7 @@ native bool VSH2_UnhookEx(const int callbacktype, VSH2HookCB callback);
 
 native any VSH2GameMode_GetProperty(const char prop_name[64]);
 native void VSH2GameMode_SetProperty(const char prop_name[64], any value);
+
 /*	Available properties
 property int iRoundState
 property int iSpecial
