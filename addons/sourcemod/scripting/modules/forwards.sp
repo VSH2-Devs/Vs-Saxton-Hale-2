@@ -44,8 +44,8 @@ void InitializeForwards()
 	g_hForwards[OnBossInitialized] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell) );
 	g_hForwards[OnMinionInitialized] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell) );
 	g_hForwards[OnBossPlayIntro] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell) );
-	g_hForwards[OnBossTakeDamage] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
-	g_hForwards[OnBossDealDamage] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossTakeDamage] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell) );
+	g_hForwards[OnBossDealDamage] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell) );
 	g_hForwards[OnPlayerKilled] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell, Param_Cell) );
 	g_hForwards[OnPlayerAirblasted] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell, Param_Cell) );
 	g_hForwards[OnTraceAttack] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Cell, Param_Cell) );
@@ -67,6 +67,7 @@ void InitializeForwards()
 	g_hForwards[OnPrepRedTeam] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell) );
 	g_hForwards[OnRedPlayerThink] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell) );
 	g_hForwards[OnPlayerHurt] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell, Param_Cell) );
+	g_hForwards[OnMinionTakeDamage] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell) );
 	g_hForwards[OnBossMenu] = new PrivateForward( CreateForward(ET_Ignore, Param_CellByRef) );
 }
 
@@ -331,4 +332,20 @@ void Call_OnBossMenu(Menu& menu)
 	g_hForwards[OnBossMenu].Start();
 	Call_PushCellRef(menu);
 	Call_Finish();
+}
+Action Call_OnMinionTakeDamage(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnMinionTakeDamage].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
 }

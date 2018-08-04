@@ -792,6 +792,9 @@ public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& dam
 	if( BossVictim.bIsBoss ) // in handler.sp
 		return ManageOnBossTakeDamage(BossVictim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 
+	if( BossVictim.bIsMinion ) // in handler.sp
+		return ManageOnMinionTakeDamage(BossVictim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
+
 	if( !IsClientValid(attacker) )	// BUG PATCH: Client index 0 is invalid
 		return Plugin_Continue;
 	

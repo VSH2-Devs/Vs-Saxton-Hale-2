@@ -151,6 +151,7 @@ enum {		//VSH2HookType
 	OnBossMenu,
 	OnPrepRedTeam,
 	OnPlayerHurt,
+	OnMinionTakeDamage,
 	OnRedPlayerThink
 };
 
@@ -191,7 +192,7 @@ typeset VSH2HookCB {
 	//	OnBossKillBuilding
 	function void (const VSH2Player Attacker, const int building, Event event);
 	
-	//	OnBossTakeDamage , OnBossDealDamage
+	//	OnBossTakeDamage , OnBossDealDamage , OnMinionTakeDamage
 	function Action (VSH2Player Victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom);
 	
 	/*
