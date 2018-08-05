@@ -383,6 +383,40 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					SetEntityHealth( attacker, newHealth );
 				}
 			}
+			else if( StrContains(classname, "tf_weapon_sniperrifle", false) > -1 and gamemode.iRoundState != StateEnding ) {
+				if( wepindex != 230 and wepindex != 526 and wepindex != 752 and wepindex != 30665 ) {
+					float bossGlow = victim.flGlowtime;
+					float chargelevel = (IsValidEntity(weapon) and weapon > MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
+					float time = (bossGlow > 10 ? 1.0 : 2.0);
+					time += (bossGlow > 10 ? (bossGlow > 20 ? 1 : 2) : 4)*(chargelevel/100);
+					bossGlow += RoundToCeil(time);
+					if( bossGlow > 30.0 )
+						bossGlow = 30.0;
+					victim.flGlowtime = bossGlow;
+				}
+				if( wepindex == 402 ) {	// bazaar bargain I think
+					if( damagecustom == TF_CUSTOM_HEADSHOT )
+						IncrementHeadCount(attacker, false);
+				}
+				if( wepindex == 752 ) {
+					float chargelevel = (IsValidEntity(weapon) && weapon > MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
+					float add = 10 + (chargelevel / 10);
+					if( TF2_IsPlayerInCondition(attacker, view_as< TFCond >(46)) )
+						add /= 3.0;
+					float rage = GetEntPropFloat(attacker, Prop_Send, "m_flRageMeter");
+					SetEntPropFloat(attacker, Prop_Send, "m_flRageMeter", (rage + add > 100) ? 100.0 : rage + add);
+				}
+				if( wepindex == 230 )
+					victim.flRAGE -= (damage * 0.03);
+				
+				if( !(damagetype & DMG_CRIT) ) {
+					bool ministatus = (TF2_IsPlayerInCondition(attacker, TFCond_CritCola) or TF2_IsPlayerInCondition(attacker, TFCond_Buffed) or TF2_IsPlayerInCondition(attacker, TFCond_CritHype));
+					
+					damage *= (ministatus) ? 2.222222 : 3.0;
+					return Plugin_Changed;
+				}
+			}
+			
 			if( cvarVSH2[Anchoring].BoolValue ) {
 				int iFlags = GetEntityFlags(victim.index);
 #if defined _tf2attributes_included
@@ -432,6 +466,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 						}
 					}
 				}
+				/*
 				case 14, 201, 230, 402, 526, 664, 752, 792, 801, 851, 881, 890, 899, 908, 957, 966, 1098: {
 					switch (wepindex) {	// cleaner to read than if wepindex == || wepindex == || etc.
 						case 14, 201, 664, 792, 801, 851, 881, 890, 899, 908, 957, 966: {	// sniper rifles
@@ -471,6 +506,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					else if( wepindex == 230 )
 						victim.flRAGE -= (damage * 0.035);
 				}
+				*/
 				case 132, 266, 482, 1082: IncrementHeadCount(attacker);
 				case 355, 648: victim.flRAGE -= cvarVSH2[FanoWarRage].FloatValue;
 				case 317: SpawnSmallHealthPackAt(attacker, GetClientTeam(attacker));
