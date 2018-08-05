@@ -692,6 +692,16 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 	}
 	return Plugin_Continue;
 }
+
+public Action ManageOnMinionTakeDamage(const BaseBoss victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	switch( BaseBoss(victim.iOwnerBoss).iType ) {
+		case -1:{}
+		default:return Call_OnMinionTakeDamage(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
+	}
+	return Plugin_Continue;
+}
+
 #if defined _goomba_included_
 public Action ManageOnGoombaStomp(int attacker, int client, float& damageMultiplier, float& damageAdd, float& JumpPower)
 {
@@ -1918,7 +1928,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 	}
 	if( validwep and weapon == GetPlayerWeaponSlot(i, TFWeaponSlot_Melee) ) {
 		// slightly longer check but makes sure that any weapon that can backstab will not crit (e.g. Saxxy)
-		addthecrit = strcmp(wepclassname, "tf_weapon_knife", false);
+		addthecrit = !!strcmp(wepclassname, "tf_weapon_knife", false);
 	}
 	if( validwep and weapon == GetPlayerWeaponSlot(i, TFWeaponSlot_Primary) ) // Primary weapon crit list
 	{

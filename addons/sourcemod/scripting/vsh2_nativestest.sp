@@ -237,6 +237,13 @@ public void fwdOnRedPlayerThink(const VSH2Player Player)
 	Player.SetProperty("iDamage", ++dmg);
 }
 
+public Action fwdOnMinionTakeDamage(VSH2Player Victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	PrintToConsole(attacker, "fwdOnMinionTakeDamage:: ==> Attacker name: %N | Victim name: %N", attacker, Victim.index);
+	PrintToConsole(Victim.index, "fwdOnMinionTakeDamage:: ==> Attacker name: %N | Victim name: %N", attacker, Victim.index);
+	return Plugin_Continue;
+}
+
 
 public void LoadVSH2Hooks()
 {
@@ -335,4 +342,7 @@ public void LoadVSH2Hooks()
 		
 	if (!VSH2_HookEx(OnRedPlayerThink, fwdOnRedPlayerThink))
 		LogError("Error loading OnRedPlayerThink forwards for VSH2 Test plugin.");
+
+	if (!VSH2_HookEx(OnMinionTakeDamage, fwdOnMinionTakeDamage))
+		LogError("Error loading OnMinionTakeDamage forwards for VSH2 Test plugin.");
 }
