@@ -19,7 +19,7 @@ public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 
 		if( !player.bIsBoss and gamemode.iRoundState > StateDisabled and !player.bIsMinion)
 		{
-			if( GetClientTeam(player.index) != RED )
+			if( GetClientTeam(player.index) == BLU )
 				player.ForceTeamChange(RED);
 			SetPawnTimer( PrepPlayers, 0.2, player );
 		}
