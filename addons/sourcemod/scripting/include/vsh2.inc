@@ -3,6 +3,7 @@
 #endif
 #define _vsh2_included
 
+
 methodmap VSH2Player	
 {
 	/** [ C O N S T R U C T O R ]
@@ -99,6 +100,10 @@ methodmap VSH2Player
 	public native void ForceTeamChange(const int team);
 	public native void ClimbWall(const int weapon, const float upwardVel, const float health, const bool attackdelay);
 	public native void HelpPanelClass();
+	public native int GetAmmoTable(const int wepslot);
+	public native void SetAmmoTable(const int wepslot, const int amount);
+	public native int GetClipTable(const int wepslot);
+	public native void SetClipTable(const int wepslot, const int amount);
 	
 	// Boss oriented natives
 	public native void ConvertToBoss();
@@ -178,10 +183,9 @@ typeset VSH2HookCB {
 	function void (const VSH2Player Player);
 	
 	/*
-		OnTouchPlayer
+		OnTouchPlayer - victim is boss, attacker is other player.
 		OnBossJarated
-		OnUberDeployed	// Victim is uber target, attacker is medic
-		OnUberLoop	// Victim is uber target, attacker is medic
+		OnUberDeployed, OnUberLoop - Victim is medic, Attacker is uber target
 	*/
 	function void (const VSH2Player Victim, const VSH2Player Attacker);
 	
@@ -196,7 +200,7 @@ typeset VSH2HookCB {
 	
 	/*
 		OnPlayerKilled
-		OnPlayerAirblasted
+		OnPlayerAirblasted - player is the airblaster
 		OnPlayerHurt
 	*/
 	function void (const VSH2Player Player, const VSH2Player Victim, Event event);
@@ -208,8 +212,8 @@ typeset VSH2HookCB {
 	function void (const VSH2Player Player, char message[512]);
 	
 	/*
-		OnBossHealthCheck 	bossBool determines if command user was the boss
-		OnRoundEndInfo 		bossBool determines if boss won the round
+		OnBossHealthCheck - bossBool determines if command user was the boss
+		OnRoundEndInfo - bossBool determines if boss won the round
 	*/
 	function void (const VSH2Player Player, bool bossBool, char message[512]);
 	
@@ -248,8 +252,8 @@ property int iTimeLeft
 property int iRoundCount
 property int iHealthChecks
 property int iCaptures
-property bool bSteam		// Only useable if SteamTools is enabled and used.
-property bool bTF2Attribs	// Only useable if TF2Attributes is enabled and used
+property bool bSteam		- Only useable if SteamTools is enabled and used.
+property bool bTF2Attribs	- Only useable if TF2Attributes is enabled and used
 property bool bPointReady
 property bool bMedieval
 property float flHealthTime
@@ -302,6 +306,11 @@ public __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2Player.ForceTeamChange");
 	MarkNativeAsOptional("VSH2Player.ClimbWall");
 	MarkNativeAsOptional("VSH2Player.HelpPanelClass");
+	MarkNativeAsOptional("VSH2Player.GetAmmoTable");
+	MarkNativeAsOptional("VSH2Player.SetAmmoTable");
+	MarkNativeAsOptional("VSH2Player.GetClipTable");
+	MarkNativeAsOptional("VSH2Player.SetClipTable");
+	
 	MarkNativeAsOptional("VSH2Player.ConvertToBoss");
 	MarkNativeAsOptional("VSH2Player.GiveRage");
 	MarkNativeAsOptional("VSH2Player.MakeBossAndSwitch");

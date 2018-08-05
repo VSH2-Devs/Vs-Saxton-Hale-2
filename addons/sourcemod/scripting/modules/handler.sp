@@ -3,8 +3,8 @@ ALL NON-BOSS AND NON-MINION RELATED CODE IS AT THE BOTTOM. HAVE FUN CODING!
 */
 
 
-enum /* Bosses */	/* When you add custom Bosses, add to the anonymous enum as the Boss' ID */
-{
+/* When you add custom Bosses, add to the anonymous enum as the Boss' ID */
+enum /* Bosses */ {
 	Hale = 0,
 	Vagineer = 1,
 	CBS = 2,
@@ -102,7 +102,9 @@ public void ManageOnBossSelected(const BaseBoss base)
 	ManageBossHelp(base);
 	Call_OnBossSelected(base);
 	
-	if( gamemode.iPlaying < 10 or GetRandomInt(0, 3) > 0 )
+	if( !cvarVSH2[AllowRandomMultiBosses].BoolValue )
+		return;
+	else if( gamemode.iPlaying < 10 or GetRandomInt(0, 3) > 0 )
 		return;
 
 	int extraBosses = gamemode.iPlaying / 12;

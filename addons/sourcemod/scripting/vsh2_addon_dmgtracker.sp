@@ -27,7 +27,7 @@ public void OnPluginStart()
 	RegConsoleCmd("haledmg", Command_damagetracker, "haledmg - Enable/disable the damage tracker.");
 	RegConsoleCmd("vsh2dmg", Command_damagetracker, "haledmg - Enable/disable the damage tracker.");
 	RegConsoleCmd("ff2dmg", Command_damagetracker, "haledmg - Enable/disable the damage tracker.");
-	CreateTimer(0.1, Timer_Millisecond);
+	CreateTimer(0.15, Timer_Millisecond);
 	CreateTimer(180.0, Timer_Advertise);
 	damageHUD = CreateHudSynchronizer();
 }
@@ -119,14 +119,17 @@ public void OnClientPutInServer(int client)
 public Action Timer_Millisecond(Handle timer)
 {
 	CreateTimer(0.1, Timer_Millisecond);
+	// 1 is StateRunning
+	if( VSH2GameMode_GetProperty("iRoundState") != 1 )
+		return Plugin_Continue;
+	
 	int i;
-
 	VSH2Player hTop[3];
 	
 	VSH2Player(0).SetProperty("iDamage", 0);
 	VSH2Player player;
 	for (i=MaxClients ; i ; --i) {
-		if (!IsValidClient(i))
+		if (!IsValidClient(i) || GetClientTeam(i) < 2)
 			continue;
 		
 		player = VSH2Player(i);
@@ -156,13 +159,13 @@ public Action Timer_Millisecond(Handle timer)
 				SetHudTextParams(0.0, 0.0, 0.2, RGBA[z][RED], RGBA[z][GREEN], RGBA[z][BLUE], RGBA[z][ALPHA]);
 				if(IsValidClient(hTop[0].index))
 					Format(first, sizeof(first), "[1] %N - %d\n", hTop[0].index, hTop[0].GetProperty("iDamage"));
-				else Format(first, sizeof(first), "[1] N/A - 0\n");
+				else Format(first, sizeof(first), "[1] nil - 0\n");
 				if(IsValidClient(hTop[1].index))
 					Format(second, sizeof(second), "[2] %N - %d\n", hTop[1].index, hTop[1].GetProperty("iDamage"));
-				else Format(second, sizeof(second), "[2] N/A - 0\n");
+				else Format(second, sizeof(second), "[2] nil - 0\n");
 				if(IsValidClient(hTop[2].index))
 					Format(third, sizeof(third), "[3] %N - %d\n", hTop[2].index, hTop[2].GetProperty("iDamage"));
-				else Format(third, sizeof(third), "[3] N/A - 0\n");
+				else Format(third, sizeof(third), "[3] nil - 0\n");
 				ShowSyncHudText(z, damageHUD, "%s%s%s", first, second, third);
 			}
 		}

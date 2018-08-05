@@ -1,49 +1,8 @@
-/*int
-	Health[PLYR],		// Amount of health given to bosses
-	MaxHealth[PLYR],
-	BossType[PLYR],		// What kind of boss is player?
-	Kills[PLYR],		// how many players killed by boss or bosses killed by player?
-	ClimbCount[PLYR],	// self explanatory
-	Hits[PLYR],		// How many times has the player been hit?
-	Lives[PLYR],		// Same reason as Hits, Lives should never be under 0. Never heard of -1 lives lol
-	State[PLYR],		// This is for bosses or players that change "state" for various mechanics
-	Damage[PLYR],		// self explanatory
-	AirDamage[PLYR],	// how much damage done by AirStrike soldier, perhaps replace this with static local variable in TakeDamage?
-	SongPick[PLYR],		// Let bosses customize what Background theme music they want playing.
-	Stabbed[PLYR],		// How many times player got backstabbed
-	Marketted[PLYR],	// How many times player got market gardenned
-	UberTarget[PLYR],	// userid of the uber'd client
-	OwnerBoss[PLYR],	// For use on minions, this allows us to get which boss actually created the minion that helps them
-	Difficulty[PLYR]
-;
-
-bool
-	IsBoss[PLYR],		// Is the player a boss?
-	IsToSpawnAsBoss[PLYR],	// Is the player set to become a boss when they spawn?
-	IsMinion[PLYR],		// Is the player a minion/zombie of a current boss? (Can be set on bosses but please don't, only use on players)
-	UsedUltimate[PLYR],	// When a boss used a single-use only rage, can be reset, inb4 Overwatch bosses lol
-	InJump[PLYR]		// when a player is currently in the air as a result of a rocket/sticky jump
-;
-
-float
-	fSpeed[PLYR],		// self explanatory, Boss' movement speed
-	flRightClick[PLYR],	// Basically the Crouch or Right click ability charge
-	flRage[PLYR],		// meter for when boss taunts or calls medic
-	fKillSpree[PLYR],	// When a boss meets a criteria for murdering in a single instance :)
-	WeighDown[PLYR],	// meter for when boss is looking down while in the air and crouching
-	Glowtime[PLYR],
-	LastHit[PLYR],		// last time the player was hit
-	LastShot[PLYR]		// last time player shot/fired their weapon
-;
-*/
-
 int
 	//Queue[PLYR],		// old Queue system but this array is a backup incase cookies haven't cached yet.
 	//PresetBossType[PLYR],	// If the upcoming boss set their boss from SetBoss command, this array will hold that data
-	AmmoTable[2049],	// saved max ammo size of the weapon
-	ClipTable[2049]		// saved max clip size of the weapon
+	Munitions[PLYR][2][2] // first index obviously player, slot, ammo-0, clip-1
 ;
-float flHolstered[PLYR][3];	// New mechanic for VSH 2, holster reloading for certain classes and weapons
 
 //	Gonna leave these here so we can reduce stack memory for calling boss specific Download function calls
 public char snd[FULLPATH]; //How is this even used?
@@ -457,10 +416,7 @@ Methods
 	 */
 	public int getAmmotable(const int wepslot)
 	{
-		int weapon = GetPlayerWeaponSlot(this.index, wepslot);
-		if( weapon > MaxClients and IsValidEntity(weapon) )
-			return AmmoTable[weapon];
-		return -1;
+		return( wepslot > -1 and wepslot < 2 ) ? Munitions[this.index][wepslot][0] : 0;
 	}
 	
 	/**
@@ -472,9 +428,9 @@ Methods
 	 */
 	public void setAmmotable(const int wepslot, const int val)
 	{
-		int weapon = GetPlayerWeaponSlot(this.index, wepslot);
-		if( weapon > MaxClients and IsValidEntity(weapon) )
-			AmmoTable[weapon] = val;
+		if( wepslot < 0 or wepslot > 1 )
+			return;
+		Munitions[this.index][wepslot][0] = val;
 	}
 	/**
 	 * gets the max recorded clipsize for a certain weapon index
@@ -484,10 +440,7 @@ Methods
 	 */
 	public int getCliptable(const int wepslot)
 	{
-		int weapon = GetPlayerWeaponSlot(this.index, wepslot);
-		if( weapon > MaxClients and IsValidEntity(weapon) )
-			return ClipTable[weapon];
-		return -1;
+		return( wepslot > -1 and wepslot < 2 ) ? Munitions[this.index][wepslot][1] : 0;
 	}
 	
 	/**
@@ -499,9 +452,9 @@ Methods
 	 */
 	public void setCliptable(const int wepslot, const int val)
 	{
-		int weapon = GetPlayerWeaponSlot(this.index, wepslot);
-		if( weapon > MaxClients and IsValidEntity(weapon) )
-			ClipTable[weapon] = val;
+		if( wepslot < 0 or wepslot > 1 )
+			return;
+		Munitions[this.index][wepslot][1] = val;
 	}
 	public int GetWeaponSlotIndex(const int slot)
 	{

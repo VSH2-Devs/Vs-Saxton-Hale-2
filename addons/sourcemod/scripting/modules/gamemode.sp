@@ -1,36 +1,3 @@
-/*
-int
-	state,			// Sets the round state of the gamemode
-	BossSpecial = -1,	// preset the next boss type
-	HealthBar = -1,		// obviously handles the boss healthbar
-	TotalMaxHealth,
-	TimeLeft,		// How many minutes to countdown!
-	RoundCount,		// number of rounds played
-	HealthChecks,		// self explanatory
-	NumCaps			// number of times control point has been capped
-;
-
-float
-	HealthTime,		// for health check time
-	MusicTime
-;
-bool
-	PointReady,
-	Medieval
-;
-
-BaseBoss preselected;		// The next player chosen as boss
-*/
-/*
-#if defined _steamtools_included
-bool steamtools;
-#endif
-*/
-/*
-Handle
-	hMusicTimer		// bool for music timer
-;
-*/
 enum {	/* VSH2 Round States */
 	StateDisabled = -1,
 	StateStarting = 0,

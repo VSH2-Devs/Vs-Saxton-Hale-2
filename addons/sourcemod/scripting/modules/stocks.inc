@@ -858,7 +858,7 @@ stock int GetSlotFromWeapon(const int iClient, const int iWeapon)
 {
 	for (int i=0; i<5; i++) {
 		if ( iWeapon == GetPlayerWeaponSlot(iClient, i) )
-			{return i;}
+			return i;
 	}
 	return -1;
 }
@@ -1056,7 +1056,7 @@ stock TF2Item PrepareItemHandle(TF2Item hItem, char[] name = "", int index = -1,
 
 	char weaponAttribsArray[32][32];
 	int attribCount = ExplodeString(att, " ; ", weaponAttribsArray, 32, 32);
-
+	
 	int flags = OVERRIDE_ATTRIBUTES;
 	if (!dontpreserve)
 		flags |= PRESERVE_ATTRIBUTES;
@@ -1102,6 +1102,10 @@ stock TF2Item PrepareItemHandle(TF2Item hItem, char[] name = "", int index = -1,
 		int i2 = 0;
 		for (int i=0; i<attribCount and i<32; i += 2)
 		{
+			int attrib = StringToInt(weaponAttribsArray[i]);
+			if( !attrib )
+				continue;
+			
 			hWeapon.SetAttribute(i2, StringToInt(weaponAttribsArray[i]), StringToFloat(weaponAttribsArray[i+1]));
 			i2++;
 		}

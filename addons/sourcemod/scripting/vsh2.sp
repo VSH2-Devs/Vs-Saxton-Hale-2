@@ -20,14 +20,15 @@
 #tryinclude <updater>
 #define REQUIRE_PLUGIN
 
-#define UPDATE_URL			"https://raw.githubusercontent.com/VSH2-Devs/Vs-Saxton-Hale-2/master/updater.txt"
+#define UPDATE_URL			"https://raw.githubusercontent.com/VSH2-Devs/Vs-Saxton-Hale-2/develop/updater.txt"
 
 #pragma semicolon			1
 #pragma newdecls			required
 
-#define PLUGIN_VERSION			"2.0.9"
+#define PLUGIN_VERSION			"2.1.0"
 #define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
 #define CODEFRAMES			(1.0/30.0)	/* 30 frames per second means 0.03333 seconds or 33.33 ms */
+
 
 #define IsClientValid(%1)		( 0 < (%1) and (%1) <= MaxClients and IsClientInGame((%1)) )
 #define PLYR				MAXPLAYERS+1
@@ -58,7 +59,7 @@
 #define PLYR				MAXPLAYERS+1
 #define PATH				64
 #define FULLPATH			PLATFORM_MAX_PATH
-#define repeat(%1)			for (int xyz=0; xyz<%1; ++xyz)	// laziness is real lmao
+#define repeat(%1)			for (int xyz=0; xyz<(%1); ++xyz)	// laziness is real lmao
 
 
 public Plugin myinfo = {
@@ -113,6 +114,7 @@ enum /*CvarName*/
 	AmmoKitLimitMax,
 	AmmoKitLimitMin,
 	ShieldRegenDmgReq,
+	AllowRandomMultiBosses,
 	VersionNumber
 };
 
@@ -207,7 +209,7 @@ methodmap TF2Item < Handle
 //ArrayList ptrBosses ;
 ArrayList g_hPluginsRegistered;
 
-#include "modules/stocks.inc"
+#include "modules/stocks.inc" // include stocks first.
 #include "modules/handler.sp"	// Contains the game mode logic as well
 #include "modules/events.sp"
 #include "modules/commands.sp"
@@ -339,6 +341,7 @@ public void OnPluginStart()
 	cvarVSH2[AmmoKitLimitMax] = CreateConVar("vsh2_spawn_ammo_kit_limit_max", "6", "max amount of ammo kits that can be produced in RED spawn. 0 for unlimited amount", FCVAR_NONE, true, 0.0, true, 50.0);
 	cvarVSH2[AmmoKitLimitMin] = CreateConVar("vsh2_spawn_ammo_kit_limit_min", "4", "minimum amount of ammo kits that can be produced in RED spawn. 0 for no minimum limit", FCVAR_NONE, true, 0.0, true, 50.0);
 	cvarVSH2[ShieldRegenDmgReq] = CreateConVar("vsh2_shield_regen_damage", "2000", "damage required for demoknights to regenerate their shield, put 0 to disable.", FCVAR_NONE, true, 0.0, true, 99999.0);
+	cvarVSH2[AllowRandomMultiBosses] = CreateConVar("vsh2_allow_random_multibosses", "0", "allows VSH2 to randomly make random combinations of various bosses.", FCVAR_NONE, true, 0.0, true, 1.0);
 	
 #if defined _steamtools_included
 	gamemode.bSteam = LibraryExists("SteamTools");
@@ -531,9 +534,7 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 	SDKHook(client, SDKHook_TraceAttack, TraceAttack);
 	SDKHook(client, SDKHook_Touch, OnTouch);
-	SDKHook(client, SDKHook_WeaponSwitchPost, OnWeaponSwitchPost);
 	
-	flHolstered[client][0] = flHolstered[client][1] = flHolstered[client][2] = 0.0;
 	SDKHook(client, SDKHook_PreThinkPost, OnPreThinkPost);
 	
 	if( hPlayerFields[client] != null )
@@ -851,13 +852,12 @@ public void OnEntityCreated(int entity, const char[] classname)
 {
 	if( !bEnabled.BoolValue )
 		return;
-
-	ManageEntityCreated(entity, classname);
-
+	
 	if( !strncmp(classname, "tf_weapon_", 10, false) and IsValidEntity(entity) )
-		CreateTimer( 0.6, OnWeaponSpawned, EntIndexToEntRef(entity) );
-
+		CreateTimer( 0.2, OnWeaponSpawned, EntIndexToEntRef(entity) );
+	ManageEntityCreated(entity, classname);
 }
+
 public Action OnWeaponSpawned(Handle timer, any ref)
 {
 	int wep = EntRefToEntIndex(ref);
@@ -865,29 +865,18 @@ public Action OnWeaponSpawned(Handle timer, any ref)
 		char name[32]; GetEntityClassname(wep, name, sizeof(name));
 		if( !strncmp(name, "tf_weapon_", 10, false) ) {
 			int client = GetOwner(wep);
-			if( IsValidClient(client) and GetClientTeam(client) == RED) {
+			if( IsValidClient(client) and GetClientTeam(client) == RED ) {
 				int slot = GetSlotFromWeapon(client, wep);
-				if( slot != -1 and slot < 3 )
-					flHolstered[client][slot] = GetGameTime();
-
-				AmmoTable[wep] = GetWeaponAmmo(wep);
-				ClipTable[wep] = GetWeaponClip(wep);
+				if( slot<2 and slot>=0 ) {
+					Munitions[client][slot][0] = GetWeaponAmmo(wep);
+					Munitions[client][slot][1] = GetWeaponClip(wep);
+				}
 			}
 		}
 	}
 	return Plugin_Continue;
 }
-public void OnWeaponSwitchPost(int client, int weapon)
-{
-	static int iActiveSlot[PLYR];
-	if( (client > 0 and client <= MaxClients) and IsValidEntity(weapon) )
-	{
-		switch( iActiveSlot[client] ) { // This will be the previous slot at this time, that you switched FROM
-			case 0, 1: flHolstered[client][iActiveSlot[client]] = GetGameTime();
-		}
-		iActiveSlot[client] = GetSlotFromWeapon(client, weapon);
-	}
-}
+
 public void ShowPlayerScores()	// scores kept glitching out and I hate debugging so I made it its own func.
 {
 	BaseBoss hTop[3];
@@ -923,21 +912,21 @@ public void ShowPlayerScores()	// scores kept glitching out and I hate debugging
 	if( IsValidClient(hTop[0].index) and (GetClientTeam(hTop[0].index) > 1) )
 		GetClientName(hTop[0].index, score1, PATH);
 	else {
-		Format(score1, PATH, "---");
+		Format(score1, PATH, "nil");
 		hTop[0] = view_as< BaseBoss >(0);
 	}
 
 	if( IsValidClient(hTop[1].index) and (GetClientTeam(hTop[1].index) > 1) )
 		GetClientName(hTop[1].index, score2, PATH);
 	else {
-		Format(score2, PATH, "---");
+		Format(score2, PATH, "nil");
 		hTop[1] = view_as< BaseBoss >(0);
 	}
 
 	if( IsValidClient(hTop[2].index) and (GetClientTeam(hTop[2].index) > 1) )
 		GetClientName(hTop[2].index, score3, PATH);
 	else {
-		Format(score3, PATH, "---");
+		Format(score3, PATH, "nil");
 		hTop[2] = view_as< BaseBoss >(0);
 	}
 	SetHudTextParams(-1.0, 0.4, 10.0, 255, 255, 255, 255);
@@ -1039,19 +1028,18 @@ public Action Timer_UberLoop(Handle timer, any medigunid)
 	int medigun = EntRefToEntIndex(medigunid);
 	if( medigun and IsValidEntity(medigun) and gamemode.iRoundState == StateRunning )
 	{
-		int client = GetOwner(medigun);
+		int medic = GetOwner(medigun);
 		float charge = GetMediCharge(medigun);
 		if( charge > 0.05 ) {
-			TF2_AddCondition(client, TFCond_CritOnWin, 0.5);
+			TF2_AddCondition(medic, TFCond_CritOnWin, 0.5);
 
-			int target = GetHealingTarget(client);
-			if( IsClientValid(target) and IsPlayerAlive(target) )
-			{
+			int target = GetHealingTarget(medic);
+			if( IsClientValid(target) and IsPlayerAlive(target) ) {
 				TF2_AddCondition(target, TFCond_CritOnWin, 0.5);
-				BaseBoss(client).iUberTarget = GetClientUserId(target);
-				Call_OnUberLoop(BaseBoss(client), BaseBoss(target));
+				BaseBoss(medic).iUberTarget = GetClientUserId(target);
+				Call_OnUberLoop(BaseBoss(medic), BaseBoss(target));
 			}
-			else BaseBoss(client).iUberTarget = 0;
+			else BaseBoss(medic).iUberTarget = 0;
 		}
 		else if( charge < 0.05 ) {
 			SetPawnTimer(_ResetMediCharge, 3.0, EntIndexToEntRef(medigun)); //CreateTimer(3.0, TimerLazor2, EntIndexToEntRef(medigun));
@@ -1201,10 +1189,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2Player.ConvertToMinion", Native_VSH2_ConvertToMinion);
 	CreateNative("VSH2Player.SpawnWeapon", Native_VSH2_SpawnWep);
 	
-	/*CreateNative("VSH2Player.getAmmotable", Native_VSH2_getAmmotable);
-	CreateNative("VSH2Player.setAmmotable", Native_VSH2_setAmmotable);
-	CreateNative("VSH2Player.getCliptable", Native_VSH2_getCliptable);
-	CreateNative("VSH2Player.setCliptable", Native_VSH2_setCliptable);*/
 	CreateNative("VSH2Player.GetWeaponSlotIndex", Native_VSH2_GetWeaponSlotIndex);
 	CreateNative("VSH2Player.SetWepInvis", Native_VSH2_SetWepInvis);
 	CreateNative("VSH2Player.SetOverlay", Native_VSH2_SetOverlay);
@@ -1214,6 +1198,12 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2Player.ForceTeamChange", Native_VSH2_ForceTeamChange);
 	CreateNative("VSH2Player.ClimbWall", Native_VSH2_ClimbWall);
 	CreateNative("VSH2Player.HelpPanelClass", Native_VSH2_HelpPanelClass);
+	
+	CreateNative("VSH2Player.GetAmmoTable", Native_VSH2_GetAmmoTable);
+	CreateNative("VSH2Player.SetAmmoTable", Native_VSH2_SetAmmoTable);
+	CreateNative("VSH2Player.GetClipTable", Native_VSH2_GetClipTable);
+	CreateNative("VSH2Player.SetClipTable", Native_VSH2_SetClipTable);
+	
 	CreateNative("VSH2Player.ConvertToBoss", Native_VSH2_ConvertToBoss);
 	CreateNative("VSH2Player.GiveRage", Native_VSH2_GiveRage);
 	CreateNative("VSH2Player.MakeBossAndSwitch", Native_VSH2_MakeBossAndSwitch);
@@ -1332,7 +1322,7 @@ public int Native_VSH2_GetWeaponSlotIndex(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
 	int slot = GetNativeCell(2);
-	player.GetWeaponSlotIndex(slot);
+	return player.GetWeaponSlotIndex(slot);
 }
 
 public int Native_VSH2_SetWepInvis(Handle plugin, int numParams)
@@ -1390,6 +1380,32 @@ public int Native_VSH2_HelpPanelClass(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
 	player.HelpPanelClass();
+}
+
+public int Native_VSH2_GetAmmoTable(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	int slot = GetNativeCell(2);
+	return player.getAmmotable(slot);
+}
+
+public int Native_VSH2_SetAmmoTable(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	player.setAmmotable(GetNativeCell(2), GetNativeCell(3));
+}
+
+public int Native_VSH2_GetClipTable(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	int slot = GetNativeCell(2);
+	return player.getCliptable(slot);
+}
+
+public int Native_VSH2_SetClipTable(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	player.setCliptable(GetNativeCell(2), GetNativeCell(3));
 }
 
 public int Native_VSH2_ConvertToBoss(Handle plugin, int numParams)
