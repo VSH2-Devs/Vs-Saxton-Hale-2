@@ -286,7 +286,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 		case -1: {}
 		case Hale, Vagineer, CBS, HHHjr, Bunny, PlagueDoc: {
 			char trigger[32];
-			if( GetEdictClassname(attacker, trigger, sizeof(trigger)) and !strcmp(trigger, "trigger_hurt", false) )
+			if( attacker != -1 and GetEdictClassname(attacker, trigger, sizeof(trigger)) and !strcmp(trigger, "trigger_hurt", false) )
 			{
 				if( damage >= 100.0 )
 					TeleportToSpawn(victim.index, BLU);
