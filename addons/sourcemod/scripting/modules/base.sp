@@ -907,15 +907,7 @@ Methods
 		TF2_RemovePlayerDisguise(client);
 		
 		int ent = -1;
-		while( (ent = FindEntityByClassname(ent, "tf_wearable_demoshield")) != -1 ) {
-			if( GetOwner(ent) == client ) {
-				TF2_RemoveWearable(client, ent);
-				AcceptEntityInput(ent, "Kill");
-			}
-		}
-		
-		ent = -1;
-		while( (ent = FindEntityByClassname(ent, "tf_wearable")) != -1 ) {
+		while( (ent = FindEntityByClassname(ent, "tf_wearable_*")) != -1 ) {
 			if( GetOwner(ent) == client ) {
 				TF2_RemoveWearable(client, ent);
 				AcceptEntityInput(ent, "Kill");
@@ -924,15 +916,6 @@ Methods
 		
 		ent = -1;
 		while( (ent = FindEntityByClassname(ent, "tf_powerup_bottle")) != -1 ) {
-			if( GetOwner(ent) == client ) {
-				TF2_RemoveWearable(client, ent);
-				AcceptEntityInput(ent, "Kill");
-			}
-		}
-		
-		// Jungle / Inferno razorback patch.
-		ent = -1;
-		while( (ent = FindEntityByClassname(ent, "tf_wearable_razorback")) != -1 ) {
 			if( GetOwner(ent) == client ) {
 				TF2_RemoveWearable(client, ent);
 				AcceptEntityInput(ent, "Kill");

@@ -1918,7 +1918,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 	}
 	if( validwep and weapon == GetPlayerWeaponSlot(i, TFWeaponSlot_Melee) ) {
 		// slightly longer check but makes sure that any weapon that can backstab will not crit (e.g. Saxxy)
-		addthecrit = strcmp(wepclassname, "tf_weapon_knife", false);
+		addthecrit = !!strcmp(wepclassname, "tf_weapon_knife", false);
 	}
 	if( validwep and weapon == GetPlayerWeaponSlot(i, TFWeaponSlot_Primary) ) // Primary weapon crit list
 	{

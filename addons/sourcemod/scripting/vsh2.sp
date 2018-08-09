@@ -366,7 +366,7 @@ public void OnPluginStart()
 	HookEvent("sticky_jump_landed", OnHookedEvent);
 	HookEvent("item_pickup", ItemPickedUp);
 	HookEvent("player_chargedeployed", UberDeployed);
-	HookEvent("arena_round_start", ArenaRoundStart);
+	HookEvent("arena_round_start", ArenaRoundStart, EventHookMode_Pre);
 	HookEvent("teamplay_point_captured", PointCapture, EventHookMode_Post);
 	
 	//AddCommandListener(DoTaunt, "+taunt");
@@ -585,7 +585,13 @@ public void OnClientDisconnect(int client)
 }
 public void OnClientPostAdminCheck(int client)
 {
-	CPrintToChat(client, "{olive}[VSH 2]{default} Welcome to VSH2, type /bosshelp for help!");
+	SetPawnTimer(ConnectionMessage, 5.0, GetClientUserId(client));
+}
+public void ConnectionMessage(const int userid)
+{
+	int client = GetClientOfUserId(userid);
+	if( IsValidClient(client) )
+		CPrintToChat(client, "{olive}[VSH 2]{default} Welcome to VSH2, type /bosshelp for help!");
 }
 
 public Action OnTouch(int client, int other)
@@ -947,7 +953,7 @@ public void CalcScores()
 {
 	int j, damage, amount, queue;
 	BaseBoss player;
-	Event scoring = CreateEvent("player_escort_score", true);
+	Event scoring;
 	for( int i=MaxClients ; i ; --i ) {
 		if( !IsClientValid(i) )
 			continue;
@@ -966,11 +972,12 @@ public void CalcScores()
 			
 			// We don't want the Bosses getting free points for doing damage.
 			damage = player.iDamage;
+			scoring = CreateEvent("player_escort_score", true);
 			scoring.SetInt("player", i);
 			amount = cvarVSH2[DamagePoints].IntValue;
 			for( j=0 ; damage-amount > 0 ; damage -= amount, j++ ) {}
 			scoring.SetInt("points", j);
-			scoring.FireToClient(i);
+			scoring.Fire();		// FireToClient doesn't work?
 			CPrintToChat(i, "{olive}[VSH 2] Queue{default} You scored %i points.", j);
 		}
 		//PrintToConsole(i, "CalcScores running.");
