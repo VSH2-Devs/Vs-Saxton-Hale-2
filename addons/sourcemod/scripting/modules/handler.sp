@@ -286,7 +286,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 		case -1: {}
 		case Hale, Vagineer, CBS, HHHjr, Bunny, PlagueDoc: {
 			char trigger[32];
-			if( GetEdictClassname(attacker, trigger, sizeof(trigger)) and !strcmp(trigger, "trigger_hurt", false) )
+			if( attacker != -1 and GetEdictClassname(attacker, trigger, sizeof(trigger)) and !strcmp(trigger, "trigger_hurt", false) )
 			{
 				if( damage >= 100.0 )
 					TeleportToSpawn(victim.index, BLU);
@@ -1918,7 +1918,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 	}
 	if( validwep and weapon == GetPlayerWeaponSlot(i, TFWeaponSlot_Melee) ) {
 		// slightly longer check but makes sure that any weapon that can backstab will not crit (e.g. Saxxy)
-		addthecrit = strcmp(wepclassname, "tf_weapon_knife", false);
+		addthecrit = !!strcmp(wepclassname, "tf_weapon_knife", false);
 	}
 	if( validwep and weapon == GetPlayerWeaponSlot(i, TFWeaponSlot_Primary) ) // Primary weapon crit list
 	{
