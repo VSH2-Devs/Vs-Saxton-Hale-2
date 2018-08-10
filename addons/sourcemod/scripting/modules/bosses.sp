@@ -19,4 +19,4 @@ Had to place it here because methodmaps can't be forward declared (yet) and neit
 #include "modules/bosses/cbs.sp"
 #include "modules/bosses/hhh.sp"
 #include "modules/bosses/bunny.sp"
-#include "modules/bosses/plague.sp"
+//#include "modules/bosses/plague.sp"

@@ -106,10 +106,9 @@ public Action SetNextSpecial(int client, int args)
 	if( bEnabled.BoolValue ) {
 		char number[4]; GetCmdArg( 1, number, sizeof(number) );
 		int type = StringToInt(number);
-
 		if( type < 0 or type > 255 )
 			type = -1;
-
+		
 		gamemode.iSpecial = type;
 	}
 	return Plugin_Handled;
@@ -165,17 +164,12 @@ public Action SetBossMenu(int client, int args)
 {
 	if( !bEnabled.BoolValue )
 		return Plugin_Continue;
-
-	if( args )
-		ManageSetBossArgs(client);
-
-	else if( !args ) {
-		Menu bossmenu = new Menu(MenuHandler_PickBosses);
-		bossmenu.SetTitle("Set Boss Menu: ");
-		bossmenu.AddItem("-1", "None (Random Boss)");
-		ManageMenu( bossmenu ); // in handler.sp
-		bossmenu.Display(client, MENU_TIME_FOREVER);
-	}
+	
+	Menu bossmenu = new Menu(MenuHandler_PickBosses);
+	bossmenu.SetTitle("Set Boss Menu: ");
+	bossmenu.AddItem("-1", "None (Random Boss)");
+	ManageMenu(bossmenu); // in handler.sp
+	bossmenu.Display(client, MENU_TIME_FOREVER);
 	return Plugin_Handled;
 }
 public int MenuHandler_PickBosses(Menu menu, MenuAction action, int client, int select)
@@ -431,11 +425,9 @@ public int MenuHandler_ClassRush(Menu menu, MenuAction action, int client, int p
 	if( action == MenuAction_Select ) {
 		int classtype = StringToInt(info);
 		for( int i=MaxClients ; i ; --i ) {
-			if( !IsValidClient(i) )
+			if( !IsValidClient(i) or !IsPlayerAlive(i) or GetClientTeam(i) != RED )
 				continue;
-			else if( !IsPlayerAlive(i) or GetClientTeam(i) == BLU )
-				continue;
-			TF2_SetPlayerClass( i, view_as< TFClassType >(classtype), _, true );
+			SetEntProp(i, Prop_Send, "m_iClass", classtype);
 			TF2_RegeneratePlayer(i);
 			SetPawnTimer( PrepPlayers, 0.2, BaseBoss(i) );
 		}

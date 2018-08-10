@@ -56,7 +56,7 @@ methodmap CPlague < BaseBoss
 			if( this.flCharge > 1.0 and EyeAngles[0] < -5.0 ) {
 				float vel[3]; GetEntPropVector(this.index, Prop_Data, "m_vecVelocity", vel);
 				vel[2] = 750 + this.flCharge * 13.0;
-
+				
 				SetEntProp(this.index, Prop_Send, "m_bJumping", 1);
 				vel[0] *= (1+Sine(this.flCharge * FLOAT_PI / 50));
 				vel[1] *= (1+Sine(this.flCharge * FLOAT_PI / 50));

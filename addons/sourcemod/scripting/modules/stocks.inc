@@ -6,9 +6,9 @@ stock int GetHealingTarget(const int client)
 	int medigun = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 	if (!IsValidEdict(medigun) || !IsValidEntity(medigun))
 		return -1;
-	char s[32]; GetEdictClassname(medigun, s, sizeof(s));
-	if ( !strcmp(s, "tf_weapon_medigun", false) ) {
-		if ( GetEntProp(medigun, Prop_Send, "m_bHealing") )
+	
+	if( HasEntProp(medigun, Prop_Send, "m_bHealing") ) {
+		if( GetEntProp(medigun, Prop_Send, "m_bHealing") )
 			return GetEntPropEnt( medigun, Prop_Send, "m_hHealingTarget" );
 	}
 	return -1;
@@ -646,8 +646,7 @@ public Action DoThink(Handle hTimer, DataPack hndl)
 stock bool DoSuperJump(const int client, const float charge, const float JumpAngle, int& changecharge, const int subtractCharge)
 {
 	float ang[3]; GetClientEyeAngles(client, ang);
-	if ( ang[0] <= JumpAngle ) // default JumpAngle = -45.0
-	{
+	if( ang[0] <= JumpAngle ) { // default JumpAngle = -45.0
 		float vel[3]; GetEntPropVector(client, Prop_Data, "m_vecVelocity", vel);
 		vel[2] = 750 + charge * 13.0;
 		SetEntProp(client, Prop_Send, "m_bJumping", 1);

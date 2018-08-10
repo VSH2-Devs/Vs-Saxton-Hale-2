@@ -25,9 +25,8 @@
 #pragma semicolon			1
 #pragma newdecls			required
 
-#define PLUGIN_VERSION			"2.1.0"
+#define PLUGIN_VERSION			"2.1.1"
 #define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
-#define CODEFRAMES			(1.0/30.0)	/* 30 frames per second means 0.03333 seconds or 33.33 ms */
 
 
 #define IsClientValid(%1)		( 0 < (%1) and (%1) <= MaxClients and IsClientInGame((%1)) )
@@ -70,8 +69,7 @@ public Plugin myinfo = {
 	url 			= "https://forums.alliedmods.net/showthread.php?t=286701"
 };
 
-enum /*CvarName*/
-{
+enum /* CvarName */ {
 	PointType = 0,
 	PointDelay,
 	AliveToEnable,
@@ -127,8 +125,6 @@ ConVar cvarVSH2[VersionNumber+1]; //Don't change this. Simply place any new CVAR
 
 Handle
 	hHudText,
-	jumpHUD,
-	rageHUD,
 	timeleftHUD,
 	PointCookie,
 	BossCookie,
@@ -293,8 +289,6 @@ public void OnPluginStart()
 	AddCommandListener(BlockSuicide, "jointeam");
 
 	hHudText = CreateHudSynchronizer();
-	jumpHUD = CreateHudSynchronizer();
-	rageHUD = CreateHudSynchronizer();
 	timeleftHUD = CreateHudSynchronizer();
 
 	bEnabled = CreateConVar("vsh2_enabled", "1", "Enable VSH 2 plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0);
@@ -366,7 +360,7 @@ public void OnPluginStart()
 	HookEvent("sticky_jump_landed", OnHookedEvent);
 	HookEvent("item_pickup", ItemPickedUp);
 	HookEvent("player_chargedeployed", UberDeployed);
-	HookEvent("arena_round_start", ArenaRoundStart, EventHookMode_Pre);
+	HookEvent("arena_round_start", ArenaRoundStart);
 	HookEvent("teamplay_point_captured", PointCapture, EventHookMode_Post);
 	
 	//AddCommandListener(DoTaunt, "+taunt");
@@ -436,7 +430,7 @@ public Action BlockSuicide(int client, const char[] command, int argc)
 		if (player.bIsBoss) {
 			float flhp_percent = float(player.iHealth) / float(player.iMaxHealth);
 			if( flhp_percent > 0.3 ) {	// Allow bosses to suicide if their total health is under 3%.
-				CPrintToChat(client, "Do not suicide as a Boss. Please Use '!resetq' instead.");
+				CPrintToChat(client, "You cannot suicide yet as a boos. Please Use '!resetq' instead.");
 				return Plugin_Handled;
 			}
 		}
@@ -500,26 +494,26 @@ float
 
 public void OnConfigsExecuted()
 {
-	//Config checker taken from VSH1
+	// Config checker taken from VSH1
 	static char szOldVersion[PATH];
 	cvarVSH2[VersionNumber].GetString(_strbuffer(szOldVersion));
 	if (StrEqual(szOldVersion, PLUGIN_VERSION)) 
-		LogError("[VSH2] Warning: your config may be outdated. Back up your tf/cfg/sourcemod/VSHv2.cfg file and delete it, and this plugin will generate a new one that you can then modify to your original values.");
+		LogMessage("[VSH2] Warning: your config may be outdated. Back up your tf/cfg/sourcemod/VSHv2.cfg file and delete it, and this plugin will generate a new one that you can then modify to your original values.");
 	cvarVSH2[VersionNumber].SetString(PLUGIN_VERSION, false, true);
-
+	
 	if( IsVSHMap() ) {
-		tf_arena_use_queue = GetConVarInt(FindConVar("tf_arena_use_queue"));
-		mp_teams_unbalance_limit = GetConVarInt(FindConVar("mp_teams_unbalance_limit"));
-		tf_arena_first_blood = GetConVarInt(FindConVar("tf_arena_first_blood"));
-		mp_forcecamera = GetConVarInt(FindConVar("mp_forcecamera"));
-		tf_scout_hype_pep_max = GetConVarFloat(FindConVar("tf_scout_hype_pep_max"));
-		SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
-		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 0);
-		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), cvarVSH2[FirstRound].BoolValue ? 0 : 1);
-		SetConVarInt(FindConVar("tf_arena_first_blood"), 0);
-		SetConVarInt(FindConVar("mp_forcecamera"), 0);
-		SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), 100.0);
-		//SetConVarInt(FindConVar("tf_damage_disablespread"), 1);
+		tf_arena_use_queue = FindConVar("tf_arena_use_queue").IntValue;
+		mp_teams_unbalance_limit = FindConVar("mp_teams_unbalance_limit").IntValue;
+		tf_arena_first_blood = FindConVar("tf_arena_first_blood").IntValue;
+		mp_forcecamera = FindConVar("mp_forcecamera").IntValue;
+		tf_scout_hype_pep_max = FindConVar("tf_scout_hype_pep_max").FloatValue;
+		
+		FindConVar("tf_arena_use_queue").IntValue = 0;
+		FindConVar("mp_teams_unbalance_limit").IntValue = 0;
+		FindConVar("mp_teams_unbalance_limit").IntValue =  cvarVSH2[FirstRound].BoolValue ? 0 : 1;
+		FindConVar("tf_arena_first_blood").IntValue =  0;
+		FindConVar("mp_forcecamera").IntValue =  0;
+		FindConVar("tf_scout_hype_pep_max").FloatValue =  100.0;
 #if defined _steamtools_included
 		if( gamemode.bSteam ) {
 			char gameDesc[64];
@@ -565,7 +559,7 @@ public void OnClientPutInServer(int client)
 	// BaseBoss properties
 	boss.iHealth = 0;
 	boss.iMaxHealth = 0;
-	boss.iType = -1;
+	boss.iBossType = -1;
 	boss.iClimbs = 0;
 	boss.iStabbed = 0;
 	boss.iMarketted = 0;
@@ -587,6 +581,7 @@ public void OnClientPostAdminCheck(int client)
 {
 	SetPawnTimer(ConnectionMessage, 5.0, GetClientUserId(client));
 }
+
 public void ConnectionMessage(const int userid)
 {
 	int client = GetClientOfUserId(userid);
@@ -622,7 +617,7 @@ public void OnMapStart()
 	ManageDownloads();	// in handler.sp
 	//gamemode.hMusic = null;
 	CreateTimer(0.1, Timer_PlayerThink, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-	CreateTimer(5.0, MakeModelTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(1.0, MakeModelTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
 	gamemode.iHealthBar = FindEntityByClassname(-1, "monster_resource");
 	if( gamemode.iHealthBar == -1 ) {
@@ -634,11 +629,11 @@ public void OnMapStart()
 }
 public void OnMapEnd()
 {
-	SetConVarInt(FindConVar("tf_arena_use_queue"), tf_arena_use_queue);
-	SetConVarInt(FindConVar("mp_teams_unbalance_limit"), mp_teams_unbalance_limit);
-	SetConVarInt(FindConVar("tf_arena_first_blood"), tf_arena_first_blood);
-	SetConVarInt(FindConVar("mp_forcecamera"), mp_forcecamera);
-	SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), tf_scout_hype_pep_max);
+	FindConVar("tf_arena_use_queue").IntValue = tf_arena_use_queue;
+	FindConVar("mp_teams_unbalance_limit").IntValue = mp_teams_unbalance_limit;
+	FindConVar("tf_arena_first_blood").IntValue = tf_arena_first_blood;
+	FindConVar("mp_forcecamera").IntValue = mp_forcecamera;
+	FindConVar("tf_scout_hype_pep_max").FloatValue = tf_scout_hype_pep_max;
 }
 
 public void _MakePlayerBoss(const int userid)
@@ -665,7 +660,7 @@ public void _BossDeath(const int userid)
 		BaseBoss player = BaseBoss(client);
 		if( player.iHealth <= 0 )
 			player.iHealth = 0; //ded, not big soup rice!
-
+		
 		ManageBossDeath(player); // in handler.sp
 	}
 }
@@ -673,13 +668,11 @@ public Action MakeModelTimer(Handle hTimer)
 {
 	BaseBoss player;
 	for( int i=MaxClients ; i ; --i ) {
-		if( !IsValidClient(i, false) )
+		if( !IsValidClient(i, false) or !IsPlayerAlive(i) )
 			continue;
-
+		
 		player = BaseBoss(i);
 		if( player.bIsBoss ) {
-			if( !IsPlayerAlive(i) )
-				continue;
 			ManageBossModels(player); // in handler.sp
 		}
 	}
@@ -695,16 +688,16 @@ public Action Timer_PlayerThink(Handle hTimer) //the main 'mechanics' of bosses
 {
 	if( !bEnabled.BoolValue or gamemode.iRoundState != StateRunning )
 		return Plugin_Continue;
-
+	
 	gamemode.UpdateBossHealth();
 	if( gamemode.flMusicTime <= GetGameTime() )
 		_MusicPlay();
-
+	
 	BaseBoss player;
 	for( int i=MaxClients ; i ; --i ) {
 		if( !IsValidClient(i, false) )
 			continue;
-
+		
 		player = BaseBoss(i);
 		if( player.bIsBoss ) {	/* If player is a boss, force Boss think on them; if not boss or on blue team, force fighter think! */
 			ManageBossThink(player); // in handler.sp
@@ -716,36 +709,9 @@ public Action Timer_PlayerThink(Handle hTimer) //the main 'mechanics' of bosses
 	}
 	if( !gamemode.CountBosses(true) )	// If there's no active, living bosses, then force RED to win
 		ForceTeamWin(RED);
-
+	
 	return Plugin_Continue;
 }
-
-/*
-float lastFrameTime = 0.0;
-public void OnGameFrame()
-{
-	if( !bEnabled.BoolValue )
-		return;
-
-	float curtime = GetGameTime();
-	float deltatime = curtime - lastFrameTime;
-	//float frametime = 1.0 / CODEFRAMES; //cvarFrameTime.FloatValue;
-	if( deltatime > CODEFRAMES ) {
-		BaseBoss player;
-		for( int i=MaxClients ; i ; --i ) {
-			if( !IsValidClient(i, false) or !IsPlayerAlive(i) or IsClientObserver(i) )
-				continue;
-			player = BaseBoss(i);
-			if( player.bIsBoss ) {
-				ManageBossThink(player); // in handler.sp
-				PrintToConsole(i, "Think Frame| curtime = %f, lastFrameTime = %f, deltatime = %f", curtime, lastFrameTime, deltatime);
-				SetEntProp(player.index, Prop_Send, "m_iHealth", player.iHealth);
-			}
-		}
-		lastFrameTime = curtime;
-	}
-}
-*/
 
 public Action CmdReloadCFG(int client, int args)
 {
@@ -755,9 +721,7 @@ public Action CmdReloadCFG(int client, int args)
 }
 public void OnPreThinkPost(int client)
 {
-	if( !bEnabled.BoolValue )
-		return;
-	if( IsClientObserver(client) or !IsPlayerAlive(client) )
+	if( !bEnabled.BoolValue or IsClientObserver(client) or !IsPlayerAlive(client) )
 		return;
 	
 	//BaseBoss player = BaseBoss(client);
@@ -849,7 +813,6 @@ public Action DoTaunt(int client, const char[] command, int argc)
 	BaseBoss boss = BaseBoss(client);
 	if( boss.flRAGE >= 100.0 ) {
 		ManageBossTaunt(boss);
-		boss.flRAGE = 0.0;
 	}
 	return Plugin_Continue;
 }
@@ -868,15 +831,12 @@ public Action OnWeaponSpawned(Handle timer, any ref)
 {
 	int wep = EntRefToEntIndex(ref);
 	if( IsValidEntity(wep) and IsValidEdict(wep) ) {
-		char name[32]; GetEntityClassname(wep, name, sizeof(name));
-		if( !strncmp(name, "tf_weapon_", 10, false) ) {
-			int client = GetOwner(wep);
-			if( IsValidClient(client) and GetClientTeam(client) == RED ) {
-				int slot = GetSlotFromWeapon(client, wep);
-				if( slot<2 and slot>=0 ) {
-					Munitions[client][slot][0] = GetWeaponAmmo(wep);
-					Munitions[client][slot][1] = GetWeaponClip(wep);
-				}
+		int client = GetOwner(wep);
+		if( IsValidClient(client) and GetClientTeam(client) == RED ) {
+			int slot = GetSlotFromWeapon(client, wep);
+			if( slot<2 and slot>=0 ) {
+				Munitions[client][slot][0] = GetWeaponAmmo(wep);
+				Munitions[client][slot][1] = GetWeaponClip(wep);
 			}
 		}
 	}
@@ -953,7 +913,7 @@ public void CalcScores()
 {
 	int j, damage, amount, queue;
 	BaseBoss player;
-	Event scoring;
+	Event scoring = CreateEvent("player_escort_score", true);
 	for( int i=MaxClients ; i ; --i ) {
 		if( !IsClientValid(i) )
 			continue;
@@ -972,12 +932,11 @@ public void CalcScores()
 			
 			// We don't want the Bosses getting free points for doing damage.
 			damage = player.iDamage;
-			scoring = CreateEvent("player_escort_score", true);
 			scoring.SetInt("player", i);
 			amount = cvarVSH2[DamagePoints].IntValue;
 			for( j=0 ; damage-amount > 0 ; damage -= amount, j++ ) {}
 			scoring.SetInt("points", j);
-			scoring.Fire();		// FireToClient doesn't work?
+			scoring.FireToClient(i);
 			CPrintToChat(i, "{olive}[VSH 2] Queue{default} You scored %i points.", j);
 		}
 		//PrintToConsole(i, "CalcScores running.");
@@ -1039,7 +998,7 @@ public Action Timer_UberLoop(Handle timer, any medigunid)
 		float charge = GetMediCharge(medigun);
 		if( charge > 0.05 ) {
 			TF2_AddCondition(medic, TFCond_CritOnWin, 0.5);
-
+			
 			int target = GetHealingTarget(medic);
 			if( IsClientValid(target) and IsPlayerAlive(target) ) {
 				TF2_AddCondition(target, TFCond_CritOnWin, 0.5);
@@ -1092,37 +1051,8 @@ public void _MusicPlay()
 	}
 	if( time != -1.0 ) {
 		gamemode.flMusicTime = currtime+time;
-		//DataPack pack = new DataPack();
-		//pack.WriteString(sound);
-		//pack.WriteFloat(time);
-		//int timerFlags = TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT|TIMER_DATA_HNDL_CLOSE;
-		//gamemode.hMusic = CreateTimer(time, Timer_MusicTheme, pack, timerFlags);
 	}
 }
-
-/*public Action Timer_MusicTheme(Handle timer, DataPack pack)
-{
-	if( bEnabled.BoolValue and gamemode.iRoundState == StateRunning ) {
-		char music[FULLPATH];
-		pack.Reset();
-		pack.ReadString(music, sizeof(music));
-		//float time = pack.ReadFloat();
-		BaseBoss boss;
-		float vol = cvarVSH2[MusicVolume].FloatValue;
-		if( music[0] != '\0' ) {
-			for( int i=MaxClients ; i ; --i ) {
-				if( !IsValidClient(i) )
-					continue;
-				boss = BaseBoss(i);
-				if( boss.bNoMusic )
-					continue;
-				EmitSoundToClient(i, music, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-			}
-		}
-	}
-	//else gamemode.hMusic = null;
-	return Plugin_Continue;
-}*/
 
 
 stock Handle FindPluginByName(const char name[64])	// searches in linear time or O(n) but it only searches when vsh plugin's loaded
@@ -1214,6 +1144,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2Player.ConvertToBoss", Native_VSH2_ConvertToBoss);
 	CreateNative("VSH2Player.GiveRage", Native_VSH2_GiveRage);
 	CreateNative("VSH2Player.MakeBossAndSwitch", Native_VSH2_MakeBossAndSwitch);
+	CreateNative("VSH2Player.DoGenericStun", Native_VSH2_DoGenericStun);
+	CreateNative("VSH2Player.RemoveAllItems", Native_VSH2_RemoveAllItems);
 	
 	CreateNative("VSH2GameMode_GetProperty", Native_VSH2GameMode_GetProperty);
 	CreateNative("VSH2GameMode_SetProperty", Native_VSH2GameMode_SetProperty);
@@ -1227,6 +1159,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2GameMode_UpdateBossHealth", Native_VSH2GameMode_UpdateBossHealth);
 	CreateNative("VSH2GameMode_GetBossType", Native_VSH2GameMode_GetBossType);
 	CreateNative("VSH2GameMode_GetTotalRedPlayers", Native_VSH2GameMode_GetTotalRedPlayers);
+	CreateNative("VSH2GameMode_GetHUDHandle", Native_VSH2GameMode_GetHUDHandle);
 	
 	RegPluginLibrary("VSH2");
 
@@ -1436,6 +1369,19 @@ public int Native_VSH2_MakeBossAndSwitch(Handle plugin, int numParams)
 	player.MakeBossAndSwitch(bossid, callEvent);
 }
 
+public int Native_VSH2_DoGenericStun(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	float rage_radius = GetNativeCell(2);
+	player.DoGenericStun(rage_radius);
+}
+
+public int Native_VSH2_RemoveAllItems(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	player.RemoveAllItems();
+}
+
 public int Native_VSH2GameMode_GetProperty(Handle plugin, int numParams)
 {
 	char prop_name[64]; GetNativeString(1, prop_name, 64);
@@ -1496,4 +1442,9 @@ public int Native_VSH2GameMode_GetBossType(Handle plugin, int numParams)
 public int Native_VSH2GameMode_GetTotalRedPlayers(Handle plugin, int numParams)
 {
 	return gamemode.iPlaying;
+}
+
+public int Native_VSH2GameMode_GetHUDHandle(Handle plugin, int numParams)
+{
+	return view_as< int >(hHudText);
 }

@@ -237,12 +237,7 @@ void Call_OnBossJarated(const BaseBoss player, const BaseBoss attacker)
 	Call_PushCell(attacker);
 	Call_Finish();
 }
-/*void Call_OnHookSound(const BaseBoss player)
-{
-	g_hForwards[OnHookSound].Start();
-	Call_PushCell(player);
-	Call_Finish();
-}*/
+
 void Call_OnMessageIntro(const BaseBoss player, char message[MAXMESSAGE])
 {
 	g_hForwards[OnMessageIntro].Start();

@@ -7,16 +7,16 @@ public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 	if( player and IsClientInGame(player.index) ) {
 		SetVariantString(""); AcceptEntityInput(player.index, "SetCustomModel");
 		player.SetOverlay("0"); //SetClientOverlay(client, "0");
-
+		
 		if( player.bIsBoss and gamemode.iRoundState < StateEnding and gamemode.iRoundState != StateDisabled )
 		{
 			if( GetClientTeam(player.index) != BLU )
 				player.ForceTeamChange(BLU);
 			player.ConvertToBoss();		// in base.sp
-			if( player.iHealth == 0 )
+			if( player.iHealth <= 0 )
 				player.iHealth = player.iMaxHealth;
 		}
-
+		
 		if( !player.bIsBoss and gamemode.iRoundState > StateDisabled and !player.bIsMinion)
 		{
 			if( GetClientTeam(player.index) == BLU )
@@ -183,12 +183,12 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 
 	// Got our boss, let's prep him/her.
 	boss.bSetOnSpawn = true;
-	boss.iType = gamemode.iSpecial;
+	boss.iBossType = gamemode.iSpecial;
 	ManageOnBossSelected(boss);	// Setting this here so we can intercept Boss type and other info
 	boss.ConvertToBoss();
 	gamemode.iSpecial = -1;
 
-	if( GetClientTeam(boss.index) == RED )
+	if( GetClientTeam(boss.index) != BLU )
 		boss.ForceTeamChange(BLU);
 
 	BaseBoss player;
@@ -359,11 +359,9 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 	BaseBoss	boss;
 	int		i;	// Count amount of bosses for health calculation!
 	for( i=MaxClients ; i ; --i ) {
-		if( !IsValidClient(i) )
+		if( !IsValidClient(i) or !IsPlayerAlive(i) or GetClientTeam(i) <= int(TFTeam_Spectator) )
 			continue;
-		else if( !IsPlayerAlive(i) )
-			continue;
-
+		
 		boss = BaseBoss(i);
 		if( !boss.bIsBoss ) {
 			SetEntityMoveType(i, MOVETYPE_WALK);
@@ -436,22 +434,5 @@ public Action PointCapture(Event event, const char[] name, bool dontBroadcast)
 	char sCappers[MAXPLAYERS+1];
 	event.GetString("cappers", sCappers, MAXPLAYERS);
 	ManageOnBossCap(sCappers, iCapTeam);
-	
-	//int i = -1;
-	/*switch( iCapTeam ) {
-		case BLU: {
-			char sCappers[MAXPLAYERS+1];
-			event.GetString("cappers", sCappers, MAXPLAYERS);
-			BaseBoss boss = BaseBoss(sCappers[0]);
-			if( boss ) {
-				//ManageOnBossCap(sCappers, iCapTeam);
-			}
-		}
-		case RED: {
-			char sCappers[MAXPLAYERS+1];
-			event.GetString("cappers", sCappers, MAXPLAYERS);
-			//ManageOnBossCap(sCappers, iCapTeam);
-		}
-	}*/
 	return Plugin_Continue;
 }

@@ -129,13 +129,11 @@ Methods
 		public get()
 		{
 			int i; hPlayerFields[this.index].GetValue("iHits", i);
-			if( i<0 )	// No unsigned integers yet, clamp Hits to 0 if under
-				i = 0;
 			return i;
 		}
 		public set( const int val )		//{ Hits[ this.index ] = val; }
 		{
-			hPlayerFields[this.index].SetValue("iHits", val);
+			hPlayerFields[this.index].SetValue("iHits", ( val>=0 ) ? val : 0);
 		}
 	}
 	property int iLives
@@ -143,15 +141,11 @@ Methods
 		public get()
 		{
 			int i; hPlayerFields[this.index].GetValue("iLives", i);
-			if( i < 0 )
-				i = 0;
-			//if (Lives[this.index] < 0)
-			//	Lives[this.index] = 0;
 			return i;
 		}
 		public set( const int val )		//{ Lives[ this.index ] = val; }
 		{
-			hPlayerFields[this.index].SetValue("iLives", val);
+			hPlayerFields[this.index].SetValue("iLives", ( val>=0 ) ? val : 0);
 		}
 	}
 	property int iState
@@ -242,11 +236,15 @@ Methods
 	}
 	property int bGlow
 	{
-		public get()			{ return GetEntProp(this.index, Prop_Send, "m_bGlowEnabled"); }
+		public get()
+		{
+			int i; hPlayerFields[this.index].GetValue("bGlow", i);
+			return i;
+		}
 		public set( const int val )
 		{
-			int boolean = ( (val) ? 1 : 0 ) ;
-			SetEntProp(this.index, Prop_Send, "m_bGlowEnabled", boolean);
+			hPlayerFields[this.index].SetValue("bGlow", val);
+			SetEntProp(this.index, Prop_Send, "m_bGlowEnabled", val);
 		}
 	}
 	property int iShieldDmg {
@@ -670,7 +668,7 @@ Methods
 			hPlayerFields[this.index].SetValue("iMaxHealth", val);
 		}
 	}
-	property int iType
+	property int iBossType
 	{
 		public get()				//{ return BossType[ this.index ]; }
 		{
@@ -784,12 +782,12 @@ Methods
 	{
 		public get()				//{ return flRightClick[ this.index ]; }
 		{
-			float i; hPlayerFields[this.index].GetValue("flRightClick", i);
+			float i; hPlayerFields[this.index].GetValue("flCharge", i);
 			return i;
 		}
 		public set( const float val )		//{ flRightClick[ this.index ] = val; }
 		{
-			hPlayerFields[this.index].SetValue("flRightClick", val);
+			hPlayerFields[this.index].SetValue("flCharge", val);
 		}
 	}
 	property float flRAGE
@@ -846,7 +844,7 @@ Methods
 	public void MakeBossAndSwitch(const int type, const bool callEvent)
 	{
 		this.bSetOnSpawn = true;
-		this.iType = type;
+		this.iBossType = type;
 		if( callEvent )
 			ManageOnBossSelected(this);
 		this.ConvertToBoss();
@@ -907,13 +905,12 @@ Methods
 		TF2_RemovePlayerDisguise(client);
 		
 		int ent = -1;
-		while( (ent = FindEntityByClassname(ent, "tf_wearable_*")) != -1 ) {
+		while( (ent = FindEntityByClassname(ent, "tf_wearabl*")) != -1 ) {
 			if( GetOwner(ent) == client ) {
 				TF2_RemoveWearable(client, ent);
 				AcceptEntityInput(ent, "Kill");
 			}
 		}
-		
 		ent = -1;
 		while( (ent = FindEntityByClassname(ent, "tf_powerup_bottle")) != -1 ) {
 			if( GetOwner(ent) == client ) {

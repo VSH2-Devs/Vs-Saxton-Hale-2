@@ -268,13 +268,6 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 			hGameModeFields.SetValue("hNextBoss", val);
 		}
 	}
-	/*
-	property Handle hMusic
-	{
-		public get()			{ return hMusicTimer; }
-		public set(const Handle val)	{ hMusicTimer = val; }
-	}
-	*/
 	
 	public void Init()	// When adding a new property, make sure you initialize it to a default 
 	{
@@ -324,7 +317,7 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 			boss = BaseBoss(i);
 			if( !boss.bIsBoss )
 				continue;
-			if( boss.iType==type )
+			if( boss.iBossType==type )
 				return boss;
 		}
 		return view_as< BaseBoss >(0);

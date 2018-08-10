@@ -4,16 +4,13 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.1.0"
+			"Latest"	"2.1.1"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.1.0:"
-		"Notes"	"Added new cvar to (dis)allow for random multi-bosses."
-		"Notes"	"fixed error with OnLastPlayer forward."
-		"Notes"	"corrected Damage Tracker add-on plugin so that it doesn't include spectators."
-		"Notes"	"improved and fixed code concerning ammo."
-		"Notes"	"added new API concerning getting the ammo and clip of a player's weapons."
-		"Notes"	"cleaned up and removed alot of commented out code as they were unlikely to be reused in the future."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.1.1:"
+		"Notes"	"Future proofed Sniper rifles by checking them through classname rather than by index."
+		"Notes"	"Renamed 'iType' property to 'iBossType' for clarity."
+		"Notes"	"moved plague doctor to a separate plugin as a subplugin addon."
 	}
 	
 	"Files"

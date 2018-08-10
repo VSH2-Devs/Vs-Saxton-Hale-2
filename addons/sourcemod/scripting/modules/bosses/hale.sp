@@ -109,7 +109,7 @@ methodmap CHale < BaseBoss
 			if( this.flCharge > 1.0 and EyeAngles[0] < -5.0 ) {
 				float vel[3]; GetEntPropVector(this.index, Prop_Data, "m_vecVelocity", vel);
 				vel[2] = 750 + this.flCharge * 13.0;
-
+				
 				SetEntProp(this.index, Prop_Send, "m_bJumping", 1);
 				vel[0] *= (1+Sine(this.flCharge * FLOAT_PI / 50));
 				vel[1] *= (1+Sine(this.flCharge * FLOAT_PI / 50));
@@ -146,8 +146,8 @@ methodmap CHale < BaseBoss
 		if( jmp > 0.0 )
 			jmp *= 4.0;
 		if( this.flRAGE >= 100.0 )
-                        ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp));
-                else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", RoundFloat(jmp), this.flRAGE);
+			ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp));
+		else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", RoundFloat(jmp), this.flRAGE);
 	}
 	public void SetModel ()
 	{

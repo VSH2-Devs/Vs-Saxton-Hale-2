@@ -95,6 +95,7 @@ methodmap CHHHJr < BaseBoss
 						TF2_StunPlayer(this.index, 2.0, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, target);
 					TeleportEntity(this.index, pos, NULL_VECTOR, NULL_VECTOR);
 					SetEntProp(this.index, Prop_Send, "m_bGlowEnabled", 0);
+					CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(AttachParticle(this.index, "ghost_appearation")));
 					CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(AttachParticle(this.index, "ghost_appearation", _, false)));
 
 					// Chdata's HHH teleport rework

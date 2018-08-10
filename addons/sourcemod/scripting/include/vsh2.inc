@@ -42,19 +42,15 @@ methodmap VSH2Player
 	public native any GetProperty(const char prop_name[64]);
 	
 	/**
-         * sets the property of the internal VSH2 methodmap
+	 * sets the property of the internal VSH2 methodmap
 	 * NOTE: You can use this to create new properties which GetProperty can access!
 	 * @param prop_name		name of the property you want to override data from (works like StringMap).
 	 * @param value			data you want the property to hold.
-         * @noreturn
-        */	
+	 * @noreturn
+	 */
 	public native void SetProperty(const char prop_name[64], any value);
-
-	/*		AVAILABLE PROPERTIES
-	property int iQueue
-	property int iPresetType
-	property int iKills
-	property int iHits
+	
+	/* AVAILABLE PROPERTIES
 	property int iLives
 	property int iState
 	property int iDamage
@@ -88,7 +84,7 @@ methodmap VSH2Player
 	property float flKillSpree
 	property float flWeighDown
 	*/
-		
+	
 	public native void ConvertToMinion(const float spawntime);
 	public native int SpawnWeapon(char[] name, const int index, const int level, const int qual, char[] att);
 	public native int GetWeaponSlotIndex(const int slot);
@@ -109,6 +105,8 @@ methodmap VSH2Player
 	public native void ConvertToBoss();
 	public native void GiveRage(const int damage);
 	public native void MakeBossAndSwitch(const int type, const bool callEvent);
+	public native void DoGenericStun(const float rageDist);
+	public native void RemoveAllItems();
 };
 
 
@@ -271,6 +269,7 @@ native void VSH2GameMode_SearchForItemPacks();
 native void VSH2GameMode_UpdateBossHealth();
 native void VSH2GameMode_GetBossType();
 native int VSH2GameMode_GetTotalRedPlayers();
+native Handle VSH2GameMode_GetHUDHandle();
 
 
 public SharedPlugin __pl_vsh2 = {
@@ -314,6 +313,8 @@ public __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2Player.ConvertToBoss");
 	MarkNativeAsOptional("VSH2Player.GiveRage");
 	MarkNativeAsOptional("VSH2Player.MakeBossAndSwitch");
+	MarkNativeAsOptional("VSH2Player.DoGenericStun");
+	MarkNativeAsOptional("VSH2Player.RemoveAllItems");
 	
 	MarkNativeAsOptional("VSH2_Hook");
 	MarkNativeAsOptional("VSH2_HookEx");
@@ -332,5 +333,6 @@ public __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2GameMode_UpdateBossHealth");
 	MarkNativeAsOptional("VSH2GameMode_GetBossType");
 	MarkNativeAsOptional("VSH2GameMode_GetTotalRedPlayers");
+	MarkNativeAsOptional("VSH2GameMode_GetHUDHandle");
 }
 #endif
