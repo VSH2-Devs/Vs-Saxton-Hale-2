@@ -617,7 +617,7 @@ public void OnMapStart()
 	ManageDownloads();	// in handler.sp
 	//gamemode.hMusic = null;
 	CreateTimer(0.1, Timer_PlayerThink, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-	CreateTimer(1.0, MakeModelTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(5.0, MakeModelTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
 	gamemode.iHealthBar = FindEntityByClassname(-1, "monster_resource");
 	if( gamemode.iHealthBar == -1 ) {
