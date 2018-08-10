@@ -1102,7 +1102,7 @@ public int RegisterPlugin(const Handle pluginhndl, const char modulename[64] )
 	// push to global vector
 	g_hPluginsRegistered.Push(PluginMap);
 
-	return g_hPluginsRegistered.Length-1;	// Return the index of registered plugin!
+	return MAXBOSS;	// Return the index of registered plugin!
 }
 
 
