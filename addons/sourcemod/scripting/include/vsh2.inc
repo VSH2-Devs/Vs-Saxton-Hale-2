@@ -4,8 +4,7 @@
 #define _vsh2_included
 
 
-methodmap VSH2Player	
-{
+methodmap VSH2Player {
 	/** [ C O N S T R U C T O R ]
 	 * Constructs an instance of the BaseBoss internal methodmap
 	 * @param index			index (or the userid) of a player
@@ -51,16 +50,16 @@ methodmap VSH2Player
 	public native void SetProperty(const char prop_name[64], any value);
 	
 	/* AVAILABLE PROPERTIES
+	property int iQueue
+	property int iPresetType
 	property int iLives
 	property int iState
 	property int iDamage
 	property int iAirDamage
 	property int iSongPick
-	property int iHealTarget	// returns -1 is there's no valid player
 	property int iOwnerBoss
 	property int iUberTarget	// please use userid on this; convert to client index if you want but userid is safer
 	property int bGlow		// use like a bool
-	property bool bNearDispenser
 	property bool bIsMinion
 	property bool bInJump
 	property float flGlowtime
@@ -75,8 +74,6 @@ methodmap VSH2Player
 	property int iStabbed
 	property int iMarketted
 	property int iDifficulty
-	property bool bIsBoss
-	property bool bSetOnSpawn
 	property bool bUsedUltimate	// Not an overwatch reference lol; purpose is for a use-once ability but you can reset it
 	property float flSpeed	// if you boss needs a set amount of speed, use this obviously
 	property float flCharge
@@ -101,6 +98,13 @@ methodmap VSH2Player
 	public native int GetClipTable(const int wepslot);
 	public native void SetClipTable(const int wepslot, const int amount);
 	
+	public native int GetHealTarget();
+	public native bool IsNearDispenser();
+	public native bool IsInRange(const int target, const float dist, bool pTrace=false);
+	public native void RemoveBack(int[] indices, const int len);
+	public native int FindBack(int[] indices, const int len);
+	public native int ShootRocket(bool bCrit=false, float vPosition[3], float vAngles[3], const float flSpeed, const float dmg, const char[] model, bool arc=false);
+	
 	// Boss oriented natives
 	public native void ConvertToBoss();
 	public native void GiveRage(const int damage);
@@ -119,7 +123,7 @@ methodmap VSH2Player
 native int VSH2_RegisterPlugin(const char plugin_name[64]);
 
 
-enum {		//VSH2HookType	
+enum { //VSH2HookType
 	OnCallDownloads=0,
 	OnBossSelected,
 	OnTouchPlayer,
@@ -309,6 +313,13 @@ public __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2Player.SetAmmoTable");
 	MarkNativeAsOptional("VSH2Player.GetClipTable");
 	MarkNativeAsOptional("VSH2Player.SetClipTable");
+	
+	MarkNativeAsOptional("VSH2Player.GetHealTarget");
+	MarkNativeAsOptional("VSH2Player.IsNearDispenser");
+	MarkNativeAsOptional("VSH2Player.IsInRange");
+	MarkNativeAsOptional("VSH2Player.RemoveBack");
+	MarkNativeAsOptional("VSH2Player.FindBack");
+	MarkNativeAsOptional("VSH2Player.ShootRocket");
 	
 	MarkNativeAsOptional("VSH2Player.ConvertToBoss");
 	MarkNativeAsOptional("VSH2Player.GiveRage");

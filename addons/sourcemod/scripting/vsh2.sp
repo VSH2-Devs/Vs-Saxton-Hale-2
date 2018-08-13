@@ -25,7 +25,7 @@
 #pragma semicolon			1
 #pragma newdecls			required
 
-#define PLUGIN_VERSION			"2.1.1"
+#define PLUGIN_VERSION			"2.1.2"
 #define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
 
 
@@ -430,7 +430,7 @@ public Action BlockSuicide(int client, const char[] command, int argc)
 		if (player.bIsBoss) {
 			float flhp_percent = float(player.iHealth) / float(player.iMaxHealth);
 			if( flhp_percent > 0.3 ) {	// Allow bosses to suicide if their total health is under 3%.
-				CPrintToChat(client, "You cannot suicide yet as a boos. Please Use '!resetq' instead.");
+				CPrintToChat(client, "You cannot suicide yet as a boss. Please Use '!resetq' instead.");
 				return Plugin_Handled;
 			}
 		}
@@ -617,7 +617,7 @@ public void OnMapStart()
 	ManageDownloads();	// in handler.sp
 	//gamemode.hMusic = null;
 	CreateTimer(0.1, Timer_PlayerThink, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-	CreateTimer(5.0, MakeModelTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(1.0, MakeModelTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
 	gamemode.iHealthBar = FindEntityByClassname(-1, "monster_resource");
 	if( gamemode.iHealthBar == -1 ) {
@@ -945,9 +945,9 @@ public void CalcScores()
 }
 public Action Timer_DrawGame(Handle timer)
 {
-	if( gamemode.iHealthBarPercent < cvarVSH2[HealthPercentForLastGuy].IntValue or gamemode.iRoundState != StateRunning )
+	if( gamemode.iHealthBarPercent < cvarVSH2[HealthPercentForLastGuy].IntValue or gamemode.iRoundState != StateRunning or gamemode.iTimeLeft <= 0 )
 		return Plugin_Stop;
-
+	
 	int time = gamemode.iTimeLeft;
 	gamemode.iTimeLeft--;
 	char strTime[6];
@@ -1101,7 +1101,6 @@ public int RegisterPlugin(const Handle pluginhndl, const char modulename[64] )
 
 	// push to global vector
 	g_hPluginsRegistered.Push(PluginMap);
-
 	return MAXBOSS;	// Return the index of registered plugin!
 }
 
@@ -1140,6 +1139,13 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2Player.SetAmmoTable", Native_VSH2_SetAmmoTable);
 	CreateNative("VSH2Player.GetClipTable", Native_VSH2_GetClipTable);
 	CreateNative("VSH2Player.SetClipTable", Native_VSH2_SetClipTable);
+	
+	CreateNative("VSH2Player.GetHealTarget", Native_VSH2_GetHealTarget);
+	CreateNative("VSH2Player.IsNearDispenser", Native_VSH2_IsNearDispenser);
+	CreateNative("VSH2Player.IsInRange", Native_VSH2_IsInRange);
+	CreateNative("VSH2Player.RemoveBack", Native_VSH2_RemoveBack);
+	CreateNative("VSH2Player.FindBack", Native_VSH2_FindBack);
+	CreateNative("VSH2Player.ShootRocket", Native_VSH2_ShootRocket);
 	
 	CreateNative("VSH2Player.ConvertToBoss", Native_VSH2_ConvertToBoss);
 	CreateNative("VSH2Player.GiveRage", Native_VSH2_GiveRage);
@@ -1209,7 +1215,6 @@ public int Native_VSH2_setProperty(Handle plugin, int numParams)
 public int Native_Hook(Handle plugin, int numParams)
 {
 	int vsh2Hook = GetNativeCell(1);
-
 	Function Func = GetNativeFunction(2);
 	if( g_hForwards[vsh2Hook] != null )
 		g_hForwards[vsh2Hook].Add(plugin, Func);
@@ -1218,7 +1223,6 @@ public int Native_Hook(Handle plugin, int numParams)
 public int Native_HookEx(Handle plugin, int numParams)
 {
 	int vsh2Hook = GetNativeCell(1);
-	
 	Function Func = GetNativeFunction(2);
 	if( g_hForwards[vsh2Hook] != null )
 		return g_hForwards[vsh2Hook].Add(plugin, Func);
@@ -1228,14 +1232,12 @@ public int Native_HookEx(Handle plugin, int numParams)
 public int Native_Unhook(Handle plugin, int numParams)
 {
 	int vsh2Hook = GetNativeCell(1);
-
 	if( g_hForwards[vsh2Hook] != null )
 		g_hForwards[vsh2Hook].Remove(plugin, GetNativeFunction(2));
 }
 public int Native_UnhookEx(Handle plugin, int numParams)
 {
 	int vsh2Hook = GetNativeCell(1);
-
 	if( g_hForwards[vsh2Hook] != null )
 		return g_hForwards[vsh2Hook].Remove(plugin, GetNativeFunction(2));
 	return 0;
@@ -1347,6 +1349,58 @@ public int Native_VSH2_SetClipTable(Handle plugin, int numParams)
 	BaseBoss player = GetNativeCell(1);
 	player.setCliptable(GetNativeCell(2), GetNativeCell(3));
 }
+
+public int Native_VSH2_GetHealTarget(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	return player.GetHealTarget();
+}
+
+public int Native_VSH2_IsNearDispenser(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	return player.IsNearDispenser();
+}
+
+public int Native_VSH2_IsInRange(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	float distance = GetNativeCell(3);
+	return view_as< int >(player.IsInRange(GetNativeCell(2), distance, GetNativeCell(4)));
+}
+
+public int Native_VSH2_RemoveBack(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	int length = GetNativeCell(3);
+	any[] data = new any[length];
+	GetNativeArray(2, data, length);
+	player.RemoveBack(data, length);
+}
+
+public int Native_VSH2_FindBack(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	int length = GetNativeCell(3);
+	any[] data = new any[length];
+	GetNativeArray(2, data, length);
+	return player.FindBack(data, length);
+}
+
+public int Native_VSH2_ShootRocket(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	bool crit = GetNativeCell(2);
+	float vpos[3]; GetNativeArray(3, vpos, 3);
+	float vang[3]; GetNativeArray(4, vang, 3);
+	float speed = GetNativeCell(5);
+	float dmg = GetNativeCell(6);
+	char modelname[FULLPATH]; GetNativeString(7, modelname, FULLPATH);
+	bool arc = GetNativeCell(8);
+	
+	return player.ShootRocket(crit, vpos, vang, speed, dmg, modelname, arc);
+}
+
 
 public int Native_VSH2_ConvertToBoss(Handle plugin, int numParams)
 {

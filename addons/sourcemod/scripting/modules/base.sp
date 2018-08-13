@@ -196,20 +196,6 @@ Methods
 			hPlayerFields[this.index].SetValue("iSongPick", val);
 		}
 	}
-	property int iHealTarget
-	{
-		public get() {
-			int medigun = GetPlayerWeaponSlot(this.index, TFWeaponSlot_Secondary);
-			if( !IsValidEdict(medigun) or !IsValidEntity(medigun) )
-				return -1;
-			char s[32]; GetEdictClassname(medigun, s, sizeof(s));
-			if( !strcmp(s, "tf_weapon_medigun", false) ) {
-				if( GetEntProp(medigun, Prop_Send, "m_bHealing") )
-					return GetEntPropEnt( medigun, Prop_Send, "m_hHealingTarget" );
-			}
-			return -1;
-		}
-	}
 	property int iOwnerBoss
 	{
 		public get()				//{ return GetClientOfUserId(OwnerBoss[ this.index ]); }
@@ -256,24 +242,7 @@ Methods
 			hPlayerFields[this.index].SetValue("iShieldDmg", val);
 		}
 	}
-
-	property bool bNearDispenser
-	{
-		public get() {
-			int player = this.index;
-			int medics=0;
-			int healers = GetEntProp(player, Prop_Send, "m_nNumHealers");
-			if( healers ) {
-				for( int i=MaxClients ; i ; --i ) {
-					if( !IsValidClient(i) )
-						continue;
-					if( GetHealingTarget(i) == player )
-						medics++;
-				}
-			}
-			return( healers > medics );
-		}
-	}
+	
 	property bool bIsMinion
 	{
 		public get()				//{ return IsMinion[ this.index ]; }
@@ -621,6 +590,38 @@ Methods
 		panel.DrawItem( "Exit" );
 		panel.Send(this.index, HintPanel, 20);
 		delete (panel);
+	}
+	
+	public int GetHealTarget()
+	{
+		return GetHealingTarget(this.index);
+	}
+	public bool IsNearDispenser()
+	{
+		int client = this.index;
+		int medics=0;
+		int healers = GetEntProp(client, Prop_Send, "m_nNumHealers");
+		if( healers ) {
+			for( int i=MaxClients ; i ; --i ) {
+				if( !IsValidClient(i) )
+					continue;
+				if( GetHealingTarget(i) == client )
+					medics++;
+			}
+		}
+		return( healers > medics );
+	}
+	public bool IsInRange(const int target, const float dist, bool pTrace=false) {
+		return IsInRange(this.index, target, dist, pTrace);
+	}
+	public void RemoveBack(int[] indices, const int len) {
+		RemovePlayerBack(this.index, indices, len);
+	}
+	public int FindBack(int[] indices, const int len) {
+		return FindPlayerBack(this.index, indices, len);
+	}
+	public int ShootRocket(bool bCrit=false, float vPosition[3], float vAngles[3], const float flSpeed, const float dmg, const char[] model, bool arc=false) {
+		return ShootRocket(this.index, bCrit, vPosition, vAngles, flSpeed, dmg, model, arc);
 	}
 };
 

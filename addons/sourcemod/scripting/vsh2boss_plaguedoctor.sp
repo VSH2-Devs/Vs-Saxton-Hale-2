@@ -10,7 +10,6 @@
 #tryinclude <tf2attributes>
 #define REQUIRE_PLUGIN
 
-#define PLAGUE_DOC_ID	5
 #define and    &&
 #define or    ||
 
@@ -164,9 +163,11 @@ public Plugin myinfo = {
 	url = "sus"
 };
 
+int g_iPlagueDocID;
+
 public void OnAllPluginsLoaded()
 {
-	VSH2_RegisterPlugin("plague_doctor");
+	g_iPlagueDocID = VSH2_RegisterPlugin("plague_doctor");
 	LoadVSH2Hooks();
 }
 
@@ -233,7 +234,7 @@ public void LoadVSH2Hooks()
 		LogError("Error loading OnBossHealthCheck forwards for Plague Doctor subplugin.");
 }
 stock bool IsPlagueDoctor(const VSH2Player player) {
-	return player.GetProperty("iBossType") == PLAGUE_DOC_ID;
+	return player.GetProperty("iBossType") == g_iPlagueDocID;
 }
 
 public void PlagueDoc_OnCallDownloads()
@@ -246,7 +247,8 @@ public void PlagueDoc_OnCallDownloads()
 }
 public void PlagueDoc_OnBossMenu(Menu &menu)
 {
-	menu.AddItem("5", "Plague Doctor (Subplugin Boss)");
+	char tostr[10]; IntToString(g_iPlagueDocID, tostr, sizeof(tostr));
+	menu.AddItem(tostr, "Plague Doctor (Subplugin Boss)");
 }
 public void PlagueDoc_OnBossSelected(const VSH2Player player)
 {

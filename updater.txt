@@ -4,13 +4,11 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.1.1"
+			"Latest"	"2.1.2"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.1.1:"
-		"Notes"	"Future proofed Sniper rifles by checking them through classname rather than by index."
-		"Notes"	"Renamed 'iType' property to 'iBossType' for clarity."
-		"Notes"	"moved plague doctor to a separate plugin as a subplugin addon."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.1.2:"
+		"Notes"	"exposed more player oriented method natives."
 	}
 	
 	"Files"
@@ -19,6 +17,7 @@
 		
 		"Source"	"Path_SM/scripting/vsh2.sp"
 		"Source"	"Path_SM/scripting/vsh2_addon_dmgtracker.sp"
+		"Source"	"Path_SM/scripting/vsh2boss_plaguedoctor.sp"
 		"Source"	"Path_SM/scripting/modules/base.sp"
 		"Source"	"Path_SM/scripting/modules/bosses.sp"
 		"Source"	"Path_SM/scripting/modules/commands.sp"
