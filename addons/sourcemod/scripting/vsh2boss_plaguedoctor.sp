@@ -60,7 +60,7 @@ methodmap CPlague < VSH2Player {
 	
 	public void PlaySpawnClip()
 	{
-		EmitSoundToAll(PlagueIntro);
+		EmitSoundToAll(PlagueIntro); EmitSoundToAll(PlagueIntro);
 	}
 	
 	public void Equip()

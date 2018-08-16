@@ -199,11 +199,9 @@ public void fwdOnUberLoop(const VSH2Player Victim, const VSH2Player Attacker)
 	PrintToConsole(Attacker.index, "fwdOnUberLoop:: ==> Medic name: %N | Target name: %N", Attacker.index, Victim.index);
 	PrintToConsole(Victim.index, "fwdOnUberLoop:: ==> Medic name: %N | Target name: %N", Attacker.index, Victim.index);
 }
-public void fwdOnMusic(char song[PLATFORM_MAX_PATH], float& time)
+public void fwdOnMusic(char song[PLATFORM_MAX_PATH], float &time, const VSH2Player Player)
 {
-	for (int i=MaxClients ; i ; --i)
-		if ( IsClientInGame(i) )
-			PrintToConsole(i, "fwdOnMusic:: ==> Called");
+	PrintToConsole(Player.index, "fwdOnMusic:: ==> Called");
 }
 public void fwdOnRoundEndInfo(const VSH2Player Player, bool bossBool, char message[512])
 {

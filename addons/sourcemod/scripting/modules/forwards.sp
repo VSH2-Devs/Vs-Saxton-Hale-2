@@ -59,7 +59,7 @@ void InitializeForwards()
 	g_hForwards[OnVariablesReset] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell) );
 	g_hForwards[OnUberDeployed] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell) );
 	g_hForwards[OnUberLoop] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell) );
-	g_hForwards[OnMusic] = new PrivateForward( CreateForward(ET_Ignore, Param_String, Param_FloatByRef) );
+	g_hForwards[OnMusic] = new PrivateForward( CreateForward(ET_Ignore, Param_String, Param_FloatByRef, Param_Cell) );
 	g_hForwards[OnRoundEndInfo] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell, Param_String) );
 	g_hForwards[OnLastPlayer] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell) );
 	g_hForwards[OnBossHealthCheck] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell, Param_String) );
@@ -273,11 +273,12 @@ void Call_OnUberLoop(const BaseBoss medic, const BaseBoss target)
 	Call_PushCell(target);
 	Call_Finish();
 }
-void Call_OnMusic(char song[PLATFORM_MAX_PATH], float& time)
+void Call_OnMusic(char song[PLATFORM_MAX_PATH], float& time, const BaseBoss player)
 {
 	g_hForwards[OnMusic].Start();
 	Call_PushStringEx(song, PLATFORM_MAX_PATH, 0, SM_PARAM_COPYBACK);
 	Call_PushFloatRef(time);
+	Call_PushCell(player);
 	Call_Finish();
 }
 void Call_OnRoundEndInfo(const BaseBoss player, bool bosswin, char message[MAXMESSAGE])

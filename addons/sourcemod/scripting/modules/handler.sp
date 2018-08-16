@@ -1176,7 +1176,7 @@ public void ManageMusic(char song[FULLPATH], float& time)
 				strcopy(song, sizeof(song), HHHTheme);
 				time = 90.0;
 			}
-			default: Call_OnMusic(song, time);
+			default: Call_OnMusic(song, time, currBoss);
 		}
 	}
 }

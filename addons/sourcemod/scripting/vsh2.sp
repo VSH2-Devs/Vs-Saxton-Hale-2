@@ -25,7 +25,7 @@
 #pragma semicolon			1
 #pragma newdecls			required
 
-#define PLUGIN_VERSION			"2.1.2"
+#define PLUGIN_VERSION			"2.1.3"
 #define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
 
 
@@ -1019,20 +1019,20 @@ public void _MusicPlay()
 {
 	if( !bEnabled.BoolValue or gamemode.iRoundState != StateRunning)
 		return;
-
+	
 	float currtime = GetGameTime();
 	if( !cvarVSH2[EnableMusic].BoolValue or gamemode.flMusicTime > currtime )
 		return;
-
+	
 	/*if( gamemode.hMusic != null ) {
 		KillTimer(gamemode.hMusic);
 		gamemode.hMusic = null;
 	}*/
 	char sound[FULLPATH] = "";
 	float time = -1.0;
-
+	
 	ManageMusic(sound, time);	// in handler.sp
-
+	
 	BaseBoss boss;
 	float vol = cvarVSH2[MusicVolume].FloatValue;
 	if( sound[0] != '\0' ) {
@@ -1061,13 +1061,12 @@ stock Handle FindPluginByName(const char name[64])	// searches in linear time or
 	Handle thisPlugin;
 	StringMap pluginMap;
 	int arraylen = g_hPluginsRegistered.Length;
-	for (int i=0 ; i<arraylen ; ++i) {
+	for( int i=0 ; i<arraylen ; ++i ) {
 		pluginMap = g_hPluginsRegistered.Get(i);
-		if( pluginMap.GetString("PluginName", dictVal, 64) )
-		{
+		if( pluginMap.GetString("PluginName", dictVal, 64) ) {
 			if( !strcmp(name, dictVal, false) ) {
 				pluginMap.GetValue("PluginHandle", thisPlugin);
-				return thisPlugin;
+				return thisPlugin == null ? null : thisPlugin;
 			}
 		}
 	}
@@ -1083,7 +1082,7 @@ stock Handle GetPluginByIndex(const int index)
 	return null;
 }
 
-public int RegisterPlugin(const Handle pluginhndl, const char modulename[64] )
+public int RegisterPlugin(const Handle pluginhndl, const char modulename[64])
 {
 	if( !ValidateName(modulename) ) {
 		LogError("VSH2 :: Register Plugin  **** Invalid Name For Plugin Registration ****");
@@ -1098,7 +1097,7 @@ public int RegisterPlugin(const Handle pluginhndl, const char modulename[64] )
 	StringMap PluginMap = new StringMap();
 	PluginMap.SetValue("PluginHandle", pluginhndl);
 	PluginMap.SetString("PluginName", modulename);
-
+	
 	// push to global vector
 	g_hPluginsRegistered.Push(PluginMap);
 	return MAXBOSS;	// Return the index of registered plugin!

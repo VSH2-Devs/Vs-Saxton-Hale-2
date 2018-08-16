@@ -10,7 +10,7 @@ methodmap VSH2Player {
 	 * @param index			index (or the userid) of a player
 	 * @param userid		if using userid instead of player index, set this param to true
 	 * @return			a player instance of the VSH2Player methodmap
-	*/
+	 */
 	public native VSH2Player(const int index, bool userid=false);
 
 	/* **** **** [ P R O P E R T I E S ] **** **** */
@@ -18,7 +18,7 @@ methodmap VSH2Player {
 	/**
 	 * gets the userid of the vsh2 player instance
 	 * @return			the bare player userid integer
-	*/
+	 */
 	property int userid {
 		public native get();
 	}
@@ -26,18 +26,18 @@ methodmap VSH2Player {
 	/**
 	 * gets the index of the vsh2 player instance
 	 * @return			the bare player index integer
-	*/
+	 */
 	property int index {
 		public native get();
 	}
 	
 	/**
-         * sets the property of the internal VSH2 methodmap
-         * NOTE: You can use this to create new properties which GetProperty can access!
+	 * sets the property of the internal VSH2 methodmap
+	 * NOTE: You can use this to create new properties which GetProperty can access!
 	 * @param prop_name		name of property you want to access data from.
 	 * @param item			reference to use of the variable to overwrite with data from the property.
-         * @return		
-        */
+	 * @return		
+	 */
 	public native any GetProperty(const char prop_name[64]);
 	
 	/**
@@ -220,7 +220,7 @@ typeset VSH2HookCB {
 	function void (const VSH2Player Player, bool bossBool, char message[512]);
 	
 	//	OnMusic
-	function void (char song[PLATFORM_MAX_PATH], float& time);
+	function void (char song[PLATFORM_MAX_PATH], float& time, const VSH2Player Player);
 	
 	//	OnControlPointCapped
 	function void (char cappers[MAXPLAYERS+1], const int team);
