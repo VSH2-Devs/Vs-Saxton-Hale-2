@@ -1066,7 +1066,7 @@ stock Handle FindPluginByName(const char name[64])	// searches in linear time or
 		if( pluginMap.GetString("PluginName", dictVal, 64) ) {
 			if( !strcmp(name, dictVal, false) ) {
 				pluginMap.GetValue("PluginHandle", thisPlugin);
-				return thisPlugin == null ? null : thisPlugin;
+				return thisPlugin;
 			}
 		}
 	}
