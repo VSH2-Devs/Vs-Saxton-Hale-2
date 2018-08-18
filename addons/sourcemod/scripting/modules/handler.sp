@@ -211,8 +211,8 @@ public void ManageBossTransition(const BaseBoss base)
 		case -1: {}
 		case HHHjr: ToCHHHJr(base).flCharge = -1000.0;
 	}
+        Call_OnBossInitialized(base); // Patch: Aug 18, 2018 - patching bad first person animations on custom boss models.
 	ManageBossEquipment(base);
-	Call_OnBossInitialized(base);
 }
 
 public void ManageMinionTransition(const BaseBoss base)
