@@ -13,7 +13,7 @@ If you do require help in setting up the bosses or at least need some info on th
 
 **NB:** While VSH2 will work perfectly fine as-is out of the box as a VSH1 replacement, it was designed with capable SourcePawn **_developers_** in mind to make the most out of the coded-from-scratch framework! So don't expect to be able to easily modify/add bosses if you have no prior SourcePawn experience like you would with FF2.
 
-======
+============================================================
 ### Why VSH2? ###
 
 * VSH2 was created to facilitate easier boss additions to a VSH-esque gamemode while having extensive customisation capabilities, even more so than FF2.
