@@ -1166,6 +1166,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2GameMode_GetTotalRedPlayers", Native_VSH2GameMode_GetTotalRedPlayers);
 	CreateNative("VSH2GameMode_GetHUDHandle", Native_VSH2GameMode_GetHUDHandle);
 	
+	MarkNativeAsOptional("Steam_SetGameDescription");
+	
 	RegPluginLibrary("VSH2");
 
 	return APLRes_Success;
