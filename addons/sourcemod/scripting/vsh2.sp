@@ -949,6 +949,9 @@ public Action Timer_DrawGame(Handle timer)
 		return Plugin_Stop;
 	
 	int time = gamemode.iTimeLeft;
+	if( time<0 )
+		time = 0;
+	
 	gamemode.iTimeLeft--;
 	char strTime[6];
 
