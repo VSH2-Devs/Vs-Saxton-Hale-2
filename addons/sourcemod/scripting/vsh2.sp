@@ -945,13 +945,10 @@ public void CalcScores()
 }
 public Action Timer_DrawGame(Handle timer)
 {
-	if( gamemode.iHealthBarPercent < cvarVSH2[HealthPercentForLastGuy].IntValue or gamemode.iRoundState != StateRunning or gamemode.iTimeLeft <= 0 )
+	if( gamemode.iHealthBarPercent < cvarVSH2[HealthPercentForLastGuy].IntValue or gamemode.iRoundState != StateRunning or gamemode.iTimeLeft < 0 )
 		return Plugin_Stop;
 	
 	int time = gamemode.iTimeLeft;
-	if( time<0 )
-		time = 0;
-	
 	gamemode.iTimeLeft--;
 	char strTime[6];
 
