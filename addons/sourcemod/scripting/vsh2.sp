@@ -484,6 +484,7 @@ public void OnAllPluginsLoaded()
 int
 	tf_arena_use_queue,
 	mp_teams_unbalance_limit,
+	mp_forceautoteam,
 	tf_arena_first_blood,
 	mp_forcecamera
 ;
@@ -510,7 +511,9 @@ public void OnConfigsExecuted()
 		
 		FindConVar("tf_arena_use_queue").IntValue = 0;
 		FindConVar("mp_teams_unbalance_limit").IntValue = 0;
+		FindConVar("mp_forceautoteam").IntValue = 0;
 		FindConVar("mp_teams_unbalance_limit").IntValue =  cvarVSH2[FirstRound].BoolValue ? 0 : 1;
+		FindConVar("mp_forceautoteam").IntValue = cvarVSH2[FirstRound].BoolValue ? 0 : 1;
 		FindConVar("tf_arena_first_blood").IntValue =  0;
 		FindConVar("mp_forcecamera").IntValue =  0;
 		FindConVar("tf_scout_hype_pep_max").FloatValue =  100.0;
@@ -626,11 +629,14 @@ public void OnMapStart()
 			DispatchSpawn(gamemode.iHealthBar);
 	}
 	gamemode.iRoundCount = 0;
+    gamemode.iRoundState = StateDisabled;
+    gamemode.hNextBoss = view_as< BaseBoss >(0);
 }
 public void OnMapEnd()
 {
 	FindConVar("tf_arena_use_queue").IntValue = tf_arena_use_queue;
 	FindConVar("mp_teams_unbalance_limit").IntValue = mp_teams_unbalance_limit;
+	FindConVar("mp_forceautoteam").IntValue = mp_forceautoteam;
 	FindConVar("tf_arena_first_blood").IntValue = tf_arena_first_blood;
 	FindConVar("mp_forcecamera").IntValue = mp_forcecamera;
 	FindConVar("tf_scout_hype_pep_max").FloatValue = tf_scout_hype_pep_max;
