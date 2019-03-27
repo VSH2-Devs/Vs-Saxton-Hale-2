@@ -144,7 +144,7 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 
 	int playing;
 	for( int iplay=MaxClients ; iplay ; --iplay ) {
-		if( !IsValidClient(iplay) )	
+		if( !IsClientInGame(iplay) )
 			continue;
 
 		ManageResetVariables(BaseBoss(iplay));	// in handler.sp
@@ -163,11 +163,13 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 		gamemode.iRoundState = StateDisabled;
 		SetArenaCapEnableTime(60.0);
 		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 1);
+		SetConVarInt(FindConVar("mp_forceautoteam"), 1);
 		SetPawnTimer(EnableCap, 71.0); //CreateTimer(71.0, Timer_EnableCap, _, TIMER_FLAG_NO_MAPCHANGE);
 		return Plugin_Continue;
 	}
 	
 	SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 0);
+	SetConVarInt(FindConVar("mp_forceautoteam"), 0);
 
 	BaseBoss boss = gamemode.FindNextBoss();
 	if( boss.index <= 0 ) {
@@ -343,7 +345,7 @@ public Action ItemPickedUp(Event event, const char[] name, bool dontBroadcast)
 
 public Action UberDeployed(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !bEnabled.BoolValue )
+	if( !bEnabled.BoolValue or gamemode.iRoundState == StateDisabled)
 		return Plugin_Continue;
 	
 	BaseBoss medic = BaseBoss(event.GetInt("userid"), true);
@@ -371,7 +373,7 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 		}
 	}
 	gamemode.iTotalMaxHealth = 0;
-	int bosscount = gamemode.CountBosses(true);
+	int bosscount = gamemode.CountBosses(false);
 
 	//BaseBoss bosses[34];	// There's no way almost everybody can be an overpowered boss...
 	ArrayList bosses = new ArrayList();
