@@ -356,8 +356,8 @@ public Action HelpPanelCmd(int client, int args)
 		ReplyToCommand(client, "[VSH 2] You can only use this command ingame.");
 		return Plugin_Handled;
 	}
-	char strHelp[512];
-	Format(strHelp, 512, "Welcome to VS Saxton Hale Mode Version 2!\nOne or more players is selected each round to become a Boss.\nEveryone else must kill them!");
+	//char strHelp[512];
+	//Format(strHelp, 512, "Welcome to VS Saxton Hale Mode Version 2!\nOne or more players is selected each round to become a Boss.\nEveryone else must kill them!");
 	Panel panel = new Panel();
 	panel.SetTitle("What do you want, sir?");
 	panel.DrawItem("Show Boss' health (/halehp)");

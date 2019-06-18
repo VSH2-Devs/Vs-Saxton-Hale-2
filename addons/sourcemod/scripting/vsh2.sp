@@ -1034,7 +1034,7 @@ public void _MusicPlay()
 		KillTimer(gamemode.hMusic);
 		gamemode.hMusic = null;
 	}*/
-	char sound[FULLPATH] = "";
+	char sound[FULLPATH];
 	float time = -1.0;
 	
 	ManageMusic(sound, time);	// in handler.sp
