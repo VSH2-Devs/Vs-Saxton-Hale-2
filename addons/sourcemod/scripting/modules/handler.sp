@@ -1182,10 +1182,12 @@ public void ManageMusic(char song[FULLPATH], float& time)
 }
 public void StopBackGroundMusic()
 {
-	for( int i=MaxClients ; i ; --i ) {
-		if( !IsClientValid(i) )
-			continue;
-		StopSound(i, SNDCHAN_AUTO, BackgroundSong);
+	if( BackgroundSong[0] != '\0' ) {
+		for( int i=MaxClients ; i ; --i ) {
+			if( !IsClientValid(i) )
+				continue;
+			StopSound(i, SNDCHAN_AUTO, BackgroundSong);
+		}
 	}
 }
 public void ManageRoundEndBossInfo(ArrayList bosses, bool bossWon) //(const BaseBoss base[34])	// I STILL can't believe this works lmaoooo.
