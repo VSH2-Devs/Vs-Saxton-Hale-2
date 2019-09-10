@@ -39,16 +39,16 @@ public void QueuePanel(const int client)
 	else panel.DrawItem("None");
 
 	for( int i=0; i<8; ++i ) {
-		Boss = gamemode.FindNextBoss();	// Using Boss to look at the next boss
+		Boss = gamemode.FindNextBoss();	/// Using Boss to look at the next boss
 		if( Boss ) {
 			Format(strBossList, 128, "%N - %i", Boss.index, Boss.iQueue);
 			panel.DrawItem(strBossList);
-			Boss.bSetOnSpawn = true;	// This will have VSHGameMode::FindNextBoss() skip this guy when looping again
+			Boss.bSetOnSpawn = true;	/// This will have VSHGameMode::FindNextBoss() skip this guy when looping again
 		}
 		else panel.DrawItem("-");
 	}
 	
-	for( int n=MaxClients ; n ; --n ) {	// Ughhh, reset shit...
+	for( int n=MaxClients; n; --n ) {	/// Ughhh, reset shit...
 		if( !IsValidClient(n) )
 			continue;
 		Boss = BaseBoss(n);
@@ -63,7 +63,7 @@ public void QueuePanel(const int client)
 }
 public int QueuePanelH(Menu menu, MenuAction action, int param1, int param2)
 {
-	if( action==MenuAction_Select and param2==10 )
+	if( action==MenuAction_Select && param2==10 )
 		TurnToZeroPanel(param1);
 	return false;
 }
@@ -83,7 +83,7 @@ public void TurnToZeroPanel(const int client)
 }
 public int TurnToZeroPanelH(Menu menu, MenuAction action, int param1, int param2)
 {
-	if( action==MenuAction_Select and param2==1 ) {
+	if( action==MenuAction_Select && param2==1 ) {
 		BaseBoss player = BaseBoss(param1);
 		if( player.iQueue ) {
 			player.iQueue = 0;
@@ -94,19 +94,21 @@ public int TurnToZeroPanelH(Menu menu, MenuAction action, int param1, int param2
 		}
 	}
 }
-/* FINALLY THE PANEL TRAIN HAS ENDED! */
+/** FINALLY THE PANEL TRAIN HAS ENDED! */
 public int SkipHalePanelH(Menu menu, MenuAction action, int client, int param2)
 {
-	/*if( IsValidAdmin(client, "b") )
+	/*
+	if( IsValidAdmin(client, "b") )
 		SetBossMenu( client, -1 );
-	else CommandSetSkill( client, -1 );*/
+	else CommandSetSkill( client, -1 );
+	*/
 }
 public Action SetNextSpecial(int client, int args)
 {
 	if( bEnabled.BoolValue ) {
 		char number[4]; GetCmdArg( 1, number, sizeof(number) );
 		int type = StringToInt(number);
-		if( type < 0 or type > 255 )
+		if( type < 0 || type > 255 )
 			type = -1;
 		
 		gamemode.iSpecial = type;
@@ -134,7 +136,7 @@ public Action Command_GetHPCmd(int client, int args)
 		return Plugin_Handled;
 	
 	BaseBoss player = BaseBoss(client);
-	ManageBossCheckHealth(player);	// in handler.sp
+	ManageBossCheckHealth(player);	/// in handler.sp
 	return Plugin_Handled;
 }
 public Action CommandBossSelect(int client, int args)
@@ -146,7 +148,7 @@ public Action CommandBossSelect(int client, int args)
 		return Plugin_Handled;
 	}
 	char targetname[32]; GetCmdArg(1, targetname, sizeof(targetname));
-	if( !strcmp(targetname, "@me", false) and IsValidClient(client) ) {
+	if( !strcmp(targetname, "@me", false) && IsValidClient(client) ) {
 		gamemode.hNextBoss = BaseBoss(client);
 		ReplyToCommand(client, "[VSH 2] You've set yourself as the next Boss!");
 	}
@@ -168,7 +170,7 @@ public Action SetBossMenu(int client, int args)
 	Menu bossmenu = new Menu(MenuHandler_PickBosses);
 	bossmenu.SetTitle("Set Boss Menu: ");
 	bossmenu.AddItem("-1", "None (Random Boss)");
-	ManageMenu(bossmenu); // in handler.sp
+	ManageMenu(bossmenu); /// in handler.sp
 	bossmenu.Display(client, MENU_TIME_FOREVER);
 	return Plugin_Handled;
 }
@@ -192,7 +194,7 @@ public Action MusicTogglePanelCmd(int client, int args)
 }
 public void MusicTogglePanel(const int client)
 {
-	if( !bEnabled.BoolValue or !IsValidClient(client) )
+	if( !bEnabled.BoolValue || !IsValidClient(client) )
 		return;
 	Panel panel = new Panel();
 	panel.SetTitle("Turn the VS Saxton Hale Music...");
@@ -381,7 +383,7 @@ public int HelpPanelH(Menu menu, MenuAction action, int param1, int param2)
 			}
 			case 2: {
 				BaseBoss player = BaseBoss(param1);
-				if( player.bIsBoss or player.bIsMinion )
+				if( player.bIsBoss || player.bIsMinion )
 					ManageBossHelp(player);
 				else player.HelpPanelClass();
 			}
@@ -424,8 +426,8 @@ public int MenuHandler_ClassRush(Menu menu, MenuAction action, int client, int p
 	char info[32]; GetMenuItem(menu, pick, info, sizeof(info));
 	if( action == MenuAction_Select ) {
 		int classtype = StringToInt(info);
-		for( int i=MaxClients ; i ; --i ) {
-			if( !IsValidClient(i) or !IsPlayerAlive(i) or GetClientTeam(i) != RED )
+		for( int i=MaxClients; i; --i ) {
+			if( !IsValidClient(i) || !IsPlayerAlive(i) || GetClientTeam(i) != RED )
 				continue;
 			SetEntProp(i, Prop_Send, "m_iClass", classtype);
 			TF2_RegeneratePlayer(i);

@@ -1,6 +1,5 @@
-//defines
-
-//models
+/// defines
+/// models
 #define BunnyModel		"models/player/saxton_hale/easter_demo.mdl"
 // #define BunnyModelPrefix	"models/player/saxton_hale/easter_demo"
 
@@ -9,7 +8,7 @@
 //#define ReloadEggModel	"models/player/saxton_hale/c_easter_cannonball.mdl"
 //#define ReloadEggModelPrefix	"models/player/saxton_hale/c_easter_cannonball"
 
-//materials
+/// materials
 static const char BunnyMaterials[][] = {
 	"materials/models/player/easter_demo/demoman_head_red.vmt",
 	"materials/models/player/easter_demo/easter_body.vmt",
@@ -18,7 +17,7 @@ static const char BunnyMaterials[][] = {
 	"materials/models/player/easter_demo/easter_rabbit.vtf",
 	"materials/models/player/easter_demo/easter_rabbit_normal.vtf",
 	"materials/models/player/easter_demo/eyeball_r.vmt"
-	// "materials/models/player/easter_demo/demoman_head_blue_invun.vmt", // This is for the new version of easter demo which VSH isn't using
+	// "materials/models/player/easter_demo/demoman_head_blue_invun.vmt", /// This is for the new version of easter demo which VSH isn't using
 	// "materials/models/player/easter_demo/demoman_head_red_invun.vmt",
 	// "materials/models/player/easter_demo/easter_rabbit_blue.vmt",
 	// "materials/models/player/easter_demo/easter_rabbit_blue.vtf",
@@ -29,7 +28,7 @@ static const char BunnyMaterials[][] = {
 	// "materials/models/player/easter_demo/eyeball_invun.vmt"
 };
 
-//Easter Bunny voicelines
+/// Easter Bunny voicelines
 char BunnyWin[][] = {
 	"vo/demoman_gibberish01.mp3",
 	"vo/demoman_gibberish12.mp3",
@@ -145,7 +144,7 @@ methodmap CBunny < BaseBoss
 		else if( this.flGlowtime <= 0.0 )
 			this.bGlow = 0;
 
-		if( ((buttons & IN_DUCK) or (buttons & IN_ATTACK2)) and (this.flCharge >= 0.0) ) {
+		if( ((buttons & IN_DUCK) || (buttons & IN_ATTACK2)) && (this.flCharge >= 0.0) ) {
 			if( this.flCharge+2.5 < HALE_JUMPCHARGE )
 				this.flCharge += 2.5;
 			else this.flCharge = HALE_JUMPCHARGE;
@@ -154,7 +153,7 @@ methodmap CBunny < BaseBoss
 			this.flCharge += 2.5;
 		else {
 			float EyeAngles[3]; GetClientEyeAngles(this.index, EyeAngles);
-			if( this.flCharge > 1.0 and EyeAngles[0] < -5.0 ) {
+			if( this.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
 				float vel[3]; GetEntPropVector(this.index, Prop_Data, "m_vecVelocity", vel);
 				vel[2] = 750 + this.flCharge * 13.0;
 
@@ -177,7 +176,7 @@ methodmap CBunny < BaseBoss
 			this.flWeighDown = 0.0;
 		else this.flWeighDown += 0.1;
 		
-		if( (buttons & IN_DUCK) and this.flWeighDown >= HALE_WEIGHDOWN_TIME ) {
+		if( (buttons & IN_DUCK) && this.flWeighDown >= HALE_WEIGHDOWN_TIME ) {
 			float ang[3]; GetClientEyeAngles(this.index, ang);
 			if( ang[0] > 60.0 ) {
 				//float fVelocity[3];
@@ -217,7 +216,7 @@ methodmap CBunny < BaseBoss
 		this.RemoveAllItems();
 		char attribs[128];
 
-		Format(attribs, sizeof(attribs), "68 ; 2.0 ; 2 ; 2.77 ; 259 ; 1.0 ; 326 ; 1.3 ; 252 ; 0.6");
+		Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.77; 259; 1.0; 326; 1.3; 252; 0.6");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_bottle", 169, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
@@ -225,14 +224,14 @@ methodmap CBunny < BaseBoss
 	{
 		TF2_AddCondition(this.index, view_as<TFCond>(42), 4.0);
 		if( !GetEntProp(this.index, Prop_Send, "m_bIsReadyToHighFive")
-			and !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
+			&& !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
 		{
 			TF2_RemoveCondition(this.index, TFCond_Taunting);
 			this.SetModel(); //MakeModelTimer(null);
 		}
 		
 		TF2_RemoveWeaponSlot(this.index, TFWeaponSlot_Primary);
-		int weapon = this.SpawnWeapon("tf_weapon_grenadelauncher", 19, 100, 5, "2 ; 1.25 ; 6 ; 0.1 ; 411 ; 150.0 ; 413 ; 1.0 ; 37 ; 0.0 ; 280 ; 17 ; 477 ; 1.0 ; 467 ; 1.0 ; 181 ; 2.0 ; 252 ; 0.7");
+		int weapon = this.SpawnWeapon("tf_weapon_grenadelauncher", 19, 100, 5, "2; 1.25; 6; 0.1; 411; 150.0; 413; 1.0; 37; 0.0; 280; 17; 477; 1.0; 467; 1.0; 181; 2.0; 252; 0.7");
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", weapon);
 		SetEntProp(weapon, Prop_Send, "m_iClip1", 50);
 		SetWeaponAmmo(weapon, 0);
@@ -253,7 +252,7 @@ methodmap CBunny < BaseBoss
 			this.iKills++;
 		else this.iKills = 0;
 		
-		if( this.iKills == 3 and GetLivingPlayers(RED) != 1 ) {
+		if( this.iKills == 3 && GetLivingPlayers(RED) != 1 ) {
 			strcopy(snd, PLATFORM_MAX_PATH, BunnySpree[GetRandomInt(0, sizeof(BunnySpree)-1)]);
 			EmitSoundToAll(snd, this.index); EmitSoundToAll(snd, this.index);
 			this.iKills = 0;
@@ -321,7 +320,7 @@ stock void SpawnManyAmmoPacks(const int client, const char[] model, int skin=0, 
 	ang[2] = 0.0;
 	GetClientAbsOrigin(client, pos);
 	pos[2] += offsz;
-	for( int i=0 ; i<num ; i++ ) {
+	for( int i=0; i<num; i++ ) {
 		vel[0] = GetRandomFloat(-400.0, 400.0);
 		vel[1] = GetRandomFloat(-400.0, 400.0);
 		vel[2] = GetRandomFloat(300.0, 500.0);
@@ -331,7 +330,7 @@ stock void SpawnManyAmmoPacks(const int client, const char[] model, int skin=0, 
 		if( !IsValidEntity(ent) )
 			continue;
 		SetEntityModel(ent, model);
-		DispatchKeyValue(ent, "OnPlayerTouch", "!self,Kill,,0,-1"); //for safety, but it shouldn't act like a normal ammopack
+		DispatchKeyValue(ent, "OnPlayerTouch", "!self,Kill,,0,-1"); /// for safety, but it shouldn't act like a normal ammopack
 		SetEntProp(ent, Prop_Send, "m_nSkin", skin);
 		SetEntProp(ent, Prop_Send, "m_nSolidType", 6);
 		SetEntProp(ent, Prop_Send, "m_usSolidFlags", 152);
@@ -350,7 +349,7 @@ stock void SpawnManyAmmoPacks(const int client, const char[] model, int skin=0, 
 public Action Timer_SetEggBomb(Handle timer, any ref)
 {
 	int entity = EntRefToEntIndex(ref);
-	if( FileExists(EggModel) and IsModelPrecached(EggModel) and IsValidEntity(entity) ) {
+	if( FileExists(EggModel) && IsModelPrecached(EggModel) && IsValidEntity(entity) ) {
 		int att = AttachProjectileModel(entity, EggModel);
 		SetEntProp(att, Prop_Send, "m_nSkin", 0);
 		SetEntityRenderMode(entity, RENDER_TRANSCOLOR);

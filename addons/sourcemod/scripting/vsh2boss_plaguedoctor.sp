@@ -10,16 +10,13 @@
 #tryinclude <tf2attributes>
 #define REQUIRE_PLUGIN
 
-#define and    &&
-#define or    ||
-
 #define PlagueModel			"models/player/medic.mdl"
 // #define PlagueModelPrefix		"models/player/medic"
 #define ZombieModel			"models/player/scout.mdl"
 // #define ZombieModelPrefix		"models/player/scout"
 
 
-//voicelines
+/// voicelines
 #define PlagueIntro			"vo/medic_specialcompleted10.mp3"
 #define PlagueRage1			"vo/medic_specialcompleted05.mp3"
 #define PlagueRage2			"vo/medic_specialcompleted06.mp3"
@@ -66,7 +63,7 @@ methodmap CPlague < VSH2Player {
 	public void Equip()
 	{
 		this.RemoveAllItems();
-		char attribs[128]; Format(attribs, sizeof(attribs), "68 ; 2.0 ; 2 ; 2.25 ; 259 ; 1.0 ; 252 ; 0.75 ; 200 ; 1.0 ; 551 ; 1.0");
+		char attribs[128]; Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.25; 259; 1.0; 252; 0.75; 200; 1.0; 551; 1.0");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_shovel", 304, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
@@ -76,13 +73,13 @@ methodmap CPlague < VSH2Player {
 		float value = 0.0; 
 		TF2_AddCondition(this.index, TFCond_MegaHeal, 10.0);
 		switch( GetRandomInt(0, 2) ) {
-			case 0: { attribute = 2; value = 2.0; }		// Extra damage
-			case 1: { attribute = 26; value = 100.0; }	// Extra health
-			case 2: { attribute = 107; value = 2.0; }	// Extra speed
+			case 0: { attribute = 2; value = 2.0; }	 /// Extra damage
+			case 1: { attribute = 26; value = 100.0; }	/// Extra health
+			case 2: { attribute = 107; value = 2.0; }	/// Extra speed
 		}
 		VSH2Player minion;
-		for( int i=MaxClients ; i ; --i ) {
-			if( !IsValidClient(i) or !IsPlayerAlive(i) or GetClientTeam(i) != 3 )
+		for( int i=MaxClients; i; --i ) {
+			if( !IsValidClient(i) || !IsPlayerAlive(i) || GetClientTeam(i) != 3 )
 				continue;
 			minion = VSH2Player(i);
 			bool IsMinion = minion.GetProperty("bIsMinion");
@@ -94,12 +91,12 @@ methodmap CPlague < VSH2Player {
 					SetPawnTimer(TF2AttribsRemove, 10.0, i);
 				}
 				else {
-					char pdapower[32]; Format(pdapower, sizeof(pdapower), "%i ; %f", attribute, value);
+					char pdapower[32]; Format(pdapower, sizeof(pdapower), "%i; %f", attribute, value);
 					int wep = minion.SpawnWeapon("tf_weapon_builder", 28, 5, 10, pdapower);
 					SetPawnTimer(RemoveWepFromSlot, 10.0, i, GetSlotFromWeapon(i, wep));
 				}
 			#else
-				char pdapower[32]; Format(pdapower, sizeof(pdapower), "%i ; %f", attribute, value);
+				char pdapower[32]; Format(pdapower, sizeof(pdapower), "%i; %f", attribute, value);
 				int wep = minion.SpawnWeapon("tf_weapon_builder", 28, 5, 10, pdapower);
 				SetPawnTimer(RemoveWepFromSlot, 10.0, i, GetSlotFromWeapon(i, wep));
 			#endif
@@ -111,13 +108,13 @@ methodmap CPlague < VSH2Player {
 	}
 	public void KilledPlayer(const VSH2Player victim, Event event)
 	{
-		// GLITCH: suiciding allows boss to become own minion.
+		/// GLITCH: suiciding allows boss to become own minion.
 		if( this.userid == victim.userid )
 			return;
-		// PATCH: Hitting spy with active deadringer turns them into Minion...
+		/// PATCH: Hitting spy with active deadringer turns them into Minion...
 		else if( event.GetInt("death_flags") & TF_DEATHFLAG_DEADRINGER )
 			return;
-		// PATCH: killing spy with teammate disguise kills both spy and the teammate he disguised as...
+		/// PATCH: killing spy with teammate disguise kills both spy and the teammate he disguised as...
 		else if( TF2_IsPlayerInCondition(victim.index, TFCond_Disguised) )
 			TF2_RemovePlayerDisguise(victim.index); //event.SetInt("userid", victim.userid);
 		victim.SetProperty("iOwnerBoss", this.userid);
@@ -136,7 +133,7 @@ methodmap CPlague < VSH2Player {
 	}
 };
 
-// plague doctor conversion helper function.
+/// plague doctor conversion helper function.
 public CPlague ToCPlague(const VSH2Player guy)
 {
 	return view_as<CPlague>(guy);
@@ -259,7 +256,7 @@ public void PlagueDoc_OnBossSelected(const VSH2Player player)
 public void PlagueDoc_OnBossThink(const VSH2Player boss)
 {
 	int client = boss.index;
-	if( !IsPlayerAlive(client) or !IsPlagueDoctor(boss) )
+	if( !IsPlayerAlive(client) || !IsPlagueDoctor(boss) )
 		return;
 	
 	CPlague player = ToCPlague(boss);
@@ -273,7 +270,7 @@ public void PlagueDoc_OnBossThink(const VSH2Player boss)
 	float speed = 340.0 + 0.7 * (100-health*100/maxhealth);
 	SetEntPropFloat(client, Prop_Send, "m_flMaxspeed", speed);
 	
-	// glowing code
+	/// glowing code
 	float glowtime = player.GetProperty("flGlowtime");
 	if( glowtime > 0.0 ) {
 		player.SetProperty("bGlow", 1);
@@ -282,8 +279,8 @@ public void PlagueDoc_OnBossThink(const VSH2Player boss)
 	else if( glowtime <= 0.0 )
 		player.SetProperty("bGlow", 0);
 	
-	// superjump code
-	if( ((buttons & IN_DUCK) or (buttons & IN_ATTACK2)) and (player.flCharge >= 0.0) ) {
+	/// superjump code
+	if( ((buttons & IN_DUCK) || (buttons & IN_ATTACK2)) && (player.flCharge >= 0.0) ) {
 		if( player.flCharge+2.5 < (25*1.0) )
 			player.flCharge += 2.5;
 		else player.flCharge = 25.0;
@@ -292,7 +289,7 @@ public void PlagueDoc_OnBossThink(const VSH2Player boss)
 		player.flCharge += 2.5;
 	else {
 		float EyeAngles[3]; GetClientEyeAngles(client, EyeAngles);
-		if( player.flCharge > 1.0 and EyeAngles[0] < -5.0 ) {
+		if( player.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
 			float vel[3]; GetEntPropVector(client, Prop_Data, "m_vecVelocity", vel);
 			vel[2] = 750 + player.flCharge * 13.0;
 			
@@ -305,14 +302,14 @@ public void PlagueDoc_OnBossThink(const VSH2Player boss)
 		}
 		else player.flCharge = 0.0;
 	}
-	if( OnlyScoutsLeft(2) ) // 2 is RED
+	if( OnlyScoutsLeft(2) )	/// 2 is RED
 		player.flRAGE += 0.5;
 	
-	// weighdown code
+	/// weighdown code
 	if( flags & FL_ONGROUND )
 		player.flWeighDown = 0.0;
 	else player.flWeighDown += 0.1;
-	if( (buttons & IN_DUCK) and player.flWeighDown >= 3.0 ) {
+	if( (buttons & IN_DUCK) && player.flWeighDown >= 3.0 ) {
 		float ang[3]; GetClientEyeAngles(client, ang);
 		if( ang[0] > 60.0 ) {
 			SetEntityGravity(client, 6.0);
@@ -320,7 +317,7 @@ public void PlagueDoc_OnBossThink(const VSH2Player boss)
 			player.flWeighDown = 0.0;
 		}
 	}
-	// hud code
+	/// hud code
 	SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
 	Handle hHudText = VSH2GameMode_GetHUDHandle();
 	float jmp = player.flCharge;
@@ -372,12 +369,12 @@ public Action PlagueDoc_OnBossTakeDamage(VSH2Player victim, int &attacker, int &
 	int boss = victim.index;
 	float bossrage = victim.GetProperty("flRAGE");
 	char trigger[32];
-	if( attacker != -1 and GetEdictClassname(attacker, trigger, sizeof(trigger)) and !strcmp(trigger, "trigger_hurt", false) )
+	if( attacker != -1 && GetEdictClassname(attacker, trigger, sizeof(trigger)) && !strcmp(trigger, "trigger_hurt", false) )
 	{
 		if( damage >= 300.0 )
 			victim.TeleToSpawn(3);
 	}
-	if( attacker <= 0 or attacker > MaxClients )
+	if( attacker <= 0 || attacker > MaxClients )
 		return Plugin_Continue;
 	
 	VSH2Player fighter = VSH2Player(attacker);
@@ -388,14 +385,14 @@ public Action PlagueDoc_OnBossTakeDamage(VSH2Player victim, int &attacker, int &
 		GetEdictClassname(weapon, classname, sizeof(classname));
 
 	int wepindex = GetItemIndex(weapon);
-	if( damagecustom == TF_CUSTOM_BACKSTAB or (!strcmp(classname, "tf_weapon_knife", false) and damage > victim.GetProperty("iHealth")) )
+	if( damagecustom == TF_CUSTOM_BACKSTAB || (!strcmp(classname, "tf_weapon_knife", false) && damage > victim.GetProperty("iHealth")) )
 	{
 		int stabs = victim.GetProperty("iStabbed");
 		int maxhealth = victim.GetProperty("iMaxHealth");
 		float changedamage = ( (Pow(float(maxhealth)*0.0014, 2.0) + 899.0) - (float(maxhealth)*(float(stabs)/100)) );
 		if( stabs < 4 )
 			victim.SetProperty("iStabbed", ++stabs);
-		damage = changedamage/3; // You can level "damage dealt" with backstabs
+		damage = changedamage/3; /// You can level "damage dealt" with backstabs
 		damagetype |= DMG_CRIT;
 
 		EmitSoundToAll("player/spy_shield_break.wav", boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
@@ -407,7 +404,7 @@ public Action PlagueDoc_OnBossTakeDamage(VSH2Player victim, int &attacker, int &
 		TF2_AddCondition(attacker, TFCond_SpeedBuffAlly, 1.5);
 		TF2_AddCondition(attacker, TFCond_Ubercharged, 2.0);
 		int vm = GetEntPropEnt(attacker, Prop_Send, "m_hViewModel");
-		if( vm > MaxClients and IsValidEntity(vm) and TF2_GetPlayerClass(attacker) == TFClass_Spy ) {
+		if( vm > MaxClients && IsValidEntity(vm) && TF2_GetPlayerClass(attacker) == TFClass_Spy ) {
 			int melee = fighter.GetWeaponSlotIndex(TFWeaponSlot_Melee);
 			int anim = 15;
 			switch( melee ) {
@@ -420,7 +417,7 @@ public Action PlagueDoc_OnBossTakeDamage(VSH2Player victim, int &attacker, int &
 		PrintCenterText(attacker, "You Tickled The Plague Doctor!");
 		PrintCenterText(boss, "You Were Just Tickled!");
 		int pistol = fighter.GetWeaponSlotIndex(TFWeaponSlot_Primary);
-		if( pistol == 525 ) {	//Diamondback gives 2 crits on backstab
+		if( pistol == 525 ) {	/// Diamondback gives 2 crits on backstab
 			int iCrits = GetEntProp(attacker, Prop_Send, "m_iRevengeCrits");
 			SetEntProp(attacker, Prop_Send, "m_iRevengeCrits", iCrits+2);
 		}
@@ -431,29 +428,29 @@ public Action PlagueDoc_OnBossTakeDamage(VSH2Player victim, int &attacker, int &
 			SetEntProp(attacker, Prop_Data, "m_iHealth", health);
 			SetEntProp(attacker, Prop_Send, "m_iHealth", health);
 		}
-		if( wepindex == 461 )	//Big Earner gives full cloak on backstab
+		if( wepindex == 461 )	/// Big Earner gives full cloak on backstab
 			SetEntPropFloat(attacker, Prop_Send, "m_flCloakMeter", 100.0);
 
 		return Plugin_Changed;
 	}
-	// Detects if boss is damaged by Rock Paper Scissors
+	/// Detects if boss is damaged by Rock Paper Scissors
 	/*if( !damagecustom
-		and TF2_IsPlayerInCondition(boss, TFCond_Taunting)
-		and TF2_IsPlayerInCondition(attacker, TFCond_Taunting) )
+		&& TF2_IsPlayerInCondition(boss, TFCond_Taunting)
+		&& TF2_IsPlayerInCondition(attacker, TFCond_Taunting) )
 	{
 		damage = victim.GetProperty("iHealth")+0.2;
-		fighter.SetProperty("iDamage", fighter.GetProperty("iDamage") + RoundFloat(damage));	// If necessary, just cheat by using the arrays.
+		fighter.SetProperty("iDamage", fighter.GetProperty("iDamage") + RoundFloat(damage));	/// If necessary, just cheat by using the arrays.
 		return Plugin_Changed;
 	}*/
 	if( damagecustom == TF_CUSTOM_TELEFRAG ) {
 		damage = victim.GetProperty("iHealth")+0.2;
 		return Plugin_Changed;
 	}
-	if( damagecustom == TF_CUSTOM_TAUNT_BARBARIAN_SWING ) {	// Gives 4 heads if successful sword killtaunt!
-		for( int xyz=0 ; xyz<4 ; ++xyz )
+	if( damagecustom == TF_CUSTOM_TAUNT_BARBARIAN_SWING ) {	//// Gives 4 heads if successful sword killtaunt!
+		for( int i=0; i<4; ++i )
 			fighter.IncreaseHeadCount(); 
 	}
-	if( StrContains(classname, "tf_weapon_shotgun", false) > -1 && TF2_GetPlayerClass(attacker) == TFClass_Heavy ) { // Heavy Shotguns heal for damage dealt
+	if( StrContains(classname, "tf_weapon_shotgun", false) > -1 && TF2_GetPlayerClass(attacker) == TFClass_Heavy ) { /// Heavy Shotguns heal for damage dealt
 		int health = GetClientHealth(attacker);
 		int newHealth;
 		int maxhp = GetEntProp(attacker, Prop_Data, "m_iMaxHealth");
@@ -464,10 +461,10 @@ public Action PlagueDoc_OnBossTakeDamage(VSH2Player victim, int &attacker, int &
 			SetEntityHealth( attacker, newHealth );
 		}
 	}
-	else if( StrContains(classname, "tf_weapon_sniperrifle", false) > -1 and VSH2GameMode_GetProperty("iRoundState") != 2 /* StateEnding */ ) {
-		if( wepindex != 230 and wepindex != 526 and wepindex != 752 and wepindex != 30665 ) {
+	else if( StrContains(classname, "tf_weapon_sniperrifle", false) > -1 && VSH2GameMode_GetProperty("iRoundState") != 2 /* StateEnding */ ) {
+		if( wepindex != 230 && wepindex != 526 && wepindex != 752 && wepindex != 30665 ) {
 			float bossGlow = victim.GetProperty("flGlowtime");
-			float chargelevel = (IsValidEntity(weapon) and weapon > MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
+			float chargelevel = (IsValidEntity(weapon) && weapon > MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
 			float time = (bossGlow > 10 ? 1.0 : 2.0);
 			time += (bossGlow > 10 ? (bossGlow > 20 ? 1 : 2) : 4)*(chargelevel/100);
 			bossGlow += RoundToCeil(time);
@@ -475,7 +472,7 @@ public Action PlagueDoc_OnBossTakeDamage(VSH2Player victim, int &attacker, int &
 				bossGlow = 30.0;
 			victim.SetProperty("flGlowtime", bossGlow);
 		}
-		if( wepindex == 402 ) {	// bazaar bargain I think
+		if( wepindex == 402 ) {	/// bazaar bargain I think
 			if( damagecustom == TF_CUSTOM_HEADSHOT )
 				fighter.IncreaseHeadCount();
 		}
@@ -491,7 +488,7 @@ public Action PlagueDoc_OnBossTakeDamage(VSH2Player victim, int &attacker, int &
 			victim.SetProperty("flRAGE", bossrage - (damage * 0.03));
 		
 		if( !(damagetype & DMG_CRIT) ) {
-			bool ministatus = (TF2_IsPlayerInCondition(attacker, TFCond_CritCola) or TF2_IsPlayerInCondition(attacker, TFCond_Buffed) or TF2_IsPlayerInCondition(attacker, TFCond_CritHype));
+			bool ministatus = (TF2_IsPlayerInCondition(attacker, TFCond_CritCola) || TF2_IsPlayerInCondition(attacker, TFCond_Buffed) || TF2_IsPlayerInCondition(attacker, TFCond_CritHype));
 			
 			damage *= (ministatus) ? 2.222222 : 3.0;
 			return Plugin_Changed;
@@ -502,13 +499,13 @@ public Action PlagueDoc_OnBossTakeDamage(VSH2Player victim, int &attacker, int &
 		int iFlags = GetEntityFlags(boss);
 #if defined _tf2attributes_included
 		if( VSH2GameMode_GetProperty("bTF2Attribs") ) {
-			// If Hale is ducking on the ground, it's harder to knock him back
+			/// If Hale is ducking on the ground, it's harder to knock him back
 			if( (iFlags & (FL_ONGROUND|FL_DUCKING)) == (FL_ONGROUND|FL_DUCKING) )
 				TF2Attrib_SetByDefIndex(boss, 252, 0.0);
 			else TF2Attrib_RemoveByDefIndex(boss, 252);
 		}
 		else {
-			// Does not protect against sentries or FaN, but does against miniguns and rockets
+			/// Does not protect against sentries or FaN, but does against miniguns and rockets
 			if( (iFlags & (FL_ONGROUND|FL_DUCKING)) == (FL_ONGROUND|FL_DUCKING) )
 				damagetype |= DMG_PREVENT_PHYSICS_FORCE;
 		}
@@ -518,18 +515,18 @@ public Action PlagueDoc_OnBossTakeDamage(VSH2Player victim, int &attacker, int &
 #endif
 	}
 	switch( wepindex ) {
-		case 593: {	// Third Degree
+		case 593: {	/// Third Degree
 			int healers[MAXPLAYERS];
 			int healercount = 0;
-			for( int i=MaxClients ; i ; --i ) {
-				if( IsValidClient(i) and IsPlayerAlive(i) and GetHealingTarget(i) == attacker )
+			for( int i=MaxClients; i; --i ) {
+				if( IsValidClient(i) && IsPlayerAlive(i) && GetHealingTarget(i) == attacker )
 				{
 					healers[healercount] = i;
 					healercount++;
 				}
 			}
-			for( int i=0 ; i<healercount ; i++ ) {
-				if( IsValidClient(healers[i]) and IsPlayerAlive(healers[i]) ) {
+			for( int i=0; i<healercount; i++ ) {
+				if( IsValidClient(healers[i]) && IsPlayerAlive(healers[i]) ) {
 					int medigun = GetPlayerWeaponSlot(healers[i], TFWeaponSlot_Secondary);
 					if( IsValidEntity(medigun) ) {
 						char cls[32];
@@ -550,13 +547,12 @@ public Action PlagueDoc_OnBossTakeDamage(VSH2Player victim, int &attacker, int &
 		case 132, 266, 482, 1082: fighter.IncreaseHeadCount();
 		case 355, 648: victim.SetProperty("flRAGE", bossrage - FindConVar("vsh2_fanowar_rage").FloatValue);
 		case 317: fighter.SpawnSmallHealthPack(GetClientTeam(attacker));
-		case 416: {	// Chdata's Market Gardener backstab
+		case 416: {	/// Chdata's Market Gardener backstab
 			bool jumping = fighter.GetProperty("bInJump");
 			if( jumping ) {
 				int maxhealth = victim.GetProperty("iMaxHealth");
 				int markets = victim.GetProperty("iMarketted");
 				damage = ( Pow(float(maxhealth), (0.74074))/*512.0*/ - (markets/128*float(maxhealth)) )/3.0;
-				//divide by 3 because this is basedamage and lolcrits (0.714286)) + 1024.0)
 				damagetype |= DMG_CRIT;
 				
 				if( markets < 5 )
@@ -597,14 +593,14 @@ public Action PlagueDoc_OnBossTakeDamage(VSH2Player victim, int &attacker, int &
 				SetEntProp(attacker, Prop_Send, "m_iHealth", newhealth);
 			}
 		}
-		case 61, 1006: {  // Ambassador does 2.5x damage on headshot
+		case 61, 1006: {  /// Ambassador does 2.5x damage on headshot
 			if( damagecustom == TF_CUSTOM_HEADSHOT ) {
 				damage *= 2.5;
 				return Plugin_Changed;
 			}
 		}
 		/*
-		case 16, 203, 751, 1149: {  //SMG does 2.5x damage on headshot
+		case 16, 203, 751, 1149: {  /// SMG does 2.5x damage on headshot
 			if( damagecustom == TF_CUSTOM_HEADSHOT ) {
 				damage = 27.0;
 				return Plugin_Changed;
@@ -613,7 +609,7 @@ public Action PlagueDoc_OnBossTakeDamage(VSH2Player victim, int &attacker, int &
 		*/
 		case 525, 595: {
 			int iCrits = GetEntProp(attacker, Prop_Send, "m_iRevengeCrits");
-			if( iCrits ) {	// If a revenge crit was used, give a damage bonus
+			if( iCrits ) {	/// If a revenge crit was used, give a damage bonus
 				damage = 85.0;
 				return Plugin_Changed;
 			}
@@ -637,7 +633,7 @@ public Action PlagueDoc_OnBossDealDamage(VSH2Player victim, int &attacker, int &
 	int client = victim.index;
 	if( damagecustom == TF_CUSTOM_BOOTS_STOMP ) {
 		float flFallVelocity = GetEntPropFloat(inflictor, Prop_Send, "m_flFallVelocity");
-		damage = 10.0 * (GetRandomFloat(0.8, 1.2) * (5.0 * (flFallVelocity / 300.0))); //TF2 Fall Damage formula, modified for VSH2
+		damage = 10.0 * (GetRandomFloat(0.8, 1.2) * (5.0 * (flFallVelocity / 300.0))); /// TF2 Fall Damage formula, modified for VSH2
 		return Plugin_Changed;
 	}
 	if( TF2_IsPlayerInCondition(client, TFCond_DefenseBuffed) ) {
@@ -653,30 +649,30 @@ public Action PlagueDoc_OnBossDealDamage(VSH2Player victim, int &attacker, int &
 	int medigun = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 	char mediclassname[32];
 	if( IsValidEdict(medigun)
-		and GetEdictClassname(medigun, mediclassname, sizeof(mediclassname))
-		and !strcmp(mediclassname, "tf_weapon_medigun", false)
-		and !TF2_IsPlayerInCondition(client, TFCond_Ubercharged)
-		and weapon == GetPlayerWeaponSlot(attacker, 2)) {
-		/*
+		&& GetEdictClassname(medigun, mediclassname, sizeof(mediclassname))
+		&& !strcmp(mediclassname, "tf_weapon_medigun", false)
+		&& !TF2_IsPlayerInCondition(client, TFCond_Ubercharged)
+		&& weapon == GetPlayerWeaponSlot(attacker, 2)) {
+		/**
 			If medic has (nearly) full uber, use it as a single-hit shield to prevent medics from dying early.
 			Entire team is pretty much screwed if all the medics just die.
 		*/
 		if( GetMediCharge(medigun) >= 0.90 ) {
 			SetMediCharge(medigun, 0.5);
 			damage *= 10;
-			// Patch: Nov 14, 2017 - removing post-bonk slowdown.
+			/// Patch: Nov 14, 2017 - removing post-bonk slowdown.
 			TF2_AddCondition(client, TFCond_UberchargedOnTakeDamage, 0.1);
 			return Plugin_Changed;
 		}
 	}
-	if( TF2_GetPlayerClass(client) == TFClass_Spy ) {  //eggs probably do melee damage to spies, then? That's not ideal, but eh.
-		if( GetEntProp(client, Prop_Send, "m_bFeignDeathReady") and !TF2_IsPlayerInCondition(client, TFCond_Cloaked) ) {
+	if( TF2_GetPlayerClass(client) == TFClass_Spy ) {  /// eggs probably do melee damage to spies, then? That's not ideal, but eh.
+		if( GetEntProp(client, Prop_Send, "m_bFeignDeathReady") && !TF2_IsPlayerInCondition(client, TFCond_Cloaked) ) {
 			if( damagetype & DMG_CRIT )
 				damagetype &= ~DMG_CRIT;
 			damage = 85.0;
 			return Plugin_Changed;
 		}
-		if( TF2_IsPlayerInCondition(client, TFCond_Cloaked) or TF2_IsPlayerInCondition(client, TFCond_DeadRingered) ) {
+		if( TF2_IsPlayerInCondition(client, TFCond_Cloaked) || TF2_IsPlayerInCondition(client, TFCond_DeadRingered) ) {
 			if( damagetype & DMG_CRIT )
 				damagetype &= ~DMG_CRIT;
 			damage = 60.0;
@@ -686,24 +682,17 @@ public Action PlagueDoc_OnBossDealDamage(VSH2Player victim, int &attacker, int &
 	int ent = -1;
 	while( (ent = FindEntityByClassname(ent, "tf_wearable_demoshield")) != -1 ) {
 		if( GetOwner(ent) == client
-			/*and damage >= float(GetClientHealth(client))*/
-			and !TF2_IsPlayerInCondition(client, TFCond_Ubercharged)
-			and !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable")
-			and weapon == GetPlayerWeaponSlot(attacker, 2) )
+			/*&& damage >= float(GetClientHealth(client))*/
+			&& !TF2_IsPlayerInCondition(client, TFCond_Ubercharged)
+			&& !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable")
+			&& weapon == GetPlayerWeaponSlot(attacker, 2) )
 		{
 			victim.SetProperty("iHits", victim.GetProperty("iHits")+1);
-			//int HitsRequired = 0;
-			//switch (GetItemIndex(ent)) {
-			//	case 131, 1144: HitsRequired = 2;	// 2 hits for normal and festive Chargin' Targe
-			//	case 406, 1099: HitsRequired = 1;
-			//}
-			// Patch: Nov 14, 2017 - removing post-bonk slowdown.
+			/// Patch: Nov 14, 2017 - removing post-bonk slowdown.
 			TF2_AddCondition(client, TFCond_PasstimeInterception, 0.1);
 			TF2_AddCondition(client, TFCond_SpeedBuffAlly, 1.0);
-			//if (victim.iHits >= HitsRequired) {
 			TF2_RemoveWearable(client, ent);
 			EmitSoundToAll("player/spy_shield_break.wav", client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
-			//}
 			break;
 		}
 	}
@@ -712,20 +701,20 @@ public Action PlagueDoc_OnBossDealDamage(VSH2Player victim, int &attacker, int &
 public void PlagueDoc_OnPlayerKilled(const VSH2Player attacker, const VSH2Player victim, Event event)
 {
 	//int deathflags = event.GetInt("death_flags");
-	// attacker is plague doctor!
-	if( attacker.GetProperty("bIsBoss") and IsPlagueDoctor(attacker) ) {
+	/// attacker is plague doctor!
+	if( attacker.GetProperty("bIsBoss") && IsPlagueDoctor(attacker) ) {
 		ToCPlague(attacker).KilledPlayer(victim, event);
 	}
-	// attacker is a plague doctor minion!
+	/// attacker is a plague doctor minion!
 	else if( attacker.GetProperty("bIsMinion") ) {
 		VSH2Player owner = VSH2Player(attacker.GetProperty("iOwnerBoss"), true);
 		if( IsPlagueDoctor(owner) )
 			ToCPlague(owner).KilledPlayer(victim, event);
 	}
 	if( victim.GetProperty("bIsMinion") ) {
-		// Cap respawning minions by the amount of minions there are. If 10 minions, then respawn him/her in 10 seconds.
+		/// Cap respawning minions by the amount of minions there are. If 10 minions, then respawn him/her in 10 seconds.
 		VSH2Player owner = VSH2Player(victim.GetProperty("iOwnerBoss"), true);
-		if( IsPlagueDoctor(owner) and IsPlayerAlive(owner.index) ) {
+		if( IsPlagueDoctor(owner) && IsPlayerAlive(owner.index) ) {
 			int minions = VSH2GameMode_CountMinions(false);
 			victim.ConvertToMinion(float(minions));
 		}
@@ -734,8 +723,8 @@ public void PlagueDoc_OnPlayerKilled(const VSH2Player attacker, const VSH2Player
 public void PlagueDoc_OnPlayerHurt(const VSH2Player attacker, const VSH2Player victim, Event event)
 {
 	int damage = event.GetInt("damageamount");
-	if( !victim.GetProperty("bIsBoss") and victim.GetProperty("bIsMinion") and !attacker.GetProperty("bIsMinion") ) {
-		/* Have boss take damage if minions are hurt by players, this prevents bosses from hiding just because they gained minions
+	if( !victim.GetProperty("bIsBoss") && victim.GetProperty("bIsMinion") && !attacker.GetProperty("bIsMinion") ) {
+		/** Have boss take damage if minions are hurt by players, this prevents bosses from hiding just because they gained minions
 		 */
 		VSH2Player ownerBoss = VSH2Player(victim.GetProperty("iOwnerBoss"), true);
 		if( IsPlagueDoctor(ownerBoss) ) {
@@ -744,7 +733,7 @@ public void PlagueDoc_OnPlayerHurt(const VSH2Player attacker, const VSH2Player v
 		}
 		return;
 	}
-	if( IsPlagueDoctor(victim) and victim.GetProperty("bIsBoss") )
+	if( IsPlagueDoctor(victim) && victim.GetProperty("bIsBoss") )
 		victim.GiveRage(damage);
 }
 public void PlagueDoc_OnPlayerAirblasted(const VSH2Player airblaster, const VSH2Player airblasted, Event event)
@@ -801,7 +790,7 @@ public void PlagueDoc_OnRoundEndInfo(const VSH2Player player, bool bossBool, cha
 	int maxhealth = player.GetProperty("iMaxHealth");
 	Format(message, 512, "%s\nPlague Doctor (%N) had %i (of %i) health left.", message, player.index, health, maxhealth);
 	if( bossBool ) {
-		// play Boss Wins sounds here!
+		/// play Boss Wins sounds here!
 	}
 	
 }
@@ -844,7 +833,7 @@ void RecruitMinion(const VSH2Player base)
 	if( VSH2GameMode_GetProperty("bTF2Attribs") )
 		TF2Attrib_RemoveAll(client);
 #endif
-	int weapon = base.SpawnWeapon("tf_weapon_bat", 572, 100, 5, "6 ; 0.5 ; 57 ; 15.0 ; 26 ; 75.0 ; 49 ; 1.0 ; 68 ; -2.0");
+	int weapon = base.SpawnWeapon("tf_weapon_bat", 572, 100, 5, "6; 0.5; 57; 15.0; 26; 75.0; 49; 1.0; 68; -2.0");
 	SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 	TF2_AddCondition(client, TFCond_Ubercharged, 3.0);
 	SetEntityHealth(client, 200);
@@ -905,35 +894,35 @@ stock int SetWeaponClip(const int weapon, const int ammo)
 }
 stock int GetOwner(const int ent)
 {
-	if ( IsValidEdict(ent) && IsValidEntity(ent) )
+	if( IsValidEdict(ent) && IsValidEntity(ent) )
 		return GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity");
 	return -1;
 }
 stock int GetSlotFromWeapon(const int iClient, const int iWeapon)
 {
 	for (int i=0; i<5; i++) {
-		if ( iWeapon == GetPlayerWeaponSlot(iClient, i) )
+		if( iWeapon == GetPlayerWeaponSlot(iClient, i) )
 			return i;
 	}
 	return -1;
 }
 stock bool OnlyScoutsLeft(const int team)
 {
-	for (int i=MaxClients ; i ; --i) {
-		if ( ! IsValidClient(i) or ! IsPlayerAlive(i) )
+	for (int i=MaxClients; i; --i) {
+		if( !IsValidClient(i) || !IsPlayerAlive(i) )
 			continue;
-		if (GetClientTeam(i) == team and TF2_GetPlayerClass(i) != TFClass_Scout)
+		if (GetClientTeam(i) == team && TF2_GetPlayerClass(i) != TFClass_Scout)
 			return false;
 	}
 	return true;
 }
+
 stock void SetPawnTimer(Function func, float thinktime = 0.1, any param1 = -999, any param2 = -999)
 {
 	DataPack thinkpack = new DataPack();
 	thinkpack.WriteFunction(func);
 	thinkpack.WriteCell(param1);
 	thinkpack.WriteCell(param2);
-
 	CreateTimer(thinktime, DoThink, thinkpack, TIMER_DATA_HNDL_CLOSE);
 }
 
@@ -945,11 +934,11 @@ public Action DoThink(Handle hTimer, DataPack hndl)
 	Call_StartFunction( null, pFunc );
 	
 	any param1 = hndl.ReadCell();
-	if ( param1 != -999 )
+	if( param1 != -999 )
 		Call_PushCell(param1);
 	
 	any param2 = hndl.ReadCell();
-	if ( param2 != -999 )
+	if( param2 != -999 )
 		Call_PushCell(param2);
 	
 	Call_Finish();
@@ -957,22 +946,22 @@ public Action DoThink(Handle hTimer, DataPack hndl)
 }
 stock void IncrementHeadCount(const int client, bool addhealth = true, int addheads = 1)
 {
-	if ( (TF2_GetPlayerClass(client) == TFClass_DemoMan) and  ! TF2_IsPlayerInCondition(client, TFCond_DemoBuff) )
-		TF2_AddCondition(client, TFCond_DemoBuff, TFCondDuration_Infinite); //Apply this condition to Demomen to give them their glowing eye effect.
+	if( (TF2_GetPlayerClass(client) == TFClass_DemoMan) && !TF2_IsPlayerInCondition(client, TFCond_DemoBuff) )
+		TF2_AddCondition(client, TFCond_DemoBuff, TFCondDuration_Infinite);
 	int decapitations = GetEntProp(client, Prop_Send, "m_iDecapitations");
 	SetEntProp(client, Prop_Send, "m_iDecapitations", decapitations + addheads);
-	if ( addhealth )
+	if( addhealth )
 	{
 		int health = GetClientHealth(client);
 		//health += (decapitations >= 4 ? 10 : 15);
-		if ( health + (15 * addheads) <= 300 ) // TODO: Replace this with an overheal calculation (MaxHP * 1.5) OR add a maxhealth arg. 
+		if( health + (15 * addheads) <= 300 )
 			health += 15 * addheads;
 		else
 			health = 300;
 		SetEntProp(client, Prop_Data, "m_iHealth", health);
 		SetEntProp(client, Prop_Send, "m_iHealth", health);
 	}
-	TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);   //recalc their speed
+	TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
 }
 stock float GetMediCharge(const int medigun)
 {

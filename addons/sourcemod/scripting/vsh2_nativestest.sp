@@ -36,7 +36,7 @@ public void OnPluginStart()
 	LoadVSH2Hooks();
 }
 
-/* YOU NEED TO USE OnAllPluginsLoaded() TO REGISTER PLUGINS BECAUSE WE NEED TO MAKE SURE THE VSH2 PLUGIN LOADS FIRST */
+/** YOU NEED TO USE OnAllPluginsLoaded() TO REGISTER PLUGINS BECAUSE WE NEED TO MAKE SURE THE VSH2 PLUGIN LOADS FIRST */
 
 //int ThisPluginIndex;
 public void OnAllPluginsLoaded()
@@ -69,13 +69,13 @@ public Action CommandInfo(int client, int args)
 
 public void fwdOnDownloadsCalled()
 {
-	for (int i=0 ; i < 5 ; ++i)
+	for (int i=0; i < 5; ++i)
 		PrintToServer("Forward OnDownloadsCalled called");
 }
 public void fwdBossSelected(const VSH2Player base)
 {
-	for (int i=MaxClients ; i ; --i)
-		if ( IsClientInGame(i) )
+	for (int i=MaxClients; i; --i)
+		if( IsClientInGame(i) )
 			PrintToConsole(i, "fwdBossSelected:: ==> %N @ index: %i", base.index, base.index);
 }
 
@@ -209,8 +209,8 @@ public void fwdOnRoundEndInfo(const VSH2Player Player, bool bossBool, char messa
 }
 public void fwdOnLastPlayer(const VSH2Player Boss)
 {
-	for (int i=MaxClients ; i ; --i)
-		if ( IsClientInGame(i) )
+	for (int i=MaxClients; i; --i)
+		if( IsClientInGame(i) )
 			PrintToConsole(i, "fwdOnLastPlayer:: ==> Called");
 }
 

@@ -1,7 +1,7 @@
 #define HHHModel			"models/player/saxton_hale/hhh_jr_mk3.mdl"
 // #define HHHModelPrefix			"models/player/saxton_hale/hhh_jr_mk3"
 
-//HHH voicelines
+/// HHH voicelines
 #define HHHLaught			"vo/halloween_boss/knight_laugh"
 #define HHHRage				"vo/halloween_boss/knight_attack01.mp3"
 #define HHHRage2			"vo/halloween_boss/knight_alert.mp3"
@@ -49,7 +49,7 @@ methodmap CHHHJr < BaseBoss
 		else if( this.flGlowtime <= 0.0 )
 			this.bGlow = 0;
 
-		if( ((buttons & IN_DUCK) or (buttons & IN_ATTACK2)) and (this.flCharge >= 0.0) ) {
+		if( ((buttons & IN_DUCK) || (buttons & IN_ATTACK2)) && (this.flCharge >= 0.0) ) {
 			if( this.flCharge+2.5 < HALEHHH_TELEPORTCHARGE )
 				this.flCharge += 2.5;
 			else this.flCharge = HALEHHH_TELEPORTCHARGE;
@@ -58,7 +58,7 @@ methodmap CHHHJr < BaseBoss
 			this.flCharge += 2.5;
 		else {
 			float EyeAngles[3]; GetClientEyeAngles(this.index, EyeAngles);
-			if( this.flCharge == HALEHHH_TELEPORTCHARGE and EyeAngles[0] < -5.0 ) {
+			if( this.flCharge == HALEHHH_TELEPORTCHARGE && EyeAngles[0] < -5.0 ) {
 				int living;
 				switch( GetClientTeam(this.index) ) {
 					case 2: living = GetLivingPlayers(3);
@@ -67,16 +67,16 @@ methodmap CHHHJr < BaseBoss
 				int target = -1;
 				while( living > 0 ) {
 					target = GetRandomInt(1, MaxClients);
-					if( !IsValidClient(target) or !IsPlayerAlive(target) )
+					if( !IsValidClient(target) || !IsPlayerAlive(target) )
 						continue;
-					if( target == this.index or GetClientTeam(target) == GetClientTeam(this.index) )
+					if( target == this.index || GetClientTeam(target) == GetClientTeam(this.index) )
 						continue;
 					break;
 				}
 				if( IsValidClient(target) ) {
-					// Chdata's HHH teleport rework
-					if (TF2_GetPlayerClass(target) != TFClass_Scout and TF2_GetPlayerClass(target) != TFClass_Soldier) {
-						SetEntProp(this.index, Prop_Send, "m_CollisionGroup", 2); //Makes HHH clipping go away for player and some projectiles
+					/// Chdata's HHH teleport rework
+					if (TF2_GetPlayerClass(target) != TFClass_Scout && TF2_GetPlayerClass(target) != TFClass_Soldier) {
+						SetEntProp(this.index, Prop_Send, "m_CollisionGroup", 2); /// Makes HHH clipping go away for player and some projectiles
 						SetPawnTimer(HHHTeleCollisionReset, 2.0, this.userid);
 						//hHHHTeleTimer = CreateTimer(bEnableSuperDuperJump ? 4.0 : 2.0, HHHTeleTimer, Hale, TIMER_FLAG_NO_MAPCHANGE);
 					}
@@ -98,7 +98,7 @@ methodmap CHHHJr < BaseBoss
 					CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(AttachParticle(this.index, "ghost_appearation")));
 					CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(AttachParticle(this.index, "ghost_appearation", _, false)));
 
-					// Chdata's HHH teleport rework
+					/// Chdata's HHH teleport rework
 					float vPos[3];
 					GetEntPropVector(target, Prop_Send, "m_vecOrigin", vPos);
 
@@ -120,7 +120,7 @@ methodmap CHHHJr < BaseBoss
 		}
 		else this.flWeighDown += 0.1;
 
-		if( (buttons & IN_DUCK) and this.flWeighDown >= 1.0 ) {
+		if( (buttons & IN_DUCK) && this.flWeighDown >= 1.0 ) {
 			float ang[3]; GetClientEyeAngles(this.index, ang);
 			if( ang[0] > 60.0 ) {
 				SetEntityGravity(this.index, 6.0);
@@ -155,15 +155,15 @@ methodmap CHHHJr < BaseBoss
 		this.RemoveAllItems();
 		char attribs[128];
 
-		Format(attribs, sizeof(attribs), "68 ; 2.0 ; 2 ; 2.86 ; 259 ; 1.0 ; 252 ; 0.7 ; 551 ; 1");
+		Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.86; 259; 1.0; 252; 0.7; 551; 1");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_sword", 266, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
 	public void RageAbility()
 	{
 		TF2_AddCondition(this.index, view_as<TFCond>(42), 4.0);
-		if( ! GetEntProp(this.index, Prop_Send, "m_bIsReadyToHighFive")
-			and ! IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
+		if( !GetEntProp(this.index, Prop_Send, "m_bIsReadyToHighFive")
+			&& !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
 		{
 			TF2_RemoveCondition(this.index, TFCond_Taunting);
 			this.SetModel(); //MakeModelTimer(null);
@@ -186,7 +186,7 @@ methodmap CHHHJr < BaseBoss
 			this.iKills++;
 		else this.iKills = 0;
 		
-		if( this.iKills == 3 and living != 1 ) {
+		if( this.iKills == 3 && living != 1 ) {
 			Format(snd, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHLaught, GetRandomInt(1, 4));
 			EmitSoundToAll(snd, this.index); EmitSoundToAll(snd, this.index);
 			this.iKills = 0;
@@ -196,7 +196,7 @@ methodmap CHHHJr < BaseBoss
 	public void Help()
 	{
 		if( IsVoteInProgress() )
-			return ;
+			return;
 		char helpstr[] = "Horseless Headless Horsemann Jr.:\nTeleporter: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (stun): taunt when Rage is full to stun nearby enemies.";
 		Panel panel = new Panel();
 		panel.SetTitle (helpstr);
@@ -217,7 +217,7 @@ public void AddHHHToDownloads()
 	int i;
 
 	PrepareModel(HHHModel);
-	for( i=1 ; i <= 4 ; i++ ) {
+	for( i=1; i <= 4; i++ ) {
 		Format(s, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHLaught, i);
 		PrecacheSound(s, true);
 		Format(s, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHAttack, i);
@@ -248,16 +248,16 @@ public void AddHHHToMenu ( Menu& menu )
 public void HHHTeleCollisionReset(const int userid)
 {
 	int client = GetClientOfUserId(userid);
-	SetEntProp(client, Prop_Send, "m_CollisionGroup", 5); //Fix HHH's clipping.
+	SetEntProp(client, Prop_Send, "m_CollisionGroup", 5); /// Fix HHH's clipping.
 }
 public void StunHHH(const int userid, const int targetid)
 {
 	int client = GetClientOfUserId(userid);
-	if( ! IsValidClient(client) or ! IsPlayerAlive(client) )
+	if( !IsValidClient(client) || !IsPlayerAlive(client) )
 		return;
 
 	int target = GetClientOfUserId(targetid);
-	if( ! IsValidClient(target) or ! IsPlayerAlive(target) )
+	if( !IsValidClient(target) || !IsPlayerAlive(target) )
 		target = 0;
 	TF2_StunPlayer(client, 2.0, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, target);
 }

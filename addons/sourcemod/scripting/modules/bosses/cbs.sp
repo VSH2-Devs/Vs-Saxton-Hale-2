@@ -1,8 +1,8 @@
-//defines
+/// defines
 #define CBSModel		"models/player/saxton_hale/cbs_v4.mdl"
 // #define CBSModelPrefix		"models/player/saxton_hale/cbs_v4"
 
-//CBS voicelines
+/// CBS voicelines
 #define CBS0			"vo/sniper_specialweapon08.mp3"
 #define CBS1			"vo/taunts/sniper_taunts02.mp3"
 #define CBS2			"vo/sniper_award"
@@ -51,7 +51,7 @@ methodmap CChristian < BaseBoss
 		else if( this.flGlowtime <= 0.0 )
 			this.bGlow = 0;
 
-		if( ((buttons & IN_DUCK) or (buttons & IN_ATTACK2)) and (this.flCharge >= 0.0) ) {
+		if( ((buttons & IN_DUCK) || (buttons & IN_ATTACK2)) && (this.flCharge >= 0.0) ) {
 			if( this.flCharge+2.5 < HALE_JUMPCHARGE )
 				this.flCharge += 2.5;
 			else this.flCharge = HALE_JUMPCHARGE;
@@ -60,14 +60,14 @@ methodmap CChristian < BaseBoss
 			this.flCharge += 2.5;
 		else {
 			float EyeAngles[3]; GetClientEyeAngles(this.index, EyeAngles);
-			if( this.flCharge > 1.0 and EyeAngles[0] < -5.0 ) {
+			if( this.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
 				float vel[3]; GetEntPropVector(this.index, Prop_Data, "m_vecVelocity", vel);
 				vel[2] = 750 + this.flCharge * 13.0;
 
 				SetEntProp(this.index, Prop_Send, "m_bJumping", 1);
 				vel[0] *= (1+Sine(this.flCharge * FLOAT_PI / 50));
 				vel[1] *= (1+Sine(this.flCharge * FLOAT_PI / 50));
-				TeleportEntity(this.index, nullvec, nullvec, vel);
+				TeleportEntity(this.index, NULL_VEC, NULL_VEC, vel);
 				this.flCharge = -100.0;
 				strcopy(snd, PLATFORM_MAX_PATH, CBSJump1);
 				
@@ -83,7 +83,7 @@ methodmap CChristian < BaseBoss
 			this.flWeighDown = 0.0;
 		else this.flWeighDown += 0.1;
 
-		if( (buttons & IN_DUCK) and this.flWeighDown >= HALE_WEIGHDOWN_TIME )
+		if( (buttons & IN_DUCK) && this.flWeighDown >= HALE_WEIGHDOWN_TIME )
 		{
 			float ang[3]; GetClientEyeAngles(this.index, ang);
 			if( ang[0] > 60.0 ) {
@@ -101,8 +101,8 @@ methodmap CChristian < BaseBoss
 		if( jmp > 0.0 )
 			jmp *= 4.0;
 		if( this.flRAGE >= 100.0 )
-                        ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp));
-                else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", RoundFloat(jmp), this.flRAGE);
+						ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp));
+				else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", RoundFloat(jmp), this.flRAGE);
 	}
 	public void SetModel ()
 	{
@@ -122,7 +122,7 @@ methodmap CChristian < BaseBoss
 		this.RemoveAllItems();
 		char attribs[128];
 
-		Format(attribs, sizeof(attribs), "68 ; 2.0 ; 2 ; 2.86 ; 259 ; 1.0");
+		Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.86; 259; 1.0");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_club", 171, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
@@ -130,7 +130,7 @@ methodmap CChristian < BaseBoss
 	{
 		TF2_AddCondition(this.index, view_as<TFCond>(42), 4.0);
 		if( !GetEntProp(this.index, Prop_Send, "m_bIsReadyToHighFive")
-			and !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
+			&& !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
 		{
 			TF2_RemoveCondition(this.index, TFCond_Taunting);
 			this.SetModel(); //MakeModelTimer(null);
@@ -142,8 +142,8 @@ methodmap CChristian < BaseBoss
 		else Format(snd, PLATFORM_MAX_PATH, "%s", CBS3);
 		EmitSoundToAll(snd);
 		TF2_RemoveWeaponSlot(this.index, TFWeaponSlot_Primary);
-		int bow = this.SpawnWeapon("tf_weapon_compound_bow", 1005, 100, 5, "2 ; 2.1 ; 6 ; 0.5 ; 37 ; 0.0 ; 280 ; 19 ; 551 ; 1");
-		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", bow); //266 ; 1.0 - penetration
+		int bow = this.SpawnWeapon("tf_weapon_compound_bow", 1005, 100, 5, "2; 2.1; 6; 0.5; 37; 0.0; 280; 19; 551; 1");
+		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", bow); /// 266; 1.0 - penetration
 		
 		int living = GetLivingPlayers(RED);
 		SetWeaponAmmo(bow, ((living >= CBS_MAX_ARROWS) ? CBS_MAX_ARROWS : living));
@@ -152,7 +152,7 @@ methodmap CChristian < BaseBoss
 	public void KilledPlayer(const BaseBoss victim, Event event)
 	{
 		int living = GetLivingPlayers(RED);
-		if( !GetRandomInt(0, 3) and living != 1 ) {
+		if( !GetRandomInt(0, 3) && living != 1 ) {
 			switch( TF2_GetPlayerClass(victim.index) ) {
 				case TFClass_Spy: {
 					strcopy(snd, PLATFORM_MAX_PATH, "vo/sniper_dominationspy04.mp3");
@@ -173,7 +173,7 @@ methodmap CChristian < BaseBoss
 				case 5: clubindex = 423;
 				case 6: clubindex = 474;
 			}
-			weapon = this.SpawnWeapon("tf_weapon_club", clubindex, 100, 5, "68 ; 2.0 ; 2 ; 2.86 ; 259 ; 1.0");
+			weapon = this.SpawnWeapon("tf_weapon_club", clubindex, 100, 5, "68; 2.0; 2; 2.86; 259; 1.0");
 			SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", weapon);
 		}
 
@@ -182,7 +182,7 @@ methodmap CChristian < BaseBoss
 			this.iKills++;
 		else this.iKills = 0;
 		
-		if( this.iKills == 3 and living != 1 ) {
+		if( this.iKills == 3 && living != 1 ) {
 			if( !GetRandomInt(0, 3) )
 				Format(snd, PLATFORM_MAX_PATH, CBS0);
 			else if( !GetRandomInt(0, 3) )
@@ -235,7 +235,7 @@ public void AddCBSToDownloads()
 	PrecacheSound(CBSJump1, true);
 	PrepareSound(CBSTheme);
 
-	for( i=1 ; i <= 25 ; i++ ) {
+	for( i=1; i <= 25; i++ ) {
 		if( i <= 9 ) {
 			Format(s, PLATFORM_MAX_PATH, "%s%02i.mp3", CBS2, i);
 			PrecacheSound(s, true);

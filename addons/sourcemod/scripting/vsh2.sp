@@ -20,45 +20,36 @@
 #tryinclude <updater>
 #define REQUIRE_PLUGIN
 
-#define UPDATE_URL			"https://raw.githubusercontent.com/VSH2-Devs/Vs-Saxton-Hale-2/develop/updater.txt"
+#define UPDATE_URL       "https://raw.githubusercontent.com/VSH2-Devs/Vs-Saxton-Hale-2/develop/updater.txt"
 
-#pragma semicolon			1
-#pragma newdecls			required
+#pragma semicolon        1
+#pragma newdecls         required
 
-#define PLUGIN_VERSION			"2.1.3"
-#define PLUGIN_DESCRIPT			"VS Saxton Hale 2"
+#define PLUGIN_VERSION   "2.1.4"
+#define PLUGIN_DESCRIPT  "VS Saxton Hale 2"
 
 
-#define IsClientValid(%1)		( 0 < (%1) and (%1) <= MaxClients and IsClientInGame((%1)) )
-#define PLYR				MAXPLAYERS+1
+#define IsClientValid(%1)    ( 0 < (%1) && (%1) <= MaxClients && IsClientInGame((%1)) )
+#define PLYR                 MAXPLAYERS+1
 
-//Team number defines
+/// Team number defines
 #define UNASSIGNED 0
 #define NEUTRAL 0
 #define SPEC 1
 #define RED 2
 #define BLU 3
 
-// Python + C style operators
-#define and				&&
-#define or				||
 
-// functional-style typecasting
+/// functional-style typecasting
 #define int(%1)				view_as<int>(%1)
 #define Handle(%1)			view_as<Handle>(%1)
 
-// misc.
-#define nullfunc			INVALID_FUNCTION
-#define nullvec				NULL_VECTOR
-#define nullstr				NULL_STRING
-#define toggle(%1)			%1 = !(%1)
-
-#define _buffer(%1)			%1, sizeof(%1)
-#define _strbuffer(%1)			%1, sizeof(%1)
+/// misc.
+#define NULL_VEC			NULL_VECTOR
 #define PLYR				MAXPLAYERS+1
 #define PATH				64
 #define FULLPATH			PLATFORM_MAX_PATH
-#define repeat(%1)			for (int xyz=0; xyz<(%1); ++xyz)	// laziness is real lmao
+#define repeat(%1)			for (int __i=0; __i<(%1); ++__i)
 
 
 public Plugin myinfo = {
@@ -69,7 +60,7 @@ public Plugin myinfo = {
 	url 			= "https://forums.alliedmods.net/showthread.php?t=286701"
 };
 
-enum /* CvarName */ {
+enum /** CvarName */ {
 	PointType = 0,
 	PointDelay,
 	AliveToEnable,
@@ -116,12 +107,12 @@ enum /* CvarName */ {
 	VersionNumber
 };
 
-// cvar + handles
+/// cvar + handles
 ConVar
 	bEnabled = null
 ;
 
-ConVar cvarVSH2[VersionNumber+1]; //Don't change this. Simply place any new CVARs above VersionNumber in the enum.
+ConVar cvarVSH2[VersionNumber+1]; /// Don't change this. Simply place any new CVARs above VersionNumber in the enum.
 
 Handle
 	hHudText,
@@ -133,14 +124,14 @@ Handle
 
 methodmap TF2Item < Handle
 {
-	/* [*C*O*N*S*T*R*U*C*T*O*R*] */
+	/** [*C*O*N*S*T*R*U*C*T*O*R*] */
 
 	public TF2Item(int iFlags) {
 		return view_as<TF2Item>( TF2Items_CreateItem(iFlags) );
 	}
 	/////////////////////////////// 
 
-	/* [ P R O P E R T I E S ] */
+	/** [ P R O P E R T I E S ] */
 
 	property int iFlags {
 		public get()			{ return TF2Items_GetFlags(this); }
@@ -168,7 +159,7 @@ methodmap TF2Item < Handle
 	}
 	///////////////////////////////
 
-	/* [ M E T H O D S ] */
+	/** [ M E T H O D S ] */
 
 	public int GiveNamedItem(int iClient)
 	{
@@ -202,11 +193,11 @@ methodmap TF2Item < Handle
 	/**************************************************************/
 };
 
-//ArrayList ptrBosses ;
+//ArrayList g_hBosses ;
 ArrayList g_hPluginsRegistered;
 
-#include "modules/stocks.inc" // include stocks first.
-#include "modules/handler.sp"	// Contains the game mode logic as well
+#include "modules/stocks.inc" /// include stocks first.
+#include "modules/handler.sp" /// Contains the game mode logic as well
 #include "modules/events.sp"
 #include "modules/commands.sp"
 
@@ -217,7 +208,7 @@ public void OnPluginStart()
 	gamemode = VSHGameMode();
 	gamemode.Init();
 	
-	InitializeForwards();	// in forwards.sp
+	InitializeForwards();	/// in forwards.sp
 	
 	RegAdminCmd("sm_setspecial", SetNextSpecial, ADMFLAG_GENERIC);
 	RegAdminCmd("sm_halespecial", SetNextSpecial, ADMFLAG_GENERIC);
@@ -371,9 +362,9 @@ public void OnPluginStart()
 	BossCookie = RegClientCookie("vsh2_presetbosses", "Preset bosses for VSH2 players.", CookieAccess_Protected);
 	MusicCookie = RegClientCookie("vsh2_music_settings", "HaleMusic setting.", CookieAccess_Public);
 
-	ManageDownloads(); // in handler.sp
+	ManageDownloads(); /// in handler.sp
 
-	for( int i=MaxClients ; i ; --i ) {
+	for( int i=MaxClients; i; --i ) {
 		if( !IsValidClient(i) )
 			continue;
 		OnClientPutInServer(i);
@@ -388,16 +379,16 @@ public void OnPluginStart()
 	AddMultiTargetFilter("@!minion", MinionTargetFilter, "all non-Minions", false);
 	AddMultiTargetFilter("@!minions", MinionTargetFilter, "all non-Minions", false);
 
-	hPlayerFields[0] = new StringMap();	// This will be freed when plugin is unloaded again
+	hPlayerFields[0] = new StringMap();   /// This will be freed when plugin is unloaded again
 	g_hPluginsRegistered = new ArrayList();
 	
 }
 public bool HaleTargetFilter(const char[] pattern, Handle clients)
 {
 	bool non = StrContains(pattern, "!", false) != -1;
-	for( int i=MaxClients ; i ; i-- ) {
-		if( IsClientValid(i) and FindValueInArray(clients, i) == -1 ) {
-			if( bEnabled.BoolValue and BaseBoss(i).bIsBoss ) {
+	for( int i=MaxClients; i; i-- ) {
+		if( IsClientValid(i) && FindValueInArray(clients, i) == -1 ) {
+			if( bEnabled.BoolValue && BaseBoss(i).bIsBoss ) {
 				if( !non )
 					PushArrayCell(clients, i);
 			}
@@ -410,9 +401,9 @@ public bool HaleTargetFilter(const char[] pattern, Handle clients)
 public bool MinionTargetFilter(const char[] pattern, Handle clients)
 {
 	bool non = StrContains(pattern, "!", false) != -1;
-	for( int i=MaxClients ; i ; i-- ) {
-		if( IsClientValid(i) and FindValueInArray(clients, i) == -1 ) {
-			if( bEnabled.BoolValue and BaseBoss(i).bIsMinion ) {
+	for( int i=MaxClients; i; i-- ) {
+		if( IsClientValid(i) && FindValueInArray(clients, i) == -1 ) {
+			if( bEnabled.BoolValue && BaseBoss(i).bIsMinion ) {
 				if( !non )
 					PushArrayCell(clients, i);
 			}
@@ -425,17 +416,16 @@ public bool MinionTargetFilter(const char[] pattern, Handle clients)
 
 public Action BlockSuicide(int client, const char[] command, int argc)
 {
-	if( bEnabled.BoolValue and gamemode.iRoundState == StateRunning ) {
+	if( bEnabled.BoolValue && gamemode.iRoundState == StateRunning ) {
 		BaseBoss player = BaseBoss(client);
-		if (player.bIsBoss) {
+		if( player.bIsBoss ) {
 			float flhp_percent = float(player.iHealth) / float(player.iMaxHealth);
-			if( flhp_percent > 0.3 ) {	// Allow bosses to suicide if their total health is under 3%.
+			if( flhp_percent > 0.3 ) {	/// Allow bosses to suicide if their total health is under 3%.
 				CPrintToChat(client, "You cannot suicide yet as a boss. Please Use '!resetq' instead.");
 				return Plugin_Handled;
 			}
-		}
-		else {
-			// stop rage-stunned players from suiciding.
+		} else {
+			/// stop rage-stunned players from suiciding.
 			if( cvarVSH2[BlockRageSuicide].BoolValue ) {
 				int stunflags = GetEntProp(client, Prop_Send, "m_iStunFlags");
 				if( stunflags & (TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT) )
@@ -472,7 +462,7 @@ public void OnLibraryRemoved(const char[] name)
 		gamemode.bTF2Attribs = false;
 #endif
 }
-//	UPDATER Stuff
+/// UPDATER Stuff
 public void OnAllPluginsLoaded()
 {
 #if defined _updater_included
@@ -495,9 +485,9 @@ float
 
 public void OnConfigsExecuted()
 {
-	// Config checker taken from VSH1
+	/// Config checker taken from VSH1
 	static char szOldVersion[PATH];
-	cvarVSH2[VersionNumber].GetString(_strbuffer(szOldVersion));
+	cvarVSH2[VersionNumber].GetString(szOldVersion, sizeof(szOldVersion));
 	if (StrEqual(szOldVersion, PLUGIN_VERSION)) 
 		LogMessage("[VSH2] Warning: your config may be outdated. Back up your tf/cfg/sourcemod/VSHv2.cfg file and delete it, and this plugin will generate a new one that you can then modify to your original values.");
 	cvarVSH2[VersionNumber].SetString(PLUGIN_VERSION, false, true);
@@ -540,7 +530,7 @@ public void OnClientPutInServer(int client)
 	hPlayerFields[client] = new StringMap();
 	BaseBoss boss = BaseBoss(client);
 	
-	// BaseFighter properties
+	/// BaseFighter properties
 	hPlayerFields[client].SetValue("iQueue", 0);
 	hPlayerFields[client].SetValue("iPresetType", -1);
 	boss.iKills = 0;
@@ -559,7 +549,7 @@ public void OnClientPutInServer(int client)
 	boss.flLastShot = 0.0;
 	boss.iShieldDmg = 0;
 	
-	// BaseBoss properties
+	/// BaseBoss properties
 	boss.iHealth = 0;
 	boss.iMaxHealth = 0;
 	boss.iBossType = -1;
@@ -597,18 +587,18 @@ public Action OnTouch(int client, int other)
 	if( 0 < other <= MaxClients ) {
 		BaseBoss player = BaseBoss(client);
 		BaseBoss victim = BaseBoss(other);
-
-		if ( player.bIsBoss and !victim.bIsBoss )
-			ManageOnTouchPlayer(player, victim); // in handler.sp
+		
+		if( player.bIsBoss && !victim.bIsBoss )
+			ManageOnTouchPlayer(player, victim); /// in handler.sp
 	}
 	else if( other > MaxClients ) {
 		BaseBoss player = BaseBoss(client);
-		if( IsValidEntity(other) and player.bIsBoss ) {
+		if( IsValidEntity(other) && player.bIsBoss ) {
 			char ent[5];
 			if( GetEntityClassname(other, ent, sizeof(ent)), !StrContains(ent, "obj_") )
 			{
 				if( GetEntProp(other, Prop_Send, "m_iTeamNum") != GetClientTeam(client) )
-					ManageOnTouchBuilding(player, other); // in handler.sp
+					ManageOnTouchBuilding(player, other); /// in handler.sp
 			}
 		}
 	}
@@ -617,7 +607,7 @@ public Action OnTouch(int client, int other)
 
 public void OnMapStart()
 {
-	ManageDownloads();	// in handler.sp
+	ManageDownloads();	/// in handler.sp
 	//gamemode.hMusic = null;
 	CreateTimer(0.1, Timer_PlayerThink, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(1.0, MakeModelTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
@@ -629,8 +619,8 @@ public void OnMapStart()
 			DispatchSpawn(gamemode.iHealthBar);
 	}
 	gamemode.iRoundCount = 0;
-    gamemode.iRoundState = StateDisabled;
-    gamemode.hNextBoss = view_as< BaseBoss >(0);
+	gamemode.iRoundState = StateDisabled;
+	gamemode.hNextBoss = view_as< BaseBoss >(0);
 }
 public void OnMapEnd()
 {
@@ -645,17 +635,17 @@ public void OnMapEnd()
 public void _MakePlayerBoss(const int userid)
 {
 	int client = GetClientOfUserId(userid);
-	if( client and IsClientInGame(client) ) {
+	if( client && IsClientInGame(client) ) {
 		BaseBoss player = BaseBoss(client);
-		ManageBossTransition(player);	// in handler.sp; sets health, model, and equips the boss
+		ManageBossTransition(player);	/// in handler.sp; sets health, model, and equips the boss
 	}
 }
 public void _MakePlayerMinion(const int userid)
 {
 	int client = GetClientOfUserId(userid);
-	if( client and IsClientInGame(client) ) {
+	if( client && IsClientInGame(client) ) {
 		BaseBoss player = BaseBoss(client);
-		ManageMinionTransition(player);	// in handler.sp; sets health, model, and equips the boss
+		ManageMinionTransition(player);	/// in handler.sp; sets health, model, and equips the boss
 	}
 }
 
@@ -665,21 +655,21 @@ public void _BossDeath(const int userid)
 	if( IsValidClient(client, false) ) {
 		BaseBoss player = BaseBoss(client);
 		if( player.iHealth <= 0 )
-			player.iHealth = 0; //ded, not big soup rice!
+			player.iHealth = 0; /// ded, not big soup rice!
 		
-		ManageBossDeath(player); // in handler.sp
+		ManageBossDeath(player); /// in handler.sp
 	}
 }
 public Action MakeModelTimer(Handle hTimer)
 {
 	BaseBoss player;
-	for( int i=MaxClients ; i ; --i ) {
-		if( !IsValidClient(i, false) or !IsPlayerAlive(i) )
+	for( int i=MaxClients; i; --i ) {
+		if( !IsValidClient(i, false) || !IsPlayerAlive(i) )
 			continue;
 		
 		player = BaseBoss(i);
 		if( player.bIsBoss ) {
-			ManageBossModels(player); // in handler.sp
+			ManageBossModels(player); /// in handler.sp
 		}
 	}
 	return Plugin_Continue;
@@ -690,9 +680,9 @@ public void SetGravityNormal(const int userid)
 	if( IsValidClient(i) )
 		SetEntityGravity(i, 1.0);
 }
-public Action Timer_PlayerThink(Handle hTimer) //the main 'mechanics' of bosses
+public Action Timer_PlayerThink(Handle hTimer) /// the main 'mechanics' of bosses
 {
-	if( !bEnabled.BoolValue or gamemode.iRoundState != StateRunning )
+	if( !bEnabled.BoolValue || gamemode.iRoundState != StateRunning )
 		return Plugin_Continue;
 	
 	gamemode.UpdateBossHealth();
@@ -700,20 +690,20 @@ public Action Timer_PlayerThink(Handle hTimer) //the main 'mechanics' of bosses
 		_MusicPlay();
 	
 	BaseBoss player;
-	for( int i=MaxClients ; i ; --i ) {
+	for( int i=MaxClients; i; --i ) {
 		if( !IsValidClient(i, false) )
 			continue;
 		
 		player = BaseBoss(i);
-		if( player.bIsBoss ) {	/* If player is a boss, force Boss think on them; if not boss or on blue team, force fighter think! */
-			ManageBossThink(player); // in handler.sp
+		if( player.bIsBoss ) {   /** If player is a boss, force Boss think on them; if not boss or on blue team, force fighter think! */
+			ManageBossThink(player); /// in handler.sp
 			SetEntityHealth(i, player.iHealth);
-			if( player.iHealth <= 0 )	// BUG PATCH: Bosses are not being 100% dead when the iHealth is at 0...
+			if( player.iHealth <= 0 )	/// BUG PATCH: Bosses are not being 100% dead when the iHealth is at 0...
 				SDKHooks_TakeDamage(player.index, 0, 0, 100.0, DMG_DIRECT, _, _, _); //ForcePlayerSuicide(i);
 		}
 		else ManageFighterThink(player);
 	}
-	if( !gamemode.CountBosses(true) )	// If there's no active, living bosses, then force RED to win
+	if( !gamemode.CountBosses(true) )	/// If there's no active, living bosses, then force RED to win
 		ForceTeamWin(RED);
 	
 	return Plugin_Continue;
@@ -727,7 +717,7 @@ public Action CmdReloadCFG(int client, int args)
 }
 public void OnPreThinkPost(int client)
 {
-	if( !bEnabled.BoolValue or IsClientObserver(client) or !IsPlayerAlive(client) )
+	if( !bEnabled.BoolValue || IsClientObserver(client) || !IsPlayerAlive(client) )
 		return;
 	
 	//BaseBoss player = BaseBoss(client);
@@ -747,33 +737,33 @@ public Action TraceAttack(int victim, int &attacker, int &inflictor, float &dama
 	if( !bEnabled.BoolValue )
 		return Plugin_Continue;
 
-	if( IsClientValid(attacker) and IsClientValid(victim) ) {
+	if( IsClientValid(attacker) && IsClientValid(victim) ) {
 		BaseBoss player = BaseBoss(victim);
 		BaseBoss enemy = BaseBoss(attacker);
-		ManageTraceHit(player, enemy, inflictor, damage, damagetype, ammotype, hitbox, hitgroup); // in handler.sp
+		ManageTraceHit(player, enemy, inflictor, damage, damagetype, ammotype, hitbox, hitgroup); /// in handler.sp
 	}
 	return Plugin_Continue;
 }
 public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	if( !bEnabled.BoolValue or !IsClientValid(victim) )
+	if( !bEnabled.BoolValue || !IsClientValid(victim) )
 		return Plugin_Continue;
 
 	BaseBoss BossVictim = BaseBoss(victim);
 	int bFallDamage = (damagetype & DMG_FALL);
-	if( BossVictim.bIsBoss and attacker <= 0 and bFallDamage ) {
+	if( BossVictim.bIsBoss && attacker <= 0 && bFallDamage ) {
 		damage = (BossVictim.iHealth > 100) ? 1.0 : 30.0;
 		return Plugin_Changed;
 	}
 	
-	if( BossVictim.bIsBoss ) // in handler.sp
+	if( BossVictim.bIsBoss ) /// in handler.sp
 		return ManageOnBossTakeDamage(BossVictim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 
-	if( !IsClientValid(attacker) )	// BUG PATCH: Client index 0 is invalid
+	if( !IsClientValid(attacker) )	/// BUG PATCH: Client index 0 is invalid
 		return Plugin_Continue;
 	
 	BaseBoss BossAttacker = BaseBoss(attacker);
-	if( BossAttacker.bIsBoss ) // in handler.sp
+	if( BossAttacker.bIsBoss ) /// in handler.sp
 		return ManageOnBossDealDamage(BossVictim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 
 	return Plugin_Continue;
@@ -790,7 +780,7 @@ public Action OnStomp(int attacker, int victim, float& damageMultiplier, float& 
 public Action RemoveEnt(Handle timer, any entid)
 {
 	int ent = EntRefToEntIndex(entid);
-	if( ent > 0 and IsValidEntity(ent) )
+	if( ent > 0 && IsValidEntity(ent) )
 		AcceptEntityInput(ent, "Kill");
 	return Plugin_Continue;
 }
@@ -798,15 +788,15 @@ public Action cdVoiceMenu(int client, const char[] command, int argc)
 {
 	if( !bEnabled.BoolValue )
 		return Plugin_Continue;
-	if( argc < 2 or !IsPlayerAlive(client) )
+	if( argc < 2 || !IsPlayerAlive(client) )
 		return Plugin_Handled;
 
 	char szCmd1[8]; GetCmdArg(1, szCmd1, sizeof(szCmd1));
 	char szCmd2[8]; GetCmdArg(2, szCmd2, sizeof(szCmd2));
 
-	// Capture call for medic commands (represented by "voicemenu 0 0")
+	/// Capture call for medic commands (represented by "voicemenu 0 0")
 	BaseBoss boss = BaseBoss(client);
-	if( szCmd1[0] == '0' and szCmd2[0] == '0' and boss.bIsBoss )
+	if( szCmd1[0] == '0' && szCmd2[0] == '0' && boss.bIsBoss )
 		ManageBossMedicCall(boss);
 
 	return Plugin_Continue;
@@ -828,7 +818,7 @@ public void OnEntityCreated(int entity, const char[] classname)
 	if( !bEnabled.BoolValue )
 		return;
 	
-	if( !strncmp(classname, "tf_weapon_", 10, false) and IsValidEntity(entity) )
+	if( !strncmp(classname, "tf_weapon_", 10, false) && IsValidEntity(entity) )
 		CreateTimer( 0.2, OnWeaponSpawned, EntIndexToEntRef(entity) );
 	ManageEntityCreated(entity, classname);
 }
@@ -836,11 +826,11 @@ public void OnEntityCreated(int entity, const char[] classname)
 public Action OnWeaponSpawned(Handle timer, any ref)
 {
 	int wep = EntRefToEntIndex(ref);
-	if( IsValidEntity(wep) and IsValidEdict(wep) ) {
+	if( IsValidEntity(wep) && IsValidEdict(wep) ) {
 		int client = GetOwner(wep);
-		if( IsValidClient(client) and GetClientTeam(client) == RED ) {
+		if( IsValidClient(client) && GetClientTeam(client) == RED ) {
 			int slot = GetSlotFromWeapon(client, wep);
-			if( slot<2 and slot>=0 ) {
+			if( slot<2 && slot>=0 ) {
 				Munitions[client][slot][0] = GetWeaponAmmo(wep);
 				Munitions[client][slot][1] = GetWeaponClip(wep);
 			}
@@ -849,13 +839,13 @@ public Action OnWeaponSpawned(Handle timer, any ref)
 	return Plugin_Continue;
 }
 
-public void ShowPlayerScores()	// scores kept glitching out and I hate debugging so I made it its own func.
+public void ShowPlayerScores() /// scores kept glitching out and I hate debugging so I made it its own func.
 {
 	BaseBoss hTop[3];
 	
 	BaseBoss(0).iDamage = 0;
 	BaseBoss player;
-	for( int i=MaxClients ; i ; --i ) {
+	for( int i=MaxClients; i; --i ) {
 		if( !IsClientValid(i) )
 			continue;
 		
@@ -878,33 +868,33 @@ public void ShowPlayerScores()	// scores kept glitching out and I hate debugging
 			hTop[2] = BaseBoss(i);
 	}
 	if( hTop[0].iDamage > 9000 ) //if (Damage[top[0]] > 9000)
-		SetPawnTimer(OverNineThousand, 1.0);	// in stocks.inc
+		SetPawnTimer(OverNineThousand, 1.0);	/// in stocks.inc
 
 	char score1[PATH], score2[PATH], score3[PATH];
-	if( IsValidClient(hTop[0].index) and (GetClientTeam(hTop[0].index) > 1) )
+	if( IsValidClient(hTop[0].index) && (GetClientTeam(hTop[0].index) > 1) )
 		GetClientName(hTop[0].index, score1, PATH);
 	else {
 		Format(score1, PATH, "nil");
 		hTop[0] = view_as< BaseBoss >(0);
 	}
 
-	if( IsValidClient(hTop[1].index) and (GetClientTeam(hTop[1].index) > 1) )
+	if( IsValidClient(hTop[1].index) && (GetClientTeam(hTop[1].index) > 1) )
 		GetClientName(hTop[1].index, score2, PATH);
 	else {
 		Format(score2, PATH, "nil");
 		hTop[1] = view_as< BaseBoss >(0);
 	}
 
-	if( IsValidClient(hTop[2].index) and (GetClientTeam(hTop[2].index) > 1) )
+	if( IsValidClient(hTop[2].index) && (GetClientTeam(hTop[2].index) > 1) )
 		GetClientName(hTop[2].index, score3, PATH);
 	else {
 		Format(score3, PATH, "nil");
 		hTop[2] = view_as< BaseBoss >(0);
 	}
 	SetHudTextParams(-1.0, 0.4, 10.0, 255, 255, 255, 255);
-	PrintCenterTextAll("");	// Should clear center text
+	PrintCenterTextAll("");	/// Should clear center text
 	
-	for( int i=MaxClients ; i ; --i ) {
+	for( int i=MaxClients; i; --i ) {
 		if( !IsClientValid(i) )
 			continue;
 		if( !(GetClientButtons(i) & IN_SCORE) ) {
@@ -920,7 +910,7 @@ public void CalcScores()
 	int j, damage, amount, queue;
 	BaseBoss player;
 	Event scoring = CreateEvent("player_escort_score", true);
-	for( int i=MaxClients ; i ; --i ) {
+	for( int i=MaxClients; i; --i ) {
 		if( !IsClientValid(i) )
 			continue;
 		else if( GetClientTeam(i) < RED )
@@ -936,11 +926,11 @@ public void CalcScores()
 			player.iQueue += queue; //(i, GetClientQueuePoints(i)+queue);
 			CPrintToChat(i, "{olive}[VSH 2] Queue{default} You gained %i queue points.", queue);
 			
-			// We don't want the Bosses getting free points for doing damage.
+			/// We don't want the Bosses getting free points for doing damage.
 			damage = player.iDamage;
 			scoring.SetInt("player", i);
 			amount = cvarVSH2[DamagePoints].IntValue;
-			for( j=0 ; damage-amount > 0 ; damage -= amount, j++ ) {}
+			for( j=0; damage-amount > 0; damage -= amount, j++ ) {}
 			scoring.SetInt("points", j);
 			scoring.FireToClient(i);
 			CPrintToChat(i, "{olive}[VSH 2] Queue{default} You scored %i points.", j);
@@ -951,7 +941,7 @@ public void CalcScores()
 }
 public Action Timer_DrawGame(Handle timer)
 {
-	if( gamemode.iHealthBarPercent < cvarVSH2[HealthPercentForLastGuy].IntValue or gamemode.iRoundState != StateRunning or gamemode.iTimeLeft < 0 )
+	if( gamemode.iHealthBarPercent < cvarVSH2[HealthPercentForLastGuy].IntValue || gamemode.iRoundState != StateRunning || gamemode.iTimeLeft < 0 )
 		return Plugin_Stop;
 	
 	int time = gamemode.iTimeLeft;
@@ -967,8 +957,8 @@ public Action Timer_DrawGame(Handle timer)
 	else Format(strTime, 6, "%s:0%i" , strTime, time%60);
 
 	SetHudTextParams(-1.0, 0.17, 1.1, 255, 255, 255, 255);
-	for( int i=MaxClients ; i ; --i ) {
-		if( !IsValidClient(i) or !IsClientConnected(i) )
+	for( int i=MaxClients; i; --i ) {
+		if( !IsValidClient(i) || !IsClientConnected(i) )
 			continue;
 		ShowSyncHudText(i, timeleftHUD, strTime);
 	}
@@ -981,7 +971,7 @@ public Action Timer_DrawGame(Handle timer)
 			Format(sound, FULLPATH, "vo/announcer_ends_%isec.mp3", time);
 			EmitSoundToAll(sound);
 		}
-		case 0:  // Thx MasterOfTheXP
+		case 0:  /// Thx MasterOfTheXP
 		{
 			ForceTeamWin(BLU);
 			return Plugin_Stop;
@@ -992,13 +982,13 @@ public Action Timer_DrawGame(Handle timer)
 public void _ResetMediCharge(const int entid)
 {
 	int medigun = EntRefToEntIndex(entid); 
-	if( medigun > MaxClients and IsValidEntity(medigun) )
+	if( medigun > MaxClients && IsValidEntity(medigun) )
 		SetMediCharge(medigun, GetMediCharge(medigun)+cvarVSH2[MedigunReset].FloatValue);
 }
 public Action Timer_UberLoop(Handle timer, any medigunid)
 {
 	int medigun = EntRefToEntIndex(medigunid);
-	if( medigun and IsValidEntity(medigun) and gamemode.iRoundState == StateRunning )
+	if( medigun && IsValidEntity(medigun) && gamemode.iRoundState == StateRunning )
 	{
 		int medic = GetOwner(medigun);
 		float charge = GetMediCharge(medigun);
@@ -1006,7 +996,7 @@ public Action Timer_UberLoop(Handle timer, any medigunid)
 			TF2_AddCondition(medic, TFCond_CritOnWin, 0.5);
 			
 			int target = GetHealingTarget(medic);
-			if( IsClientValid(target) and IsPlayerAlive(target) ) {
+			if( IsClientValid(target) && IsPlayerAlive(target) ) {
 				TF2_AddCondition(target, TFCond_CritOnWin, 0.5);
 				BaseBoss(medic).iUberTarget = GetClientUserId(target);
 				Call_OnUberLoop(BaseBoss(medic), BaseBoss(target));
@@ -1023,11 +1013,11 @@ public Action Timer_UberLoop(Handle timer, any medigunid)
 }
 public void _MusicPlay()
 {
-	if( !bEnabled.BoolValue or gamemode.iRoundState != StateRunning)
+	if( !bEnabled.BoolValue || gamemode.iRoundState != StateRunning)
 		return;
 	
 	float currtime = GetGameTime();
-	if( !cvarVSH2[EnableMusic].BoolValue or gamemode.flMusicTime > currtime )
+	if( !cvarVSH2[EnableMusic].BoolValue || gamemode.flMusicTime > currtime )
 		return;
 	
 	/*if( gamemode.hMusic != null ) {
@@ -1037,14 +1027,14 @@ public void _MusicPlay()
 	char sound[FULLPATH];
 	float time = -1.0;
 	
-	ManageMusic(sound, time);	// in handler.sp
+	ManageMusic(sound, time);	/// in handler.sp
 	
 	BaseBoss boss;
 	float vol = cvarVSH2[MusicVolume].FloatValue;
 	if( sound[0] != '\0' ) {
 		strcopy(BackgroundSong, FULLPATH, sound);
 		//Format(sound, FULLPATH, "#%s", sound);
-		for( int i=MaxClients ; i ; --i ) {
+		for( int i=MaxClients; i; --i ) {
 			if( !IsClientValid(i) )
 				continue;
 			
@@ -1061,13 +1051,13 @@ public void _MusicPlay()
 }
 
 
-stock Handle FindPluginByName(const char name[64])	// searches in linear time or O(n) but it only searches when vsh plugin's loaded
+stock Handle FindPluginByName(const char name[64])	/// searches in linear time or O(n) but it only searches when vsh plugin's loaded
 {
 	char dictVal[64];
 	Handle thisPlugin;
 	StringMap pluginMap;
 	int arraylen = g_hPluginsRegistered.Length;
-	for( int i=0 ; i<arraylen ; ++i ) {
+	for( int i=0; i<arraylen; ++i ) {
 		pluginMap = g_hPluginsRegistered.Get(i);
 		if( pluginMap.GetString("PluginName", dictVal, 64) ) {
 			if( !strcmp(name, dictVal, false) ) {
@@ -1099,14 +1089,14 @@ public int RegisterPlugin(const Handle pluginhndl, const char modulename[64])
 		return -1;
 	}
 	
-	// create dictionary to hold necessary data about plugin
+	/// create dictionary to hold necessary data about plugin
 	StringMap PluginMap = new StringMap();
 	PluginMap.SetValue("PluginHandle", pluginhndl);
 	PluginMap.SetString("PluginName", modulename);
 	
-	// push to global vector
+	/// push to global vector
 	g_hPluginsRegistered.Push(PluginMap);
-	return MAXBOSS;	// Return the index of registered plugin!
+	return MAXBOSS;	/// Return the index of registered plugin!
 }
 
 
@@ -1182,7 +1172,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public int Native_RegisterPlugin(Handle plugin, int numParams)
 {
 	char ModuleName[64]; GetNativeString(1, ModuleName, sizeof(ModuleName));
-	int plugin_index = RegisterPlugin(plugin, ModuleName );		// ALL PROPS TO COOKIES.NET AKA COOKIES.IO
+	int plugin_index = RegisterPlugin(plugin, ModuleName );	/// ALL PROPS TO COOKIES.NET AKA COOKIES.IO
 	return plugin_index;
 }
 

@@ -1,4 +1,4 @@
-methodmap PrivateForward < Handle	//very useful ^^
+methodmap PrivateForward < Handle	/// very useful ^^
 {
 	public PrivateForward( const Handle forw )
 	{

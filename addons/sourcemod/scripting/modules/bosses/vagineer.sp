@@ -1,5 +1,5 @@
 
-//defines
+/// defines
 /*
 #define VagineerModel		"models/player/saxton_hale/vagineer_v134.mdl"
 #define VagineerModelPrefix	"models/player/saxton_hale/vagineer_v134"
@@ -9,7 +9,7 @@
 // #define VagineerModelPrefix	"models/player/saxton_hale/vagineer_v150"
 
 
-//Vagineer voicelines
+/// Vagineer voicelines
 #define VagineerLastA		"saxton_hale/lolwut_0.wav"
 #define VagineerRageSound	"saxton_hale/lolwut_2.wav"
 #define VagineerStart		"saxton_hale/lolwut_1.wav"
@@ -17,10 +17,10 @@
 #define VagineerKSpree2		"saxton_hale/lolwut_4.wav"
 #define VagineerHit		"saxton_hale/lolwut_5.wav"
 #define VagineerRoundStart	"saxton_hale/vagineer_responce_intro.wav"
-#define VagineerJump		"saxton_hale/vagineer_responce_jump_"		//1-2
-#define VagineerRageSound2	"saxton_hale/vagineer_responce_rage_"		//1-4
-#define VagineerKSpreeNew	"saxton_hale/vagineer_responce_taunt_"		//1-5
-#define VagineerFail		"saxton_hale/vagineer_responce_fail_"		//1-2
+#define VagineerJump		"saxton_hale/vagineer_responce_jump_"		/// 1-2
+#define VagineerRageSound2	"saxton_hale/vagineer_responce_rage_"		/// 1-4
+#define VagineerKSpreeNew	"saxton_hale/vagineer_responce_taunt_"		/// 1-5
+#define VagineerFail		"saxton_hale/vagineer_responce_fail_"		/// 1-2
 
 #define VAGRAGEDIST		533.333
 
@@ -34,7 +34,7 @@ methodmap CVagineer < BaseBoss
 
 	public void PlaySpawnClip()
 	{
-		if( ! GetRandomInt(0, 1) )
+		if( !GetRandomInt(0, 1) )
 			strcopy(snd, PLATFORM_MAX_PATH, VagineerStart);
 		else strcopy(snd, PLATFORM_MAX_PATH, VagineerRoundStart);
 
@@ -43,7 +43,7 @@ methodmap CVagineer < BaseBoss
 
 	public void Think ()
 	{
-		if( ! IsPlayerAlive(this.index) )
+		if( !IsPlayerAlive(this.index) )
 			return;
 
 		int buttons = GetClientButtons(this.index);
@@ -62,7 +62,7 @@ methodmap CVagineer < BaseBoss
 		else if( this.flGlowtime <= 0.0 )
 			this.bGlow = 0;
 
-		if( ((buttons & IN_DUCK) or (buttons & IN_ATTACK2)) and (this.flCharge >= 0.0) ) {
+		if( ((buttons & IN_DUCK) || (buttons & IN_ATTACK2)) && (this.flCharge >= 0.0) ) {
 			if( this.flCharge+2.5 < HALE_JUMPCHARGE )
 				this.flCharge += 2.5;
 			else this.flCharge = HALE_JUMPCHARGE;
@@ -71,7 +71,7 @@ methodmap CVagineer < BaseBoss
 			this.flCharge += 2.5;
 		else {
 			float EyeAngles[3]; GetClientEyeAngles(this.index, EyeAngles);
-			if( this.flCharge > 1.0 and EyeAngles[0] < -5.0 ) {
+			if( this.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
 				float vel[3]; GetEntPropVector(this.index, Prop_Data, "m_vecVelocity", vel);
 				vel[2] = 750 + this.flCharge * 13.0;
 
@@ -94,7 +94,7 @@ methodmap CVagineer < BaseBoss
 			this.flWeighDown = 0.0;
 		else this.flWeighDown += 0.1;
 
-		if( (buttons & IN_DUCK) and this.flWeighDown >= HALE_WEIGHDOWN_TIME ) {
+		if( (buttons & IN_DUCK) && this.flWeighDown >= HALE_WEIGHDOWN_TIME ) {
 			float ang[3]; GetClientEyeAngles(this.index, ang);
 			if( ang[0] > 60.0 ) {
 				//float fVelocity[3];
@@ -111,8 +111,8 @@ methodmap CVagineer < BaseBoss
 		if( jmp > 0.0 )
 			jmp *= 4.0;
 		if( this.flRAGE >= 100.0 )
-                        ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp));
-                else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", RoundFloat(jmp), this.flRAGE);
+						ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp));
+				else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", RoundFloat(jmp), this.flRAGE);
 
 		if( TF2_IsPlayerInCondition(this.index, TFCond_Ubercharged) )
 			SetEntProp(this.index, Prop_Data, "m_takedamage", 0);
@@ -137,15 +137,15 @@ methodmap CVagineer < BaseBoss
 		this.RemoveAllItems();
 		char attribs[128];
 
-		Format(attribs, sizeof(attribs), "68 ; 2.0 ; 2 ; 2.86 ; 259 ; 1.0 ; 436 ; 1.0");
+		Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.86; 259; 1.0; 436; 1.0");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_wrench", 169, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
 	public void RageAbility()
 	{
 		TF2_AddCondition(this.index, view_as<TFCond>(42), 4.0);
-		if( ! GetEntProp(this.index, Prop_Send, "m_bIsReadyToHighFive")
-			and ! IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
+		if( !GetEntProp(this.index, Prop_Send, "m_bIsReadyToHighFive")
+			&& !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
 		{
 			TF2_RemoveCondition(this.index, TFCond_Taunting);
 			this.SetModel(); //MakeModelTimer(null);
@@ -169,7 +169,7 @@ methodmap CVagineer < BaseBoss
 			this.iKills++;
 		else this.iKills = 0;
 		
-		if( this.iKills == 3 and GetLivingPlayers(RED) != 1 ) {
+		if( this.iKills == 3 && GetLivingPlayers(RED) != 1 ) {
 			switch( GetRandomInt(0, 4) ) {
 				case 1, 3: strcopy(snd, PLATFORM_MAX_PATH, VagineerKSpree);
 				case 2: strcopy(snd, PLATFORM_MAX_PATH, VagineerKSpree2);
@@ -183,7 +183,7 @@ methodmap CVagineer < BaseBoss
 	public void Help()
 	{
 		if( IsVoteInProgress() )
-			return ;
+			return;
 		char helpstr[] = "Vagineer:\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Uber): taunt when the Rage Meter is full to stun fairly close-by enemies.";
 		Panel panel = new Panel();
 		panel.SetTitle (helpstr);
@@ -207,9 +207,9 @@ public void AddVagToDownloads()
 {
 	char s[PLATFORM_MAX_PATH];
 	int i;
-
+	
 	PrepareModel(VagineerModel);
-
+	
 	PrepareSound(VagineerLastA);
 	PrepareSound(VagineerStart);
 	PrepareSound(VagineerRageSound);
@@ -217,22 +217,22 @@ public void AddVagToDownloads()
 	PrepareSound(VagineerKSpree2);
 	PrepareSound(VagineerHit);
 	PrepareSound(VagineerRoundStart);
-
-	for( i=1 ; i <= 5 ; i++ ) {
+	
+	for( i=1; i <= 5; i++ ) {
 		if( i <= 2 ) {
 			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", VagineerJump, i);
 			PrepareSound(s);
-
+			
 			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", VagineerRageSound2, i);
 			PrepareSound(s);
-
+			
 			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", VagineerFail, i);
 			PrepareSound(s);
 		}
 		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", VagineerKSpreeNew, i);
 		PrepareSound(s);
 	}
-
+	
 	PrecacheSound("vo/engineer_positivevocalization01.mp3", true);
 }
 
@@ -240,4 +240,3 @@ public void AddVagToMenu ( Menu& menu )
 {
 	menu.AddItem("1", "Vagineer");
 }
-

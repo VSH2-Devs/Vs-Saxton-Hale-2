@@ -1,4 +1,4 @@
-enum {	/* VSH2 Round States */
+enum {	/** VSH2 Round States */
 	StateDisabled = -1,
 	StateStarting = 0,
 	StateRunning = 1,
@@ -33,7 +33,7 @@ public int AllowedDifficulties[] = {
 
 StringMap hGameModeFields ;
 
-methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should be handled HERE ONLY */
+methodmap VSHGameMode /* < StringMap */    /** all game mode oriented code should be handled HERE ONLY */
 {
 	public VSHGameMode()
 	{
@@ -68,7 +68,7 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 		public get()
 		{
 			int playing = 0;
-			for( int i=MaxClients ; i ; --i ) {
+			for( int i=MaxClients; i; --i ) {
 				if( !IsClientInGame(i) )
 					continue;
 				else if( !IsPlayerAlive(i) )
@@ -253,13 +253,13 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 	{
 		public get()
 		/*{
-			if( !preselected.userid or !IsClientValid(preselected.index) )
+			if( !preselected.userid || !IsClientValid(preselected.index) )
 				return view_as< BaseBoss >(0);
 			return preselected;
 		}*/
 		{
 			BaseBoss i; hGameModeFields.GetValue("hNextBoss", i);
-			if( !i or !i.index )
+			if( !i || !i.index )
 				return view_as< BaseBoss >(0);
 			return i;
 		}
@@ -269,7 +269,7 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 		}
 	}
 	
-	public void Init()	// When adding a new property, make sure you initialize it to a default 
+	public void Init()	/// When adding a new property, make sure you initialize it to a default 
 	{
 		this.iRoundState = 0;
 		this.iSpecial = -1;
@@ -294,10 +294,10 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 		int count;
 		BaseBoss boss;
 		BaseBoss[] bosses = new BaseBoss[MaxClients];
-		for( int i=MaxClients ; i ; --i ) {
+		for( int i=MaxClients; i; --i ) {
 			if( !IsValidClient(i) )
 				continue;
-			else if( balive and !IsPlayerAlive(i) )
+			else if( balive && !IsPlayerAlive(i) )
 				continue;
 			boss = BaseBoss(i);
 			if( !boss.bIsBoss )
@@ -309,10 +309,10 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 	public BaseBoss GetBossByType(const bool balive, const int type)
 	{
 		BaseBoss boss;
-		for( int i=MaxClients ; i ; --i ) {
+		for( int i=MaxClients; i; --i ) {
 			if( !IsValidClient(i) )
 				continue;
-			else if( balive and !IsPlayerAlive(i) )
+			else if( balive && !IsPlayerAlive(i) )
 				continue;
 			boss = BaseBoss(i);
 			if( !boss.bIsBoss )
@@ -336,13 +336,13 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 		BaseBoss tBoss;
 		int points = -999;
 		BaseBoss boss;
-		for( int i=MaxClients ; i ; --i ) {
+		for( int i=MaxClients; i; --i ) {
 			if( !IsValidClient(i) )
 				continue;
 			else if( GetClientTeam(i) <= int(TFTeam_Spectator) )
 				continue;
 			boss = BaseBoss(i);
-			if( boss.iQueue >= points and !boss.bSetOnSpawn ) {
+			if( boss.iQueue >= points && !boss.bSetOnSpawn ) {
 				tBoss = boss;
 				points = boss.iQueue;
 			}
@@ -353,10 +353,10 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 	{
 		BaseBoss boss;
 		int count=0;
-		for( int i=MaxClients ; i ; --i ) {
+		for( int i=MaxClients; i; --i ) {
 			if( !IsValidClient(i) )
 				continue;
-			else if( balive and !IsPlayerAlive(i) )
+			else if( balive && !IsPlayerAlive(i) )
 				continue;
 			boss = BaseBoss(i);
 			if( !boss.bIsMinion )
@@ -369,10 +369,10 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 	{
 		BaseBoss boss;
 		int count=0;
-		for( int i=MaxClients ; i ; --i ) {
+		for( int i=MaxClients; i; --i ) {
 			if( !IsValidClient(i) )
 				continue;
-			else if( balive and !IsPlayerAlive(i) )
+			else if( balive && !IsPlayerAlive(i) )
 				continue;
 			boss = BaseBoss(i);
 			if( !boss.bIsBoss )
@@ -385,7 +385,7 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 	{
 		BaseBoss boss;
 		int count=0;
-		for( int i=MaxClients ; i ; --i ) {
+		for( int i=MaxClients; i; --i ) {
 			if( !IsValidClient(i) )
 				continue;
 
@@ -470,8 +470,8 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 	{
 		BaseBoss boss;
 		int totalHealth, bosscount;
-		for( int i=MaxClients; i ; --i ) {
-			if( !IsValidClient(i) )	// don't count dead bosses
+		for( int i=MaxClients; i; --i ) {
+			if( !IsValidClient(i) )	/// don't count dead bosses
 				continue;
 			boss = BaseBoss(i);
 			if( !boss.bIsBoss )
@@ -486,21 +486,21 @@ methodmap VSHGameMode /* < StringMap */		/* all game mode oriented code should b
 	}
 	public void GetBossType()
 	{
-		if( this.hNextBoss and this.hNextBoss.iPresetType > -1 ) {
+		if( this.hNextBoss && this.hNextBoss.iPresetType > -1 ) {
 			this.iSpecial = this.hNextBoss.iPresetType;
 			if( this.iSpecial > MAXBOSS )
 				this.iSpecial = MAXBOSS;
 			return;
 		}
 		BaseBoss boss = this.FindNextBoss();
-		if( boss.iPresetType > -1 and this.iSpecial == -1 ) {
+		if( boss.iPresetType > -1 && this.iSpecial == -1 ) {
 			this.iSpecial = boss.iPresetType;
 			boss.iPresetType = -1;
 			if( this.iSpecial > MAXBOSS )
 				this.iSpecial = MAXBOSS;
 			return;
 		}
-		if( this.iSpecial > -1 ) {	// Clamp the chosen special so we don't error out.
+		if( this.iSpecial > -1 ) {	/// Clamp the chosen special so we don't error out.
 			if( this.iSpecial > MAXBOSS )
 				this.iSpecial = MAXBOSS;
 		}

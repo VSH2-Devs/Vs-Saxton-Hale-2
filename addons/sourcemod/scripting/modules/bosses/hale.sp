@@ -1,11 +1,10 @@
-//defines
-
-//models
+/// defines
+/// models
 // #define HaleModel		"models/player/saxton_hale/saxton_hale.mdl"
 // #define HaleModelPrefix		"models/player/saxton_hale/saxton_hale"
 #define HaleModel				"models/player/saxton_test4/saxton_hale_test4.mdl"
 
-//materials
+/// materials
 static const char HaleMatsV2[][] = {
 	"materials/models/player/saxton_test4/eyeball_l.vmt",
 	"materials/models/player/saxton_test4/eyeball_r.vmt",
@@ -22,14 +21,14 @@ static const char HaleMatsV2[][] = {
 };
 
 
-//Saxton Hale voicelines
+/// Saxton Hale voicelines
 #define HaleComicArmsFallSound	"saxton_hale/saxton_hale_responce_2.wav"
 #define HaleLastB		"vo/announcer_am_lastmanalive"
 #define HaleKSpree		"saxton_hale/saxton_hale_responce_3.wav"
-#define HaleKSpree2		"saxton_hale/saxton_hale_responce_4.wav"	//this line is broken and unused
-#define HaleRoundStart		"saxton_hale/saxton_hale_responce_start" //1-5
-#define HaleJump		"saxton_hale/saxton_hale_responce_jump"			//1-2
-#define HaleRageSound		"saxton_hale/saxton_hale_responce_rage"		   //1-4
+#define HaleKSpree2		"saxton_hale/saxton_hale_responce_4.wav"		/// this line is broken and unused
+#define HaleRoundStart		"saxton_hale/saxton_hale_responce_start"	/// 1-5
+#define HaleJump		"saxton_hale/saxton_hale_responce_jump"			/// 1-2
+#define HaleRageSound		"saxton_hale/saxton_hale_responce_rage"		/// 1-4
 #define HaleKillMedic		"saxton_hale/saxton_hale_responce_kill_medic.wav"
 #define HaleKillSniper1		"saxton_hale/saxton_hale_responce_kill_sniper1.wav"
 #define HaleKillSniper2		"saxton_hale/saxton_hale_responce_kill_sniper2.wav"
@@ -37,22 +36,22 @@ static const char HaleMatsV2[][] = {
 #define HaleKillSpy2		"saxton_hale/saxton_hale_responce_kill_spy2.wav"
 #define HaleKillEngie1		"saxton_hale/saxton_hale_responce_kill_eggineer1.wav"
 #define HaleKillEngie2		"saxton_hale/saxton_hale_responce_kill_eggineer2.wav"
-#define HaleKSpreeNew		"saxton_hale/saxton_hale_responce_spree"  //1-5
-#define HaleWin			"saxton_hale/saxton_hale_responce_win"		  //1-2
-#define HaleLastMan		"saxton_hale/saxton_hale_responce_lastman"  //1-5
-#define HaleFail		"saxton_hale/saxton_hale_responce_fail"			//1-3
+#define HaleKSpreeNew		"saxton_hale/saxton_hale_responce_spree"  /// 1-5
+#define HaleWin			"saxton_hale/saxton_hale_responce_win"		  /// 1-2
+#define HaleLastMan		"saxton_hale/saxton_hale_responce_lastman"  /// 1-5
+#define HaleFail		"saxton_hale/saxton_hale_responce_fail"			/// 1-3
 #define HaleJump132		"saxton_hale/saxton_hale_132_jump_" //1-2
-#define HaleStart132		"saxton_hale/saxton_hale_132_start_"   //1-5
+#define HaleStart132		"saxton_hale/saxton_hale_132_start_"   /// 1-5
 #define HaleKillDemo132		"saxton_hale/saxton_hale_132_kill_demo.wav"
-#define HaleKillEngie132	"saxton_hale/saxton_hale_132_kill_engie_" //1-2
+#define HaleKillEngie132	"saxton_hale/saxton_hale_132_kill_engie_" /// 1-2
 #define HaleKillHeavy132	"saxton_hale/saxton_hale_132_kill_heavy.wav"
 #define HaleKillScout132	"saxton_hale/saxton_hale_132_kill_scout.wav"
 #define HaleKillSpy132		"saxton_hale/saxton_hale_132_kill_spie.wav"
 #define HaleKillPyro132		"saxton_hale/saxton_hale_132_kill_w_and_m1.wav"
 #define HaleSappinMahSentry132	"saxton_hale/saxton_hale_132_kill_toy.wav"
-#define HaleKillKSpree132	"saxton_hale/saxton_hale_132_kspree_"	//1-2
+#define HaleKillKSpree132	"saxton_hale/saxton_hale_132_kspree_"	/// 1-2
 #define HaleKillLast132		"saxton_hale/saxton_hale_132_last.wav"
-#define HaleStubbed132		"saxton_hale/saxton_hale_132_stub_"  //1-4
+#define HaleStubbed132		"saxton_hale/saxton_hale_132_stub_"  /// 1-4
 
 #define HALESPEED		340.0
 
@@ -97,7 +96,7 @@ methodmap CHale < BaseBoss
 		else if( this.flGlowtime <= 0.0 )
 			this.bGlow = 0;
 
-		if( ((buttons & IN_DUCK) or (buttons & IN_ATTACK2)) and (this.flCharge >= 0.0) ) {
+		if( ((buttons & IN_DUCK) || (buttons & IN_ATTACK2)) && (this.flCharge >= 0.0) ) {
 			if( this.flCharge+2.5 < HALE_JUMPCHARGE )
 				this.flCharge += 2.5;
 			else this.flCharge = HALE_JUMPCHARGE;
@@ -106,14 +105,14 @@ methodmap CHale < BaseBoss
 			this.flCharge += 2.5;
 		else {
 			float EyeAngles[3]; GetClientEyeAngles(this.index, EyeAngles);
-			if( this.flCharge > 1.0 and EyeAngles[0] < -5.0 ) {
+			if( this.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
 				float vel[3]; GetEntPropVector(this.index, Prop_Data, "m_vecVelocity", vel);
 				vel[2] = 750 + this.flCharge * 13.0;
 				
 				SetEntProp(this.index, Prop_Send, "m_bJumping", 1);
 				vel[0] *= (1+Sine(this.flCharge * FLOAT_PI / 50));
 				vel[1] *= (1+Sine(this.flCharge * FLOAT_PI / 50));
-				TeleportEntity(this.index, nullvec, nullvec, vel);
+				TeleportEntity(this.index, NULL_VEC, NULL_VEC, vel);
 				this.flCharge = -100.0;
 				Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", GetRandomInt(0, 1) ? HaleJump : HaleJump132, GetRandomInt(1, 2));
 				
@@ -129,7 +128,7 @@ methodmap CHale < BaseBoss
 			this.flWeighDown = 0.0;
 		else this.flWeighDown += 0.1;
 
-		if( (buttons & IN_DUCK) and this.flWeighDown >= HALE_WEIGHDOWN_TIME ) {
+		if( (buttons & IN_DUCK) && this.flWeighDown >= HALE_WEIGHDOWN_TIME ) {
 			float ang[3]; GetClientEyeAngles(this.index, ang);
 			if( ang[0] > 60.0 ) {
 				//float fVelocity[3];
@@ -168,7 +167,7 @@ methodmap CHale < BaseBoss
 		this.RemoveAllItems();
 		char attribs[128];
 
-		Format(attribs, sizeof(attribs), "68 ; 2.0 ; 2 ; 2.77 ; 259 ; 1.0 ; 252 ; 0.6 ; 214 ; %d", GetRandomInt(999, 9999));
+		Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.77; 259; 1.0; 252; 0.6; 214; %d", GetRandomInt(999, 9999));
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_shovel", 5, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
@@ -176,10 +175,10 @@ methodmap CHale < BaseBoss
 	{
 		TF2_AddCondition(this.index, view_as<TFCond>(42), 4.0);
 		if( !GetEntProp(this.index, Prop_Send, "m_bIsReadyToHighFive")
-			and !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
+			&& !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
 		{
 			TF2_RemoveCondition(this.index, TFCond_Taunting);
-			this.SetModel(); //MakeModelTimer(null); // should reset Hale's animation
+			this.SetModel(); //MakeModelTimer(null); /// should reset Hale's animation
 		}
 		this.DoGenericStun(HALERAGEDIST);
 		Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleRageSound, GetRandomInt(1, 4));
@@ -226,11 +225,11 @@ methodmap CHale < BaseBoss
 			this.iKills++;
 		else this.iKills = 0;
 
-		if( this.iKills == 3 and GetLivingPlayers(RED) != 1 ) {
+		if( this.iKills == 3 && GetLivingPlayers(RED) != 1 ) {
 			int randsound = GetRandomInt(0, 7);
-			if( !randsound or randsound == 1 )
+			if( !randsound || randsound == 1 )
 				strcopy(snd, PLATFORM_MAX_PATH, HaleKSpree);
-			else if( randsound < 5 and randsound > 1 )
+			else if( randsound < 5 && randsound > 1 )
 				Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKSpreeNew, GetRandomInt(1, 5));
 			else Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillKSpree132, GetRandomInt(1, 2));
 			EmitSoundToAll(snd, this.index); EmitSoundToAll(snd, this.index);
@@ -241,7 +240,7 @@ methodmap CHale < BaseBoss
 	public void Help()
 	{
 		if( IsVoteInProgress() )
-			return ;
+			return;
 		char helpstr[] = "Saxton Hale:\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (stun): taunt when the Rage is full to stun nearby enemies.";
 		Panel panel = new Panel();
 		panel.SetTitle (helpstr);
@@ -277,7 +276,7 @@ public void AddHaleToDownloads()
 	PrepareSound(HaleComicArmsFallSound);
 	PrepareSound(HaleKSpree);
 	
-	for( i=1 ; i <= 4 ; i++ ) {
+	for( i=1; i <= 4; i++ ) {
 		Format(s, PLATFORM_MAX_PATH, "%s0%i.wav", HaleLastB, i);
 		PrecacheSound(s, true);
 	}
@@ -302,7 +301,7 @@ public void AddHaleToDownloads()
 	PrepareSound(HaleSappinMahSentry132);
 	PrepareSound(HaleKillLast132);
 	
-	for( i=1 ; i <= 5 ; i++ ) {
+	for( i=1; i <= 5; i++ ) {
 		if( i <= 2 ) {
 			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleJump, i);
 			PrepareSound(s);
@@ -354,17 +353,17 @@ public void AddHaleToMenu ( Menu& menu )
 public void EnableSG(const int iid)
 {
 	int i = EntRefToEntIndex(iid);
-	if (IsValidEdict(i) and i > MaxClients) {
+	if (IsValidEdict(i) && i > MaxClients) {
 		char s[32]; GetEdictClassname(i, s, sizeof(s));
 		if( StrEqual(s, "obj_sentrygun") ) {
 			SetEntProp(i, Prop_Send, "m_bDisabled", 0);
 			int higher = MaxClients+1;
-			for( int ent=2048 ; ent>higher ; --ent ) {
-				if( !IsValidEdict(ent) or ent <= 0 )
+			for( int ent=2048; ent>higher; --ent ) {
+				if( !IsValidEdict(ent) || ent <= 0 )
 					continue;
 
 				char s2[32]; GetEdictClassname(ent, s2, sizeof(s2));
-				if( StrEqual(s2, "info_particle_system") and GetOwner(ent) == i )
+				if( StrEqual(s2, "info_particle_system") && GetOwner(ent) == i )
 					AcceptEntityInput(ent, "Kill");
 			}
 		}

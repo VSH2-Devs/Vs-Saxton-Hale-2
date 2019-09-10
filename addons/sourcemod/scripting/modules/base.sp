@@ -1,40 +1,40 @@
 int
-	//Queue[PLYR],		// old Queue system but this array is a backup incase cookies haven't cached yet.
-	//PresetBossType[PLYR],	// If the upcoming boss set their boss from SetBoss command, this array will hold that data
-	Munitions[PLYR][2][2] // first index obviously player, slot, ammo-0, clip-1
+	//Queue[PLYR],		   /// old Queue system but this array is a backup incase cookies haven't cached yet.
+	//PresetBossType[PLYR],  /// If the upcoming boss set their boss from SetBoss command, this array will hold that data
+	Munitions[PLYR][2][2]	/// first index obviously player, slot, ammo-0, clip-1
 ;
 
-//	Gonna leave these here so we can reduce stack memory for calling boss specific Download function calls
-public char snd[FULLPATH]; //How is this even used?
+/// Gonna leave these here so we can reduce stack memory for calling boss specific Download function calls
+public char snd[FULLPATH]; /// How is this even used?
 
-// Moved to stocks.inc
+/// Moved to stocks.inc
 // public char extensions[][] = { ".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd", ".phy" };
 // public char extensionsb[2][5] = { ".vtf", ".vmt" };
 
 #define MAXMESSAGE	512
-public char gameMessage[MAXMESSAGE];	// Just incase...
+public char gameMessage[MAXMESSAGE];	/// Just incase...
 public char BackgroundSong[FULLPATH];
 
 
-/*
+/**
 When making new properties, remember to base it off this StringMap AND do NOT forget to initialize it in OnClientPutInServer()
 */
 StringMap hPlayerFields[PLYR];
 
-methodmap BaseFighter	/* Player Interface that Opposing team and Boss team derives from */
-/*
-Property Organization
-Ints
-Bools
-Floats
-Misc properties
-Methods
-*/
+methodmap BaseFighter	/** Player Interface that Opposing team and Boss team derives from */
+/**
+ * Property Organization
+ * Ints
+ * Bools
+ * Floats
+ * Misc properties
+ * Methods
+ */
 {
 	public BaseFighter(const int ind, bool uid=false)
 	{
-		int player=0;	// If you're using a userid and you know 100% it's valid, then set uid to true
-		if( uid and GetClientOfUserId(ind) > 0 )
+		int player=0;	/// If you're using a userid and you know 100% it's valid, then set uid to true
+		if( uid && GetClientOfUserId(ind) > 0 )
 			player = ( ind );
 		else if( IsClientValid(ind) )
 			player = GetClientUserId(ind);
@@ -42,7 +42,7 @@ Methods
 	}
 	///////////////////////////////
 
-	/* [ P R O P E R T I E S ] */
+	/** [ P R O P E R T I E S ] */
 
 	property int userid {
 		public get()				{ return view_as< int >(this); }
@@ -56,21 +56,21 @@ Methods
 			int player = this.index;
 			if( !player )
 				return 0;
-			else if( !AreClientCookiesCached(player) or IsFakeClient(player) ) {	// If the coookies aren't cached yet, use array
+			else if( !AreClientCookiesCached(player) || IsFakeClient(player) ) {	/// If the coookies aren't cached yet, use array
 				int i; hPlayerFields[player].GetValue("iQueue", i);
 				return i; //return Queue[player];
 			}
-			char strPoints[10];	// HOW WILL OUR QUEUE SURPASS OVER 9 DIGITS?
+			char strPoints[10];	/// HOW WILL OUR QUEUE SURPASS OVER 9 DIGITS?
 			GetClientCookie(player, PointCookie, strPoints, sizeof(strPoints));
 			int points = StringToInt(strPoints);
 			hPlayerFields[player].SetValue("iQueue", points); //Queue[player] = StringToInt(strPoints);
-			return points ; //Queue[player];
+			return points; //Queue[player];
 		}
 		public set( const int val ) {
 			int player = this.index;
 			if( !player )
 				return;
-			else if( !AreClientCookiesCached(player) or IsFakeClient(player) ) {
+			else if( !AreClientCookiesCached(player) || IsFakeClient(player) ) {
 				hPlayerFields[player].SetValue("iQueue", val); //Queue[player] = val;
 				return;
 			}
@@ -80,7 +80,7 @@ Methods
 			SetClientCookie(player, PointCookie, strPoints);
 		}
 	}
-	property int iPresetType	// if cookies aren't cached, oh well!
+	property int iPresetType	/// if cookies aren't cached, oh well!
 	{
 		public get()
 		{
@@ -208,7 +208,7 @@ Methods
 			hPlayerFields[this.index].SetValue("iOwnerBoss", val);
 		}
 	}
-	property int iUberTarget	/* please use userid on this; convert to client index if you want but userid is safer */
+	property int iUberTarget	/** please use userid on this; convert to client index if you want but userid is safer */
 	{
 		public get()				//{ return UberTarget[ this.index ]; }
 		{
@@ -344,7 +344,7 @@ Methods
 	 * @param index		the index of the desired weapon
 	 * @param level		the level of the weapon
 	 * @param qual		the weapon quality of the item
-	 * @param att		the nested attribute string, example: "2 ; 2.0" - increases weapon damage by 100% aka 2x.
+	 * @param att		the nested attribute string, example: "2; 2.0" - increases weapon damage by 100% aka 2x.
 	 * @return		entity index of the newly created weapon
 	 */
 	public int SpawnWeapon(char[] name, const int index, const int level, const int qual, char[] att)
@@ -358,12 +358,12 @@ Methods
 		hWep.iLevel = level;
 		hWep.iQuality = qual;
 		char atts[32][32];
-		int count = ExplodeString(att, " ; ", atts, 32, 32);
-		count &= ~1;	// odd numbered attributes result in an error, remove the 1st bit so count will always be even.
+		int count = ExplodeString(att, "; ", atts, 32, 32);
+		count &= ~1;	/// odd numbered attributes result in an error, remove the 1st bit so count will always be even.
 		if( count>0 ) {
 			hWep.iNumAttribs = count/2;
 			int i2=0;
-			for( int i=0 ; i<count ; i+=2 ) {
+			for( int i=0; i<count; i+=2 ) {
 				hWep.SetAttribute( i2, StringToInt(atts[i]), StringToFloat(atts[i+1]) );
 				i2++;
 			}
@@ -383,7 +383,7 @@ Methods
 	 */
 	public int getAmmotable(const int wepslot)
 	{
-		return( wepslot > -1 and wepslot < 2 ) ? Munitions[this.index][wepslot][0] : 0;
+		return( wepslot > -1 && wepslot < 2 ) ? Munitions[this.index][wepslot][0] : 0;
 	}
 	
 	/**
@@ -395,7 +395,7 @@ Methods
 	 */
 	public void setAmmotable(const int wepslot, const int val)
 	{
-		if( wepslot < 0 or wepslot > 1 )
+		if( wepslot < 0 || wepslot > 1 )
 			return;
 		Munitions[this.index][wepslot][0] = val;
 	}
@@ -407,7 +407,7 @@ Methods
 	 */
 	public int getCliptable(const int wepslot)
 	{
-		return( wepslot > -1 and wepslot < 2 ) ? Munitions[this.index][wepslot][1] : 0;
+		return( wepslot > -1 && wepslot < 2 ) ? Munitions[this.index][wepslot][1] : 0;
 	}
 	
 	/**
@@ -419,7 +419,7 @@ Methods
 	 */
 	public void setCliptable(const int wepslot, const int val)
 	{
-		if( wepslot < 0 or wepslot > 1 )
+		if( wepslot < 0 || wepslot > 1 )
 			return;
 		Munitions[this.index][wepslot][1] = val;
 	}
@@ -434,7 +434,7 @@ Methods
 		int entity;
 		for( int i=0; i<5; i++ ) {
 			entity = GetPlayerWeaponSlot(this.index, i); 
-			if( IsValidEdict(entity) and IsValidEntity(entity) ) {
+			if( IsValidEdict(entity) && IsValidEntity(entity) ) {
 				if( transparent > 255 )
 					transparent = 255;
 				if( transparent < 0 )
@@ -450,7 +450,7 @@ Methods
 		SetCommandFlags("r_screenoverlay", iFlags);
 		ClientCommand(this.index, "r_screenoverlay \"%s\"", strOverlay);
 	}
-	public void TeleToSpawn(int team = 0)	// Props to Chdata!
+	public void TeleToSpawn(int team = 0)	/// Props to Chdata!
 	{
 		int iEnt = -1;
 		float vPos[3], vAng[3];
@@ -466,15 +466,15 @@ Methods
 		iEnt = hArray.Get( GetRandomInt(0, hArray.Length-1) );
 		delete hArray;
 
-		// Technically you'll never find a map without a spawn point. Not a good map at least.
+		/// Technically you'll never find a map without a spawn point. Not a good map at least.
 		GetEntPropVector(iEnt, Prop_Send, "m_vecOrigin", vPos);
 		GetEntPropVector(iEnt, Prop_Send, "m_angRotation", vAng);
-		TeleportEntity(this.index, vPos, vAng, nullvec);
+		TeleportEntity(this.index, vPos, vAng, NULL_VEC);
 
-		/*if( Special == VSHSpecial_HHH ) //reserved for HHH boss
+		/*if( Special == VSHSpecial_HHH ) /// reserved for HHH boss
 		{
 			CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(AttachParticle(iEnt, "ghost_appearation", _, false)));
-			EmitSoundToAll("misc/halloween/spell_teleport.wav", _, _, SNDLEVEL_GUNFIRE, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, vPos, nullvec, false, 0.0);
+			EmitSoundToAll("misc/halloween/spell_teleport.wav", _, _, SNDLEVEL_GUNFIRE, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, vPos, NULL_VEC, false, 0.0);
 		}*/
 	}
 	public void IncreaseHeadCount()
@@ -485,21 +485,21 @@ Methods
 		SetEntProp(this.index, Prop_Send, "m_iDecapitations", ++heads);
 		int health = GetClientHealth(this.index);
 		//health += (decapitations >= 4 ? 10 : 15);
-		if ( health < 300 )
+		if( health < 300 )
 			health += 15;
 		SetEntProp(this.index, Prop_Data, "m_iHealth", health);
 		SetEntProp(this.index, Prop_Send, "m_iHealth", health);
-		TF2_AddCondition(this.index, TFCond_SpeedBuffAlly, 0.01);   //recalc their speed
+		TF2_AddCondition(this.index, TFCond_SpeedBuffAlly, 0.01);   /// recalc their speed
 	}
 	public void SpawnSmallHealthPack(int ownerteam=0)
 	{
-		if( !IsValidClient(this.index) or !IsPlayerAlive(this.index) )
+		if( !IsValidClient(this.index) || !IsPlayerAlive(this.index) )
 			return;
 		int healthpack = CreateEntityByName("item_healthkit_small");
 		if( IsValidEntity(healthpack) ) {
 			float pos[3]; GetClientAbsOrigin(this.index, pos);
 			pos[2] += 20.0;
-			DispatchKeyValue(healthpack, "OnPlayerTouch", "!self,Kill,,0,-1");  //for safety, though it normally doesn't respawn
+			DispatchKeyValue(healthpack, "OnPlayerTouch", "!self,Kill,,0,-1");  /// for safety, though it normally doesn't respawn
 			DispatchSpawn(healthpack);
 			SetEntProp(healthpack, Prop_Send, "m_iTeamNum", ownerteam, 4);
 			SetEntityMoveType(healthpack, MOVETYPE_VPHYSICS);
@@ -511,8 +511,8 @@ Methods
 	}
 	public void ForceTeamChange(const int team)
 	{
-		// Living Spectator Bug:
-		// If you force a player onto a team with their tfclass not set, they'll appear as a "living" spectator
+		/// Living Spectator Bug:
+		/// If you force a player onto a team with their tfclass not set, they'll appear as a "living" spectator
 		if( TF2_GetPlayerClass(this.index) > TFClass_Unknown ) {
 			SetEntProp(this.index, Prop_Send, "m_lifeState", 2);
 			ChangeClientTeam(this.index, team);
@@ -521,19 +521,19 @@ Methods
 		}
 	}
 	public void ClimbWall(const int weapon, const float upwardvel, const float health, const bool attackdelay)
-	//Credit to Mecha the Slag
+	/// Credit to Mecha the Slag
 	{
-		if( GetClientHealth(this.index) <= health )	// Have to baby players so they don't accidentally kill themselves trying to escape
+		if( GetClientHealth(this.index) <= health )	/// Have to baby players so they don't accidentally kill themselves trying to escape
 			return;
 
 		int client = this.index;
 		char classname[64];
 		float vecClientEyePos[3];
 		float vecClientEyeAng[3];
-		GetClientEyePosition(client, vecClientEyePos);   // Get the position of the player's eyes
-		GetClientEyeAngles(client, vecClientEyeAng);	   // Get the angle the player is looking
+		GetClientEyePosition(client, vecClientEyePos);   /// Get the position of the player's eyes
+		GetClientEyeAngles(client, vecClientEyeAng);	 /// Get the angle the player is looking
 
-		//Check for colliding entities
+		/// Check for colliding entities
 		TR_TraceRayFilter(vecClientEyePos, vecClientEyeAng, MASK_PLAYERSOLID, RayType_Infinite, TraceRayDontHitSelf, client);
 
 		if( !TR_DidHit(null) )
@@ -548,7 +548,7 @@ Methods
 		TR_GetPlaneNormal(null, fNormal);
 		GetVectorAngles(fNormal, fNormal);
 
-		if( fNormal[0] >= 30.0 and fNormal[0] <= 330.0 )
+		if( fNormal[0] >= 30.0 && fNormal[0] <= 330.0 )
 			return;
 		if( fNormal[0] <= -30.0 )
 			return;
@@ -572,7 +572,7 @@ Methods
 	public void HelpPanelClass()
 	{
 		if( IsVoteInProgress() )
-			return ;
+			return;
 		char helpstr[512];
 		switch( TF2_GetPlayerClass(this.index) ) {
 			case TFClass_Scout:	Format(helpstr, sizeof(helpstr), "Scout:\nThe Crit-a-Cola grants criticals instead of minicrits.\nThe Fan O' War removes 5pct rage on hit.\nPistols gain minicrits.\nCandycane drops a health pack on hit.\nMedics healing you get a speed-buff.\nSun-on-a-Stick puts Boss on fire.\nBackscatter crits whenever it would minicrit.");
@@ -602,7 +602,7 @@ Methods
 		int medics=0;
 		int healers = GetEntProp(client, Prop_Send, "m_nNumHealers");
 		if( healers ) {
-			for( int i=MaxClients ; i ; --i ) {
+			for( int i=MaxClients; i; --i ) {
 				if( !IsValidClient(i) )
 					continue;
 				if( GetHealingTarget(i) == client )
@@ -626,14 +626,14 @@ Methods
 };
 
 methodmap BaseBoss < BaseFighter
-/*
-the methodmap/interface for all bosses to use. Use this if you're making a totally different boss
-Property Organization
-Ints
-Bools
-Floats
-Methods
-*/
+/**
+ * the methodmap/interface for all bosses to use. Use this if you're making a totally different boss
+ * Property Organization
+ * Ints
+ * Bools
+ * Floats
+ * Methods
+ */
 {
 	public BaseBoss(const int ind, bool uid=false)
 	{
@@ -641,8 +641,8 @@ Methods
 	}
 	
 	///////////////////////////////
-	/* [ P R O P E R T I E S ] */
-
+	/** [ P R O P E R T I E S ] */
+	
 	property int iHealth
 	{
 		public get()
@@ -793,7 +793,7 @@ Methods
 	}
 	property float flRAGE
 	{
-		public get() {		/* Rage should never exceed or "inceed" 0.0 and 100.0 */
+		public get() { /** Rage should never exceed or "inceed" 0.0 and 100.0 */
 			float i; hPlayerFields[this.index].GetValue("flRAGE", i);
 			if( i > 100.0 )
 				i = 100.0;
@@ -857,14 +857,14 @@ Methods
 		int i;
 		float pos[3], pos2[3], distance;
 		GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
-		for( i=MaxClients ; i ; --i ) {
-			if( !IsValidClient(i) or !IsPlayerAlive(i) or i == this.index )
+		for( i=MaxClients; i; --i ) {
+			if( !IsValidClient(i) || !IsPlayerAlive(i) || i == this.index )
 				continue;
 			else if( GetClientTeam(i) == GetClientTeam(this.index) )
 				continue;
 			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
 			distance = GetVectorDistance(pos, pos2);
-			if( !TF2_IsPlayerInCondition(i, TFCond_Ubercharged) and distance < rageDist ) {
+			if( !TF2_IsPlayerInCondition(i, TFCond_Ubercharged) && distance < rageDist ) {
 				CreateTimer(5.0, RemoveEnt, EntIndexToEntRef(AttachParticle(i, "yikes_fx", 75.0)));
 				TF2_StunPlayer(i, 5.0, _, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, this.index);
 			}

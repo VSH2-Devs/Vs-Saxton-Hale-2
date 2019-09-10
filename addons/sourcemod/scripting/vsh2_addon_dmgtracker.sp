@@ -119,7 +119,7 @@ public void OnClientPutInServer(int client)
 public Action Timer_Millisecond(Handle timer)
 {
 	CreateTimer(0.1, Timer_Millisecond);
-	// 1 is StateRunning
+	/// 1 is StateRunning
 	if( VSH2GameMode_GetProperty("iRoundState") != 1 )
 		return Plugin_Continue;
 	
@@ -128,7 +128,7 @@ public Action Timer_Millisecond(Handle timer)
 	
 	VSH2Player(0).SetProperty("iDamage", 0);
 	VSH2Player player;
-	for (i=MaxClients ; i ; --i) {
+	for (i=MaxClients; i; --i) {
 		if (!IsValidClient(i) || GetClientTeam(i) < 2)
 			continue;
 		
@@ -150,7 +150,7 @@ public Action Timer_Millisecond(Handle timer)
 	}
 	
 	char first[64], second[64], third[64];
-	for (int z=MaxClients ; z ; --z) {
+	for (int z=MaxClients; z; --z) {
 		if (!IsValidClient(z))
 			continue;
 		player = VSH2Player(i);

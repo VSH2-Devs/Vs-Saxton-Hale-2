@@ -4,7 +4,7 @@
 // #define ZombieModelPrefix		"models/player/scout"
 
 
-//voicelines
+/// voicelines
 #define PlagueIntro			"vo/medic_specialcompleted10.mp3"
 #define PlagueRage1			"vo/medic_specialcompleted05.mp3"
 #define PlagueRage2			"vo/medic_specialcompleted06.mp3"
@@ -25,7 +25,7 @@ methodmap CPlague < BaseBoss
 
 	public void Think ()
 	{
-		if( ! IsPlayerAlive(this.index) )
+		if( !IsPlayerAlive(this.index) )
 			return;
 
 		int buttons = GetClientButtons(this.index);
@@ -44,7 +44,7 @@ methodmap CPlague < BaseBoss
 		else if( this.flGlowtime <= 0.0 )
 			this.bGlow = 0;
 
-		if( ((buttons & IN_DUCK) or (buttons & IN_ATTACK2)) and (this.flCharge >= 0.0) ) {
+		if( ((buttons & IN_DUCK) || (buttons & IN_ATTACK2)) && (this.flCharge >= 0.0) ) {
 			if( this.flCharge+2.5 < HALE_JUMPCHARGE )
 				this.flCharge += 2.5;
 			else this.flCharge = HALE_JUMPCHARGE;
@@ -53,14 +53,14 @@ methodmap CPlague < BaseBoss
 			this.flCharge += 2.5;
 		else {
 			float EyeAngles[3]; GetClientEyeAngles(this.index, EyeAngles);
-			if( this.flCharge > 1.0 and EyeAngles[0] < -5.0 ) {
+			if( this.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
 				float vel[3]; GetEntPropVector(this.index, Prop_Data, "m_vecVelocity", vel);
 				vel[2] = 750 + this.flCharge * 13.0;
 				
 				SetEntProp(this.index, Prop_Send, "m_bJumping", 1);
 				vel[0] *= (1+Sine(this.flCharge * FLOAT_PI / 50));
 				vel[1] *= (1+Sine(this.flCharge * FLOAT_PI / 50));
-				TeleportEntity(this.index, nullvec, nullvec, vel);
+				TeleportEntity(this.index, NULL_VEC, NULL_VEC, vel);
 				this.flCharge = -100.0;
 				strcopy(snd, PLATFORM_MAX_PATH, "vo/medic_yes01.mp3");
 				
@@ -76,7 +76,7 @@ methodmap CPlague < BaseBoss
 			this.flWeighDown = 0.0;
 		else this.flWeighDown += 0.1;
 
-		if( (buttons & IN_DUCK) and this.flWeighDown >= HALE_WEIGHDOWN_TIME ) {
+		if( (buttons & IN_DUCK) && this.flWeighDown >= HALE_WEIGHDOWN_TIME ) {
 			float ang[3]; GetClientEyeAngles(this.index, ang);
 			if( ang[0] > 60.0 ) {
 				//float fVelocity[3];
@@ -109,7 +109,7 @@ methodmap CPlague < BaseBoss
 		this.RemoveAllItems();
 		char attribs[128];
 
-		Format(attribs, sizeof(attribs), "68 ; 2.0 ; 2 ; 2.25 ; 259 ; 1.0 ; 252 ; 0.75 ; 200 ; 1.0 ; 551 ; 1.0");
+		Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.25; 259; 1.0; 252; 0.75; 200; 1.0; 551; 1.0");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_shovel", 304, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
@@ -119,13 +119,13 @@ methodmap CPlague < BaseBoss
 		float value = 0.0; 
 		TF2_AddCondition(this.index, TFCond_MegaHeal, 10.0);
 		switch( GetRandomInt(0, 2) ) {
-			case 0: { attribute = 2; value = 2.0; }		// Extra damage
-			case 1: { attribute = 26; value = 100.0; }	// Extra health
-			case 2: { attribute = 107; value = 2.0; }	// Extra speed
+			case 0: { attribute = 2; value = 2.0; }		/// Extra damage
+			case 1: { attribute = 26; value = 100.0; }	/// Extra health
+			case 2: { attribute = 107; value = 2.0; }	/// Extra speed
 		}
 		BaseBoss minion;
-		for( int i=MaxClients ; i ; --i ) {
-			if( !IsValidClient(i) or !IsPlayerAlive(i) or GetClientTeam(i) != BLU )
+		for( int i=MaxClients; i; --i ) {
+			if( !IsValidClient(i) || !IsPlayerAlive(i) || GetClientTeam(i) != BLU )
 				continue;
 			minion = BaseBoss(i);
 			if( minion.bIsMinion ) {
@@ -136,13 +136,13 @@ methodmap CPlague < BaseBoss
 				}
 				else {
 					char pdapower[32];
-					Format(pdapower, sizeof(pdapower), "%i ; %f", attribute, value);
+					Format(pdapower, sizeof(pdapower), "%i; %f", attribute, value);
 					int wep = minion.SpawnWeapon("tf_weapon_builder", 28, 5, 10, pdapower);
 					SetPawnTimer( RemoveWepFromSlot, 10.0, i, GetSlotFromWeapon(i, wep) );
 				}
 #else
 				char pdapower[32];
-				Format(pdapower, sizeof(pdapower), "%i ; %f", attribute, value);
+				Format(pdapower, sizeof(pdapower), "%i; %f", attribute, value);
 				int wep = minion.SpawnWeapon("tf_weapon_builder", 28, 5, 10, pdapower);
 				SetPawnTimer( RemoveWepFromSlot, 10.0, i, GetSlotFromWeapon(i, wep) );
 #endif
@@ -151,13 +151,13 @@ methodmap CPlague < BaseBoss
 	}
 	public void KilledPlayer(const BaseBoss victim, Event event)
 	{
-		// GLITCH: suiciding allows boss to become own minion.
+		/// GLITCH: suiciding allows boss to become own minion.
 		if( this.userid == victim.userid )
 			return;
-		// PATCH: Hitting spy with active deadringer turns them into Minion...
+		/// PATCH: Hitting spy with active deadringer turns them into Minion...
 		else if( event.GetInt("death_flags") & TF_DEATHFLAG_DEADRINGER )
-			return ;
-		// PATCH: killing spy with teammate disguise kills both spy and the teammate he disguised as...
+			return;
+		/// PATCH: killing spy with teammate disguise kills both spy and the teammate he disguised as...
 		else if( TF2_IsPlayerInCondition(victim.index, TFCond_Disguised) )
 			TF2_RemovePlayerDisguise(victim.index); //event.SetInt("userid", victim.userid);
 		victim.iOwnerBoss = this.userid;
@@ -171,7 +171,7 @@ methodmap CPlague < BaseBoss
 		if( gamemode.bTF2Attribs )
 			TF2Attrib_RemoveAll(base.index);
 #endif
-		int weapon = base.SpawnWeapon("tf_weapon_bat", 572, 100, 5, "6 ; 0.5 ; 57 ; 15.0 ; 26 ; 75.0 ; 49 ; 1.0 ; 68 ; -2.0");
+		int weapon = base.SpawnWeapon("tf_weapon_bat", 572, 100, 5, "6; 0.5; 57; 15.0; 26; 75.0; 49; 1.0; 68; -2.0");
 		SetEntPropEnt(base.index, Prop_Send, "m_hActiveWeapon", weapon);
 		TF2_AddCondition(base.index, TFCond_Ubercharged, 3.0);
 		SetEntityHealth(base.index, 200);
@@ -185,7 +185,7 @@ methodmap CPlague < BaseBoss
 	public void Help()
 	{
 		if( IsVoteInProgress() )
-			return ;
+			return;
 		char helpstr[] = "Plague Doctor:Kill enemies and turn them into loyal Zombies!\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Powerup Minions): taunt when Rage is full to give powerups to your Zombies.";
 		Panel panel = new Panel();
 		panel.SetTitle (helpstr);
@@ -202,17 +202,15 @@ public CPlague ToCPlague (const BaseBoss guy)
 
 public void AddPlagueDocToDownloads()
 {
-	// char s[PLATFORM_MAX_PATH];
+	//char s[PLATFORM_MAX_PATH];
+	//int i;
 	
-	// int i;
-
 	PrecacheModel(PlagueModel, true);
 	PrecacheModel(ZombieModel, true);
-
+	
 	PrecacheSound(PlagueIntro, true);
 	PrecacheSound(PlagueRage1, true);
 	PrecacheSound(PlagueRage2, true);
-
 }
 
 public void AddPlagueToMenu ( Menu& menu )

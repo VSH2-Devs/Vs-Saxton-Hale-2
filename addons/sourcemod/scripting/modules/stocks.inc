@@ -16,7 +16,7 @@ stock int GetHealingTarget(const int client)
 stock int GetActiveWep(const int client)
 {
 	int weapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-	if (IsValidEdict(weapon) and IsValidEntity(weapon))
+	if (IsValidEdict(weapon) && IsValidEntity(weapon))
 		return weapon;
 	return -1;
 }
@@ -34,42 +34,42 @@ stock void SetMediCharge(const int medigun, const float val)
 stock bool IsNearSpencer(const int client)
 {
 	int medics = 0;
-	for (int i=MaxClients ; i ; --i) {
+	for (int i=MaxClients; i; --i) {
 		if (IsValidClient(i) && GetHealingTarget(i) == client)
 			medics++;
 	}
 	return (GetEntProp(client, Prop_Send, "m_nNumHealers") > medics);
 }
-//Prepare content stocks
+/// Prepare content stocks
 stock void CheckDownload(const char[] dlpath)
 {
-	if ( FileExists(dlpath) )
+	if( FileExists(dlpath) )
 		AddFileToDownloadsTable(dlpath);
 }
-//Following 'Prepare' stocks taken from VSH1
-//'Prepare' stocks will precache AND add to the downloads table (if file exists).
-stock void PrepareSound(const char[] szSoundPath) //For single custom sound files
+/// Following 'Prepare' stocks taken from VSH1
+/// 'Prepare' stocks will precache AND add to the downloads table (if file exists).
+stock void PrepareSound(const char[] szSoundPath) /// For single custom sound files
 {
 	PrecacheSound(szSoundPath, true);
 	char s[PLATFORM_MAX_PATH];
 	Format(s, sizeof(s), "sound/%s", szSoundPath);
 	CheckDownload(s);
 }
-stock void DownloadSoundList(const char[][] szFileList, int iSize) //For arrays of custom sounds
+stock void DownloadSoundList(const char[][] szFileList, int iSize) /// For arrays of custom sounds
 {
 	for (int i = 0; i < iSize; i++)
 	{
 		PrepareSound(szFileList[i]);
 	}
 }
-stock void PrecacheSoundList(const char[][] szFileList, int iSize) //For arrays of stock TF2 sounds
+stock void PrecacheSoundList(const char[][] szFileList, int iSize) /// For arrays of stock TF2 sounds
 {
 	for (int i = 0; i < iSize; i++)
 	{
 		PrecacheSound(szFileList[i], true);
 	}
 }
-stock void PrepareMaterial(const char[] szMaterialPath) //For single custom materials, omit file extensions as it prepares VMT + VTF
+stock void PrepareMaterial(const char[] szMaterialPath) /// For single custom materials, omit file extensions as it prepares VMT + VTF
 {
 	char s[PLATFORM_MAX_PATH];
 	Format(s, sizeof(s), "%s%s", szMaterialPath, ".vtf");
@@ -77,7 +77,7 @@ stock void PrepareMaterial(const char[] szMaterialPath) //For single custom mate
 	Format(s, sizeof(s), "%s%s", szMaterialPath, ".vmt");
 	CheckDownload(s);
 }
-stock void DownloadMaterialList(const char[][] szFileList, int iSize) //For arrays of custom materials
+stock void DownloadMaterialList(const char[][] szFileList, int iSize) /// For arrays of custom materials
 {
 	char s[PLATFORM_MAX_PATH];
 	for (int i = 0; i < iSize; i++)
@@ -86,13 +86,13 @@ stock void DownloadMaterialList(const char[][] szFileList, int iSize) //For arra
 		CheckDownload(s);
 	}
 }
-stock int PrepareModel(const char[] szModelPath, bool bMdlOnly = false) //For custom models, do NOT omit .MDL extension
+stock int PrepareModel(const char[] szModelPath, bool bMdlOnly = false) /// For custom models, do NOT omit .MDL extension
 {
 	char szBase[PLATFORM_MAX_PATH];
 	char szPath[PLATFORM_MAX_PATH];
 	int i;
 	strcopy(szBase, sizeof(szBase), szModelPath);
-	SplitString(szBase, ".mdl", szBase, sizeof(szBase)); //Kind of redundant, but eh.
+	SplitString(szBase, ".mdl", szBase, sizeof(szBase)); /// Kind of redundant, but eh.
 	
 	if (!bMdlOnly)
 	{
@@ -107,7 +107,7 @@ stock int PrepareModel(const char[] szModelPath, bool bMdlOnly = false) //For cu
 	
 	return PrecacheModel(szModelPath, true);
 }
-//End 'Prepare' stocks
+/// End 'Prepare' stocks
 public bool TraceRayDontHitSelf(int entity, int mask, any data)
 {
 	return (entity != data);
@@ -145,13 +145,13 @@ stock bool IsInRange(const int entity, const int target, const float dist, bool 
 	float entitypos[3]; GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", entitypos);
 	float targetpos[3]; GetEntPropVector(target, Prop_Data, "m_vecAbsOrigin", targetpos);
 
-	if ( GetVectorDistance(entitypos, targetpos) <= dist )
+	if( GetVectorDistance(entitypos, targetpos) <= dist )
 	{
 		if (!pTrace)
 			return true;
 		else {
 			TR_TraceRayFilter( entitypos, targetpos, MASK_SHOT, RayType_EndPoint, TraceRayDontHitSelf, entity );
-			if ( TR_GetFraction() > 0.98 )
+			if( TR_GetFraction() > 0.98 )
 				return true;
 		}
 	}
@@ -197,7 +197,7 @@ stock void SetWeaponInvis(const int client, const int alpha)
 	int transparent = alpha;
 	for (int i = 0; i < 5; i++) {
 		int entity = GetPlayerWeaponSlot(client, i); 
-		if ( IsValidEdict(entity) && IsValidEntity(entity) )
+		if( IsValidEdict(entity) && IsValidEntity(entity) )
 		{
 			if (transparent > 255)
 				transparent = 255;
@@ -251,7 +251,7 @@ stock int SetWeaponClip(const int weapon, const int ammo)
 }
 stock int ShootRocket(const int client, bool bCrit = false, float vPosition[3], float vAngles[3], const float flSpeed, const float dmg, const char[] model, bool arc=false)
 {
-//new String:strEntname[45] = "tf_projectile_spellfireball";
+//char strEntname[45] = "tf_projectile_spellfireball";
 /*
 switch (spell)
 	{
@@ -268,7 +268,7 @@ switch (spell)
 	}
 	switch(spell)
 	{
-		//These spells have arcs.
+		/// These spells have arcs.
 		case BATS, METEOR, TELE:
 		{
 			vVelocity[2] += 32.0;
@@ -316,7 +316,7 @@ SetEntPropFloat(iProjectile, Prop_Send, "m_flDamage", dmg);
 	DispatchSpawn(iProjectile);
 	if (arc)
 		SetEntityMoveType(iProjectile, MOVETYPE_FLYGRAVITY);
-	if ( model[0] != '\0' )
+	if( model[0] != '\0' )
 		SetEntityModel(iProjectile, model);
 	return iProjectile;
 }
@@ -345,19 +345,19 @@ stock bool IsValidClient(const int client, bool replaycheck = true)
 }
 stock int GetOwner(const int ent)
 {
-	if ( IsValidEdict(ent) && IsValidEntity(ent) )
+	if( IsValidEdict(ent) && IsValidEntity(ent) )
 		return GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity");
 	return -1;
 }
 stock int GetBuilder(const int ent)
 {
-	if ( IsValidEdict(ent) && IsValidEntity(ent) )
+	if( IsValidEdict(ent) && IsValidEntity(ent) )
 		return GetEntPropEnt(ent, Prop_Send, "m_hBuilder");
 	return -1;
 }
 stock int GetGroundEntity(const int client)
 {
-	if ( IsValidClient(client, false)) )
+	if( IsValidClient(client, false)) )
 		return GetEntPropEnt(client, Prop_Send, "m_hGroundEntity");
 	return -1;
 }
@@ -373,7 +373,7 @@ stock int FindTeleOwner(const int client)
 	}
 	return -1;
 }
-stock void TeleportToSpawn(const int client, int team = 0)	// Props to Chdata!
+stock void TeleportToSpawn(const int client, int team = 0)	/// Props to Chdata!
 {
 	int iEnt = -1;
 	float vPos[3], vAng[3];
@@ -391,21 +391,21 @@ stock void TeleportToSpawn(const int client, int team = 0)	// Props to Chdata!
 	iEnt = hArray.Get(GetRandomInt(0, hArray.Length - 1));
 	hArray.Close();
 
-	// Technically you'll never find a map without a spawn point. Not a good map at least.
+	/// Technically you'll never find a map without a spawn point. Not a good map at least.
 	GetEntPropVector(iEnt, Prop_Send, "m_vecOrigin", vPos);
 	GetEntPropVector(iEnt, Prop_Send, "m_angRotation", vAng);
-	TeleportEntity(client, vPos, vAng, nullvec);
+	TeleportEntity(client, vPos, vAng, NULL_VEC);
 
-	/*if (Special == VSHSpecial_HHH) //reserved for HHH boss
+	/*if (Special == VSHSpecial_HHH) /// reserved for HHH boss
 	{
 		CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(AttachParticle(iEnt, "ghost_appearation", _, false)));
-		EmitSoundToAll("misc/halloween/spell_teleport.wav", _, _, SNDLEVEL_GUNFIRE, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, vPos, nullvec, false, 0.0);
+		EmitSoundToAll("misc/halloween/spell_teleport.wav", _, _, SNDLEVEL_GUNFIRE, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, vPos, NULL_VEC, false, 0.0);
 	}*/
 }
 stock void DoExplosion(const int owner, const int damage, const int radius, float pos[3])
 {
 	int explode = CreateEntityByName("env_explosion");
-	if ( !IsValidEntity(explode) )
+	if( !IsValidEntity(explode) )
 		return;
 
 	DispatchKeyValue(explode, "targetname", "exploder");
@@ -461,7 +461,7 @@ stock float[] nNegateVector(const float vec[3])
 }
 stock bool VectorCompare (const float v1[3], const float v2[3])
 {
-	for (int i=0 ; i<3 ; i++)
+	for (int i=0; i<3; i++)
 		if (v1[i] != v2[i])
 			return false;
 			
@@ -469,10 +469,10 @@ stock bool VectorCompare (const float v1[3], const float v2[3])
 }
 stock bool OnlyScoutsLeft(const int team)
 {
-	for (int i=MaxClients ; i ; --i) {
-		if ( ! IsValidClient(i) or ! IsPlayerAlive(i) )
+	for (int i=MaxClients; i; --i) {
+		if( !IsValidClient(i) || !IsPlayerAlive(i) )
 			continue;
-		if (GetClientTeam(i) == team and TF2_GetPlayerClass(i) != TFClass_Scout)
+		if (GetClientTeam(i) == team && TF2_GetPlayerClass(i) != TFClass_Scout)
 			return false;
 	}
 	return true;
@@ -480,40 +480,40 @@ stock bool OnlyScoutsLeft(const int team)
 stock int GetLivingPlayers(const int team)
 {
 	int AlivePlayers = 0;
-	for (int i=MaxClients ; i ; --i) {
-		if ( IsValidClient(i) && IsPlayerAlive(i) && GetClientTeam(i) == team )
+	for (int i=MaxClients; i; --i) {
+		if( IsValidClient(i) && IsPlayerAlive(i) && GetClientTeam(i) == team )
 			++AlivePlayers;
 	}
 	return AlivePlayers;
 }
 stock void IncrementHeadCount(const int client, bool addhealth = true, int addheads = 1)
 {
-	if ( (TF2_GetPlayerClass(client) == TFClass_DemoMan) and  ! TF2_IsPlayerInCondition(client, TFCond_DemoBuff) )
-		TF2_AddCondition(client, TFCond_DemoBuff, TFCondDuration_Infinite); //Apply this condition to Demomen to give them their glowing eye effect.
+	if( (TF2_GetPlayerClass(client) == TFClass_DemoMan) && !TF2_IsPlayerInCondition(client, TFCond_DemoBuff) )
+		TF2_AddCondition(client, TFCond_DemoBuff, TFCondDuration_Infinite); /// Apply this condition to Demomen to give them their glowing eye effect.
 	int decapitations = GetEntProp(client, Prop_Send, "m_iDecapitations");
 	SetEntProp(client, Prop_Send, "m_iDecapitations", decapitations + addheads);
-	if ( addhealth )
+	if( addhealth )
 	{
 		int health = GetClientHealth(client);
 		//health += (decapitations >= 4 ? 10 : 15);
-		if ( health + (15 * addheads) <= 300 ) //TODO: Replace this with an overheal calculation (MaxHP * 1.5) OR add a maxhealth arg. 
+		if( health + (15 * addheads) <= 300 ) /// TODO: Replace this with an overheal calculation (MaxHP * 1.5) OR add a maxhealth arg. 
 			health += 15 * addheads;
 		else
 			health = 300;
 		SetEntProp(client, Prop_Data, "m_iHealth", health);
 		SetEntProp(client, Prop_Send, "m_iHealth", health);
 	}
-	TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);   //recalc their speed
+	TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);   /// recalc their speed
 }
 stock void SpawnSmallHealthPackAt(const int client, int ownerteam = 0)
 {
 	if (!IsValidClient(client) || !IsPlayerAlive(client))
 		return;
 	int healthpack = CreateEntityByName("item_healthkit_small");
-	if ( IsValidEntity(healthpack) ) {
+	if( IsValidEntity(healthpack) ) {
 		float pos[3]; GetClientAbsOrigin(client, pos);
 		pos[2] += 20.0;
-		DispatchKeyValue(healthpack, "OnPlayerTouch", "!self,Kill,,0,-1");  //for safety, though it normally doesn't respawn
+		DispatchKeyValue(healthpack, "OnPlayerTouch", "!self,Kill,,0,-1");  /// for safety, though it normally doesn't respawn
 		DispatchSpawn(healthpack);
 		SetEntProp(healthpack, Prop_Send, "m_iTeamNum", ownerteam, 4);
 		SetEntityMoveType(healthpack, MOVETYPE_VPHYSICS);
@@ -525,21 +525,21 @@ stock void SpawnSmallHealthPackAt(const int client, int ownerteam = 0)
 	return;
 }
 public void SickleClimbWalls(const int client, const int weapon, const float upwardvel, const float health, const bool attackdelay)
-//Credit to Mecha the Slag
+/// Credit to Mecha the Slag
 {
-	if ( !IsValidClient(client) || (GetClientHealth(client) <= health) )
+	if( !IsValidClient(client) || (GetClientHealth(client) <= health) )
 		return;
 
 	char classname[64];
 	float vecClientEyePos[3];
 	float vecClientEyeAng[3];
-	GetClientEyePosition(client, vecClientEyePos);   // Get the position of the player's eyes
-	GetClientEyeAngles(client, vecClientEyeAng);	   // Get the angle the player is looking
+	GetClientEyePosition(client, vecClientEyePos);   /// Get the position of the player's eyes
+	GetClientEyeAngles(client, vecClientEyeAng);	   /// Get the angle the player is looking
 
-	//Check for colliding entities
+	/// Check for colliding entities
 	TR_TraceRayFilter(vecClientEyePos, vecClientEyeAng, MASK_PLAYERSOLID, RayType_Infinite, TraceRayDontHitSelf, client);
 
-	if ( !TR_DidHit(null) )
+	if( !TR_DidHit(null) )
 		return;
 
 	int TRIndex = TR_GetEntityIndex(null);
@@ -610,7 +610,7 @@ stock void ResetPlayer(const int client)
  * @noreturn
  */
 
-/*
+/**
 If you need to use this and your function uses 3 parameters, modify it if necessary.
 BUG/GLITCH: For some strange reason, SetPawnTimer doesn't work when u attempt to callback stock functions, interesting...
 */
@@ -632,11 +632,11 @@ public Action DoThink(Handle hTimer, DataPack hndl)
 	Call_StartFunction( null, pFunc );
 
 	any param1 = hndl.ReadCell();
-	if ( param1 != -999 )
+	if( param1 != -999 )
 		Call_PushCell(param1);
 
 	any param2 = hndl.ReadCell();
-	if ( param2 != -999 )
+	if( param2 != -999 )
 		Call_PushCell(param2);
 
 	Call_Finish();
@@ -646,13 +646,13 @@ public Action DoThink(Handle hTimer, DataPack hndl)
 stock bool DoSuperJump(const int client, const float charge, const float JumpAngle, int& changecharge, const int subtractCharge)
 {
 	float ang[3]; GetClientEyeAngles(client, ang);
-	if( ang[0] <= JumpAngle ) { // default JumpAngle = -45.0
+	if( ang[0] <= JumpAngle ) { /// default JumpAngle = -45.0
 		float vel[3]; GetEntPropVector(client, Prop_Data, "m_vecVelocity", vel);
 		vel[2] = 750 + charge * 13.0;
 		SetEntProp(client, Prop_Send, "m_bJumping", 1);
 		vel[0] *= (1+Sine(charge * FLOAT_PI / 50));
 		vel[1] *= (1+Sine(charge * FLOAT_PI / 50));
-		TeleportEntity(client, nullvec, nullvec, vel);
+		TeleportEntity(client, NULL_VEC, NULL_VEC, vel);
 		changecharge = subtractCharge;
 		return true;
 	}
@@ -662,13 +662,13 @@ stock bool DoSuperJump(const int client, const float charge, const float JumpAng
 
 stock bool DoWeighdown(const int client, float& weighdowntime, const float AngleForWayDown, const float SetWeighdown)
 {
-	if ( weighdowntime >= 1.0 ) {
+	if( weighdowntime >= 1.0 ) {
 		float ang[3]; GetClientEyeAngles(client, ang);
-		if ( ang[0] >= AngleForWayDown ) {	//default AngleForWayDown = 60.0
+		if( ang[0] >= AngleForWayDown ) {	/// default AngleForWayDown = 60.0
 			float fVelocity[3];
 			GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
 			fVelocity[2] = -1000.0;
-			TeleportEntity(client, nullvec, nullvec, fVelocity);
+			TeleportEntity(client, NULL_VEC, NULL_VEC, fVelocity);
 			SetEntityGravity(client, 6.0);
 			CreateTimer(2.0, TimerGravityCat, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 			weighdowntime = SetWeighdown;
@@ -688,32 +688,32 @@ stock int CalcBossHealth(const float initial, const int playing, const float sub
 {
 	return RoundFloat( Pow((((initial)+playing)*(playing-subtract)), exponent)+additional );
 }
-stock bool IsVSHMap()	// just use arena maps as vsh/ff2 maps
+stock bool IsVSHMap()	/// just use arena maps as vsh/ff2 maps
 {
 	char config[FULLPATH], currentmap[99];
 	GetCurrentMap(currentmap, sizeof(currentmap));
-	if ( FileExists("bNextMapToFF2") )
+	if( FileExists("bNextMapToFF2") )
 		{return true;}
-	else if ( FileExists("bNextMapToHale") )
+	else if( FileExists("bNextMapToHale") )
 		{return true;}
 
-	BuildPath(Path_SM, config, FULLPATH, "configs/freak_fortress_2/maps.cfg");	// Compatibility :)
-	if (! FileExists(config)) {
+	BuildPath(Path_SM, config, FULLPATH, "configs/freak_fortress_2/maps.cfg");	/// Compatibility :)
+	if (!FileExists(config)) {
 		BuildPath(Path_SM, config, FULLPATH, "configs/saxton_hale/saxton_hale_maps.cfg");
-		if (! FileExists(config)) {
+		if (!FileExists(config)) {
 			LogError("[VSH 2] ERROR: **** Unable to find VSH/FF2 Compatibility Map Configs, Disabling VSH 2 ****");
 			return false;
 		}
 	}
 
 	File file = OpenFile(config, "r");
-	if ( ! file ) {
+	if( !file ) {
 		LogError("[VSH 2] **** Error Reading Maps from %s Config, Disabling VSH Engine ****", config);
 		return false;
 	}
 
 	int tries;
-	while ( file.ReadLine(config, sizeof(config)) and tries < 100 )
+	while ( file.ReadLine(config, sizeof(config)) && tries < 100 )
 	{
 		++tries;
 		if (tries == 100) {
@@ -722,10 +722,10 @@ stock bool IsVSHMap()	// just use arena maps as vsh/ff2 maps
 		}
 
 		Format(config, strlen(config)-1, config);
-		if ( !strncmp(config, "//", 2, false) )
+		if( !strncmp(config, "//", 2, false) )
 			continue;
 
-		if ( StrContains(currentmap, config, false) != -1 || StrContains(config, "all", false) != -1 )
+		if( StrContains(currentmap, config, false) != -1 || StrContains(config, "all", false) != -1 )
 		{
 			file.Close();
 			return true;
@@ -740,7 +740,7 @@ stock void SetArenaCapEnableTime(const float time)
 {
 	int ent = -1;
 	char strTime[32]; FloatToString(time, strTime, sizeof(strTime));
-	if ( (ent = FindEntityByClassname(-1, "tf_logic_arena")) != -1 )
+	if( (ent = FindEntityByClassname(-1, "tf_logic_arena")) != -1 )
 		DispatchKeyValue(ent, "CapEnableDelay", strTime);
 }
 stock void SetClientGlow(const int client, const float time1, float clampfl = 0.0, float &glowtimer)
@@ -761,7 +761,7 @@ stock void SetControlPoint(const bool enable)
 	int CPm = -1;
 	while ( (CPm = FindEntityByClassname(CPm, "team_control_point")) != -1 )
 	{
-		if (CPm > MaxClients and IsValidEdict(CPm)) {
+		if (CPm > MaxClients && IsValidEdict(CPm)) {
 			AcceptEntityInput(CPm, (enable ? "ShowModel" : "HideModel"));
 			SetVariantInt(enable ? 0 : 1);
 			AcceptEntityInput(CPm, "SetLocked");
@@ -796,7 +796,7 @@ stock void SpawnRandomAmmo()
 		if( maxlim )
 			if( spawned >= maxlim )
 				break;
-		// Technically you'll never find a map without a spawn point.
+		/// Technically you'll never find a map without a spawn point.
 		GetEntPropVector(iEnt, Prop_Send, "m_vecOrigin", vPos);
 		GetEntPropVector(iEnt, Prop_Send, "m_angRotation", vAng);
 		int ammo = CreateEntityByName("item_ammopack_small");
@@ -821,7 +821,6 @@ stock void SpawnRandomHealth()
 		if( maxlim )
 			if( spawned >= maxlim )
 				break;
-		// Technically you'll never find a map without a spawn point.
 		GetEntPropVector(iEnt, Prop_Send, "m_vecOrigin", vPos);
 		GetEntPropVector(iEnt, Prop_Send, "m_angRotation", vAng);
 		int healthkit = CreateEntityByName("item_healthkit_small");
@@ -834,34 +833,34 @@ stock void SpawnRandomHealth()
 stock int GetTeamPlayerCount(const int team)
 {
 	int count = 0;
-	for (int i=MaxClients ; i ; --i) {
-		if (IsValidClient(i) and GetClientTeam(i) == team)
+	for (int i=MaxClients; i; --i) {
+		if (IsValidClient(i) && GetClientTeam(i) == team)
 			{count++;}
 	}
 	return count;
 }
 stock int GetClientCloakIndex(const int client)
 {
-	if (! IsValidClient(client))
+	if (!IsValidClient(client))
 		return -1;
 	int wep = GetPlayerWeaponSlot(client, 4);
-	if (! IsValidEntity(wep))
+	if (!IsValidEntity(wep))
 		return -1;
 	char classname[32];
 	GetEntityClassname(wep, classname, sizeof(classname));
-	if ( ! strncmp(classname, "tf_wea", 6, false) )
+	if( !strncmp(classname, "tf_wea", 6, false) )
 		return GetItemIndex(wep);
 	return -1;
 }
 stock int GetSlotFromWeapon(const int iClient, const int iWeapon)
 {
 	for (int i=0; i<5; i++) {
-		if ( iWeapon == GetPlayerWeaponSlot(iClient, i) )
+		if( iWeapon == GetPlayerWeaponSlot(iClient, i) )
 			return i;
 	}
 	return -1;
 }
-stock bool RemoveDemoShield(int iClient) //Taken from VSH1
+stock bool RemoveDemoShield(int iClient) /// Taken from VSH1
 {
 	int iEnt = MaxClients + 1;
 	while ((iEnt = FindEntityByClassname(iEnt, "tf_wearable_demoshield")) != -1)
@@ -869,10 +868,10 @@ stock bool RemoveDemoShield(int iClient) //Taken from VSH1
 		if (GetEntPropEnt(iEnt, Prop_Send, "m_hOwnerEntity") == iClient && !GetEntProp(iEnt, Prop_Send, "m_bDisguiseWearable"))
 		{
 			TF2_RemoveWearable(iClient, iEnt);
-			return true; //Returns true if Shield was removed...
+			return true; /// Returns true if Shield was removed...
 		}
 	}
-	return false; //...and returns False if one wasn't found.
+	return false; /// ...and returns False if one wasn't found.
 }
 stock void RemovePlayerBack(int client, int[] indices, int len)
 {
@@ -882,10 +881,10 @@ stock void RemovePlayerBack(int client, int[] indices, int len)
 	while ((edict = FindEntityByClassname(edict, "tf_wearable")) != -1)
 	{
 		char netclass[32];
-		if (GetEntityNetClass(edict, netclass, sizeof(netclass)) and StrEqual(netclass, "CTFWearable"))
+		if (GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearable"))
 		{
 			int idx = GetItemIndex(edict);
-			if (GetOwner(edict) == client and ! GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
+			if (GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
 			{
 				for (int i = 0; i < len; i++) {
 					if (idx == indices[i]) {
@@ -900,10 +899,10 @@ stock void RemovePlayerBack(int client, int[] indices, int len)
 	while ((edict = FindEntityByClassname(edict, "tf_powerup_bottle")) != -1)
 	{
 		char netclass[32];
-		if (GetEntityNetClass(edict, netclass, sizeof(netclass)) and StrEqual(netclass, "CTFPowerupBottle"))
+		if (GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFPowerupBottle"))
 		{
 			int idx = GetItemIndex(edict);
-			if (GetOwner(edict) == client and ! GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
+			if (GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
 			{
 				for (int i=0; i < len; i++) {
 					if (idx == indices[i]) {
@@ -999,14 +998,14 @@ stock int FindSentry(const int client)
 stock bool TF2_IsPlayerCritBuffed(const int client)
 {
 	return (TF2_IsPlayerInCondition(client, TFCond_Kritzkrieged)
-			or TF2_IsPlayerInCondition(client, TFCond_HalloweenCritCandy)
-			or TF2_IsPlayerInCondition(client, view_as<TFCond>(34))
-			or TF2_IsPlayerInCondition(client, view_as<TFCond>(35))
-			or TF2_IsPlayerInCondition(client, TFCond_CritOnFirstBlood)
-			or TF2_IsPlayerInCondition(client, TFCond_CritOnWin)
-			or TF2_IsPlayerInCondition(client, TFCond_CritOnFlagCapture)
-			or TF2_IsPlayerInCondition(client, TFCond_CritOnKill)
-			or TF2_IsPlayerInCondition(client, TFCond_CritMmmph)
+			|| TF2_IsPlayerInCondition(client, TFCond_HalloweenCritCandy)
+			|| TF2_IsPlayerInCondition(client, view_as<TFCond>(34))
+			|| TF2_IsPlayerInCondition(client, view_as<TFCond>(35))
+			|| TF2_IsPlayerInCondition(client, TFCond_CritOnFirstBlood)
+			|| TF2_IsPlayerInCondition(client, TFCond_CritOnWin)
+			|| TF2_IsPlayerInCondition(client, TFCond_CritOnFlagCapture)
+			|| TF2_IsPlayerInCondition(client, TFCond_CritOnKill)
+			|| TF2_IsPlayerInCondition(client, TFCond_CritMmmph)
 			);
 }
 stock void OverNineThousand()
@@ -1017,14 +1016,14 @@ stock void OverNineThousand()
 public void _NoHonorBound(const int userid)
 {
 	int client = GetClientOfUserId(userid);
-	if (IsValidClient(client) and IsPlayerAlive(client)) {
+	if (IsValidClient(client) && IsPlayerAlive(client)) {
 		int weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
 		int index = GetItemIndex(weapon);
 		int active = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 		char classname[32];
-		if ( IsValidEdict(active) )
+		if( IsValidEdict(active) )
 			GetEdictClassname(active, classname, sizeof(classname));
-		if ( index == 357 and active == weapon and ! strcmp(classname, "tf_weapon_katana", false) )
+		if( index == 357 && active == weapon && !strcmp(classname, "tf_weapon_katana", false) )
 		{
 			SetEntProp(weapon, Prop_Send, "m_bIsBloody", 1);
 			if (GetEntProp(client, Prop_Send, "m_iKillCountSinceLastDeploy") < 1)
@@ -1054,13 +1053,13 @@ stock TF2Item PrepareItemHandle(TF2Item hItem, char[] name = "", int index = -1,
 	int addattribs = 0;
 
 	char weaponAttribsArray[32][32];
-	int attribCount = ExplodeString(att, " ; ", weaponAttribsArray, 32, 32);
+	int attribCount = ExplodeString(att, "; ", weaponAttribsArray, 32, 32);
 	
 	int flags = OVERRIDE_ATTRIBUTES;
 	if (!dontpreserve)
 		flags |= PRESERVE_ATTRIBUTES;
 
-	if ( !hWeapon )
+	if( !hWeapon )
 		hWeapon = new TF2Item(flags);
 	else hWeapon.iFlags = flags;
 //	Handle hWeapon = TF2Items_CreateItem(flags);	//null;
@@ -1099,7 +1098,7 @@ stock TF2Item PrepareItemHandle(TF2Item hItem, char[] name = "", int index = -1,
 	if (attribCount > 1) {
 		hWeapon.iNumAttribs = (attribCount/2);
 		int i2 = 0;
-		for (int i=0; i<attribCount and i<32; i += 2)
+		for (int i=0; i<attribCount && i<32; i += 2)
 		{
 			int attrib = StringToInt(weaponAttribsArray[i]);
 			if( !attrib )
@@ -1125,7 +1124,7 @@ public void _StopTickle(const int userid)
 	if (!GetEntProp(client, Prop_Send, "m_bIsReadyToHighFive") && !IsValidEntity(GetEntPropEnt(client, Prop_Send, "m_hHighFivePartner")))
 		TF2_RemoveCondition(client, TFCond_Taunting);
 }
-stock bool MapHasMusic(bool forceRecalc = false)	// Does this even work?
+stock bool MapHasMusic(bool forceRecalc = false)	/// Does this even work?
 {
 	static bool hasMusic;
 	static bool found = false;
@@ -1139,7 +1138,7 @@ stock bool MapHasMusic(bool forceRecalc = false)	// Does this even work?
 		while ((i = FindEntityByClassname(i, "info_target")) != -1)
 		{
 			GetEntPropString(i, Prop_Data, "m_iName", name, sizeof(name));
-			if ( !strcmp(name, "hale_no_music", false) )
+			if( !strcmp(name, "hale_no_music", false) )
 				hasMusic = true;
 		}
 		found = true;
@@ -1152,10 +1151,10 @@ stock bool IsValidAdmin(const int client, const char[] flags)
 		return false;
 	int ibFlags = ReadFlagString(flags);
 	if (!StrEqual(flags, "")) {
-		if ( (GetUserFlagBits(client) & ibFlags) == ibFlags )
+		if( (GetUserFlagBits(client) & ibFlags) == ibFlags )
 			return true;
 	}
-	if ( GetUserFlagBits(client) & ADMFLAG_ROOT )
+	if( GetUserFlagBits(client) & ADMFLAG_ROOT )
 		return true;
 	return false;
 }
@@ -1229,7 +1228,7 @@ stock int GetClip(const int client, const int slot)
 }
 stock void SkipBossPanelNotify(const int client, bool newchoice = true)
 {
-	if (!bEnabled.BoolValue or !IsValidClient(client) or IsFakeClient(client) or IsVoteInProgress())
+	if (!bEnabled.BoolValue || !IsValidClient(client) || IsFakeClient(client) || IsVoteInProgress())
 		return;
 
 	Panel panel = new Panel();
@@ -1248,9 +1247,9 @@ stock void _SetCapOwner(const int iCapTeam, float flEnableTime = 30.0)
 	int cap_master = FindEntityByClassname(-1, "team_control_point_master");
 	while ( (i = FindEntityByClassname(i, "team_control_point")) != -1 )
 	{
-		if (IsValidEntity(i)) {	//Adapted from Arena:Respawn
+		if (IsValidEntity(i)) {	/// Adapted from Arena:Respawn
 			SetVariantInt(iCapTeam);
-			AcceptEntityInput(i, "SetOwner", -1, cap_master); //Must have team_control_point_master as the activator, less it will just ignore the Input
+			AcceptEntityInput(i, "SetOwner", -1, cap_master); /// Must have team_control_point_master as the activator, less it will just ignore the Input
 			SetVariantInt(1);
 			AcceptEntityInput(i, "SetLocked");
 			SetPawnTimer(EnableCap, flEnableTime);
@@ -1264,12 +1263,12 @@ stock bool StrStarts(const char[] szStr, const char[] szSubStr, bool bCaseSensit
 stock bool ValidateName(const char[] name)
 {
 	int length = strlen(name);
-	for (int i=0 ; i<length ; ++i) {
+	for (int i=0; i<length; ++i) {
 		int holder = name[i];
-		// Invalid name, names may only contains numbers, underscores and normal letters
+		/// Invalid name, names may only contains numbers, underscores, and normal letters.
 		if (!(IsCharAlpha(holder) || IsCharNumeric(holder) || holder == '_'))
 			return false;
 	}
-	// A name is, of course, only valid if it's 1 or more chars long, though longer is recommended
+	/// A name is, of course, only valid if it's 1 or more chars long, though longer is recommended
 	return (length > 0);
 }
