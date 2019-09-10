@@ -4,11 +4,12 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.1.3"
+			"Latest"	"2.1.4"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.1.3:"
-		"Notes"	"adding boss param to the OnMusic forward."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.1.4:"
+		"Notes"	"Removed and Replaced many macros"
+		"Notes"	"Removed and Replaced the 'and' + 'or' macros"
 	}
 	
 	"Files"
@@ -18,6 +19,7 @@
 		"Source"	"Path_SM/scripting/vsh2.sp"
 		"Source"	"Path_SM/scripting/vsh2_addon_dmgtracker.sp"
 		"Source"	"Path_SM/scripting/vsh2boss_plaguedoctor.sp"
+		
 		"Source"	"Path_SM/scripting/modules/base.sp"
 		"Source"	"Path_SM/scripting/modules/bosses.sp"
 		"Source"	"Path_SM/scripting/modules/commands.sp"
@@ -32,6 +34,7 @@
 		"Source"	"Path_SM/scripting/modules/bosses/hhh.sp"
 		"Source"	"Path_SM/scripting/modules/bosses/plague.sp"
 		"Source"	"Path_SM/scripting/modules/bosses/vagineer.sp"
+		
 		"Source"	"Path_SM/scripting/include/vsh2.inc"
 	}
 }
