@@ -13,7 +13,7 @@ methodmap VSH2Player {
 	 */
 	public native VSH2Player(const int index, bool userid=false);
 
-	/* **** **** [ P R O P E R T I E S ] **** **** */
+	/** **** **** [ P R O P E R T I E S ] **** **** **/
 	
 	/**
 	 * gets the userid of the vsh2 player instance
@@ -49,7 +49,7 @@ methodmap VSH2Player {
 	 */
 	public native void SetProperty(const char prop_name[64], any value);
 	
-	/* AVAILABLE PROPERTIES
+	/** AVAILABLE PROPERTIES
 	property int iQueue
 	property int iPresetType
 	property int iLives
@@ -58,15 +58,15 @@ methodmap VSH2Player {
 	property int iAirDamage
 	property int iSongPick
 	property int iOwnerBoss
-	property int iUberTarget	// please use userid on this; convert to client index if you want but userid is safer
-	property int bGlow		// use like a bool
+	property int iUberTarget	/// please use userid on this; convert to client index if you want but userid is safer
+	property int bGlow	 /// use like a bool
 	property bool bIsMinion
 	property bool bInJump
 	property float flGlowtime
 	property float flLastHit
 	property float flLastShot
 	
-	// 	ALL PROPERTIES AFTER THIS COMMENT ONLY ACCOUNT FOR BOSSES BUT CAN STILL APPLY ON NON-BOSSES AND MINIONS
+	/// ALL PROPERTIES AFTER THIS COMMENT ONLY ACCOUNT FOR BOSSES BUT CAN STILL APPLY ON NON-BOSSES AND MINIONS ///
 	property int iHealth
 	property int iMaxHealth
 	property int iType
@@ -74,8 +74,8 @@ methodmap VSH2Player {
 	property int iStabbed
 	property int iMarketted
 	property int iDifficulty
-	property bool bUsedUltimate	// Not an overwatch reference lol; purpose is for a use-once ability but you can reset it
-	property float flSpeed	// if you boss needs a set amount of speed, use this obviously
+	property bool bUsedUltimate	/// Not an overwatch reference lol; purpose is for a use-once ability but you can reset it
+	property float flSpeed   /// if you boss needs a set amount of speed, use this obviously
 	property float flCharge
 	property float flRAGE
 	property float flKillSpree
@@ -105,7 +105,7 @@ methodmap VSH2Player {
 	public native int FindBack(int[] indices, const int len);
 	public native int ShootRocket(bool bCrit=false, float vPosition[3], float vAngles[3], const float flSpeed, const float dmg, const char[] model, bool arc=false);
 	
-	// Boss oriented natives
+	/// Boss oriented natives
 	public native void ConvertToBoss();
 	public native void GiveRage(const int damage);
 	public native void MakeBossAndSwitch(const int type, const bool callEvent);
@@ -123,7 +123,7 @@ methodmap VSH2Player {
 native int VSH2_RegisterPlugin(const char plugin_name[64]);
 
 
-enum { //VSH2HookType
+enum { /// VSH2HookType
 	OnCallDownloads=0,
 	OnBossSelected,
 	OnTouchPlayer,
@@ -161,12 +161,12 @@ enum { //VSH2HookType
 	OnRedPlayerThink
 };
 
-/*
+/**
 	IF YOU'RE USING THE HOOKING SYSTEM FOR A BOSS, YOU HAVE TO REGISTER YOUR PLUGIN WITH VSH2 BECAUSE YOU NEED THE MODULE INDEX TRACKED
 */
 
 typeset VSH2HookCB {
-	/*
+	/**
 		OnBossSelected
 		OnBossThink
 		OnBossModelTimer
@@ -184,58 +184,58 @@ typeset VSH2HookCB {
 	*/
 	function void (const VSH2Player Player);
 	
-	/*
+	/**
 		OnTouchPlayer - victim is boss, attacker is other player.
 		OnBossJarated
 		OnUberDeployed, OnUberLoop - Victim is medic, Attacker is uber target
 	*/
 	function void (const VSH2Player Victim, const VSH2Player Attacker);
 	
-	//	OnTouchBuilding
+	/// OnTouchBuilding
 	function void (const VSH2Player Attacker, const int BuildingRef);
 	
-	//	OnBossKillBuilding
+	/// OnBossKillBuilding
 	function void (const VSH2Player Attacker, const int building, Event event);
 	
-	//	OnBossTakeDamage , OnBossDealDamage
+	/// OnBossTakeDamage , OnBossDealDamage
 	function Action (VSH2Player Victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom);
 	
-	/*
+	/**
 		OnPlayerKilled
 		OnPlayerAirblasted - player is the airblaster
 		OnPlayerHurt
 	*/
 	function void (const VSH2Player Player, const VSH2Player Victim, Event event);
 	
-	//	OnTraceAttack
+	/// OnTraceAttack
 	function void (const VSH2Player Victim, const VSH2Player attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup);
 	
-	//	OnMessageIntro
+	/// OnMessageIntro
 	function void (const VSH2Player Player, char message[512]);
 	
-	/*
+	/**
 		OnBossHealthCheck - bossBool determines if command user was the boss
 		OnRoundEndInfo - bossBool determines if boss won the round
 	*/
 	function void (const VSH2Player Player, bool bossBool, char message[512]);
 	
-	//	OnMusic
+	/// OnMusic
 	function void (char song[PLATFORM_MAX_PATH], float& time, const VSH2Player Player);
 	
-	//	OnControlPointCapped
+	/// OnControlPointCapped
 	function void (char cappers[MAXPLAYERS+1], const int team);
 	
-	//	OnCallDownloads
+	/// OnCallDownloads
 	function void ();
 	
-	//	OnBossPickUpItem
+	/// OnBossPickUpItem
 	function void (const VSH2Player Player, const char item[64]);
 	
-	//	OnBossMenu
+	/// OnBossMenu
 	function void (Menu& menu);
 };
 
-// Use hooktype enum on these.
+/// Use hooktype enum on these.
 native void VSH2_Hook(const int callbacktype, VSH2HookCB callback);
 native bool VSH2_HookEx(const int callbacktype, VSH2HookCB callback);
 
@@ -246,7 +246,7 @@ native bool VSH2_UnhookEx(const int callbacktype, VSH2HookCB callback);
 native any VSH2GameMode_GetProperty(const char prop_name[64]);
 native void VSH2GameMode_SetProperty(const char prop_name[64], any value);
 
-/*	Available properties
+/**	Available properties
 property int iRoundState
 property int iSpecial
 property int iTotalMaxHealth
