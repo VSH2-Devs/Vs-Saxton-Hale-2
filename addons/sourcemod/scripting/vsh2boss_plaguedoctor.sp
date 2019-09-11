@@ -385,7 +385,8 @@ public Action PlagueDoc_OnBossTakeDamage(VSH2Player victim, int &attacker, int &
 		GetEdictClassname(weapon, classname, sizeof(classname));
 
 	int wepindex = GetItemIndex(weapon);
-	if( damagecustom == TF_CUSTOM_BACKSTAB || (!strcmp(classname, "tf_weapon_knife", false) && damage > victim.GetProperty("iHealth")) )
+	int curr_bosshp = victim.GetProperty("iHealth");
+	if( damagecustom == TF_CUSTOM_BACKSTAB || (!strcmp(classname, "tf_weapon_knife", false) && damage > curr_bosshp+0.0) )
 	{
 		int stabs = victim.GetProperty("iStabbed");
 		int maxhealth = victim.GetProperty("iMaxHealth");
@@ -430,7 +431,7 @@ public Action PlagueDoc_OnBossTakeDamage(VSH2Player victim, int &attacker, int &
 		}
 		if( wepindex == 461 )	/// Big Earner gives full cloak on backstab
 			SetEntPropFloat(attacker, Prop_Send, "m_flCloakMeter", 100.0);
-
+		
 		return Plugin_Changed;
 	}
 	/// Detects if boss is damaged by Rock Paper Scissors

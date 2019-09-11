@@ -251,67 +251,32 @@ stock int SetWeaponClip(const int weapon, const int ammo)
 }
 stock int ShootRocket(const int client, bool bCrit = false, float vPosition[3], float vAngles[3], const float flSpeed, const float dmg, const char[] model, bool arc=false)
 {
-//char strEntname[45] = "tf_projectile_spellfireball";
-/*
-switch (spell)
-	{
-		case FIREBALL: 		strEntname = "tf_projectile_spellfireball";
-		case LIGHTNING: 	strEntname = "tf_projectile_lightningorb";
-		case PUMPKIN: 		strEntname = "tf_projectile_spellmirv";
-		case PUMPKIN2: 		strEntname = "tf_projectile_spellpumpkin";
-		case BATS: 			strEntname = "tf_projectile_spellbats";
-		case METEOR: 		strEntname = "tf_projectile_spellmeteorshower";
-		case TELE: 			strEntname = "tf_projectile_spelltransposeteleport";
-		case BOSS:			strEntname = "tf_projectile_spellspawnboss";
-		case ZOMBIEH:		strEntname = "tf_projectile_spellspawnhorde";
-		case ZOMBIE:		strEntname = "tf_projectile_spellspawnzombie";
-	}
-	switch(spell)
-	{
-		/// These spells have arcs.
-		case BATS, METEOR, TELE:
-		{
-			vVelocity[2] += 32.0;
-		}
-	}
-
-CTFGrenadePipebombProjectile m_bCritical
-CTFProjectile_Rocket m_bCritical
-CTFProjectile_SentryRocket m_bCritical
-CTFWeaponBaseGrenadeProj m_bCritical
-CTFMinigun m_bCritShot
-CTFFlameThrower m_bCritFire
-CTFProjectile_Syringe
-CTFPlayer m_iCritMult
-SetEntPropFloat(iProjectile, Prop_Send, "m_flDamage", dmg);
-	}
-*/
 	int iTeam = GetClientTeam(client);
 	int iProjectile = CreateEntityByName("tf_projectile_rocket");
 	
 	if (!IsValidEdict(iProjectile))
 		return 0;
-
+	
 	float vVelocity[3];
 	GetAngleVectors(vAngles, vVelocity, NULL_VECTOR, NULL_VECTOR);
-
+	
 	if (!arc)
 		NormalizeVector(vVelocity, vVelocity);
 	else
 		vVelocity[2] -= 0.025;
-
+	
 	ScaleVector(vVelocity, flSpeed);
 	SetEntPropEnt(iProjectile,	Prop_Send, "m_hOwnerEntity", client);
 	SetEntProp(iProjectile,		Prop_Send, "m_bCritical", (bCrit ? 1 : 0));
 	SetEntProp(iProjectile,		Prop_Send, "m_iTeamNum", iTeam, 1);
 	SetEntProp(iProjectile,		Prop_Send, "m_nSkin", (iTeam-2));
-
+	
 	SetVariantInt(iTeam);
 	AcceptEntityInput(iProjectile, "TeamNum", -1, -1, 0);
 	SetVariantInt(iTeam);
 	AcceptEntityInput(iProjectile, "SetTeam", -1, -1, 0);
 	SetEntDataFloat(iProjectile, FindSendPropInfo("CTFProjectile_Rocket", "m_iDeflected")+4, dmg, true);
-
+	
 	TeleportEntity(iProjectile, vPosition, vAngles, vVelocity); 
 	DispatchSpawn(iProjectile);
 	if (arc)

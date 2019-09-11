@@ -148,7 +148,7 @@ methodmap CVagineer < BaseBoss
 			&& !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
 		{
 			TF2_RemoveCondition(this.index, TFCond_Taunting);
-			this.SetModel(); //MakeModelTimer(null);
+			this.SetModel(); 
 		}
 		TF2_AddCondition(this.index, TFCond_Ubercharged, 10.0);
 		this.DoGenericStun(VAGRAGEDIST);

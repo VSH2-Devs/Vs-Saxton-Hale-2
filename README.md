@@ -34,9 +34,10 @@ If you do require help in setting up the bosses or at least need some info on th
 
 * **Main Plugin Developer:** *Nergal the Ashurian/Assyrian* - https://forums.alliedmods.net/member.php?u=176545
 * **Repository Manager and Contributor:** *Starblaster 64* - https://forums.alliedmods.net/member.php?u=261662
+* **Contributor:** *Scags* 
 
 ### Contribution Rules
 #### Code Format:
 * single line comments that convey a message must have 3 slashes: `///`.
 * multi-line comments that convey a message should have an extra beginning star: `/**`.
-
+* properties, functions, & methods smaller than 20 lines of code should have the beginning `{` brace in K&R C style, for example: `ret func() {`

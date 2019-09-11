@@ -133,7 +133,7 @@ methodmap CChristian < BaseBoss
 			&& !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
 		{
 			TF2_RemoveCondition(this.index, TFCond_Taunting);
-			this.SetModel(); //MakeModelTimer(null);
+			this.SetModel();
 		}
 		this.DoGenericStun(CBSRAGEDIST);
 

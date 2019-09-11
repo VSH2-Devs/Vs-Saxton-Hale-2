@@ -4,12 +4,14 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.1.4"
+			"Latest"	"2.1.5"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.1.4:"
-		"Notes"	"Removed and Replaced many macros"
-		"Notes"	"Removed and Replaced the 'and' + 'or' macros"
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.1.5:"
+		"Notes"	"Removed some old code that's been commented out for years"
+		"Notes"	"Changed some code formatting in base.sp"
+		"Notes"	"Fixed facestabbing glitch with plague doctor."
+		"Notes"	"Implemented HHH Jr. max climbing define and embedded it into the HUD."
 	}
 	
 	"Files"

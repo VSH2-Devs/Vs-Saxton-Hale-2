@@ -178,7 +178,7 @@ methodmap CHale < BaseBoss
 			&& !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
 		{
 			TF2_RemoveCondition(this.index, TFCond_Taunting);
-			this.SetModel(); //MakeModelTimer(null); /// should reset Hale's animation
+			this.SetModel(); /// should reset Hale's animation
 		}
 		this.DoGenericStun(HALERAGEDIST);
 		Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleRageSound, GetRandomInt(1, 4));

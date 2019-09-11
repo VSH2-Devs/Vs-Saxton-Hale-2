@@ -25,7 +25,7 @@
 #pragma semicolon        1
 #pragma newdecls         required
 
-#define PLUGIN_VERSION   "2.1.4"
+#define PLUGIN_VERSION   "2.1.5"
 #define PLUGIN_DESCRIPT  "VS Saxton Hale 2"
 
 
@@ -208,7 +208,8 @@ public void OnPluginStart()
 	gamemode = VSHGameMode();
 	gamemode.Init();
 	
-	InitializeForwards();	/// in forwards.sp
+	/// in forwards.sp
+	InitializeForwards();
 	
 	RegAdminCmd("sm_setspecial", SetNextSpecial, ADMFLAG_GENERIC);
 	RegAdminCmd("sm_halespecial", SetNextSpecial, ADMFLAG_GENERIC);

@@ -9,10 +9,10 @@ int RGBA[MAXPLAYERS+1][4];
 int damageTracker[MAXPLAYERS+1];
 Handle damageHUD;
 
-#define RED	0
-#define GREEN	1
-#define BLUE	2
-#define ALPHA	3
+#define RED     0
+#define GREEN   1
+#define BLUE    2
+#define ALPHA   3
 
 public Plugin myinfo = {
 	name = "VSH2 dmg tracker",

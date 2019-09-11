@@ -43,12 +43,15 @@ public void QueuePanel(const int client)
 		if( Boss ) {
 			Format(strBossList, 128, "%N - %i", Boss.index, Boss.iQueue);
 			panel.DrawItem(strBossList);
-			Boss.bSetOnSpawn = true;	/// This will have VSHGameMode::FindNextBoss() skip this guy when looping again
+			
+			/// This will have VSHGameMode::FindNextBoss() skip this guy when looping again
+			Boss.bSetOnSpawn = true;
 		}
 		else panel.DrawItem("-");
 	}
 	
-	for( int n=MaxClients; n; --n ) {	/// Ughhh, reset shit...
+	/// Ughhh, reset shit...
+	for( int n=MaxClients; n; --n ) {
 		if( !IsValidClient(n) )
 			continue;
 		Boss = BaseBoss(n);
@@ -151,8 +154,7 @@ public Action CommandBossSelect(int client, int args)
 	if( !strcmp(targetname, "@me", false) && IsValidClient(client) ) {
 		gamemode.hNextBoss = BaseBoss(client);
 		ReplyToCommand(client, "[VSH 2] You've set yourself as the next Boss!");
-	}
-	else {
+	} else {
 		int target = FindTarget(client, targetname);
 		if( IsValidClient(target) ) {
 			gamemode.hNextBoss = BaseBoss(target);
@@ -180,8 +182,7 @@ public int MenuHandler_PickBosses(Menu menu, MenuAction action, int client, int 
 	if( action == MenuAction_Select ) {
 		BaseBoss player = BaseBoss(client);
 		player.iPresetType = StringToInt(info1);
-	}
-	else if( action == MenuAction_End )
+	} else if( action == MenuAction_End )
 		delete menu;
 }
 
@@ -240,7 +241,7 @@ public Action ForceBossRealtime(int client, int args)
 	
 	char targetname[32];	GetCmdArg(1, targetname, sizeof(targetname));
 	char strBossid[32];	GetCmdArg(2, strBossid, sizeof(strBossid));
-
+	
 	int bosstype = StringToInt(strBossid);
 	if( bosstype > MAXBOSS )
 		bosstype = MAXBOSS;

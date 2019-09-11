@@ -13,6 +13,7 @@
 
 #define HALEHHH_TELEPORTCHARGETIME	2
 #define HALEHHH_TELEPORTCHARGE		(25.0 * HALEHHH_TELEPORTCHARGETIME)
+#define HALEHHH_MAX_CLIMBS    10
 
 
 methodmap CHHHJr < BaseBoss
@@ -41,20 +42,19 @@ methodmap CHHHJr < BaseBoss
 		int health = this.iHealth;
 		float speed = HALESPEED + 0.7 * (100-health*100/this.iMaxHealth);
 		SetEntPropFloat(this.index, Prop_Send, "m_flMaxspeed", speed);
-
+		
 		if( this.flGlowtime > 0.0 ) {
 			this.bGlow = 1;
 			this.flGlowtime -= 0.1;
 		}
 		else if( this.flGlowtime <= 0.0 )
 			this.bGlow = 0;
-
+		
 		if( ((buttons & IN_DUCK) || (buttons & IN_ATTACK2)) && (this.flCharge >= 0.0) ) {
 			if( this.flCharge+2.5 < HALEHHH_TELEPORTCHARGE )
 				this.flCharge += 2.5;
 			else this.flCharge = HALEHHH_TELEPORTCHARGE;
-		}
-		else if( this.flCharge < 0.0 )
+		} else if( this.flCharge < 0.0 )
 			this.flCharge += 2.5;
 		else {
 			float EyeAngles[3]; GetClientEyeAngles(this.index, EyeAngles);
@@ -80,7 +80,7 @@ methodmap CHHHJr < BaseBoss
 						SetPawnTimer(HHHTeleCollisionReset, 2.0, this.userid);
 						//hHHHTeleTimer = CreateTimer(bEnableSuperDuperJump ? 4.0 : 2.0, HHHTeleTimer, Hale, TIMER_FLAG_NO_MAPCHANGE);
 					}
-
+					
 					CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(AttachParticle(this.index, "ghost_appearation")));
 					float pos[3]; GetClientAbsOrigin(target, pos);
 					SetEntPropFloat(this.index, Prop_Send, "m_flNextAttack", currtime+2);
@@ -97,11 +97,11 @@ methodmap CHHHJr < BaseBoss
 					SetEntProp(this.index, Prop_Send, "m_bGlowEnabled", 0);
 					CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(AttachParticle(this.index, "ghost_appearation")));
 					CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(AttachParticle(this.index, "ghost_appearation", _, false)));
-
+					
 					/// Chdata's HHH teleport rework
 					float vPos[3];
 					GetEntPropVector(target, Prop_Send, "m_vecOrigin", vPos);
-
+					
 					EmitSoundToClient(this.index, "misc/halloween/spell_teleport.wav");
 					EmitSoundToClient(target, "misc/halloween/spell_teleport.wav");
 					PrintCenterText(target, "You've been teleported!");
@@ -133,8 +133,8 @@ methodmap CHHHJr < BaseBoss
 		if( jmp > 0.0 )
 			jmp *= 2.0;
 		if( this.flRAGE >= 100.0 )
-			ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp), this.iClimbs);
-		else ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i| Rage: %0.1f", RoundFloat(jmp), this.iClimbs, this.flRAGE);
+			ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i/%i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp), this.iClimbs, HALEHHH_MAX_CLIMBS);
+		else ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i/%i| Rage: %0.1f", RoundFloat(jmp), this.iClimbs, HALEHHH_MAX_CLIMBS, this.flRAGE);
 	}
 	public void SetModel ()
 	{
@@ -143,18 +143,18 @@ methodmap CHHHJr < BaseBoss
 		SetEntProp(this.index, Prop_Send, "m_bUseClassAnimations", 1);
 		//SetEntPropFloat(client, Prop_Send, "m_flModelScale", 1.25);
 	}
-
+	
 	public void Death ()
 	{
 		Format(snd, PLATFORM_MAX_PATH, "vo/halloween_boss/knight_death0%d.mp3", GetRandomInt(1, 2));
 		EmitSoundToAll(snd);
 	}
-
+	
 	public void Equip ()
 	{
 		this.RemoveAllItems();
 		char attribs[128];
-
+		
 		Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.86; 259; 1.0; 252; 0.7; 551; 1");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_sword", 266, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
@@ -166,7 +166,7 @@ methodmap CHHHJr < BaseBoss
 			&& !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
 		{
 			TF2_RemoveCondition(this.index, TFCond_Taunting);
-			this.SetModel(); //MakeModelTimer(null);
+			this.SetModel();
 		}
 		this.DoGenericStun(HALERAGEDIST);
 
