@@ -25,7 +25,7 @@
 #pragma semicolon        1
 #pragma newdecls         required
 
-#define PLUGIN_VERSION   "2.2.0"
+#define PLUGIN_VERSION   "2.2.1"
 #define PLUGIN_DESCRIPT  "VS Saxton Hale 2"
 
 
@@ -489,7 +489,7 @@ public void OnConfigsExecuted()
 	/// Config checker taken from VSH1
 	static char szOldVersion[PATH];
 	cvarVSH2[VersionNumber].GetString(szOldVersion, sizeof(szOldVersion));
-	if (StrEqual(szOldVersion, PLUGIN_VERSION))
+	if( !StrEqual(szOldVersion, PLUGIN_VERSION) )
 		LogMessage("[VSH2] Warning: your config may be outdated. Back up your tf/cfg/sourcemod/VSHv2.cfg file and delete it, and this plugin will generate a new one that you can then modify to your original values.");
 	cvarVSH2[VersionNumber].SetString(PLUGIN_VERSION, false, true);
 	

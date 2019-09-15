@@ -20,7 +20,7 @@ enum /* Bosses */ {
 PLEASE REMEMBER THAT PLAYERS THAT DON'T HAVE THEIR BOSS ID'S SET ARE NOT BOSSES.
 THIS PLUGIN HAS BEEN SETUP SO THAT IF YOU BECOME A BOSS, YOU MUST HAVE A VALID BOSS ID
 
-FOR MANAGEMENT FUNCTIONS, DO NOT HAVE THEM DISCRIMINATE WHO IS A BOSS OR NOT, SIMPLY CHECK THE IBOSSTYPE TO SEE IF IT REALLY WAS A BOSS PLAYER.
+FOR MANAGEMENT FUNCTIONS, DO NOT HAVE THEM DISCRIMINATE WHO IS A BOSS OR NOT, SIMPLY CHECK THE ITYPE TO SEE IF IT REALLY WAS A BOSS PLAYER.
 */
 
 
@@ -1087,9 +1087,7 @@ public void ManageMessageIntro(ArrayList bosses)
 	for( i=MaxClients; i; --i ) {
 		if( IsValidClient(i) )
 			ShowHudText(i, -1, "%s", gameMessage);
-			//PrintCenterTextAll(gameMessage);
 	}
-	//SetPawnTimer(_MusicPlay, 2.0);	/// in vsh2.sp
 	gamemode.iRoundState = StateRunning;
 	delete bosses;
 }
@@ -1377,12 +1375,16 @@ public void _SkipBossPanel()
 		if( !upnext[j].userid )
 			continue;
 		upnext[j].bSetOnSpawn = true;
-		if( !j )	/// If up next to become a boss.
+		
+		/// If up next to become a boss.
+		if( !j )
 			SkipBossPanelNotify(upnext[j].index);
 		else if( !IsFakeClient(upnext[j].index) )
 			CPrintToChat(upnext[j].index, "{olive}[VSH]{default} You are going to be a Boss soon! Type {olive}/halenext{default} to check/reset your queue points.");
 	}
-	for( int n=MaxClients; n; --n ) {	/// Ughhh, reset shit...
+	
+	/// Ughhh, reset shit...
+	for( int n=MaxClients; n; --n ) {
 		if( !IsValidClient(n) )
 			continue;
 		upnext[0] = BaseBoss(n);
@@ -1415,7 +1417,6 @@ public void PrepPlayers(const BaseBoss player)
 	if( gamemode.bTF2Attribs && IsValidEntity(FindPlayerBack(client, { 444 }, 1)) )
 		/// "self dmg push force increased"
 		TF2Attrib_SetByDefIndex(client, 58, 1.8);
-	else TF2Attrib_RemoveByDefIndex(client, 58);
 #endif
 	int weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 	int index = -1;
