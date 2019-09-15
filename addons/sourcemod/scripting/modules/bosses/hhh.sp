@@ -11,9 +11,8 @@
 
 #define HHHTheme			"ui/holiday/gamestartup_halloween.mp3"
 
-#define HALEHHH_TELEPORTCHARGETIME	2
-#define HALEHHH_TELEPORTCHARGE		(25.0 * HALEHHH_TELEPORTCHARGETIME)
-#define HALEHHH_MAX_CLIMBS    10
+#define HALEHHH_TELEPORTCHARGETIME     2
+#define HALEHHH_TELEPORTCHARGE         (25.0 * HALEHHH_TELEPORTCHARGETIME)
 
 
 methodmap CHHHJr < BaseBoss
@@ -22,18 +21,18 @@ methodmap CHHHJr < BaseBoss
 	{
 		return view_as<CHHHJr>( BaseBoss(ind, uid) );
 	}
-
+	
 	public void PlaySpawnClip()
 	{
 		strcopy(snd, PLATFORM_MAX_PATH, "ui/halloween_boss_summoned_fx.wav");
 		EmitSoundToAll(snd);
 	}
-
+	
 	public void Think ()
 	{
 		if( !IsPlayerAlive(this.index) )
 			return;
-
+		
 		int buttons = GetClientButtons(this.index);
 		float currtime = GetGameTime();
 		int flags = GetEntityFlags(this.index);
@@ -58,27 +57,25 @@ methodmap CHHHJr < BaseBoss
 			this.flCharge += 2.5;
 		else {
 			float EyeAngles[3]; GetClientEyeAngles(this.index, EyeAngles);
-			if( this.flCharge == HALEHHH_TELEPORTCHARGE && EyeAngles[0] < -5.0 ) {
+			if( (this.flCharge == HALEHHH_TELEPORTCHARGE || this.bSuperCharge) && EyeAngles[0] < -5.0 ) {
 				int living;
 				switch( GetClientTeam(this.index) ) {
-					case 2: living = GetLivingPlayers(3);
-					case 3: living = GetLivingPlayers(2);
+					case 2: living = GetLivingPlayers(VSH2Team_Boss);
+					case 3: living = GetLivingPlayers(VSH2Team_Red);
 				}
 				int target = -1;
 				while( living > 0 ) {
 					target = GetRandomInt(1, MaxClients);
-					if( !IsValidClient(target) || !IsPlayerAlive(target) )
-						continue;
-					if( target == this.index || GetClientTeam(target) == GetClientTeam(this.index) )
+					if( !IsValidClient(target) || !IsPlayerAlive(target) || target == this.index || GetClientTeam(target) == GetClientTeam(this.index) )
 						continue;
 					break;
 				}
 				if( IsValidClient(target) ) {
 					/// Chdata's HHH teleport rework
 					if (TF2_GetPlayerClass(target) != TFClass_Scout && TF2_GetPlayerClass(target) != TFClass_Soldier) {
-						SetEntProp(this.index, Prop_Send, "m_CollisionGroup", 2); /// Makes HHH clipping go away for player and some projectiles
+						/// Makes HHH clipping go away for player and some projectiles
+						SetEntProp(this.index, Prop_Send, "m_CollisionGroup", 2);
 						SetPawnTimer(HHHTeleCollisionReset, 2.0, this.userid);
-						//hHHHTeleTimer = CreateTimer(bEnableSuperDuperJump ? 4.0 : 2.0, HHHTeleTimer, Hale, TIMER_FLAG_NO_MAPCHANGE);
 					}
 					
 					CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(AttachParticle(this.index, "ghost_appearation")));
@@ -91,8 +88,8 @@ methodmap CHHHJr < BaseBoss
 						SetEntityFlags(this.index, flags|FL_DUCKING);
 						SetPawnTimer(StunHHH, 0.2, this.userid, GetClientUserId(target));
 					}
-					else
-						TF2_StunPlayer(this.index, 2.0, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, target);
+					else TF2_StunPlayer(this.index, 2.0, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, target);
+					
 					TeleportEntity(this.index, pos, NULL_VECTOR, NULL_VECTOR);
 					SetEntProp(this.index, Prop_Send, "m_bGlowEnabled", 0);
 					CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(AttachParticle(this.index, "ghost_appearation")));
@@ -105,21 +102,23 @@ methodmap CHHHJr < BaseBoss
 					EmitSoundToClient(this.index, "misc/halloween/spell_teleport.wav");
 					EmitSoundToClient(target, "misc/halloween/spell_teleport.wav");
 					PrintCenterText(target, "You've been teleported!");
-
+					
 					this.flCharge = -1100.0;
 				}
+				if( this.bSuperCharge )
+					this.bSuperCharge = false;
 			}
 			else this.flCharge = 0.0;
 		}
-		if( OnlyScoutsLeft(RED) )
+		if( OnlyScoutsLeft(VSH2Team_Red) )
 			this.flRAGE += 0.5;
-
+		
 		if( flags & FL_ONGROUND ) {
 			this.flWeighDown = 0.0;
 			this.iClimbs = 0;
 		}
 		else this.flWeighDown += 0.1;
-
+		
 		if( (buttons & IN_DUCK) && this.flWeighDown >= 1.0 ) {
 			float ang[3]; GetClientEyeAngles(this.index, ang);
 			if( ang[0] > 60.0 ) {
@@ -132,9 +131,11 @@ methodmap CHHHJr < BaseBoss
 		float jmp = this.flCharge;
 		if( jmp > 0.0 )
 			jmp *= 2.0;
+		
+		int max_climbs = cvarVSH2[HHHMaxClimbs].IntValue;
 		if( this.flRAGE >= 100.0 )
-			ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i/%i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp), this.iClimbs, HALEHHH_MAX_CLIMBS);
-		else ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i/%i| Rage: %0.1f", RoundFloat(jmp), this.iClimbs, HALEHHH_MAX_CLIMBS, this.flRAGE);
+			ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i / %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.iClimbs, max_climbs);
+		else ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i / %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.iClimbs, max_climbs, this.flRAGE);
 	}
 	public void SetModel ()
 	{
@@ -155,7 +156,7 @@ methodmap CHHHJr < BaseBoss
 		this.RemoveAllItems();
 		char attribs[128];
 		
-		Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.86; 259; 1.0; 252; 0.7; 551; 1");
+		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.0; 259; 1.0; 252; 0.7; 551; 1");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_sword", 266, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
@@ -173,14 +174,13 @@ methodmap CHHHJr < BaseBoss
 		strcopy(snd, PLATFORM_MAX_PATH, HHHRage2);
 		EmitSoundToAll(snd, this.index); EmitSoundToAll(snd, this.index);
 	}
-
+	
 	public void KilledPlayer(const BaseBoss victim, Event event)
 	{
-		int living = GetLivingPlayers(RED);
-
+		int living = GetLivingPlayers(VSH2Team_Red);
 		Format(snd, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHAttack, GetRandomInt(1, 4));
 		EmitSoundToAll(snd);
-
+		
 		float curtime = GetGameTime();
 		if( curtime <= this.flKillSpree )
 			this.iKills++;
@@ -195,14 +195,15 @@ methodmap CHHHJr < BaseBoss
 	}
 	public void Help()
 	{
+		this.SetName("The Horseless Headless Horsemann Jr.");
 		if( IsVoteInProgress() )
 			return;
 		char helpstr[] = "Horseless Headless Horsemann Jr.:\nTeleporter: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (stun): taunt when Rage is full to stun nearby enemies.";
 		Panel panel = new Panel();
-		panel.SetTitle (helpstr);
-		panel.DrawItem( "Exit" );
+		panel.SetTitle(helpstr);
+		panel.DrawItem("Exit");
 		panel.Send(this.index, HintPanel, 10);
-		delete (panel);
+		delete panel;
 	}
 };
 
@@ -215,7 +216,7 @@ public void AddHHHToDownloads()
 {
 	char s[PLATFORM_MAX_PATH];
 	int i;
-
+	
 	PrepareModel(HHHModel);
 	for( i=1; i <= 4; i++ ) {
 		Format(s, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHLaught, i);
@@ -224,12 +225,10 @@ public void AddHHHToDownloads()
 		PrecacheSound(s, true);
 		Format(s, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHPain, i);
 		PrecacheSound(s, true);
-
 	}
 	PrecacheSound(HHHRage, true);
 	PrecacheSound(HHHRage2, true);
 	PrecacheSound(HHHTheme, true);
-
 	PrecacheSound("ui/halloween_boss_summoned_fx.wav", true);
 	PrecacheSound("ui/halloween_boss_defeated_fx.wav", true);
 	PrecacheSound("vo/halloween_boss/knight_pain01.mp3", true);
@@ -240,9 +239,9 @@ public void AddHHHToDownloads()
 	PrecacheSound("misc/halloween/spell_teleport.wav", true);
 }
 
-public void AddHHHToMenu ( Menu& menu )
+public void AddHHHToMenu(Menu& menu)
 {
-	menu.AddItem("2", "Horseless Headless Horsemann Jr.");
+	menu.AddItem("3", "Horseless Headless Horsemann Jr.");
 }
 
 public void HHHTeleCollisionReset(const int userid)
@@ -255,7 +254,7 @@ public void StunHHH(const int userid, const int targetid)
 	int client = GetClientOfUserId(userid);
 	if( !IsValidClient(client) || !IsPlayerAlive(client) )
 		return;
-
+	
 	int target = GetClientOfUserId(targetid);
 	if( !IsValidClient(target) || !IsPlayerAlive(target) )
 		target = 0;

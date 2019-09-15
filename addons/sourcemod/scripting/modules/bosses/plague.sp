@@ -56,6 +56,10 @@ methodmap CPlague < BaseBoss
 			if( this.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
 				float vel[3]; GetEntPropVector(this.index, Prop_Data, "m_vecVelocity", vel);
 				vel[2] = 750 + this.flCharge * 13.0;
+				if( this.bSuperCharge ) {
+					vel[2] += 2000.0;
+					this.bSuperCharge = false;
+				}
 				
 				SetEntProp(this.index, Prop_Send, "m_bJumping", 1);
 				vel[0] *= (1+Sine(this.flCharge * FLOAT_PI / 50));
@@ -69,7 +73,7 @@ methodmap CPlague < BaseBoss
 			}
 			else this.flCharge = 0.0;
 		}
-		if( OnlyScoutsLeft(RED) )
+		if( OnlyScoutsLeft(VSH2Team_Red) )
 			this.flRAGE += 0.5;
 
 		if( flags & FL_ONGROUND )
@@ -93,8 +97,8 @@ methodmap CPlague < BaseBoss
 		if( jmp > 0.0 )
 			jmp *= 4.0;
 		if( this.flRAGE >= 100.0 )
-			ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp));
-		else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", RoundFloat(jmp), this.flRAGE);
+			ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp));
+		else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.flRAGE);
 	}
 	public void SetModel ()
 	{
@@ -108,8 +112,8 @@ methodmap CPlague < BaseBoss
 	{
 		this.RemoveAllItems();
 		char attribs[128];
-
-		Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.25; 259; 1.0; 252; 0.75; 200; 1.0; 551; 1.0");
+		
+		Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.3; 259; 1.0; 252; 0.75; 200; 1.0; 551; 1.0");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_shovel", 304, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
@@ -125,7 +129,7 @@ methodmap CPlague < BaseBoss
 		}
 		BaseBoss minion;
 		for( int i=MaxClients; i; --i ) {
-			if( !IsValidClient(i) || !IsPlayerAlive(i) || GetClientTeam(i) != BLU )
+			if( !IsValidClient(i) || !IsPlayerAlive(i) || GetClientTeam(i) != VSH2Team_Boss )
 				continue;
 			minion = BaseBoss(i);
 			if( minion.bIsMinion ) {
@@ -184,14 +188,15 @@ methodmap CPlague < BaseBoss
 	}
 	public void Help()
 	{
+		this.SetName("The Plague Doctor");
 		if( IsVoteInProgress() )
 			return;
 		char helpstr[] = "Plague Doctor:Kill enemies and turn them into loyal Zombies!\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Powerup Minions): taunt when Rage is full to give powerups to your Zombies.";
 		Panel panel = new Panel();
-		panel.SetTitle (helpstr);
-		panel.DrawItem( "Exit" );
+		panel.SetTitle(helpstr);
+		panel.DrawItem("Exit");
 		panel.Send(this.index, HintPanel, 10);
-		delete (panel);
+		delete panel;
 	}
 };
 

@@ -14,10 +14,10 @@ methodmap VSH2Derived < VSH2Player
 	
 	property int iNewProperty {
 		public get() {
-			return this.GetProperty("iNewProperty");
+			return this.GetPropInt("iNewProperty");
 		}
 		public set(const int i) {
-			this.SetProperty("iNewProperty", i);
+			this.SetPropInt("iNewProperty", i);
 		}
 	}
 };
@@ -50,18 +50,18 @@ public Action CommandInfo(int client, int args)
 	if (player) {
 		PrintToConsole(client, "VSH2Player methodmap Constructor is working");
 		PrintToConsole(client, "player.index = %d | player.userid = %d", player.index, player.userid);
-		int damage = player.GetProperty("iDamage");
+		int damage = player.GetPropInt("iDamage");
 		PrintToConsole(client, "players damage is %d", damage);
 		
-		player.SetProperty("iState", 999);
-		int boss_status = player.GetProperty("iState");
+		player.SetPropInt("iState", 999);
+		int boss_status = player.GetPropInt("iState");
 		PrintToConsole(client, "players state is %d", boss_status);
 		VSH2Derived deriver = VSH2Derived(client);
 		PrintToConsole(client, "made derived");
 		deriver.iNewProperty = 643;
 		PrintToConsole(client, "made new property and initialized it to %d", deriver.iNewProperty);
-		deriver.SetProperty("iState", 3245);
-		boss_status = deriver.GetProperty("iState");
+		deriver.SetPropInt("iState", 3245);
+		boss_status = deriver.GetPropInt("iState");
 		PrintToConsole(client, "testing inheritance and boss status is %d", boss_status);
 	}
 	return Plugin_Handled;
@@ -79,144 +79,142 @@ public void fwdBossSelected(const VSH2Player base)
 			PrintToConsole(i, "fwdBossSelected:: ==> %N @ index: %i", base.index, base.index);
 }
 
-public void fwdOnTouchPlayer(const VSH2Player Victim, const VSH2Player Attacker)
+public void fwdOnTouchPlayer(const VSH2Player victim, const VSH2Player attacker)
 {
-	PrintToConsole(Attacker.index, "fwdOnTouchPlayer:: ==> Attacker name: %N | Victim name: %N", Attacker.index, Victim.index);
-	PrintToConsole(Victim.index, "fwdOnTouchPlayer:: ==> Attacker name: %N | Victim name: %N", Attacker.index, Victim.index);
+	PrintToConsole(attacker.index, "fwdOnTouchPlayer:: ==> attacker name: %N | victim name: %N", attacker.index, victim.index);
+	PrintToConsole(victim.index, "fwdOnTouchPlayer:: ==> attacker name: %N | victim name: %N", attacker.index, victim.index);
 }
 
-public void fwdOnTouchBuilding(const VSH2Player Attacker, const int BuildingRef)
+public void fwdOnTouchBuilding(const VSH2Player attacker, const int building)
 {
-	PrintToConsole(Attacker.index, "fwdOnTouchBuilding:: ==> Attacker name: %N | Building Reference %i", Attacker.index, BuildingRef);
+	PrintToConsole(attacker.index, "fwdOnTouchBuilding:: ==> attacker name: %N | Building Reference %i", attacker.index, building);
 }
 
-public void fwdOnBossThink(const VSH2Player Player)
+public void fwdOnBossThink(const VSH2Player player)
 {
-	int health = Player.GetProperty("iHealth");
-	Player.SetProperty("iHealth", ++health);
+	player.SetPropInt("iHealth", player.GetPropInt("iHealth") + 1);
 }
-public void fwdOnBossModelTimer(const VSH2Player Player)
+public void fwdOnBossModelTimer(const VSH2Player player)
 {
-	float rage = Player.GetProperty("flRAGE");
-	Player.SetProperty("flRAGE", rage+1.0);
+	player.SetPropFloat("flRAGE", player.GetPropFloat("flRAGE") + 1.0);
 }
 
-public void fwdOnBossDeath(const VSH2Player Player)
+public void fwdOnBossDeath(const VSH2Player player)
 {
-	PrintToConsole(Player.index, "fwdOnBossDeath:: %N", Player.index);
+	PrintToConsole(player.index, "fwdOnBossDeath:: %N", player.index);
 }
 
-public void fwdOnBossEquipped(const VSH2Player Player)
+public void fwdOnBossEquipped(const VSH2Player player)
 {
-	PrintToConsole(Player.index, "fwdOnBossEquipped:: %N", Player.index);
+	PrintToConsole(player.index, "fwdOnBossEquipped:: %N", player.index);
 }
-public void fwdOnBossInitialized(const VSH2Player Player)
+public void fwdOnBossInitialized(const VSH2Player player)
 {
-	PrintToConsole(Player.index, "fwdOnBossInitialized:: %N", Player.index);
+	PrintToConsole(player.index, "fwdOnBossInitialized:: %N", player.index);
 }
-public void fwdOnMinionInitialized(const VSH2Player Player)
+public void fwdOnMinionInitialized(const VSH2Player player)
 {
-	PrintToConsole(Player.index, "fwdOnMinionInitialized:: %N", Player.index);
+	PrintToConsole(player.index, "fwdOnMinionInitialized:: %N", player.index);
 }
-public void fwdOnBossPlayIntro(const VSH2Player Player)
+public void fwdOnBossPlayIntro(const VSH2Player player)
 {
-	PrintToConsole(Player.index, "fwdOnBossPlayIntro:: %N", Player.index);
+	PrintToConsole(player.index, "fwdOnBossPlayIntro:: %N", player.index);
 }
 
-public Action fwdOnBossTakeDamage(VSH2Player Victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+public Action fwdOnBossTakeDamage(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	PrintToConsole(attacker, "fwdOnBossTakeDamage:: ==> Attacker name: %N | Victim name: %N", attacker, Victim.index);
-	PrintToConsole(Victim.index, "fwdOnBossTakeDamage:: ==> Attacker name: %N | Victim name: %N", attacker, Victim.index);
+	PrintToConsole(attacker, "fwdOnBossTakeDamage:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	PrintToConsole(victim.index, "fwdOnBossTakeDamage:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
 	return Plugin_Continue;
 }
-public Action fwdOnBossDealDamage(VSH2Player Victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+public Action fwdOnBossDealDamage(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	PrintToConsole(attacker, "fwdOnBossDealDamage:: ==> Attacker name: %N | Victim name: %N", attacker, Victim.index);
-	PrintToConsole(Victim.index, "fwdOnBossDealDamage:: ==> Attacker name: %N | Victim name: %N", attacker, Victim.index);
+	PrintToConsole(attacker, "fwdOnBossDealDamage:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	PrintToConsole(victim.index, "fwdOnBossDealDamage:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
 	return Plugin_Continue;
 }
 
 public void fwdOnPlayerKilled(const VSH2Player player, const VSH2Player victim, Event event)
 {
-	PrintToConsole(player.index, "fwdOnPlayerKilled:: ==> Attacker name: %N | Victim name: %N", player.index, victim.index);
-	PrintToConsole(victim.index, "fwdOnPlayerKilled:: ==> Attacker name: %N | Victim name: %N", player.index, victim.index);
+	PrintToConsole(player.index, "fwdOnPlayerKilled:: ==> attacker name: %N | victim name: %N", player.index, victim.index);
+	PrintToConsole(victim.index, "fwdOnPlayerKilled:: ==> attacker name: %N | victim name: %N", player.index, victim.index);
 }
 
 public void fwdOnPlayerAirblasted(const VSH2Player player, const VSH2Player victim, Event event)
 {
-	PrintToConsole(player.index, "fwdOnPlayerAirblasted:: ==> Attacker name: %N | Victim name: %N", player.index, victim.index);
-	PrintToConsole(victim.index, "fwdOnPlayerAirblasted:: ==> Attacker name: %N | Victim name: %N", player.index, victim.index);
+	PrintToConsole(player.index, "fwdOnPlayerAirblasted:: ==> attacker name: %N | victim name: %N", player.index, victim.index);
+	PrintToConsole(victim.index, "fwdOnPlayerAirblasted:: ==> attacker name: %N | victim name: %N", player.index, victim.index);
 }
 
 public void fwdOnTraceAttack(const VSH2Player player, const VSH2Player attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup)
 {
-	PrintToConsole(player.index, "fwdOnTraceAttack:: ==> Attacker name: %N | Victim name: %N", attacker.index, player.index);
-	PrintToConsole(attacker.index, "fwdOnTraceAttack:: ==> Attacker name: %N | Victim name: %N", attacker.index, player.index);
+	PrintToConsole(player.index, "fwdOnTraceAttack:: ==> attacker name: %N | victim name: %N", attacker.index, player.index);
+	PrintToConsole(attacker.index, "fwdOnTraceAttack:: ==> attacker name: %N | victim name: %N", attacker.index, player.index);
 }
 
-public void fwdOnBossMedicCall(const VSH2Player Player)
+public void fwdOnBossMedicCall(const VSH2Player player)
 {
-	PrintToConsole(Player.index, "fwdOnBossMedicCall:: %N", Player.index);
+	PrintToConsole(player.index, "fwdOnBossMedicCall:: %N", player.index);
 }
 
-public void fwdOnBossTaunt(const VSH2Player Player)
+public void fwdOnBossTaunt(const VSH2Player player)
 {
-	PrintToConsole(Player.index, "fwdOnBossTaunt:: %N", Player.index);
+	PrintToConsole(player.index, "fwdOnBossTaunt:: %N", player.index);
 }
 
-public void fwdOnBossKillBuilding(const VSH2Player Attacker, const int building, Event event)
+public void fwdOnBossKillBuilding(const VSH2Player attacker, const int building, Event event)
 {
-	PrintToConsole(Attacker.index, "fwdOnBossKillBuilding:: %N | build -> %i", Attacker.index, building);
+	PrintToConsole(attacker.index, "fwdOnBossKillBuilding:: %N | build -> %i", attacker.index, building);
 }
 
-public void fwdOnBossJarated(const VSH2Player Victim, const VSH2Player Attacker)
+public void fwdOnBossJarated(const VSH2Player victim, const VSH2Player attacker)
 {
-	PrintToConsole(Attacker.index, "fwdOnBossJarated:: ==> Attacker name: %N | Victim name: %N", Attacker.index, Victim.index);
-	PrintToConsole(Victim.index, "fwdOnBossJarated:: ==> Attacker name: %N | Victim name: %N", Attacker.index, Victim.index);
+	PrintToConsole(attacker.index, "fwdOnBossJarated:: ==> attacker name: %N | victim name: %N", attacker.index, victim.index);
+	PrintToConsole(victim.index, "fwdOnBossJarated:: ==> attacker name: %N | victim name: %N", attacker.index, victim.index);
 }
 
-public void fwdOnMessageIntro(const VSH2Player Boss, char message[512])
+public void fwdOnMessageIntro(const VSH2Player boss, char message[512])
 {
-	PrintToConsole(Boss.index, "fwdOnMessageIntro:: %N", Boss.index);
+	PrintToConsole(boss.index, "fwdOnMessageIntro:: %N", boss.index);
 }
 
-public void fwdOnBossPickUpItem(const VSH2Player Player, const char item[64])
+public void fwdOnBossPickUpItem(const VSH2Player player, const char item[64])
 {
-	PrintToConsole(Player.index, "fwdOnBossPickUpItem:: %N ==> item is %s", Player.index, item);
+	PrintToConsole(player.index, "fwdOnBossPickUpItem:: %N ==> item is %s", player.index, item);
 }
 
-public void fwdOnVariablesReset(const VSH2Player Player)
+public void fwdOnVariablesReset(const VSH2Player player)
 {
-	PrintToConsole(Player.index, "fwdOnVariablesReset:: %N", Player.index);
+	PrintToConsole(player.index, "fwdOnVariablesReset:: %N", player.index);
 }
-public void fwdOnUberDeployed(const VSH2Player Victim, const VSH2Player Attacker)
+public void fwdOnUberDeployed(const VSH2Player victim, const VSH2Player attacker)
 {
-	PrintToConsole(Attacker.index, "fwdOnUberDeployed:: ==> Medic name: %N | Target name: %N", Attacker.index, Victim.index);
-	PrintToConsole(Victim.index, "fwdOnUberDeployed:: ==> Medic name: %N | Target name: %N", Attacker.index, Victim.index);
+	PrintToConsole(attacker.index, "fwdOnUberDeployed:: ==> Medic name: %N | Target name: %N", attacker.index, victim.index);
+	PrintToConsole(victim.index, "fwdOnUberDeployed:: ==> Medic name: %N | Target name: %N", attacker.index, victim.index);
 }
-public void fwdOnUberLoop(const VSH2Player Victim, const VSH2Player Attacker)
+public void fwdOnUberLoop(const VSH2Player victim, const VSH2Player attacker)
 {
-	PrintToConsole(Attacker.index, "fwdOnUberLoop:: ==> Medic name: %N | Target name: %N", Attacker.index, Victim.index);
-	PrintToConsole(Victim.index, "fwdOnUberLoop:: ==> Medic name: %N | Target name: %N", Attacker.index, Victim.index);
+	PrintToConsole(attacker.index, "fwdOnUberLoop:: ==> Medic name: %N | Target name: %N", attacker.index, victim.index);
+	PrintToConsole(victim.index, "fwdOnUberLoop:: ==> Medic name: %N | Target name: %N", attacker.index, victim.index);
 }
-public void fwdOnMusic(char song[PLATFORM_MAX_PATH], float &time, const VSH2Player Player)
+public void fwdOnMusic(char song[PLATFORM_MAX_PATH], float &time, const VSH2Player player)
 {
-	PrintToConsole(Player.index, "fwdOnMusic:: ==> Called");
+	PrintToConsole(player.index, "fwdOnMusic:: ==> Called");
 }
-public void fwdOnRoundEndInfo(const VSH2Player Player, bool bossBool, char message[512])
+public void fwdOnRoundEndInfo(const VSH2Player player, bool bossBool, char message[512])
 {
-	PrintToConsole(Player.index, "fwdOnRoundEndInfo:: %N", Player.index);
+	PrintToConsole(player.index, "fwdOnRoundEndInfo:: %N", player.index);
 }
-public void fwdOnLastPlayer(const VSH2Player Boss)
+public void fwdOnLastPlayer(const VSH2Player boss)
 {
 	for (int i=MaxClients; i; --i)
 		if( IsClientInGame(i) )
 			PrintToConsole(i, "fwdOnLastPlayer:: ==> Called");
 }
 
-public void fwdOnBossHealthCheck(const VSH2Player Player, bool bossBool, char message[512])
+public void fwdOnBossHealthCheck(const VSH2Player player, bool bossBool, char message[512])
 {
-	PrintToConsole(Player.index, "fwdOnBossHealthCheck:: %N", Player.index);
+	PrintToConsole(player.index, "fwdOnBossHealthCheck:: %N", player.index);
 }
 
 public void fwdOnControlPointCapped(char cappers[MAXPLAYERS+1], const int team)
@@ -224,15 +222,14 @@ public void fwdOnControlPointCapped(char cappers[MAXPLAYERS+1], const int team)
 	PrintToConsole(cappers[0], "fwdOnControlPointCapped:: %N", cappers[0]);
 }
 
-public void fwdOnPrepRedTeam(const VSH2Player Player)
+public void fwdOnPrepRedTeam(const VSH2Player player)
 {
-	PrintToConsole(Player.index, "fwdOnPrepRedTeam:: %N", Player.index);
+	PrintToConsole(player.index, "fwdOnPrepRedTeam:: %N", player.index);
 }
 
-public void fwdOnRedPlayerThink(const VSH2Player Player)
+public void fwdOnRedPlayerThink(const VSH2Player player)
 {
-	int dmg = Player.GetProperty("iDamage");
-	Player.SetProperty("iDamage", ++dmg);
+	player.SetPropInt("iDamage", player.GetPropInt("iDamage") + 1);
 }
 
 

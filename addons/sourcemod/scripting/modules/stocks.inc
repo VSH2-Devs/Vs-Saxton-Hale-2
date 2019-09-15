@@ -338,53 +338,54 @@ stock int FindTeleOwner(const int client)
 	}
 	return -1;
 }
-stock void TeleportToSpawn(const int client, int team = 0)	/// Props to Chdata!
+
+/// Props to Chdata!
+stock void TeleportToSpawn(const int client, int team = 0)
 {
-	int iEnt = -1;
-	float vPos[3], vAng[3];
+	int spawn = -1;
 	ArrayList hArray = new ArrayList();
-	while ((iEnt = FindEntityByClassname(iEnt, "info_player_teamspawn")) != -1)
-	{
-		if (team <= 1)
-			hArray.Push(iEnt);
+	while( (spawn = FindEntityByClassname(spawn, "info_player_teamspawn")) != -1 ) {
+		/// skip disabled spawns.
+		if( GetEntProp(spawn, Prop_Send, "m_bDisabled") )
+			continue;
+		else if (team <= 1)
+			hArray.Push(spawn);
 		else {
-			int iSpawnTeam = GetEntProp(iEnt, Prop_Send, "m_iTeamNum");
+			int iSpawnTeam = GetEntProp(spawn, Prop_Send, "m_iTeamNum");
 			if (iSpawnTeam == team)
-				hArray.Push(iEnt);
+				hArray.Push(spawn);
 		}
 	}
-	iEnt = hArray.Get(GetRandomInt(0, hArray.Length - 1));
+	
+	spawn = hArray.Get(GetRandomInt(0, hArray.Length - 1));
 	hArray.Close();
-
+	
 	/// Technically you'll never find a map without a spawn point. Not a good map at least.
-	GetEntPropVector(iEnt, Prop_Send, "m_vecOrigin", vPos);
-	GetEntPropVector(iEnt, Prop_Send, "m_angRotation", vAng);
-	TeleportEntity(client, vPos, vAng, NULL_VEC);
-
-	/*if (Special == VSHSpecial_HHH) /// reserved for HHH boss
-	{
-		CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(AttachParticle(iEnt, "ghost_appearation", _, false)));
-		EmitSoundToAll("misc/halloween/spell_teleport.wav", _, _, SNDLEVEL_GUNFIRE, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, vPos, NULL_VEC, false, 0.0);
-	}*/
+	
+	float vPos[3], vAng[3];
+	GetEntPropVector(spawn, Prop_Send, "m_vecOrigin", vPos);
+	GetEntPropVector(spawn, Prop_Send, "m_angRotation", vAng);
+	TeleportEntity(spawn, vPos, vAng, NULL_VEC);
 }
+
 stock void DoExplosion(const int owner, const int damage, const int radius, float pos[3])
 {
 	int explode = CreateEntityByName("env_explosion");
 	if( !IsValidEntity(explode) )
 		return;
-
+	
 	DispatchKeyValue(explode, "targetname", "exploder");
 	DispatchKeyValue(explode, "spawnflags", "4");
 	DispatchKeyValue(explode, "rendermode", "5");
-
+	
 	SetEntPropEnt(explode, Prop_Data, "m_hOwnerEntity", owner);
 	SetEntProp(explode, Prop_Data, "m_iMagnitude", damage);
 	SetEntProp(explode, Prop_Data, "m_iRadiusOverride", radius);
-
+	
 	int team = GetClientTeam(owner);
 	SetVariantInt(team); AcceptEntityInput(explode, "TeamNum");
 	SetVariantInt(team); AcceptEntityInput(explode, "SetTeam");
-
+	
 	TeleportEntity(explode, pos, NULL_VECTOR, NULL_VECTOR);
 	DispatchSpawn(explode);
 	ActivateEntity(explode);
@@ -453,22 +454,27 @@ stock int GetLivingPlayers(const int team)
 }
 stock void IncrementHeadCount(const int client, bool addhealth = true, int addheads = 1)
 {
+	/// Apply this condition to Demomen to give them their glowing eye effect.
 	if( (TF2_GetPlayerClass(client) == TFClass_DemoMan) && !TF2_IsPlayerInCondition(client, TFCond_DemoBuff) )
-		TF2_AddCondition(client, TFCond_DemoBuff, TFCondDuration_Infinite); /// Apply this condition to Demomen to give them their glowing eye effect.
+		TF2_AddCondition(client, TFCond_DemoBuff, TFCondDuration_Infinite);
 	int decapitations = GetEntProp(client, Prop_Send, "m_iDecapitations");
 	SetEntProp(client, Prop_Send, "m_iDecapitations", decapitations + addheads);
 	if( addhealth )
 	{
 		int health = GetClientHealth(client);
 		//health += (decapitations >= 4 ? 10 : 15);
-		if( health + (15 * addheads) <= 300 ) /// TODO: Replace this with an overheal calculation (MaxHP * 1.5) OR add a maxhealth arg. 
+		
+		/// TODO: Replace this with an overheal calculation (MaxHP * 1.5) OR add a maxhealth arg.
+		if( health + (15 * addheads) <= 300 )
 			health += 15 * addheads;
 		else
 			health = 300;
 		SetEntProp(client, Prop_Data, "m_iHealth", health);
 		SetEntProp(client, Prop_Send, "m_iHealth", health);
 	}
-	TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);   /// recalc their speed
+	
+	/// recalc their speed
+	TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
 }
 stock void SpawnSmallHealthPackAt(const int client, int ownerteam = 0)
 {
@@ -478,68 +484,72 @@ stock void SpawnSmallHealthPackAt(const int client, int ownerteam = 0)
 	if( IsValidEntity(healthpack) ) {
 		float pos[3]; GetClientAbsOrigin(client, pos);
 		pos[2] += 20.0;
-		DispatchKeyValue(healthpack, "OnPlayerTouch", "!self,Kill,,0,-1");  /// for safety, though it normally doesn't respawn
+		
+		/// for safety, though it normally doesn't respawn
+		DispatchKeyValue(healthpack, "OnPlayerTouch", "!self,Kill,,0,-1");
 		DispatchSpawn(healthpack);
 		SetEntProp(healthpack, Prop_Send, "m_iTeamNum", ownerteam, 4);
 		SetEntityMoveType(healthpack, MOVETYPE_VPHYSICS);
 		float vel[3];
 		vel[0] = float(GetRandomInt(-10, 10)), vel[1] = float(GetRandomInt(-10, 10)), vel[2] = 50.0;
 		TeleportEntity(healthpack, pos, NULL_VECTOR, vel);
-		//CreateTimer(17.0, Timer_RemoveCandycaneHealthPack, EntIndexToEntRef(healthpack), TIMER_FLAG_NO_MAPCHANGE);
 	}
 	return;
 }
-public void SickleClimbWalls(const int client, const int weapon, const float upwardvel, const float health, const bool attackdelay)
+
 /// Credit to Mecha the Slag
+public void SickleClimbWalls(const int client, const int weapon, const float upwardvel, const float health, const bool attackdelay)
 {
 	if( !IsValidClient(client) || (GetClientHealth(client) <= health) )
 		return;
-
+	
 	char classname[64];
 	float vecClientEyePos[3];
 	float vecClientEyeAng[3];
-	GetClientEyePosition(client, vecClientEyePos);   /// Get the position of the player's eyes
-	GetClientEyeAngles(client, vecClientEyeAng);	   /// Get the angle the player is looking
-
+	
+	/// Get the position of the player's eyes
+	GetClientEyePosition(client, vecClientEyePos);
+	
+	/// Get the angle the player is looking
+	GetClientEyeAngles(client, vecClientEyeAng);
+	
 	/// Check for colliding entities
 	TR_TraceRayFilter(vecClientEyePos, vecClientEyeAng, MASK_PLAYERSOLID, RayType_Infinite, TraceRayDontHitSelf, client);
-
+	
 	if( !TR_DidHit(null) )
 		return;
-
+	
 	int TRIndex = TR_GetEntityIndex(null);
 	GetEdictClassname(TRIndex, classname, sizeof(classname));
 	if (!StrEqual(classname, "worldspawn"))
 		return;
-
+	
 	float fNormal[3];
 	TR_GetPlaneNormal(null, fNormal);
 	GetVectorAngles(fNormal, fNormal);
-
+	
 	if (fNormal[0] >= 30.0 && fNormal[0] <= 330.0)
 		return;
 	if (fNormal[0] <= -30.0)
 		return;
-
+	
 	float pos[3];
 	TR_GetEndPosition(pos);
 	float distance = GetVectorDistance(vecClientEyePos, pos);
-
+	
 	if (distance >= 100.0)
 		return;
-
+	
 	float fVelocity[3];
 	GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
-
 	fVelocity[2] = upwardvel;
-
+	
 	TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, fVelocity);
-
 	SDKHooks_TakeDamage(client, client, client, health, DMG_CLUB, GetPlayerWeaponSlot(client, TFWeaponSlot_Melee));
-
+	
 	//if (!IsBoss[client])
 	//	ClientCommand(client, "playgamesound \"%s\"", "player\\taunt_clip_spin.wav");
-
+	
 	if (attackdelay)
 		SetPawnTimer(NoAttacking, 0.1, EntIndexToEntRef(weapon));
 }
@@ -585,63 +595,66 @@ stock void SetPawnTimer(Function func, float thinktime = 0.1, any param1 = -999,
 	thinkpack.WriteFunction(func);
 	thinkpack.WriteCell(param1);
 	thinkpack.WriteCell(param2);
-
 	CreateTimer(thinktime, DoThink, thinkpack, TIMER_DATA_HNDL_CLOSE);
 }
 
 public Action DoThink(Handle hTimer, DataPack hndl)
 {
 	hndl.Reset();
-
 	Function pFunc = hndl.ReadFunction();
 	Call_StartFunction( null, pFunc );
-
+	
 	any param1 = hndl.ReadCell();
 	if( param1 != -999 )
 		Call_PushCell(param1);
-
+	
 	any param2 = hndl.ReadCell();
 	if( param2 != -999 )
 		Call_PushCell(param2);
-
+	
 	Call_Finish();
 	return Plugin_Continue;
 }
 
-stock bool DoSuperJump(const int client, const float charge, const float JumpAngle, int& changecharge, const int subtractCharge)
+stock bool DoSuperJump(const int client, const float power, int& charge, const int new_charge, const bool& duper, float jump_ang = -45.0)
 {
 	float ang[3]; GetClientEyeAngles(client, ang);
-	if( ang[0] <= JumpAngle ) { /// default JumpAngle = -45.0
+	if( ang[0] <= jump_ang ) {
 		float vel[3]; GetEntPropVector(client, Prop_Data, "m_vecVelocity", vel);
-		vel[2] = 750 + charge * 13.0;
+		vel[2] = 750 + power * 13.0;
+		if( duper ) {
+			vel[2] += 2000.0;
+			duper = false;
+		}
 		SetEntProp(client, Prop_Send, "m_bJumping", 1);
-		vel[0] *= (1+Sine(charge * FLOAT_PI / 50));
-		vel[1] *= (1+Sine(charge * FLOAT_PI / 50));
+		vel[0] *= (1+Sine(power * FLOAT_PI / 50));
+		vel[1] *= (1+Sine(power * FLOAT_PI / 50));
 		TeleportEntity(client, NULL_VEC, NULL_VEC, vel);
-		changecharge = subtractCharge;
+		charge = new_charge;
 		return true;
 	}
 	return false;
 }
 
 
-stock bool DoWeighdown(const int client, float& weighdowntime, const float AngleForWayDown, const float SetWeighdown)
+stock bool DoWeighdown(const int client, const float req_time, float &wdtime, const float set_wdtime, float required_angle=60.0)
 {
-	if( weighdowntime >= 1.0 ) {
+	if( wdtime >= req_time ) {
 		float ang[3]; GetClientEyeAngles(client, ang);
-		if( ang[0] >= AngleForWayDown ) {	/// default AngleForWayDown = 60.0
+		if( ang[0] >= required_angle ) {
 			float fVelocity[3];
 			GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
 			fVelocity[2] = -1000.0;
 			TeleportEntity(client, NULL_VEC, NULL_VEC, fVelocity);
 			SetEntityGravity(client, 6.0);
 			CreateTimer(2.0, TimerGravityCat, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-			weighdowntime = SetWeighdown;
+			wdtime = set_wdtime;
 			return true;
 		}
 	}
 	return false;
 }
+
 stock void ForceClientTeamChange(const int client, const int iTeam)
 {
 	SetEntProp(client, Prop_Send, "m_lifeState", 2);
@@ -649,58 +662,12 @@ stock void ForceClientTeamChange(const int client, const int iTeam)
 	SetEntProp(client, Prop_Send, "m_lifeState", 0);
 	TF2_RespawnPlayer(client);
 }
+
 stock int CalcBossHealth(const float initial, const int playing, const float subtract, const float exponent, const float additional)
 {
 	return RoundFloat( Pow((((initial)+playing)*(playing-subtract)), exponent)+additional );
 }
-stock bool IsVSHMap()	/// just use arena maps as vsh/ff2 maps
-{
-	char config[FULLPATH], currentmap[99];
-	GetCurrentMap(currentmap, sizeof(currentmap));
-	if( FileExists("bNextMapToFF2") )
-		{return true;}
-	else if( FileExists("bNextMapToHale") )
-		{return true;}
 
-	BuildPath(Path_SM, config, FULLPATH, "configs/freak_fortress_2/maps.cfg");	/// Compatibility :)
-	if (!FileExists(config)) {
-		BuildPath(Path_SM, config, FULLPATH, "configs/saxton_hale/saxton_hale_maps.cfg");
-		if (!FileExists(config)) {
-			LogError("[VSH 2] ERROR: **** Unable to find VSH/FF2 Compatibility Map Configs, Disabling VSH 2 ****");
-			return false;
-		}
-	}
-
-	File file = OpenFile(config, "r");
-	if( !file ) {
-		LogError("[VSH 2] **** Error Reading Maps from %s Config, Disabling VSH Engine ****", config);
-		return false;
-	}
-
-	int tries;
-	while ( file.ReadLine(config, sizeof(config)) && tries < 100 )
-	{
-		++tries;
-		if (tries == 100) {
-			LogError("[VSH 2] **** Breaking Loop Looking For a Map ****");
-			return false;
-		}
-
-		Format(config, strlen(config)-1, config);
-		if( !strncmp(config, "//", 2, false) )
-			continue;
-
-		if( StrContains(currentmap, config, false) != -1 || StrContains(config, "all", false) != -1 )
-		{
-			file.Close();
-			return true;
-		}
-	}
-	delete file;
-	return false;
-	//if (FindEntityByClassname(-1, "tf_logic_arena") != -1) return true;
-	//return false;
-}
 stock void SetArenaCapEnableTime(const float time)
 {
 	int ent = -1;
@@ -708,6 +675,7 @@ stock void SetArenaCapEnableTime(const float time)
 	if( (ent = FindEntityByClassname(-1, "tf_logic_arena")) != -1 )
 		DispatchKeyValue(ent, "CapEnableDelay", strTime);
 }
+
 stock void SetClientGlow(const int client, const float time1, float clampfl = 0.0, float &glowtimer)
 {
 	if (IsValidClient(client)) {
@@ -721,31 +689,42 @@ stock void SetClientGlow(const int client, const float time1, float clampfl = 0.
 		else SetEntProp(client, Prop_Send, "m_bGlowEnabled", 1);
 	}
 }
+
 stock void SetControlPoint(const bool enable)
 {
 	int CPm = -1;
-	while ( (CPm = FindEntityByClassname(CPm, "team_control_point")) != -1 )
-	{
-		if (CPm > MaxClients && IsValidEdict(CPm)) {
+	while ( (CPm = FindEntityByClassname(CPm, "team_control_point")) != -1 ) {
+		if( CPm > MaxClients && IsValidEdict(CPm) ) {
 			AcceptEntityInput(CPm, (enable ? "ShowModel" : "HideModel"));
 			SetVariantInt(enable ? 0 : 1);
 			AcceptEntityInput(CPm, "SetLocked");
 		}
 	}
 }
-public void EnableCap()
+
+public void EnableCap(const bool open_doors)
 {
 	SetControlPoint(true);
-	int ent = -1;
-	while ((ent = FindEntityByClassname(ent, "func_door")) != -1)
-	{
-		AcceptEntityInput(ent, "Open");
-		AcceptEntityInput(ent, "Unlock");
-		//AcceptEntityInput(ent, "Kill");
+	if( open_doors ) {
+		int ent = -1;
+		while ((ent = FindEntityByClassname(ent, "func_door")) != -1) {
+			AcceptEntityInput(ent, "Open");
+			AcceptEntityInput(ent, "Unlock");
+		}
 	}
-	//if (doorchecktimer == null)
-	//	doorchecktimer = CreateTimer(5.0, Timer_CheckDoors, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 }
+
+stock bool CanFitHere(float origin[3], const float mins[3], const float maxs[3])
+{
+	for( int i=0; i<60; ++i ) {
+		TR_TraceHull(origin, origin, mins, maxs, MASK_PLAYERSOLID);
+		if( TR_GetFraction() > 0.98 )
+			return true;
+		else origin[2] += 1.0;
+	}
+	return false;
+}
+
 stock void SpawnRandomAmmo()
 {
 	int iEnt = MaxClients+1;
@@ -767,7 +746,7 @@ stock void SpawnRandomAmmo()
 		int ammo = CreateEntityByName("item_ammopack_small");
 		TeleportEntity(ammo, vPos, vAng, NULL_VECTOR);
 		DispatchSpawn(ammo);
-		SetEntProp(ammo, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? 2 : 0, 4);
+		SetEntProp(ammo, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 		++spawned;
 	}
 }
@@ -791,17 +770,16 @@ stock void SpawnRandomHealth()
 		int healthkit = CreateEntityByName("item_healthkit_small");
 		TeleportEntity(healthkit, vPos, vAng, NULL_VECTOR);
 		DispatchSpawn(healthkit);
-		SetEntProp(healthkit, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? 2 : 0, 4);
+		SetEntProp(healthkit, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 		++spawned;
 	}
 }
 stock int GetTeamPlayerCount(const int team)
 {
 	int count = 0;
-	for (int i=MaxClients; i; --i) {
+	for (int i=MaxClients; i; --i)
 		if (IsValidClient(i) && GetClientTeam(i) == team)
-			{count++;}
-	}
+			count++;
 	return count;
 }
 stock int GetClientCloakIndex(const int client)
@@ -1001,10 +979,8 @@ stock int GetMaxAmmo(const int client, const int slot)
 	if (!IsValidClient(client))
 		return 0;
 	int weapon = GetPlayerWeaponSlot(client, slot);
-	if (IsValidEntity(weapon))
-	{
-		switch (slot)
-		{ //FindDataMapInfo(client, "m_iAmmo");
+	if (IsValidEntity(weapon)) {
+		switch (slot) {
 			case TFWeaponSlot_Primary: return GetEntData(client, FindDataMapInfo(client, "m_iAmmo")+4);
 			case TFWeaponSlot_Secondary: return GetEntData(client, FindDataMapInfo(client, "m_iAmmo")+8);
 			case TFWeaponSlot_Melee: return GetEntData(client, FindDataMapInfo(client, "m_iAmmo")+12);
@@ -1016,19 +992,17 @@ stock TF2Item PrepareItemHandle(TF2Item hItem, char[] name = "", int index = -1,
 {
 	static TF2Item hWeapon = null;
 	int addattribs = 0;
-
 	char weaponAttribsArray[32][32];
 	int attribCount = ExplodeString(att, "; ", weaponAttribsArray, 32, 32);
 	
 	int flags = OVERRIDE_ATTRIBUTES;
 	if (!dontpreserve)
 		flags |= PRESERVE_ATTRIBUTES;
-
+	
 	if( !hWeapon )
 		hWeapon = new TF2Item(flags);
 	else hWeapon.iFlags = flags;
-//	Handle hWeapon = TF2Items_CreateItem(flags);	//null;
-
+	
 	if (hItem != null) {
 		addattribs = hItem.iNumAttribs;
 		if (addattribs) {
@@ -1051,7 +1025,7 @@ stock TF2Item PrepareItemHandle(TF2Item hItem, char[] name = "", int index = -1,
 		}
 		delete hItem;
 	}
-
+	
 	if (name[0] != '\0') {
 		flags |= OVERRIDE_CLASSNAME;
 		hWeapon.SetClassname(name);
@@ -1191,33 +1165,36 @@ stock int GetClip(const int client, const int slot)
 	}
 	return 0;
 }
+
 stock void SkipBossPanelNotify(const int client, bool newchoice = true)
 {
 	if (!bEnabled.BoolValue || !IsValidClient(client) || IsFakeClient(client) || IsVoteInProgress())
 		return;
-
+	
 	Panel panel = new Panel();
 	char strNotify[64];
-
+	
 	panel.SetTitle("[VSH2] You're The Next Boss!");
 	Format(strNotify, sizeof(strNotify), "You are going to be a Boss soon! Type /halenext to check/reset your queue points.\nAlternatively, use !resetq.");
-
+	
 	panel.DrawItem(strNotify);
-	panel.Send(client, SkipHalePanelH, 30);
+	panel.Send(client, SkipHalePanelH, 30); /// in commands.sp
 	delete panel;
 }
-stock void _SetCapOwner(const int iCapTeam, float flEnableTime = 30.0)
+stock void _SetCapOwner(const int iCapTeam, const bool open_doors, float flEnableTime = 30.0)
 {
 	int i = -1;
 	int cap_master = FindEntityByClassname(-1, "team_control_point_master");
-	while ( (i = FindEntityByClassname(i, "team_control_point")) != -1 )
-	{
-		if (IsValidEntity(i)) {	/// Adapted from Arena:Respawn
+	while( (i = FindEntityByClassname(i, "team_control_point")) != -1 ) {
+		/// Adapted from Arena:Respawn
+		if (IsValidEntity(i)) {
 			SetVariantInt(iCapTeam);
-			AcceptEntityInput(i, "SetOwner", -1, cap_master); /// Must have team_control_point_master as the activator, less it will just ignore the Input
+			
+			/// Must have team_control_point_master as the activator, less it will just ignore the Input
+			AcceptEntityInput(i, "SetOwner", -1, cap_master);
 			SetVariantInt(1);
 			AcceptEntityInput(i, "SetLocked");
-			SetPawnTimer(EnableCap, flEnableTime);
+			SetPawnTimer(EnableCap, flEnableTime, open_doors);
 		}
 	}
 }

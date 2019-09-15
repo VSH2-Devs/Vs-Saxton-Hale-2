@@ -1,10 +1,3 @@
-enum { /** VSH2 Round States */
-	StateDisabled = -1,
-	StateStarting = 0,
-	StateRunning = 1,
-	StateEnding = 2,
-};
-
 /*
 enum {
 	Skill_Normal = 0,
@@ -31,10 +24,10 @@ public int AllowedDifficulties[] = {
 };
 */
 
-StringMap hGameModeFields ;
+StringMap hGameModeFields;
 
-methodmap VSHGameMode /* < StringMap */    /** all game mode oriented code should be handled HERE ONLY */
-{
+/** all game mode oriented code should be handled HERE ONLY */
+methodmap VSHGameMode { /* < StringMap */
 	public VSHGameMode() {
 		hGameModeFields = new StringMap();
 	}
@@ -174,14 +167,31 @@ methodmap VSHGameMode /* < StringMap */    /** all game mode oriented code shoul
 			hGameModeFields.SetValue("bPointReady", val);
 		}
 	}
-	property bool bMedieval
-	{
+	property bool bMedieval {
 		public get() {
 			bool i; hGameModeFields.GetValue("bMedieval", i);
 			return i;
 		}
 		public set(const bool val) {
 			hGameModeFields.SetValue("bMedieval", val);
+		}
+	}
+	property bool bDoors {
+		public get() {
+			bool i; hGameModeFields.GetValue("bDoors", i);
+			return i;
+		}
+		public set(const bool val) {
+			hGameModeFields.SetValue("bDoors", val);
+		}
+	}
+	property bool bTeleToSpawn {
+		public get() {
+			bool i; hGameModeFields.GetValue("bTeleToSpawn", i);
+			return i;
+		}
+		public set(const bool val) {
+			hGameModeFields.SetValue("bTeleToSpawn", val);
 		}
 	}
 	
@@ -216,7 +226,8 @@ methodmap VSHGameMode /* < StringMap */    /** all game mode oriented code shoul
 		}
 	}
 	
-	public void Init() {    /// When adding a new property, make sure you initialize it to a default 
+	/// When adding a new property, make sure you initialize it to a default 
+	public void Init() {
 		this.iRoundState = 0;
 		this.iSpecial = -1;
 		this.iHealthBar = 0;
@@ -230,6 +241,8 @@ methodmap VSHGameMode /* < StringMap */    /** all game mode oriented code shoul
 #endif
 		this.bPointReady = false;
 		this.bMedieval = false;
+		this.bDoors = false;
+		this.bTeleToSpawn = false;
 		this.flHealthTime = 0.0;
 		this.flMusicTime = 0.0;
 		this.hNextBoss = view_as< BaseBoss >(0);
@@ -275,7 +288,7 @@ methodmap VSHGameMode /* < StringMap */    /** all game mode oriented code shoul
 		int points = -999;
 		BaseBoss boss;
 		for( int i=MaxClients; i; --i ) {
-			if( !IsValidClient(i) || GetClientTeam(i) <= int(TFTeam_Spectator) )
+			if( !IsValidClient(i) || GetClientTeam(i) <= VSH2Team_Spectator )
 				continue;
 			boss = BaseBoss(i);
 			if( boss.iQueue >= points && !boss.bSetOnSpawn ) {
@@ -296,7 +309,7 @@ methodmap VSHGameMode /* < StringMap */    /** all game mode oriented code shoul
 				continue;
 			++count;
 		}
-		return( count );
+		return count;
 	}
 	public int CountBosses(const bool balive) {
 		BaseBoss boss;
@@ -309,7 +322,7 @@ methodmap VSHGameMode /* < StringMap */    /** all game mode oriented code shoul
 				continue;
 			++count;
 		}
-		return( count );
+		return count;
 	}
 	public int GetTotalBossHealth() {
 		BaseBoss boss;
@@ -323,7 +336,7 @@ methodmap VSHGameMode /* < StringMap */    /** all game mode oriented code shoul
 				continue;
 			count += boss.iHealth;
 		}
-		return( count );
+		return count;
 	}
 	public void SearchForItemPacks()
 	{
@@ -369,7 +382,7 @@ methodmap VSHGameMode /* < StringMap */    /** all game mode oriented code shoul
 		ent = -1;
 		count = 0;
 		while( (ent = FindEntityByClassname(ent, "item_healthkit_small")) != -1 ) {
-			SetEntProp(ent, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? 2 : 0, 4);
+			SetEntProp(ent, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 			count++;
 			if( !foundHealth )
 				foundHealth = (count > 4); //true;
@@ -377,7 +390,7 @@ methodmap VSHGameMode /* < StringMap */    /** all game mode oriented code shoul
 		ent = -1;
 		count = 0;
 		while( (ent = FindEntityByClassname(ent, "item_healthkit_medium")) != -1 ) {
-			SetEntProp(ent, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? 2 : 0, 4);
+			SetEntProp(ent, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 			count++;
 			if (!foundHealth)
 				foundHealth = (count > 2);//true;
@@ -385,7 +398,7 @@ methodmap VSHGameMode /* < StringMap */    /** all game mode oriented code shoul
 		ent = -1;
 		count = 0;
 		while( (ent = FindEntityByClassname(ent, "item_healthkit_full")) != -1 ) {
-			SetEntProp(ent, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? 2 : 0, 4);
+			SetEntProp(ent, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 			count++;
 			if( !foundHealth )
 				foundHealth = (count > 2); //true;
@@ -399,18 +412,17 @@ methodmap VSHGameMode /* < StringMap */    /** all game mode oriented code shoul
 		BaseBoss boss;
 		int totalHealth, bosscount;
 		for( int i=MaxClients; i; --i ) {
-			if( !IsValidClient(i) )    /// don't count dead bosses
+			/// don't count dead bosses
+			if( !IsValidClient(i) || !IsPlayerAlive(i) )
 				continue;
 			boss = BaseBoss(i);
 			if( !boss.bIsBoss )
 				continue;
 			bosscount++;
 			totalHealth += boss.iHealth;
-			if( !IsPlayerAlive(i) )
-				totalHealth -= boss.iHealth;
 		}
 		if( bosscount > 0 )
-			this.iHealthBarPercent = RoundToCeil(totalHealth / (this.iTotalMaxHealth * 255.0));
+			this.iHealthBarPercent = RoundFloat(float(totalHealth) / float(this.iTotalMaxHealth) * 255);
 	}
 	public void GetBossType()
 	{
@@ -433,6 +445,112 @@ methodmap VSHGameMode /* < StringMap */    /** all game mode oriented code shoul
 				this.iSpecial = MAXBOSS;
 		}
 		else this.iSpecial = GetRandomInt(Hale, MAXBOSS);
+	}
+	/// just use arena maps as vsh/ff2 maps
+	public bool IsVSHMap()
+	{
+		char config[FULLPATH], currentmap[99];
+		GetCurrentMap(currentmap, sizeof(currentmap));
+		if( FileExists("bNextMapToFF2") || FileExists("bNextMapToHale") )
+			return true;
+		
+		BuildPath(Path_SM, config, FULLPATH, "configs/freak_fortress_2/maps.cfg");
+		if (!FileExists(config)) {
+			BuildPath(Path_SM, config, FULLPATH, "configs/saxton_hale/saxton_hale_maps.cfg");
+			if (!FileExists(config)) {
+				LogError("[VSH 2] ERROR: **** Unable to find VSH/FF2 Compatibility Map Configs, Disabling VSH 2 ****");
+				return false;
+			}
+		}
+		
+		File file = OpenFile(config, "r");
+		if( !file ) {
+			LogError("[VSH 2] **** Error Reading Maps from %s Config, Disabling VSH Engine ****", config);
+			return false;
+		}
+		
+		int tries;
+		while( file.ReadLine(config, sizeof(config)) && tries < 100 ) {
+			++tries;
+			if( tries == 100 ) {
+				LogError("[VSH 2] **** Breaking Loop Looking For a Map ****");
+				return false;
+			}
+			
+			Format(config, strlen(config)-1, config);
+			if( !strncmp(config, "//", 2, false) )
+				continue;
+			
+			if( StrContains(currentmap, config, false) != -1 || StrContains(config, "all", false) != -1 ) {
+				file.Close();
+				return true;
+			}
+		}
+		delete file;
+		return false;
+		
+		/// do not remove this.
+		//if (FindEntityByClassname(-1, "tf_logic_arena") != -1) return true;
+		//return false;
+	}
+	
+	public void CheckDoors()
+	{
+		char config[PLATFORM_MAX_PATH], currentmap[99];
+		char lolcano[] = "vsh_lolcano_pb1";
+		GetCurrentMap(currentmap, sizeof(currentmap));
+		this.bDoors = false;
+		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/saxton_hale/saxton_hale_doors.cfg");
+		if( !FileExists(config) ) {
+			if (!strncmp(currentmap, lolcano, sizeof(lolcano), false))
+				this.bDoors = true;
+			return;
+		}
+		
+		File file = OpenFile(config, "r");
+		if( !file ) {
+			if (!strncmp(currentmap, lolcano, sizeof(lolcano), false))
+				this.bDoors = true;
+			return;
+		}
+		while( !file.EndOfFile() && file.ReadLine(config, sizeof(config)) ) {
+			Format(config, strlen(config)-1, config);
+			if (!strncmp(config, "//", 2, false))
+				continue;
+			else if (StrContains(currentmap, config, false) != -1 || !StrContains(config, "all", false)) {
+				delete file;
+				this.bDoors = true;
+				return;
+			}
+		}
+		delete file;
+	}
+	
+	public void CheckTeleToSpawn()
+	{
+		char config[PLATFORM_MAX_PATH], currentmap[99];
+		GetCurrentMap(currentmap, sizeof(currentmap));
+		this.bTeleToSpawn = false;
+		
+		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/saxton_hale/saxton_spawn_teleport.cfg");
+		if (!FileExists(config))
+			return;
+		
+		File file = OpenFile(config, "r");
+		if( !file )
+			return;
+		
+		while( !file.EndOfFile() && file.ReadLine(config, sizeof(config)) ) {
+			Format(config, strlen(config) - 1, config);
+			if( !strncmp(config, "//", 2, false) )
+				continue;
+			else if( StrContains(currentmap, config, false) != -1 || !StrContains(config, "all", false) ) {
+				this.bTeleToSpawn = true;
+				delete file;
+				return;
+			}
+		}
+		delete file;
 	}
 };
 

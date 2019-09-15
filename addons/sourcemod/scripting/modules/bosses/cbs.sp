@@ -63,7 +63,11 @@ methodmap CChristian < BaseBoss
 			if( this.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
 				float vel[3]; GetEntPropVector(this.index, Prop_Data, "m_vecVelocity", vel);
 				vel[2] = 750 + this.flCharge * 13.0;
-
+				if( this.bSuperCharge ) {
+					vel[2] += 2000.0;
+					this.bSuperCharge = false;
+				}
+				
 				SetEntProp(this.index, Prop_Send, "m_bJumping", 1);
 				vel[0] *= (1+Sine(this.flCharge * FLOAT_PI / 50));
 				vel[1] *= (1+Sine(this.flCharge * FLOAT_PI / 50));
@@ -76,7 +80,7 @@ methodmap CChristian < BaseBoss
 			}
 			else this.flCharge = 0.0;
 		}
-		if( OnlyScoutsLeft(RED) )
+		if( OnlyScoutsLeft(VSH2Team_Red) )
 			this.flRAGE += 0.5;
 
 		if( flags & FL_ONGROUND )
@@ -101,8 +105,8 @@ methodmap CChristian < BaseBoss
 		if( jmp > 0.0 )
 			jmp *= 4.0;
 		if( this.flRAGE >= 100.0 )
-						ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp));
-				else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", RoundFloat(jmp), this.flRAGE);
+			ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp));
+		else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.flRAGE);
 	}
 	public void SetModel ()
 	{
@@ -121,8 +125,8 @@ methodmap CChristian < BaseBoss
 	{
 		this.RemoveAllItems();
 		char attribs[128];
-
-		Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.86; 259; 1.0");
+		
+		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.0; 259; 1.0");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_club", 171, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
@@ -145,13 +149,13 @@ methodmap CChristian < BaseBoss
 		int bow = this.SpawnWeapon("tf_weapon_compound_bow", 1005, 100, 5, "2; 2.1; 6; 0.5; 37; 0.0; 280; 19; 551; 1");
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", bow); /// 266; 1.0 - penetration
 		
-		int living = GetLivingPlayers(RED);
+		int living = GetLivingPlayers(VSH2Team_Red);
 		SetWeaponAmmo(bow, ((living >= CBS_MAX_ARROWS) ? CBS_MAX_ARROWS : living));
 	}
 
 	public void KilledPlayer(const BaseBoss victim, Event event)
 	{
-		int living = GetLivingPlayers(RED);
+		int living = GetLivingPlayers(VSH2Team_Red);
 		if( !GetRandomInt(0, 3) && living != 1 ) {
 			switch( TF2_GetPlayerClass(victim.index) ) {
 				case TFClass_Spy: {
@@ -173,7 +177,7 @@ methodmap CChristian < BaseBoss
 				case 5: clubindex = 423;
 				case 6: clubindex = 474;
 			}
-			weapon = this.SpawnWeapon("tf_weapon_club", clubindex, 100, 5, "68; 2.0; 2; 2.86; 259; 1.0");
+			weapon = this.SpawnWeapon("tf_weapon_club", clubindex, 100, 5, "68; 2.0; 2; 3.0; 259; 1.0");
 			SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", weapon);
 		}
 
@@ -195,14 +199,15 @@ methodmap CChristian < BaseBoss
 	}
 	public void Help()
 	{
+		this.SetName("The Christian Brutal Sniper");
 		if( IsVoteInProgress() )
 			return;
 		char helpstr[] = "Christian Brutal Sniper:\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Huntsman Bow): taunt when Rage is full (9 arrows).\nVery close-by enemies are stunned.";
 		Panel panel = new Panel();
-		panel.SetTitle (helpstr);
-		panel.DrawItem( "Exit" );
+		panel.SetTitle(helpstr);
+		panel.DrawItem("Exit");
 		panel.Send(this.index, HintPanel, 10);
-		delete (panel);
+		delete panel;
 	}
 	public void LastPlayerSoundClip()
 	{

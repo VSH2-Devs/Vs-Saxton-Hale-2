@@ -74,6 +74,10 @@ methodmap CVagineer < BaseBoss
 			if( this.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
 				float vel[3]; GetEntPropVector(this.index, Prop_Data, "m_vecVelocity", vel);
 				vel[2] = 750 + this.flCharge * 13.0;
+				if( this.bSuperCharge ) {
+					vel[2] += 2000.0;
+					this.bSuperCharge = false;
+				}
 
 				SetEntProp(this.index, Prop_Send, "m_bJumping", 1);
 				vel[0] *= (1+Sine(this.flCharge * FLOAT_PI / 50));
@@ -87,7 +91,7 @@ methodmap CVagineer < BaseBoss
 			}
 			else this.flCharge = 0.0;
 		}
-		if( OnlyScoutsLeft(RED) )
+		if( OnlyScoutsLeft(VSH2Team_Red) )
 			this.flRAGE += 0.5;
 
 		if( flags & FL_ONGROUND )
@@ -111,9 +115,9 @@ methodmap CVagineer < BaseBoss
 		if( jmp > 0.0 )
 			jmp *= 4.0;
 		if( this.flRAGE >= 100.0 )
-						ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp));
-				else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", RoundFloat(jmp), this.flRAGE);
-
+			ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp));
+		else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.flRAGE);
+		
 		if( TF2_IsPlayerInCondition(this.index, TFCond_Ubercharged) )
 			SetEntProp(this.index, Prop_Data, "m_takedamage", 0);
 		else SetEntProp(this.index, Prop_Data, "m_takedamage", 2);
@@ -136,8 +140,8 @@ methodmap CVagineer < BaseBoss
 	{
 		this.RemoveAllItems();
 		char attribs[128];
-
-		Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.86; 259; 1.0; 436; 1.0");
+		
+		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.0; 259; 1.0; 436; 1.0");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_wrench", 169, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
@@ -163,13 +167,13 @@ methodmap CVagineer < BaseBoss
 	{
 		strcopy(snd, PLATFORM_MAX_PATH, VagineerHit);
 		EmitSoundToAll(snd, this.index); EmitSoundToAll(snd, this.index);
-
+		
 		float curtime = GetGameTime();
 		if( curtime <= this.flKillSpree )
 			this.iKills++;
 		else this.iKills = 0;
 		
-		if( this.iKills == 3 && GetLivingPlayers(RED) != 1 ) {
+		if( this.iKills == 3 && GetLivingPlayers(VSH2Team_Red) != 1 ) {
 			switch( GetRandomInt(0, 4) ) {
 				case 1, 3: strcopy(snd, PLATFORM_MAX_PATH, VagineerKSpree);
 				case 2: strcopy(snd, PLATFORM_MAX_PATH, VagineerKSpree2);
@@ -182,14 +186,15 @@ methodmap CVagineer < BaseBoss
 	}
 	public void Help()
 	{
+		this.SetName("The Vagineer");
 		if( IsVoteInProgress() )
 			return;
 		char helpstr[] = "Vagineer:\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Uber): taunt when the Rage Meter is full to stun fairly close-by enemies.";
 		Panel panel = new Panel();
-		panel.SetTitle (helpstr);
-		panel.DrawItem( "Exit" );
+		panel.SetTitle(helpstr);
+		panel.DrawItem("Exit");
 		panel.Send(this.index, HintPanel, 10);
-		delete (panel);
+		delete panel;
 	}
 	public void LastPlayerSoundClip()
 	{

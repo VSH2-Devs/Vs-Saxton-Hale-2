@@ -1,28 +1,25 @@
-methodmap PrivateForward < Handle	/// very useful ^^
-{
-	public PrivateForward( const Handle forw )
-	{
+/// very useful ^^
+methodmap PrivateForward < Handle {
+	public PrivateForward( const Handle forw ) {
 		if( forw != null )
 			return view_as<PrivateForward>( forw );
 		return null;
 	}
 	property int FuncCount {
-		public get()	{ return GetForwardFunctionCount(this); }
+		public get() {
+			return GetForwardFunctionCount(this);
+		}
 	}
-	public bool Add(Handle plugin, Function func)
-	{
+	public bool Add(Handle plugin, Function func) {
 		return AddToForward(this, plugin, func);
 	}
-	public bool Remove(Handle plugin, Function func)
-	{
+	public bool Remove(Handle plugin, Function func) {
 		return RemoveFromForward(this, plugin, func);
 	}
-	public int RemoveAll(Handle plugin)
-	{
+	public int RemoveAll(Handle plugin) {
 		return RemoveAllFromForward(this, plugin);
 	}
-	public void Start()
-	{
+	public void Start() {
 		Call_StartForward(this);
 	}
 };

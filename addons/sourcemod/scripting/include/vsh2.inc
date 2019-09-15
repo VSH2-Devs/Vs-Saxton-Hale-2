@@ -4,6 +4,23 @@
 #define _vsh2_included
 
 
+#define MAX_BOSS_NAME_SIZE    64
+
+enum { /** VSH2 Round States */
+	StateDisabled = -1,
+	StateStarting = 0,
+	StateRunning = 1,
+	StateEnding = 2,
+};
+
+enum { /** VSH2 Teams */
+	VSH2Team_Unassigned=0,
+	VSH2Team_Neutral=0,
+	VSH2Team_Spectator,
+	VSH2Team_Red,
+	VSH2Team_Boss
+};
+
 methodmap VSH2Player {
 	/** [ C O N S T R U C T O R ]
 	 * Constructs an instance of the BaseBoss internal methodmap
@@ -12,9 +29,9 @@ methodmap VSH2Player {
 	 * @return			a player instance of the VSH2Player methodmap
 	 */
 	public native VSH2Player(const int index, bool userid=false);
-
-	/** **** **** [ P R O P E R T I E S ] **** **** **/
 	
+	
+	/** **** **** [ P R O P E R T I E S ] **** **** **/
 	/**
 	 * gets the userid of the vsh2 player instance
 	 * @return			the bare player userid integer
@@ -36,8 +53,9 @@ methodmap VSH2Player {
 	 * NOTE: You can use this to create new properties which GetProperty can access!
 	 * @param prop_name		name of property you want to access data from.
 	 * @param item			reference to use of the variable to overwrite with data from the property.
-	 * @return		
+	 * @return		value as "any".
 	 */
+	#pragma deprecated Use GetPropInt, GetPropFloat, or GetAnyProp instead.
 	public native any GetProperty(const char prop_name[64]);
 	
 	/**
@@ -47,7 +65,16 @@ methodmap VSH2Player {
 	 * @param value			data you want the property to hold.
 	 * @noreturn
 	 */
+	#pragma deprecated Use SetIntProp, SetFloatProp, or SetAnyProp instead.
 	public native void SetProperty(const char prop_name[64], any value);
+	
+	public native int GetPropInt(const char prop_name[64]);
+	public native float GetPropFloat(const char prop_name[64]);
+	public native any GetPropAny(const char prop_name[64]);
+	
+	public native bool SetPropInt(const char prop_name[64], int value);
+	public native bool SetPropFloat(const char prop_name[64], float value);
+	public native bool SetPropAny(const char prop_name[64], any value);
 	
 	/** AVAILABLE PROPERTIES
 	property int iQueue
@@ -58,15 +85,19 @@ methodmap VSH2Player {
 	property int iAirDamage
 	property int iSongPick
 	property int iOwnerBoss
-	property int iUberTarget	/// please use userid on this; convert to client index if you want but userid is safer
-	property int bGlow	 /// use like a bool
+	
+	** please use userid on this; convert to client index if you want but userid is safer **
+	property int iUberTarget
+	
+	** use like a bool **
+	property int bGlow
 	property bool bIsMinion
 	property bool bInJump
 	property float flGlowtime
 	property float flLastHit
 	property float flLastShot
 	
-	/// ALL PROPERTIES AFTER THIS COMMENT ONLY ACCOUNT FOR BOSSES BUT CAN STILL APPLY ON NON-BOSSES AND MINIONS ///
+	** ALL PROPERTIES AFTER THIS COMMENT ONLY ACCOUNT FOR BOSSES BUT CAN STILL APPLY ON NON-BOSSES AND MINIONS **
 	property int iHealth
 	property int iMaxHealth
 	property int iType
@@ -74,8 +105,8 @@ methodmap VSH2Player {
 	property int iStabbed
 	property int iMarketted
 	property int iDifficulty
-	property bool bUsedUltimate	/// Not an overwatch reference lol; purpose is for a use-once ability but you can reset it
-	property float flSpeed   /// if you boss needs a set amount of speed, use this obviously
+	property bool bUsedUltimate
+	property float flSpeed
 	property float flCharge
 	property float flRAGE
 	property float flKillSpree
@@ -87,7 +118,7 @@ methodmap VSH2Player {
 	public native int GetWeaponSlotIndex(const int slot);
 	public native void SetWepInvis(const int alpha);
 	public native void SetOverlay(const char[] strOverlay);
-	public native void TeleToSpawn(int team=0);
+	public native bool TeleToSpawn(int team=0);
 	public native void IncreaseHeadCount();
 	public native void SpawnSmallHealthPack(int ownerteam=0);
 	public native void ForceTeamChange(const int team);
@@ -105,20 +136,23 @@ methodmap VSH2Player {
 	public native int FindBack(int[] indices, const int len);
 	public native int ShootRocket(bool bCrit=false, float vPosition[3], float vAngles[3], const float flSpeed, const float dmg, const char[] model, bool arc=false);
 	
-	/// Boss oriented natives
+	/// Boss oriented natives ///
 	public native void ConvertToBoss();
 	public native void GiveRage(const int damage);
 	public native void MakeBossAndSwitch(const int type, const bool callEvent);
 	public native void DoGenericStun(const float rageDist);
 	public native void RemoveAllItems();
+	
+	public native bool GetName(const char buffer[MAX_BOSS_NAME_SIZE]);
+	public native bool SetName(const char name[MAX_BOSS_NAME_SIZE]);
 };
 
 
 /**
  * Registers a plugin to be able to use VSH2's forwards
  * NOTE: The purpose of this native is to register boss subplugins, you don't need to register plugins to use forwards, simply hook what forward you need.
- * @param plugin_name			module name you want your calling plugin to be identified under
- * @return				integer of the plugin array index
+ * @param plugin_name    module name you want your calling plugin to be identified under
+ * @return    integer of the plugin array index, -1 if error.
  */
 native int VSH2_RegisterPlugin(const char plugin_name[64]);
 
@@ -144,7 +178,6 @@ enum { /// VSH2HookType
 	OnBossTaunt,
 	OnBossKillBuilding,
 	OnBossJarated,
-	//OnHookSound,
 	OnMessageIntro,
 	OnBossPickUpItem,
 	OnVariablesReset,
@@ -246,7 +279,32 @@ native bool VSH2_UnhookEx(const int callbacktype, VSH2HookCB callback);
 native any VSH2GameMode_GetProperty(const char prop_name[64]);
 native void VSH2GameMode_SetProperty(const char prop_name[64], any value);
 
-/**	Available properties
+stock int VSH2GameMode_GetPropInt(const char prop_name[64]) {
+	return VSH2GameMode_GetProperty(prop_name);
+}
+
+stock float VSH2GameMode_GetPropFloat(const char prop_name[64]) {
+	float f = VSH2GameMode_GetProperty(prop_name);
+	return f;
+}
+
+stock any VSH2GameMode_GetPropAny(const char prop_name[64]) {
+	return VSH2GameMode_GetProperty(prop_name);
+}
+
+stock void VSH2GameMode_SetPropInt(const char prop_name[64], int value) {
+	VSH2GameMode_SetProperty(prop_name, value);
+}
+
+stock void VSH2GameMode_SetPropFloat(const char prop_name[64], float value) {
+	VSH2GameMode_SetProperty(prop_name, value);
+}
+
+stock void VSH2GameMode_SetPropAny(const char prop_name[64], any value) {
+	VSH2GameMode_SetProperty(prop_name, value);
+}
+
+/**	Available Properties:
 property int iRoundState
 property int iSpecial
 property int iTotalMaxHealth
@@ -254,8 +312,13 @@ property int iTimeLeft
 property int iRoundCount
 property int iHealthChecks
 property int iCaptures
-property bool bSteam		- Only useable if SteamTools is enabled and used.
-property bool bTF2Attribs	- Only useable if TF2Attributes is enabled and used
+
+** Only useable if SteamTools is enabled and used.
+property bool bSteam
+
+** Only useable if TF2Attributes is enabled and used.
+property bool bTF2Attribs
+
 property bool bPointReady
 property bool bMedieval
 property float flHealthTime
@@ -266,13 +329,16 @@ property VSH2Player hNextBoss
 native VSH2Player VSH2GameMode_FindNextBoss();
 native VSH2Player VSH2GameMode_GetRandomBoss(const bool IsAlive);
 native VSH2Player VSH2GameMode_GetBossByType(const bool IsAlive, const int BossType);
+
 native int VSH2GameMode_CountMinions(const bool IsAlive);
 native int VSH2GameMode_CountBosses(const bool IsAlive);
 native int VSH2GameMode_GetTotalBossHealth();
+native int VSH2GameMode_GetTotalRedPlayers();
+
 native void VSH2GameMode_SearchForItemPacks();
 native void VSH2GameMode_UpdateBossHealth();
 native void VSH2GameMode_GetBossType();
-native int VSH2GameMode_GetTotalRedPlayers();
+
 native Handle VSH2GameMode_GetHUDHandle();
 
 
@@ -297,6 +363,14 @@ public __pl_vsh2_SetNTVOptional()
 	
 	MarkNativeAsOptional("VSH2Player.GetProperty");
 	MarkNativeAsOptional("VSH2Player.SetProperty");
+	
+	MarkNativeAsOptional("VSH2Player.GetPropInt");
+	MarkNativeAsOptional("VSH2Player.GetPropFloat");
+	MarkNativeAsOptional("VSH2Player.GetPropAny");
+	
+	MarkNativeAsOptional("VSH2Player.SetPropInt");
+	MarkNativeAsOptional("VSH2Player.SetPropFloat");
+	MarkNativeAsOptional("VSH2Player.SetPropAny");
 	
 	MarkNativeAsOptional("VSH2Player.ConvertToMinion");
 	MarkNativeAsOptional("VSH2Player.SpawnWeapon");
@@ -326,6 +400,9 @@ public __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2Player.MakeBossAndSwitch");
 	MarkNativeAsOptional("VSH2Player.DoGenericStun");
 	MarkNativeAsOptional("VSH2Player.RemoveAllItems");
+	
+	MarkNativeAsOptional("VSH2Player.GetName");
+	MarkNativeAsOptional("VSH2Player.SetName");
 	
 	MarkNativeAsOptional("VSH2_Hook");
 	MarkNativeAsOptional("VSH2_HookEx");

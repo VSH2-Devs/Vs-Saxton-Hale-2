@@ -62,7 +62,7 @@ public void QueuePanel(const int client)
 	Format(strBossList, 64, "Your queue points: %i (select to set to 0)", BaseBoss(client).iQueue );
 	panel.DrawItem(strBossList);
 	panel.Send(client, QueuePanelH, 9001);
-	delete (panel);
+	delete panel;
 }
 public int QueuePanelH(Menu menu, MenuAction action, int param1, int param2)
 {
@@ -82,7 +82,7 @@ public void TurnToZeroPanel(const int client)
 	Format(strPanel, 128, "NO");
 	panel.DrawItem(strPanel);
 	panel.Send(client, TurnToZeroPanelH, 9001);
-	delete (panel);
+	delete panel;
 }
 public int TurnToZeroPanelH(Menu menu, MenuAction action, int param1, int param2)
 {
@@ -97,6 +97,7 @@ public int TurnToZeroPanelH(Menu menu, MenuAction action, int param1, int param2
 		}
 	}
 }
+
 /** FINALLY THE PANEL TRAIN HAS ENDED! */
 public int SkipHalePanelH(Menu menu, MenuAction action, int client, int param2)
 {
@@ -106,25 +107,34 @@ public int SkipHalePanelH(Menu menu, MenuAction action, int client, int param2)
 	else CommandSetSkill( client, -1 );
 	*/
 }
+
 public Action SetNextSpecial(int client, int args)
 {
 	if( bEnabled.BoolValue ) {
-		char number[4]; GetCmdArg( 1, number, sizeof(number) );
-		int type = StringToInt(number);
-		if( type < 0 || type > 255 )
-			type = -1;
-		
-		gamemode.iSpecial = type;
+		Menu bossmenu = new Menu(MenuHandler_PickBossSpecial);
+		bossmenu.SetTitle("Set Next Boss Type Menu: ");
+		bossmenu.AddItem("-1", "None (Random Boss)");
+		ManageMenu(bossmenu); /// in handler.sp
+		bossmenu.Display(client, MENU_TIME_FOREVER);
 	}
 	return Plugin_Handled;
 }
+
+public int MenuHandler_PickBossSpecial(Menu menu, MenuAction action, int client, int select)
+{
+	char info1[16]; menu.GetItem(select, info1, sizeof(info1));
+	if( action == MenuAction_Select )
+		gamemode.iSpecial = StringToInt(info1);
+	else if( action == MenuAction_End )
+		delete menu;
+}
+
 
 public Action ChangeHealthBarColor(int client, int args)
 {
 	if( bEnabled.BoolValue ) {
 		char number[4]; GetCmdArg( 1, number, sizeof(number) );
 		int type = StringToInt(number);
-
 		gamemode.iHealthBarState = type;
 		PrintToChat(client, "iHealthBarState = %i", gamemode.iHealthBarState);
 	}
@@ -135,11 +145,11 @@ public Action Command_GetHPCmd(int client, int args)
 {
 	if( !bEnabled.BoolValue )
 		return Plugin_Continue;
-	if( gamemode.iRoundState != StateRunning )
+	else if( gamemode.iRoundState != StateRunning )
 		return Plugin_Handled;
 	
 	BaseBoss player = BaseBoss(client);
-	ManageBossCheckHealth(player);	/// in handler.sp
+	ManageBossCheckHealth(player);    /// in handler.sp
 	return Plugin_Handled;
 }
 public Action CommandBossSelect(int client, int args)
@@ -202,7 +212,7 @@ public void MusicTogglePanel(const int client)
 	panel.DrawItem("On?");
 	panel.DrawItem("Off?");
 	panel.Send(client, MusicTogglePanelH, 9001);
-	delete (panel);
+	delete panel;
 }
 public int MusicTogglePanelH(Menu menu, MenuAction action, int param1, int param2)
 {
@@ -224,20 +234,17 @@ public Action ForceBossRealtime(int client, int args)
 {
 	if( !bEnabled.BoolValue )
 		return Plugin_Continue;
-
+	
 	if( !client ) {
 		ReplyToCommand(client, "[VSH 2] You can only use this command ingame.");
 		return Plugin_Handled;
-	}
-	if( args < 2 ) {
+	} else if( args < 2 ) {
 		ReplyToCommand(client, "[VSH 2] Usage: boss_force <target> <boss id>");
 		return Plugin_Handled;
-	}
-	if( gamemode.iRoundState > StateStarting ) {
+	} else if( gamemode.iRoundState > StateStarting ) {
 		ReplyToCommand(client, "[VSH 2] You can't force a boss after a round started...");
 		return Plugin_Handled;
 	}
-	
 	
 	char targetname[32];	GetCmdArg(1, targetname, sizeof(targetname));
 	char strBossid[32];	GetCmdArg(2, strBossid, sizeof(strBossid));
@@ -280,16 +287,15 @@ public Action CommandAddPoints(int client, int args)
 {
 	if( !bEnabled.BoolValue )
 		return Plugin_Continue;
-
+	
 	if( args < 2 ) {
 		ReplyToCommand(client, "[VSH] Usage: hale_addpoints <target> <points>");
 		return Plugin_Handled;
 	}
 	char targetname[32];	GetCmdArg(1, targetname, sizeof(targetname));
 	char s2[32];		GetCmdArg(2, s2, sizeof(s2));
-
+	
 	int points = StringToInt(s2);
-
 	char target_name[MAX_TARGET_LENGTH];
 	int target_list[MAXPLAYERS], target_count;
 	bool tn_is_ml;
@@ -322,7 +328,7 @@ public Action CommandSetPoints(int client, int args)
 {
 	if( !bEnabled.BoolValue )
 		return Plugin_Continue;
-		
+	
 	if( args < 2 ) {
 		ReplyToCommand(client, "[VSH] Usage: hale_setpoints <target> <points>");
 		return Plugin_Handled;
@@ -355,7 +361,7 @@ public Action HelpPanelCmd(int client, int args)
 {
 	if( !bEnabled.BoolValue )
 		return Plugin_Continue;
-	if( !client ) {
+	else if( !client ) {
 		ReplyToCommand(client, "[VSH 2] You can only use this command ingame.");
 		return Plugin_Handled;
 	}
@@ -401,7 +407,7 @@ public Action MenuDoClassRush(int client, int args)
 {
 	if( !bEnabled.BoolValue )
 		return Plugin_Continue;
-	if( !client ) {
+	else if( !client ) {
 		ReplyToCommand(client, "[VSH 2] You can only use this command ingame.");
 		return Plugin_Handled;
 	}
@@ -428,7 +434,7 @@ public int MenuHandler_ClassRush(Menu menu, MenuAction action, int client, int p
 	if( action == MenuAction_Select ) {
 		int classtype = StringToInt(info);
 		for( int i=MaxClients; i; --i ) {
-			if( !IsValidClient(i) || !IsPlayerAlive(i) || GetClientTeam(i) != RED )
+			if( !IsValidClient(i) || !IsPlayerAlive(i) || GetClientTeam(i) != VSH2Team_Red )
 				continue;
 			SetEntProp(i, Prop_Send, "m_iClass", classtype);
 			TF2_RegeneratePlayer(i);

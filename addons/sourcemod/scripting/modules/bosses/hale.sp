@@ -108,6 +108,10 @@ methodmap CHale < BaseBoss
 			if( this.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
 				float vel[3]; GetEntPropVector(this.index, Prop_Data, "m_vecVelocity", vel);
 				vel[2] = 750 + this.flCharge * 13.0;
+				if( this.bSuperCharge ) {
+					vel[2] += 2000.0;
+					this.bSuperCharge = false;
+				}
 				
 				SetEntProp(this.index, Prop_Send, "m_bJumping", 1);
 				vel[0] *= (1+Sine(this.flCharge * FLOAT_PI / 50));
@@ -121,7 +125,7 @@ methodmap CHale < BaseBoss
 			}
 			else this.flCharge = 0.0;
 		}
-		if( OnlyScoutsLeft(RED) )
+		if( OnlyScoutsLeft(VSH2Team_Red) )
 			this.flRAGE += 0.5;
 
 		if( flags & FL_ONGROUND )
@@ -145,8 +149,8 @@ methodmap CHale < BaseBoss
 		if( jmp > 0.0 )
 			jmp *= 4.0;
 		if( this.flRAGE >= 100.0 )
-			ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", RoundFloat(jmp));
-		else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", RoundFloat(jmp), this.flRAGE);
+			ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp));
+		else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.flRAGE);
 	}
 	public void SetModel ()
 	{
@@ -166,8 +170,8 @@ methodmap CHale < BaseBoss
 	{
 		this.RemoveAllItems();
 		char attribs[128];
-
-		Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.77; 259; 1.0; 252; 0.6; 214; %d", GetRandomInt(999, 9999));
+		
+		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.0; 259; 1.0; 252; 0.7; 214; %d", GetRandomInt(999, 9999));
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_shovel", 5, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
@@ -225,7 +229,7 @@ methodmap CHale < BaseBoss
 			this.iKills++;
 		else this.iKills = 0;
 
-		if( this.iKills == 3 && GetLivingPlayers(RED) != 1 ) {
+		if( this.iKills == 3 && GetLivingPlayers(VSH2Team_Red) != 1 ) {
 			int randsound = GetRandomInt(0, 7);
 			if( !randsound || randsound == 1 )
 				strcopy(snd, PLATFORM_MAX_PATH, HaleKSpree);
@@ -239,14 +243,15 @@ methodmap CHale < BaseBoss
 	}
 	public void Help()
 	{
+		this.SetName("Saxton Hale");
 		if( IsVoteInProgress() )
 			return;
 		char helpstr[] = "Saxton Hale:\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (stun): taunt when the Rage is full to stun nearby enemies.";
 		Panel panel = new Panel();
-		panel.SetTitle (helpstr);
-		panel.DrawItem( "Exit" );
+		panel.SetTitle(helpstr);
+		panel.DrawItem("Exit");
 		panel.Send(this.index, HintPanel, 10);
-		delete (panel);
+		delete panel;
 	}
 	public void LastPlayerSoundClip()
 	{

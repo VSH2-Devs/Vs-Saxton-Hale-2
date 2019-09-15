@@ -7,7 +7,7 @@ public char snd[FULLPATH]; /// How is this even used?
 // public char extensions[][] = { ".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd", ".phy" };
 // public char extensionsb[2][5] = { ".vtf", ".vmt" };
 
-#define MAXMESSAGE	512
+#define MAXMESSAGE    512
 public char gameMessage[MAXMESSAGE];    /// Just incase...
 public char BackgroundSong[FULLPATH];
 
@@ -268,7 +268,6 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		}
 	}
 	
-	
 	public void ConvertToMinion(const float time) {
 		this.bIsMinion = true;
 		SetPawnTimer(_MakePlayerMinion, time, this.userid);
@@ -380,27 +379,53 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		SetCommandFlags("r_screenoverlay", iFlags);
 		ClientCommand(this.index, "r_screenoverlay \"%s\"", strOverlay);
 	}
-	public void TeleToSpawn(int team = 0)    /// Props to Chdata!
+	
+	/// Props to Chdata!
+	public bool TeleToSpawn(int team = 0)
 	{
-		int iEnt = -1;
-		float vPos[3], vAng[3];
+		int spawn = -1;
 		ArrayList hArray = new ArrayList();
-		while( (iEnt = FindEntityByClassname(iEnt, "info_player_teamspawn")) != -1 ) {
-			if( team <= 1 )
-				hArray.Push(iEnt);
+		float
+			pos[3],
+			mins[3],
+			maxs[3]
+		;
+		while( (spawn = FindEntityByClassname(spawn, "info_player_teamspawn")) != -1 ) {
+			/// skip disabled spawns.
+			if( GetEntProp(spawn, Prop_Data, "m_bDisabled") )
+				continue;
+			
+			/// now check if the spawn is blocked by something that might get our player stuck.
+			GetEntPropVector(spawn, Prop_Send, "m_vecOrigin", pos);
+			GetClientMaxs(this.index, maxs);
+			GetClientMins(this.index, mins);
+			if( !CanFitHere(pos, mins, maxs) )
+				continue;
+			
+			/// if the client is a boss, allow them to use ANY valid spawn!
+			bool is_boss; hPlayerFields[this.index].GetValue("bIsBoss", is_boss);
+			if( team <= 1 || is_boss )
+				hArray.Push(spawn);
 			else {
-				if( GetEntProp(iEnt, Prop_Send, "m_iTeamNum") == team )
-					hArray.Push(iEnt);
+				int spawn_team = GetEntProp(spawn, Prop_Data, "m_iTeamNum");
+				if( spawn_team==team )
+					hArray.Push(spawn);
 			}
 		}
-		iEnt = hArray.Get( GetRandomInt(0, hArray.Length-1) );
-		delete hArray;
+		if( !hArray.Length )
+			return false;
+		
+		spawn = hArray.Get(GetRandomInt(0, hArray.Length - 1));
+		hArray.Close();
 		
 		/// Technically you'll never find a map without a spawn point. Not a good map at least.
-		GetEntPropVector(iEnt, Prop_Send, "m_vecOrigin", vPos);
-		GetEntPropVector(iEnt, Prop_Send, "m_angRotation", vAng);
-		TeleportEntity(this.index, vPos, vAng, NULL_VEC);
+		float ang[3];
+		GetEntPropVector(spawn, Prop_Send, "m_vecOrigin", pos);
+		GetEntPropVector(spawn, Prop_Send, "m_angRotation", ang);
+		TeleportEntity(this.index, pos, ang, NULL_VEC);
+		return true;
 	}
+	
 	public void IncreaseHeadCount() {
 		if( !TF2_IsPlayerInCondition(this.index, TFCond_DemoBuff) )
 			TF2_AddCondition(this.index, TFCond_DemoBuff, -1.0);
@@ -512,8 +537,8 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			case TFClass_Spy: Format(helpstr, sizeof(helpstr), "Spy:\nBackstab does about 10+ percent of a Boss' max HP.\nCloaknDagger replaced with normal inviswatch.\nAll revolvers minicrit.\nYour Eternal Reward backstabs will disguise you.\nKunai backstabs will get you a health bonus.\nSappers are replaced with NailGun.\nDiamondback gets 2 crits on backstab.\nBig Earner gives full Cloak on backstab.\nAmbassador headshots do extra damage.");
 		}
 		Panel panel = new Panel();
-		panel.SetTitle (helpstr);
-		panel.DrawItem( "Exit" );
+		panel.SetTitle(helpstr);
+		panel.DrawItem("Exit");
 		panel.Send(this.index, HintPanel, 20);
 		delete panel;
 	}
@@ -659,6 +684,15 @@ methodmap BaseBoss < BaseFighter
 			hPlayerFields[this.index].SetValue("bUsedUltimate", val);
 		}
 	}
+	property bool bSuperCharge {
+		public get() {
+			bool i; hPlayerFields[this.index].GetValue("bSuperCharge", i);
+			return i;
+		}
+		public set( const bool val ) {
+			hPlayerFields[this.index].SetValue("bSuperCharge", val);
+		}
+	}
 	
 	property float flSpeed {
 		public get() {
@@ -725,8 +759,8 @@ methodmap BaseBoss < BaseFighter
 		if( callEvent )
 			ManageOnBossSelected(this);
 		this.ConvertToBoss();
-		if( GetClientTeam(this.index) == RED )
-			this.ForceTeamChange(BLU);
+		if( GetClientTeam(this.index) == VSH2Team_Red )
+			this.ForceTeamChange(VSH2Team_Boss);
 	}
 	public void DoGenericStun(const float rageDist)
 	{
@@ -793,6 +827,13 @@ methodmap BaseBoss < BaseFighter
 			}
 		}
 		TF2_RemoveAllWeapons(client);
+	}
+	
+	public bool GetName(char buffer[MAX_BOSS_NAME_SIZE]) {
+		return hPlayerFields[this.index].GetString("strName", buffer, sizeof(buffer));
+	}
+	public bool SetName(const char name[MAX_BOSS_NAME_SIZE]) {
+		return hPlayerFields[this.index].SetString("strName", name);
 	}
 };
 

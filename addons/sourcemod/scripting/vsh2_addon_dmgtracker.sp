@@ -119,33 +119,32 @@ public void OnClientPutInServer(int client)
 public Action Timer_Millisecond(Handle timer)
 {
 	CreateTimer(0.1, Timer_Millisecond);
-	/// 1 is StateRunning
-	if( VSH2GameMode_GetProperty("iRoundState") != 1 )
+	if( VSH2GameMode_GetPropInt("iRoundState") != StateRunning )
 		return Plugin_Continue;
 	
 	int i;
 	VSH2Player hTop[3];
 	
-	VSH2Player(0).SetProperty("iDamage", 0);
+	VSH2Player(0).SetPropInt("iDamage", 0);
 	VSH2Player player;
 	for (i=MaxClients; i; --i) {
-		if (!IsValidClient(i) || GetClientTeam(i) < 2)
+		if (!IsValidClient(i) || GetClientTeam(i) < VSH2Team_Red)
 			continue;
 		
 		player = VSH2Player(i);
-		if (player.GetProperty("bIsBoss"))
+		if (player.GetPropInt("bIsBoss"))
 			continue;
 		
-		if (player.GetProperty("iDamage") >= hTop[0].GetProperty("iDamage")) {
+		if (player.GetPropInt("iDamage") >= hTop[0].GetPropInt("iDamage")) {
 			hTop[2] = hTop[1];
 			hTop[1] = hTop[0];
 			hTop[0] = VSH2Player(i);
 		}
-		else if (player.GetProperty("iDamage") >= hTop[1].GetProperty("iDamage")) {
+		else if (player.GetPropInt("iDamage") >= hTop[1].GetPropInt("iDamage")) {
 			hTop[2] = hTop[1];
 			hTop[1] = VSH2Player(i);
 		}
-		else if (player.GetProperty("iDamage") >= hTop[2].GetProperty("iDamage"))
+		else if (player.GetPropInt("iDamage") >= hTop[2].GetPropInt("iDamage"))
 			hTop[2] = VSH2Player(i);
 	}
 	
@@ -155,16 +154,16 @@ public Action Timer_Millisecond(Handle timer)
 			continue;
 		player = VSH2Player(i);
 		if (damageTracker[z] > 0) {
-			if (!player.GetProperty("bIsBoss") && !(GetClientButtons(z) & IN_SCORE)) {
+			if (!player.GetPropInt("bIsBoss") && !(GetClientButtons(z) & IN_SCORE)) {
 				SetHudTextParams(0.0, 0.0, 0.2, RGBA[z][RED], RGBA[z][GREEN], RGBA[z][BLUE], RGBA[z][ALPHA]);
 				if(IsValidClient(hTop[0].index))
-					Format(first, sizeof(first), "[1] %N - %d\n", hTop[0].index, hTop[0].GetProperty("iDamage"));
+					Format(first, sizeof(first), "[1] %N - %d\n", hTop[0].index, hTop[0].GetPropInt("iDamage"));
 				else Format(first, sizeof(first), "[1] nil - 0\n");
 				if(IsValidClient(hTop[1].index))
-					Format(second, sizeof(second), "[2] %N - %d\n", hTop[1].index, hTop[1].GetProperty("iDamage"));
+					Format(second, sizeof(second), "[2] %N - %d\n", hTop[1].index, hTop[1].GetPropInt("iDamage"));
 				else Format(second, sizeof(second), "[2] nil - 0\n");
 				if(IsValidClient(hTop[2].index))
-					Format(third, sizeof(third), "[3] %N - %d\n", hTop[2].index, hTop[2].GetProperty("iDamage"));
+					Format(third, sizeof(third), "[3] %N - %d\n", hTop[2].index, hTop[2].GetPropInt("iDamage"));
 				else Format(third, sizeof(third), "[3] nil - 0\n");
 				ShowSyncHudText(z, damageHUD, "%s%s%s", first, second, third);
 			}

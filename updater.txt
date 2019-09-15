@@ -4,14 +4,27 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.1.5"
+			"Latest"	"2.2.0"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.1.5:"
-		"Notes"	"Removed some old code that's been commented out for years"
-		"Notes"	"Changed some code formatting in base.sp"
-		"Notes"	"Fixed facestabbing glitch with plague doctor."
-		"Notes"	"Implemented HHH Jr. max climbing define and embedded it into the HUD."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.2.0:"
+		"Notes"	"Changed boss special command to host a menu instead of requiring a boss ID number."
+		"Notes"	"Fixed oversight where HHH had the same menu ID value as the Christian Brutal Sniper."
+		"Notes"	"Added new cvar to control the amount of axe-climbing HHH Jr. can do."
+		"Notes"	"Moved certain map oriented checks and features to the gamemode manager class."
+		"Notes"	"made native versions for the new methods in the gamemode manager class."
+		"Notes"	"Deprecated 'GetProperty' and 'SetProperty' and replace them with more type-safe property getters."
+		"Notes"	"Moved VSH2 round state enum to vsh2.inc"
+		"Notes"	"Added storage for boss names as SetName and GetName methods."
+		"Notes"	"reimplemented super duper jump from VSH1."
+		"Notes"	"Teleporting boss back to spawn now ignores disabled spawn points."
+		"Notes"	"Added cvar to control the initial seconds addition to health checking time to prevent wasting short-time health checks."
+		"Notes"	"Due to complaints, reduced minigun damaged boost (when healed by a medic) from 25% to 15%."
+		"Notes"	"Also due to complaints, Increased boss melee damage & increased Saxton Hale's knockback reduction by 10%."
+		"Notes"	"Teleporting boss (or anyone really) checks if the spawn is blocked off."
+		"Notes"	"changed 'TeleToSpawn' to return a bool."
+		"Notes"	"replaced team number defines with an enum in vsh2.inc"
+		"Notes"	"Also due to complaints, heavy shotgun healing has been nerfed by half-damage."
 	}
 	
 	"Files"
