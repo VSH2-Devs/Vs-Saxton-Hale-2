@@ -100,7 +100,7 @@ methodmap VSH2Player {
 	** ALL PROPERTIES AFTER THIS COMMENT ONLY ACCOUNT FOR BOSSES BUT CAN STILL APPLY ON NON-BOSSES AND MINIONS **
 	property int iHealth
 	property int iMaxHealth
-	property int iType
+	property int iBossType
 	property int iClimbs
 	property int iStabbed
 	property int iMarketted
