@@ -2,7 +2,7 @@
 /// models
 // #define HaleModel		"models/player/saxton_hale/saxton_hale.mdl"
 // #define HaleModelPrefix		"models/player/saxton_hale/saxton_hale"
-#define HaleModel				"models/player/saxton_test4/saxton_hale_test4.mdl"
+#define HaleModel				"models/player/saxton_hale_jungle_inferno/saxton_hale.mdl"
 
 /// materials
 static const char HaleMatsV2[][] = {
@@ -168,10 +168,10 @@ methodmap CHale < BaseBoss
 
 	public void Equip ()
 	{
+		this.SetName("Saxton Hale");
 		this.RemoveAllItems();
 		char attribs[128];
-		
-		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.0; 259; 1.0; 252; 0.7; 214; %d", GetRandomInt(999, 9999));
+		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.1; 259; 1.0; 252; 0.6; 214; %d", GetRandomInt(999, 9999));
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_shovel", 5, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
@@ -243,7 +243,6 @@ methodmap CHale < BaseBoss
 	}
 	public void Help()
 	{
-		this.SetName("Saxton Hale");
 		if( IsVoteInProgress() )
 			return;
 		char helpstr[] = "Saxton Hale:\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (stun): taunt when the Rage is full to stun nearby enemies.";

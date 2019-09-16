@@ -116,22 +116,21 @@ methodmap CBunny < BaseBoss
 	{
 		return view_as<CBunny>( BaseBoss(ind, uid) );
 	}
-
+	
 	public void PlaySpawnClip()
 	{
 		strcopy(snd, PLATFORM_MAX_PATH, BunnyStart[GetRandomInt(0, sizeof(BunnyStart)-1)]);
 		EmitSoundToAll(snd);
 	}
-
+	
 	public void Think ()
 	{
 		if( !IsPlayerAlive(this.index) )
 			return;
-
+		
 		int buttons = GetClientButtons(this.index);
 		//float currtime = GetGameTime();
 		int flags = GetEntityFlags(this.index);
-
 		//int maxhp = GetEntProp(this.index, Prop_Data, "m_iMaxHealth");
 		int health = this.iHealth;
 		float speed = HALESPEED + 0.7 * (100-health*100/this.iMaxHealth);
@@ -143,7 +142,7 @@ methodmap CBunny < BaseBoss
 		}
 		else if( this.flGlowtime <= 0.0 )
 			this.bGlow = 0;
-
+		
 		if( ((buttons & IN_DUCK) || (buttons & IN_ATTACK2)) && (this.flCharge >= 0.0) ) {
 			if( this.flCharge+2.5 < HALE_JUMPCHARGE )
 				this.flCharge += 2.5;
@@ -207,19 +206,19 @@ methodmap CBunny < BaseBoss
 		SetEntProp(this.index, Prop_Send, "m_bUseClassAnimations", 1);
 		//SetEntPropFloat(client, Prop_Send, "m_flModelScale", 1.25);
 	}
-
+	
 	public void Death ()
 	{
 		strcopy(snd, PLATFORM_MAX_PATH, BunnyFail[GetRandomInt(0, sizeof(BunnyFail)-1)]);
 		EmitSoundToAll(snd);
 		SpawnManyAmmoPacks(this.index, EggModel, 1);
 	}
-
+	
 	public void Equip ()
 	{
+		this.SetName("The Easter Bunny");
 		this.RemoveAllItems();
 		char attribs[128];
-		
 		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.0; 259; 1.0; 326; 1.3; 252; 0.6");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_bottle", 169, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
@@ -245,7 +244,7 @@ methodmap CBunny < BaseBoss
 		strcopy(snd, PLATFORM_MAX_PATH, BunnyRage[GetRandomInt(1, sizeof(BunnyRage)-1)]);
 		EmitSoundToAll(snd, this.index); EmitSoundToAll(snd, this.index);
 	}
-
+	
 	public void KilledPlayer(const BaseBoss victim, Event event)
 	{
 		strcopy(snd, PLATFORM_MAX_PATH, BunnyKill[GetRandomInt(0, sizeof(BunnyKill)-1)]);
@@ -265,7 +264,6 @@ methodmap CBunny < BaseBoss
 	}
 	public void Help()
 	{
-		this.SetName("The Easter Bunny");
 		if( IsVoteInProgress() )
 			return;
 		char helpstr[] = "The Easter Bunny:\nI think he wants to give out candy? Maybe?\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Happy Easter, Fools): taunt when Rage Meter is full.\nNearby enemies are stunned.";
@@ -290,16 +288,14 @@ public CBunny ToCBunny (const BaseBoss guy)
 public void AddBunnyToDownloads()
 {
 	// char s[PLATFORM_MAX_PATH];
-	
 	// int i;
 	PrepareModel(BunnyModel);
 	PrepareModel(EggModel);
-
+	
 	DownloadMaterialList(BunnyMaterials, sizeof(BunnyMaterials));
-
 	PrepareMaterial("materials/models/props_easteregg/c_easteregg");
 	CheckDownload("materials/models/props_easteregg/c_easteregg_gold.vmt");
-
+	
 	PrecacheSoundList(BunnyWin, sizeof(BunnyWin));
 	PrecacheSoundList(BunnyJump, sizeof(BunnyJump));
 	PrecacheSoundList(BunnyRage, sizeof(BunnyRage));

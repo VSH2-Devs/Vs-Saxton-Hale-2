@@ -138,10 +138,11 @@ methodmap CVagineer < BaseBoss
 
 	public void Equip ()
 	{
+		this.SetName("The Vagineer");
 		this.RemoveAllItems();
 		char attribs[128];
 		
-		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.0; 259; 1.0; 436; 1.0");
+		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.1; 259; 1.0; 436; 1.0");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_wrench", 169, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
@@ -186,7 +187,6 @@ methodmap CVagineer < BaseBoss
 	}
 	public void Help()
 	{
-		this.SetName("The Vagineer");
 		if( IsVoteInProgress() )
 			return;
 		char helpstr[] = "Vagineer:\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Uber): taunt when the Rage Meter is full to stun fairly close-by enemies.";

@@ -109,7 +109,7 @@ public Action Command_damagetracker(int client, int args)
 
 public void OnClientPutInServer(int client)
 {
-	damageTracker[client] = 1;
+	damageTracker[client] = 0;
 	RGBA[client][RED] = 255;
 	RGBA[client][GREEN] = 90;
 	RGBA[client][BLUE] = 30;
@@ -139,12 +139,10 @@ public Action Timer_Millisecond(Handle timer)
 			hTop[2] = hTop[1];
 			hTop[1] = hTop[0];
 			hTop[0] = VSH2Player(i);
-		}
-		else if (player.GetPropInt("iDamage") >= hTop[1].GetPropInt("iDamage")) {
+		} else if (player.GetPropInt("iDamage") >= hTop[1].GetPropInt("iDamage")) {
 			hTop[2] = hTop[1];
 			hTop[1] = VSH2Player(i);
-		}
-		else if (player.GetPropInt("iDamage") >= hTop[2].GetPropInt("iDamage"))
+		} else if (player.GetPropInt("iDamage") >= hTop[2].GetPropInt("iDamage"))
 			hTop[2] = VSH2Player(i);
 	}
 	
@@ -159,9 +157,11 @@ public Action Timer_Millisecond(Handle timer)
 				if(IsValidClient(hTop[0].index))
 					Format(first, sizeof(first), "[1] %N - %d\n", hTop[0].index, hTop[0].GetPropInt("iDamage"));
 				else Format(first, sizeof(first), "[1] nil - 0\n");
+				
 				if(IsValidClient(hTop[1].index))
 					Format(second, sizeof(second), "[2] %N - %d\n", hTop[1].index, hTop[1].GetPropInt("iDamage"));
 				else Format(second, sizeof(second), "[2] nil - 0\n");
+				
 				if(IsValidClient(hTop[2].index))
 					Format(third, sizeof(third), "[3] %N - %d\n", hTop[2].index, hTop[2].GetPropInt("iDamage"));
 				else Format(third, sizeof(third), "[3] nil - 0\n");

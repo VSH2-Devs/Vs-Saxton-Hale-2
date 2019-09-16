@@ -110,10 +110,11 @@ methodmap CPlague < BaseBoss
 
 	public void Equip ()
 	{
+		this.SetName("The Plague Doctor");
 		this.RemoveAllItems();
 		char attribs[128];
 		
-		Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.3; 259; 1.0; 252; 0.75; 200; 1.0; 551; 1.0");
+		Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.5; 259; 1.0; 252; 0.75; 200; 1.0; 551; 1.0");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_shovel", 304, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
@@ -188,7 +189,6 @@ methodmap CPlague < BaseBoss
 	}
 	public void Help()
 	{
-		this.SetName("The Plague Doctor");
 		if( IsVoteInProgress() )
 			return;
 		char helpstr[] = "Plague Doctor:Kill enemies and turn them into loyal Zombies!\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Powerup Minions): taunt when Rage is full to give powerups to your Zombies.";

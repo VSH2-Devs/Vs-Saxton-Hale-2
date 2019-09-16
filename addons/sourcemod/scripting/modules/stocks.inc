@@ -140,17 +140,15 @@ stock int GetIndexOfWeaponSlot(const int client, const int slot)
 	int weapon = GetPlayerWeaponSlot(client, slot);
 	return GetItemIndex(weapon);
 }
-stock bool IsInRange(const int entity, const int target, const float dist, bool pTrace = false)
+stock bool IsInRange(const int entity, const int target, const float dist, bool trace = false)
 {
 	float entitypos[3]; GetEntPropVector(entity, Prop_Data, "m_vecAbsOrigin", entitypos);
 	float targetpos[3]; GetEntPropVector(target, Prop_Data, "m_vecAbsOrigin", targetpos);
-
-	if( GetVectorDistance(entitypos, targetpos) <= dist )
-	{
-		if (!pTrace)
+	if( GetVectorDistance(entitypos, targetpos) <= dist ) {
+		if( !trace )
 			return true;
 		else {
-			TR_TraceRayFilter( entitypos, targetpos, MASK_SHOT, RayType_EndPoint, TraceRayDontHitSelf, entity );
+			TR_TraceRayFilter(entitypos, targetpos, MASK_SHOT, RayType_EndPoint, TraceRayDontHitSelf, entity);
 			if( TR_GetFraction() > 0.98 )
 				return true;
 		}

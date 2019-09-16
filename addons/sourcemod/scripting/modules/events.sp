@@ -185,13 +185,15 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 	/// Got our boss, let's prep him/her.
 	boss.bSetOnSpawn = true;
 	boss.iBossType = gamemode.iSpecial;
-	ManageOnBossSelected(boss);	/// Setting this here so we can intercept Boss type and other info
+	
+	/// Setting this here so we can intercept Boss type and other info
+	ManageOnBossSelected(boss);
 	boss.ConvertToBoss();
 	gamemode.iSpecial = -1;
-
+	
 	if( GetClientTeam(boss.index) != VSH2Team_Boss )
 		boss.ForceTeamChange(VSH2Team_Boss);
-
+	
 	BaseBoss player;
 	for( int i=MaxClients; i; --i ) {
 		if( !IsValidClient(i) || GetClientTeam(i) <= VSH2Team_Spectator )
@@ -382,7 +384,7 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 		if( !boss.bIsBoss )
 			continue;
 
-		bosses.Push(boss); //bosses[index++] = boss;
+		bosses.Push(boss);
 		if( !IsPlayerAlive(i) )
 			TF2_RespawnPlayer(i);
 		
@@ -390,8 +392,10 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 		boss.iMaxHealth = CalcBossHealth(760.8, gamemode.iPlaying, 1.0, 1.0341, 2046.0) / (bosscount);	/// In stocks.sp
 		if( boss.iMaxHealth < 3000 && bosscount == 1 )
 			boss.iMaxHealth = 3000;
+		
+		/// Putting in multiboss Handicap from complaints of fighting multiple bosses being too overpowered since teamwork itself is overpowered :).
 		else if( boss.iMaxHealth > 3000 && bosscount > 1 )
-			boss.iMaxHealth -= cvarVSH2[MultiBossHandicap].IntValue;	/// Putting in multiboss Handicap from complaints of fighting multiple bosses being too overpowered since teamwork itself is overpowered :).
+			boss.iMaxHealth -= cvarVSH2[MultiBossHandicap].IntValue;
 #if defined _tf2attributes_included
 		int maxhp = GetEntProp(boss.index, Prop_Data, "m_iMaxHealth");
 		if( gamemode.bTF2Attribs ) {

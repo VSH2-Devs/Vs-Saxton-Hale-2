@@ -25,7 +25,7 @@
 #pragma semicolon        1
 #pragma newdecls         required
 
-#define PLUGIN_VERSION   "2.2.2"
+#define PLUGIN_VERSION   "2.2.3"
 #define PLUGIN_DESCRIPT  "VS Saxton Hale 2"
 
 
@@ -305,10 +305,10 @@ public void OnPluginStart()
 	cvarVSH2[MedievalLives] = CreateConVar("vsh2_medievalmode_lives", "3", "Amount of lives red players are entitled during Medieval Mode.", FCVAR_NOTIFY, true, 0.0, true, 99.0);
 	cvarVSH2[MedievalRespawnTime] = CreateConVar("vsh2_medievalmode_respawntime", "5.0", "How long it takes for players to respawn after dying in medieval mode (if they have live left).", FCVAR_NOTIFY, true, 1.0, true, 999.0);
 	cvarVSH2[PermOverheal] = CreateConVar("vsh2_permanent_overheal", "0", "If enabled, Mediguns give permanent overheal.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	cvarVSH2[MultiCapture] = CreateConVar("vsh2_multiple_cp_captures", "0", "If enabled, allow control points to be captured more than once instead of ending the round instantly.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	cvarVSH2[MultiCapture] = CreateConVar("vsh2_multiple_cp_captures", "1", "If enabled, allow control points to be captured more than once instead of ending the round instantly.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	cvarVSH2[MultiCapAmount] = CreateConVar("vsh2_multiple_cp_capture_amount", "3", "If vsh2_allow_multiple_cp_captures is enabled, how many times must a team capture a Control Point to win.", FCVAR_NOTIFY, true, 1.0, true, 999.0);
-	cvarVSH2[DemoShieldCrits] = CreateConVar("vsh2_demoman_shield_crits", "3", "Sets Demoman Shield crit behaviour. 0 - No crits, 1 - Mini-crits, 2 - Crits, 3 - Scale with Charge Meter (Losing the Shield results in no more (mini)crits.)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
-	cvarVSH2[CanBossGoomba] = CreateConVar("vsh2_goomba_can_boss_stomp", "0", "Can the Boss Goomba Stomp other players? (Requires Goomba Stomp plugin). NOTE: All the CVARs in VSH2 controlling Goomba damage, lifemultiplier and rebound power are for NON-BOSS PLAYERS STOMPING THE BOSS. If you enable this CVAR, use the Goomba Stomp plugin config file to control the Boss' Goomba Variables. Not recommended to enable this unless you've coded your own Goomba Stomp behaviour.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	cvarVSH2[DemoShieldCrits] = CreateConVar("vsh2_demoman_shield_crits", "2", "Sets Demoman Shield crit behaviour. 0 - No crits, 1 - Mini-crits, 2 - Crits, 3 - Scale with Charge Meter (Losing the Shield results in no more (mini)crits.)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
+	cvarVSH2[CanBossGoomba] = CreateConVar("vsh2_goomba_can_boss_stomp", "1", "Can the Boss Goomba Stomp other players? (Requires Goomba Stomp plugin). NOTE: All the CVARs in VSH2 controlling Goomba damage, lifemultiplier and rebound power are for NON-BOSS PLAYERS STOMPING THE BOSS. If you enable this CVAR, use the Goomba Stomp plugin config file to control the Boss' Goomba Variables. Not recommended to enable this unless you've coded your own Goomba Stomp behaviour.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	cvarVSH2[CanMantreadsGoomba] = CreateConVar("vsh2_goomba_can_mantreads_stomp", "0", "Can Soldiers/Demomen Goomba Stomp the Boss while using the Mantreads/Booties? (Requires Goomba Stomp plugin). NOTE: Enabling this may cause 'double' Stomps (Goomba Stomp and Mantreads stomp together).", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	cvarVSH2[GoombaDamageAdd] = CreateConVar("vsh2_goomba_damage_add", "450.0", "How much damage to add to a Goomba Stomp on the Boss. (Requires Goomba Stomp plugin).", FCVAR_NOTIFY, true, 0.0, false);
 	cvarVSH2[GoombaLifeMultiplier] = CreateConVar("vsh2_goomba_boss_life_multiplier", "0.025", "What percentage of the Boss' CURRENT HP to deal as damage on a Goomba Stomp. (Requires Goomba Stomp plugin).", FCVAR_NOTIFY, true, 0.0, true, 1.0);
@@ -317,14 +317,14 @@ public void OnPluginStart()
 	cvarVSH2[DroppedWeapons] = CreateConVar("vsh2_allow_dropped_weapons", "0", "Enables/Disables dropped weapons. Recommended to keep this disabled to avoid players having weapons they shouldn't.", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[BlockEureka] = CreateConVar("vsh2_allow_eureka_effect", "0", "Enables/Disables the Eureka Effect for Engineers", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[ForceLives] = CreateConVar("vsh2_force_player_lives", "0", "Forces the gamemode to apply Medieval Mode lives on players, whether or not medieval mode is enabled", FCVAR_NONE, true, 0.0, true, 1.0);
-	cvarVSH2[Anchoring] = CreateConVar("vsh2_allow_boss_anchor", "0", "When enabled, reduces all knockback bosses experience when crouching.", FCVAR_NONE, true, 0.0, true, 1.0);
+	cvarVSH2[Anchoring] = CreateConVar("vsh2_allow_boss_anchor", "1", "When enabled, reduces all knockback bosses experience when crouching.", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[BlockRageSuicide] = CreateConVar("vsh2_block_raged_suicide", "1", "when enables, stops raged players from suiciding.", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[HealthKitLimitMax] = CreateConVar("vsh2_spawn_health_kit_limit_max", "6", "max amount of health kits that can be produced in RED spawn. 0 for unlimited amount", FCVAR_NONE, true, 0.0, true, 50.0);
 	cvarVSH2[HealthKitLimitMin] = CreateConVar("vsh2_spawn_health_kit_limit_min", "4", "minimum amount of health kits that can be produced in RED spawn. 0 for no minimum limit", FCVAR_NONE, true, 0.0, true, 50.0);
 	cvarVSH2[AmmoKitLimitMax] = CreateConVar("vsh2_spawn_ammo_kit_limit_max", "6", "max amount of ammo kits that can be produced in RED spawn. 0 for unlimited amount", FCVAR_NONE, true, 0.0, true, 50.0);
 	cvarVSH2[AmmoKitLimitMin] = CreateConVar("vsh2_spawn_ammo_kit_limit_min", "4", "minimum amount of ammo kits that can be produced in RED spawn. 0 for no minimum limit", FCVAR_NONE, true, 0.0, true, 50.0);
 	cvarVSH2[ShieldRegenDmgReq] = CreateConVar("vsh2_shield_regen_damage", "2000", "damage required for demoknights to regenerate their shield, put 0 to disable.", FCVAR_NONE, true, 0.0, true, 99999.0);
-	cvarVSH2[AllowRandomMultiBosses] = CreateConVar("vsh2_allow_random_multibosses", "1", "allows VSH2 to randomly make random combinations of various bosses.", FCVAR_NONE, true, 0.0, true, 1.0);
+	cvarVSH2[AllowRandomMultiBosses] = CreateConVar("vsh2_allow_random_multibosses", "1", "allows VSH2 to make random combinations of various bosses.", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[HHHMaxClimbs] = CreateConVar("vsh2_hhhjr_max_climbs", "10", "maximum amount of climbs HHH Jr. can do.", FCVAR_NONE, true, 0.0, true, 100.0);
 	cvarVSH2[HealthCheckInitialDelay] = CreateConVar("vsh2_initial_healthcheck_delay", "30.0", "Initial health check delay when the round starts so as to prevent wasting 10-second health checks.", FCVAR_NONE, true, 0.0, true, 999.0);
 	
@@ -751,7 +751,7 @@ public Action TraceAttack(int victim, int &attacker, int &inflictor, float &dama
 {
 	if( !bEnabled.BoolValue )
 		return Plugin_Continue;
-
+	
 	if( IsClientValid(attacker) && IsClientValid(victim) ) {
 		BaseBoss player = BaseBoss(victim);
 		BaseBoss enemy = BaseBoss(attacker);
@@ -837,9 +837,9 @@ public void OnEntityCreated(int entity, const char[] classname)
 {
 	if( !bEnabled.BoolValue )
 		return;
-	
-	if( !strncmp(classname, "tf_weapon_", 10, false) && IsValidEntity(entity) )
+	else if( !strncmp(classname, "tf_weapon_", 10, false) && IsValidEntity(entity) )
 		CreateTimer( 0.2, OnWeaponSpawned, EntIndexToEntRef(entity) );
+	
 	ManageEntityCreated(entity, classname);
 }
 
@@ -930,32 +930,35 @@ public void ShowPlayerScores()
 
 public void CalcScores()
 {
-	int j, damage, amount, queue;
 	BaseBoss player;
 	Event scoring = CreateEvent("player_escort_score", true);
 	for( int i=MaxClients; i; --i ) {
-		if( !IsClientValid(i) )
-			continue;
-		else if( GetClientTeam(i) < VSH2Team_Red )
+		if( !IsClientValid(i) || GetClientTeam(i) < VSH2Team_Red )
 			continue;
 		
+		/// We don't want the Bosses getting free points for doing damage.
 		player = BaseBoss(i);
 		if( player.bIsBoss )
 			player.iQueue = 0;
 		else {
-			if( cvarVSH2[DamageForQueue].BoolValue )
-				queue = cvarVSH2[QueueGained].IntValue+(player.iDamage/1000);
-			else queue = cvarVSH2[QueueGained].IntValue;
-			player.iQueue += queue; //(i, GetClientQueuePoints(i)+queue);
-			CPrintToChat(i, "{olive}[VSH 2] Queue{default} You gained %i queue points.", queue);
+			int queue_gain = cvarVSH2[QueueGained].IntValue;
+			/// TODO: Add cvar for the 1000 division.
+			int queue = (cvarVSH2[DamageForQueue].BoolValue) ? queue_gain + (player.iDamage / 1000) : queue_gain;
+			int damage = player.iDamage;
 			
-			/// We don't want the Bosses getting free points for doing damage.
-			damage = player.iDamage;
-			scoring.SetInt("player", i);
-			amount = cvarVSH2[DamagePoints].IntValue;
+			int amount = cvarVSH2[DamagePoints].IntValue;
+			int j;
 			for( j=0; damage-amount > 0; damage -= amount, j++ ) {}
+			
+			Call_OnScoreTally(player, j, queue);
+			
+			scoring.SetInt("player", i);
 			scoring.SetInt("points", j);
 			scoring.FireToClient(i);
+			
+			player.iQueue += queue;
+			
+			CPrintToChat(i, "{olive}[VSH 2] Queue{default} You gained %i queue points.", queue);
 			CPrintToChat(i, "{olive}[VSH 2] Queue{default} You scored %i points.", j);
 		}
 	}

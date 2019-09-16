@@ -191,6 +191,7 @@ enum { /// VSH2HookType
 	OnBossMenu,
 	OnPrepRedTeam,
 	OnPlayerHurt,
+	OnScoreTally,
 	OnRedPlayerThink
 };
 
@@ -266,6 +267,9 @@ typeset VSH2HookCB {
 	
 	/// OnBossMenu
 	function void (Menu& menu);
+	
+	/// OnScoreTally
+	function void (const VSH2Player Player, int& points_earned, int& queue_earned);
 };
 
 /// Use hooktype enum on these.

@@ -23,22 +23,21 @@ methodmap CChristian < BaseBoss
 	{
 		return view_as<CChristian>( BaseBoss(ind, uid) );
 	}
-
+	
 	public void PlaySpawnClip()
 	{
 		strcopy(snd, PLATFORM_MAX_PATH, CBS0);
 		EmitSoundToAll(snd);
 	}
-
+	
 	public void Think ()
 	{
 		if( !IsPlayerAlive(this.index) )
 			return;
-
+		
 		int buttons = GetClientButtons(this.index);
 		//float currtime = GetGameTime();
 		int flags = GetEntityFlags(this.index);
-
 		//int maxhp = GetEntProp(this.index, Prop_Data, "m_iMaxHealth");
 		int health = this.iHealth;
 		float speed = HALESPEED + 0.7 * (100-health*100/this.iMaxHealth);
@@ -50,7 +49,7 @@ methodmap CChristian < BaseBoss
 		}
 		else if( this.flGlowtime <= 0.0 )
 			this.bGlow = 0;
-
+		
 		if( ((buttons & IN_DUCK) || (buttons & IN_ATTACK2)) && (this.flCharge >= 0.0) ) {
 			if( this.flCharge+2.5 < HALE_JUMPCHARGE )
 				this.flCharge += 2.5;
@@ -82,11 +81,11 @@ methodmap CChristian < BaseBoss
 		}
 		if( OnlyScoutsLeft(VSH2Team_Red) )
 			this.flRAGE += 0.5;
-
+		
 		if( flags & FL_ONGROUND )
 			this.flWeighDown = 0.0;
 		else this.flWeighDown += 0.1;
-
+		
 		if( (buttons & IN_DUCK) && this.flWeighDown >= HALE_WEIGHDOWN_TIME )
 		{
 			float ang[3]; GetClientEyeAngles(this.index, ang);
@@ -115,18 +114,18 @@ methodmap CChristian < BaseBoss
 		SetEntProp(this.index, Prop_Send, "m_bUseClassAnimations", 1);
 		//SetEntPropFloat(client, Prop_Send, "m_flModelScale", 1.25);
 	}
-
+	
 	public void Death ()
 	{
 		//EmitSoundToAll(snd, this.index);
 	}
-
+	
 	public void Equip ()
 	{
+		this.SetName("The Christian Brutal Sniper");
 		this.RemoveAllItems();
 		char attribs[128];
-		
-		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.0; 259; 1.0");
+		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.1; 259; 1.0");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_club", 171, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
@@ -152,7 +151,7 @@ methodmap CChristian < BaseBoss
 		int living = GetLivingPlayers(VSH2Team_Red);
 		SetWeaponAmmo(bow, ((living >= CBS_MAX_ARROWS) ? CBS_MAX_ARROWS : living));
 	}
-
+	
 	public void KilledPlayer(const BaseBoss victim, Event event)
 	{
 		int living = GetLivingPlayers(VSH2Team_Red);
@@ -177,7 +176,7 @@ methodmap CChristian < BaseBoss
 				case 5: clubindex = 423;
 				case 6: clubindex = 474;
 			}
-			weapon = this.SpawnWeapon("tf_weapon_club", clubindex, 100, 5, "68; 2.0; 2; 3.0; 259; 1.0");
+			weapon = this.SpawnWeapon("tf_weapon_club", clubindex, 100, 5, "68; 2.0; 2; 3.1; 259; 1.0");
 			SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", weapon);
 		}
 
@@ -199,7 +198,6 @@ methodmap CChristian < BaseBoss
 	}
 	public void Help()
 	{
-		this.SetName("The Christian Brutal Sniper");
 		if( IsVoteInProgress() )
 			return;
 		char helpstr[] = "Christian Brutal Sniper:\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Huntsman Bow): taunt when Rage is full (9 arrows).\nVery close-by enemies are stunned.";
@@ -227,19 +225,19 @@ public void AddCBSToDownloads()
 {
 	char s[PLATFORM_MAX_PATH];
 	int i;
-
+	
 	PrepareModel(CBSModel);
 	PrepareMaterial("materials/models/player/saxton_hale/sniper_red");
 	PrepareMaterial("materials/models/player/saxton_hale/sniper_lens");
 	PrepareMaterial("materials/models/player/saxton_hale/sniper_head");
 	PrepareMaterial("materials/models/player/saxton_hale/sniper_head_red");
-
+	
 	PrecacheSound(CBS0, true);
 	PrecacheSound(CBS1, true);
 	PrecacheSound(CBS3, true);
 	PrecacheSound(CBSJump1, true);
 	PrepareSound(CBSTheme);
-
+	
 	for( i=1; i <= 25; i++ ) {
 		if( i <= 9 ) {
 			Format(s, PLATFORM_MAX_PATH, "%s%02i.mp3", CBS2, i);
@@ -248,7 +246,6 @@ public void AddCBSToDownloads()
 		Format(s, PLATFORM_MAX_PATH, "%s%02i.mp3", CBS4, i);
 		PrecacheSound(s, true);
 	}
-
 	PrecacheSound("vo/sniper_dominationspy04.mp3", true);
 }
 
@@ -256,4 +253,3 @@ public void AddCBSToMenu ( Menu& menu )
 {
 	menu.AddItem("2", "Christian Brutal Sniper");
 }
-

@@ -30,18 +30,13 @@ public Plugin myinfo = {
 	url = "http://www.sourcemod.net/"
 };
 
-public void OnPluginStart()
-{
-	RegConsoleCmd("sm_testvsh2natives", CommandInfo, "clever command explanation heer.");
-	LoadVSH2Hooks();
-}
-
 /** YOU NEED TO USE OnAllPluginsLoaded() TO REGISTER PLUGINS BECAUSE WE NEED TO MAKE SURE THE VSH2 PLUGIN LOADS FIRST */
-
 //int ThisPluginIndex;
 public void OnAllPluginsLoaded()
 {
-	VSH2_RegisterPlugin("test_plugin_boss");
+	//VSH2_RegisterPlugin("test_plugin_boss");
+	RegConsoleCmd("sm_testvsh2natives", CommandInfo, "clever command explanation heer.");
+	LoadVSH2Hooks();
 }
 
 public Action CommandInfo(int client, int args)
@@ -232,6 +227,11 @@ public void fwdOnRedPlayerThink(const VSH2Player player)
 	player.SetPropInt("iDamage", player.GetPropInt("iDamage") + 1);
 }
 
+public void fwdOnScoreTally(const VSH2Player player, int& points_earned, int& queue_earned)
+{
+	PrintToChatAll("fwdOnScoreTally:: %N: points - %i, queue - %i", player.index, points_earned, queue_earned);
+}
+
 
 public void LoadVSH2Hooks()
 {
@@ -330,4 +330,7 @@ public void LoadVSH2Hooks()
 		
 	if (!VSH2_HookEx(OnRedPlayerThink, fwdOnRedPlayerThink))
 		LogError("Error loading OnRedPlayerThink forwards for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnScoreTally, fwdOnScoreTally))
+		LogError("Error loading OnScoreTally forwards for VSH2 Test plugin.");
 }

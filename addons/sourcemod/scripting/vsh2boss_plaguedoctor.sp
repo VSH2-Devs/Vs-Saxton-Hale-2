@@ -56,6 +56,7 @@ methodmap CPlague < VSH2Player {
 	}
 	
 	public void Equip() {
+		this.SetName("The Plague Doctor");
 		this.RemoveAllItems();
 		char attribs[128]; Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.3; 259; 1.0; 252; 0.75; 200; 1.0; 551; 1.0");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_shovel", 304, 100, 5, attribs);
@@ -113,7 +114,6 @@ methodmap CPlague < VSH2Player {
 		victim.ConvertToMinion(0.4);
 	}
 	public void Help() {
-		this.SetName("The Plague Doctor");
 		if( IsVoteInProgress() )
 			return;
 		char helpstr[] = "Plague Doctor: Kill enemies and turn them into loyal Zombies!\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Powerup Minions): taunt when Rage is full to give powerups to your Zombies.";
@@ -401,8 +401,8 @@ public Action PlagueDoc_OnBossTakeDamage(VSH2Player victim, int &attacker, int &
 		SetEntPropFloat(weapon, Prop_Send, "m_flNextPrimaryAttack", curtime+2.0);
 		SetEntPropFloat(attacker, Prop_Send, "m_flNextAttack", curtime+2.0);
 		SetEntPropFloat(attacker, Prop_Send, "m_flStealthNextChangeTime", curtime+1.0);
-		TF2_AddCondition(attacker, TFCond_SpeedBuffAlly, 1.5);
-		TF2_AddCondition(attacker, TFCond_Ubercharged, 2.0);
+		TF2_AddCondition(attacker, TFCond_SpeedBuffAlly, 2.0);
+		//TF2_AddCondition(attacker, TFCond_Ubercharged, 2.0);
 		int vm = GetEntPropEnt(attacker, Prop_Send, "m_hViewModel");
 		if( vm > MaxClients && IsValidEntity(vm) && TF2_GetPlayerClass(attacker) == TFClass_Spy ) {
 			int melee = fighter.GetWeaponSlotIndex(TFWeaponSlot_Melee);
@@ -414,9 +414,7 @@ public Action PlagueDoc_OnBossTakeDamage(VSH2Player victim, int &attacker, int &
 			}
 			SetEntProp(vm, Prop_Send, "m_nSequence", anim);
 		}
-		char name[MAX_BOSS_NAME_SIZE];
-		victim.GetName(name);
-		PrintCenterText(attacker, "You Tickled %s!", name);
+		PrintCenterText(attacker, "You Tickled The Plague Doctor!");
 		PrintCenterText(boss, "You Were Just Tickled!");
 		int pistol = fighter.GetWeaponSlotIndex(TFWeaponSlot_Primary);
 		if( pistol == 525 ) {	/// Diamondback gives 2 crits on backstab

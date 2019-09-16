@@ -153,10 +153,11 @@ methodmap CHHHJr < BaseBoss
 	
 	public void Equip ()
 	{
+		this.SetName("The Horseless Headless Horsemann Jr.");
 		this.RemoveAllItems();
 		char attribs[128];
 		
-		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.0; 259; 1.0; 252; 0.7; 551; 1");
+		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.1; 259; 1.0; 252; 0.6; 551; 1");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_sword", 266, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
@@ -195,7 +196,6 @@ methodmap CHHHJr < BaseBoss
 	}
 	public void Help()
 	{
-		this.SetName("The Horseless Headless Horsemann Jr.");
 		if( IsVoteInProgress() )
 			return;
 		char helpstr[] = "Horseless Headless Horsemann Jr.:\nTeleporter: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (stun): taunt when Rage is full to stun nearby enemies.";
