@@ -4,12 +4,17 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.2.1"
+			"Latest"	"2.2.2"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.2.1:"
-		"Notes"	"Hotfixing TF2Attribs unbounded native call preventing player weapon changes."
-		"Notes"	"Correcting oversight with not checking config version with plugin version."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.2.2:"
+		"Notes"	"Weapon Changes."
+		"Notes"	"The Enforcer is given 20% more damage overall."
+		"Notes"	"Changed Medigun code so that players can keep their medigun looks."
+		"Notes"	"Razorback for sniper now blocks 1 single hit."
+		"Notes"	"Nerfed Kunai overheal from 400 to 250 hp."
+		"Notes"	"Buffed Easter Bunny egg bomb damage by 25%."
+		"Notes"	"Fixed boss names glitching up for multi-bosses."
 	}
 	
 	"Files"

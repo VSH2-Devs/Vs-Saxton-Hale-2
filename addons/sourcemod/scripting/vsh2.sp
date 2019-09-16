@@ -25,7 +25,7 @@
 #pragma semicolon        1
 #pragma newdecls         required
 
-#define PLUGIN_VERSION   "2.2.1"
+#define PLUGIN_VERSION   "2.2.2"
 #define PLUGIN_DESCRIPT  "VS Saxton Hale 2"
 
 
@@ -1013,8 +1013,7 @@ public void _ResetMediCharge(const int entid)
 public Action Timer_UberLoop(Handle timer, any medigunid)
 {
 	int medigun = EntRefToEntIndex(medigunid);
-	if( medigun && IsValidEntity(medigun) && gamemode.iRoundState == StateRunning )
-	{
+	if( medigun && IsValidEntity(medigun) && gamemode.iRoundState == StateRunning ) {
 		int medic = GetOwner(medigun);
 		float charge = GetMediCharge(medigun);
 		if( charge > 0.05 ) {
@@ -1028,7 +1027,7 @@ public Action Timer_UberLoop(Handle timer, any medigunid)
 			}
 			else BaseBoss(medic).iUberTarget = 0;
 		} else if( charge < 0.05 ) {
-			SetPawnTimer(_ResetMediCharge, 3.0, EntIndexToEntRef(medigun)); //CreateTimer(3.0, TimerLazor2, EntIndexToEntRef(medigun));
+			SetPawnTimer(_ResetMediCharge, 3.0, EntIndexToEntRef(medigun));
 			return Plugin_Stop;
 		}
 	}

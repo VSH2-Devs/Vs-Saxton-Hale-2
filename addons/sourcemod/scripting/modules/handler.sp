@@ -340,10 +340,12 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					int iCrits = GetEntProp(attacker, Prop_Send, "m_iRevengeCrits");
 					SetEntProp(attacker, Prop_Send, "m_iRevengeCrits", iCrits+2);
 				}
+				
+				/// connivers kunai
 				if( wepindex == 356 ) {
 					int health = GetClientHealth(attacker)+180;
 					if (health > 195)
-						health = 400;
+						health = 250;
 					SetEntProp(attacker, Prop_Data, "m_iHealth", health);
 					SetEntProp(attacker, Prop_Send, "m_iHealth", health);
 				}
@@ -666,6 +668,22 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 			}
 			int ent = -1;
 			while( (ent = FindEntityByClassname(ent, "tf_wearable_demoshield")) != -1 ) {
+				if( GetOwner(ent) == client
+					&& !TF2_IsPlayerInCondition(client, TFCond_Ubercharged)
+					&& !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable")
+					&& weapon == GetPlayerWeaponSlot(attacker, 2) )
+				{
+					victim.iHits++;
+					/// Patch: Nov 14, 2017 - removing post-bonk slowdown.
+					TF2_AddCondition(client, TFCond_PasstimeInterception, 0.1);
+					TF2_AddCondition(client, TFCond_SpeedBuffAlly, 1.0);
+					TF2_RemoveWearable(client, ent);
+					EmitSoundToAll("player/spy_shield_break.wav", client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
+					break;
+				}
+			}
+			ent = -1;
+			while( (ent = FindEntityByClassname(ent, "tf_wearable_razorback")) != -1 ) {
 				if( GetOwner(ent) == client
 					&& !TF2_IsPlayerInCondition(client, TFCond_Ubercharged)
 					&& !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable")
@@ -1082,6 +1100,7 @@ public void ManageMessageIntro(ArrayList bosses)
 			/// Moving to default, otherwise sub-plugin bosses would always be at the top of the message. A bit picky but seems necessary
 			default: Call_OnMessageIntro(base, gameMessage);
 		}
+		name[0] = 0;
 	}
 	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
 	for( i=MaxClients; i; --i ) {
@@ -1235,6 +1254,7 @@ public void ManageRoundEndBossInfo(ArrayList bosses, bool bossWon)
 			if( victory[0] != '\0' )
 				EmitSoundToAll(victory);
 		}
+		name[0] = 0;
 	}
 	if( gameMessage[0] != '\0' ) {
 		CPrintToChatAll("{olive}[VSH 2] End of Round{default} %s", gameMessage);
@@ -1299,6 +1319,7 @@ public void ManageBossCheckHealth(const BaseBoss base)
 					Format(gameMessage, MAXMESSAGE, "%s\n%s's current health is: %i of %i", gameMessage, name, boss.iHealth, boss.iMaxHealth);
 				default:	Call_OnBossHealthCheck(boss, false, gameMessage);
 			}
+			name[0] = 0;
 			//Call_OnBossHealthCheck(boss);
 			totalHealth += boss.iHealth;
 		}
@@ -1506,16 +1527,16 @@ public void PrepPlayers(const BaseBoss player)
 	switch( equip ) {
 		case TFClass_Medic: {
 			weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
-			int mediquality = GetItemQuality(weapon);
-			if( mediquality != 10 ) {
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-				if( cvarVSH2[PermOverheal].BoolValue )
-					weapon = player.SpawnWeapon("tf_weapon_medigun", 35, 5, 10, "14; 0.0; 18; 0.0; 10; 1.25; 178; 0.75");
-				else weapon = player.SpawnWeapon("tf_weapon_medigun", 35, 5, 10, "18; 0.0; 10; 1.25; 178; 0.75");
+			//int mediquality = GetItemQuality(weapon);
+			//if( mediquality != 10 ) {
+			//	TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
+			//	if( cvarVSH2[PermOverheal].BoolValue )
+			//		weapon = player.SpawnWeapon("tf_weapon_medigun", 35, 5, 10, "14; 0.0; 18; 0.0; 10; 1.25; 178; 0.75");
+			//	else weapon = player.SpawnWeapon("tf_weapon_medigun", 35, 5, 10, "18; 0.0; 10; 1.25; 178; 0.75");
 				/// 200; 1 for area of effect healing, 178; 0.75 Faster switch-to, 14; 0.0 perm overheal, 11; 1.25 Higher overheal
-				if( GetMediCharge(weapon) < 0.41 )
-					SetMediCharge(weapon, 0.41);
-			}
+			if( GetMediCharge(weapon) != 0.41 )
+				SetMediCharge(weapon, 0.41);
+			//}
 		}
 	}
 #if defined _tf2attributes_included
@@ -1592,6 +1613,18 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case 133: {	/// Gunboats; make gunboats more attractive compared to the mantreads by having it reduce more rj dmg
 			hItemOverride = PrepareItemHandle(hItemCast, _, _, "135; 0.25", true);
 		}
+		/// Enforcer
+		case 460: {
+			hItemOverride = PrepareItemHandle(hItemCast, _, _, "2; 1.2");
+		}
+		/// Righteous Bison
+		//case 442: {
+		//	hItemOverride = PrepareItemHandle(hItemCast, _, _, "275; 1.0");
+		//}
+		/// Darwin's Danger Shield
+		case 231: {
+			hItemOverride = PrepareItemHandle(hItemCast, _, _, "26; 35.0");
+		}
 	}
 	if( hItemOverride != null ) {
 		hItem = view_as< Handle >(hItemOverride);
@@ -1602,8 +1635,13 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 	if( !strncmp(classname, "tf_weapon_rocketlauncher", 24, false) || !strncmp(classname, "tf_weapon_particle_cannon", 25, false) )
 	{
 		switch( iItemDefinitionIndex ) {
+			/// Direct Hit
 			case 127: hItemOverride = PrepareItemHandle(hItemCast, _, _, "114; 1.0; 179; 1.0");
+			
+			/// Liberty Launcher.
 			case 414: hItemOverride = PrepareItemHandle(hItemCast, _, _, "114; 1.0; 99; 1.25");
+			
+			/// Air Strike.
 			case 1104: hItemOverride = PrepareItemHandle(hItemCast, _, _, "76; 1.25; 114; 1.0");
 			//case 730: hItemOverride = PrepareItemHandle(hItemCast, _, _, "394; 0.2; 241; 1.3; 3; 0.75; 411; 5; 6; 0.1; 642; 1; 413; 1", true);
 			default: hItemOverride = PrepareItemHandle(hItemCast, _, _, "114; 1.0");
@@ -1640,6 +1678,24 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 			case 41: /// Natascha
 				hItemOverride = PrepareItemHandle(hItemCast, _, _, "76; 1.5", true);
 			default: hItemOverride = PrepareItemHandle(hItemCast, _, _, "233; 1.15");
+		}
+	}
+	switch( iClass ) {
+		case TFClass_Medic: {
+			/// Medic mediguns
+			if( !StrContains(classname, "tf_weapon_medigun", false) ) {
+				if( cvarVSH2[PermOverheal].BoolValue ) {
+					/// Kritzkrieg
+					if( iItemDefinitionIndex==35 )
+						hItemOverride = PrepareItemHandle(hItemCast, _, _, "14; 0.0; 10 ; 2.26 ; 178 ; 0.75 ; 18 ; 0");
+					/// Other Mediguns
+					else hItemOverride = PrepareItemHandle(hItemCast, _, _, "14; 0.0; 10 ; 1.81 ; 178 ; 0.75 ; 18 ; 0", true);
+				} else {
+					if( iItemDefinitionIndex==35 )
+						hItemOverride = PrepareItemHandle(hItemCast, _, _, "10 ; 2.26 ; 178 ; 0.75 ; 18 ; 0");
+					else hItemOverride = PrepareItemHandle(hItemCast, _, _, "10 ; 1.81 ; 178 ; 0.75 ; 18 ; 0", true);
+				}
+			}
 		}
 	}
 	if( hItemOverride != null ) {
@@ -1717,14 +1773,16 @@ public void ManageFighterThink(const BaseBoss fighter)
 			if( medigun > MaxClients && IsValidEdict(medigun) ) {
 				GetEdictClassname(medigun, mediclassname, sizeof(mediclassname));
 				if( !strcmp(mediclassname, "tf_weapon_medigun", false) ) {
-					int charge = RoundToFloor(GetMediCharge(medigun)*100);
+					int charge = RoundToFloor(GetMediCharge(medigun) * 100);
 					Format(HUDText, 300, "%s\nUbercharge: %i%%", HUDText, charge);
 					
-					int healtarget = GetHealingTarget(i);
-					if( IsValidClient(healtarget) && TF2_GetPlayerClass(healtarget) == TFClass_Scout )
-						TF2_AddCondition(i, TFCond_SpeedBuffAlly, 0.2);
-					if( GetEntProp(medigun, Prop_Send, "m_bChargeRelease") && GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel") > 0.0 )
-						TF2_AddCondition(i, TFCond_Ubercharged, 1.0); /// Fixes Ubercharges ending prematurely on Medics.
+					//int healtarget = GetHealingTarget(i);
+					//if( IsValidClient(healtarget) && TF2_GetPlayerClass(healtarget) == TFClass_Scout )
+					//	TF2_AddCondition(i, TFCond_SpeedBuffAlly, 0.2);
+					
+					/// Fixes Ubercharges ending prematurely on Medics.
+					if( GetEntProp(medigun, Prop_Send, "m_bChargeRelease") && GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel") > 0.0 && GetEntPropEnt(i, Prop_Send, "m_hActiveWeapon")==medigun )
+						TF2_AddCondition(i, TFCond_Ubercharged, 1.0);
 				}
 			}
 		}

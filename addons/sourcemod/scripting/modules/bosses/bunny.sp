@@ -235,7 +235,7 @@ methodmap CBunny < BaseBoss
 		}
 		
 		TF2_RemoveWeaponSlot(this.index, TFWeaponSlot_Primary);
-		int weapon = this.SpawnWeapon("tf_weapon_grenadelauncher", 19, 100, 5, "2; 1.25; 6; 0.1; 411; 150.0; 413; 1.0; 37; 0.0; 280; 17; 477; 1.0; 467; 1.0; 181; 2.0; 252; 0.7");
+		int weapon = this.SpawnWeapon("tf_weapon_grenadelauncher", 19, 100, 5, "2; 1.5; 6; 0.1; 411; 150.0; 413; 1.0; 37; 0.0; 280; 17; 477; 1.0; 467; 1.0; 181; 2.0; 252; 0.7");
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", weapon);
 		SetEntProp(weapon, Prop_Send, "m_iClip1", 50);
 		SetWeaponAmmo(weapon, 0);
@@ -351,10 +351,11 @@ stock void SpawnManyAmmoPacks(const int client, const char[] model, int skin=0, 
 		SetEntData(ent, offs-4, 1, _, true);
 	}
 }
+
 public Action Timer_SetEggBomb(Handle timer, any ref)
 {
 	int entity = EntRefToEntIndex(ref);
-	if( FileExists(EggModel) && IsModelPrecached(EggModel) && IsValidEntity(entity) ) {
+	if( FileExists(EggModel, true) && IsModelPrecached(EggModel) && IsValidEntity(entity) ) {
 		int att = AttachProjectileModel(entity, EggModel);
 		SetEntProp(att, Prop_Send, "m_nSkin", 0);
 		SetEntityRenderMode(entity, RENDER_TRANSCOLOR);

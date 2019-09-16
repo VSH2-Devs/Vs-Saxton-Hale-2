@@ -43,7 +43,7 @@ stock bool IsNearSpencer(const int client)
 /// Prepare content stocks
 stock void CheckDownload(const char[] dlpath)
 {
-	if( FileExists(dlpath) )
+	if( FileExists(dlpath, true) )
 		AddFileToDownloadsTable(dlpath);
 }
 /// Following 'Prepare' stocks taken from VSH1
@@ -816,6 +816,21 @@ stock bool RemoveDemoShield(int iClient) /// Taken from VSH1
 	}
 	return false; /// ...and returns False if one wasn't found.
 }
+
+stock bool RemoveRazorBack(int iClient)
+{
+	int iEnt = MaxClients + 1;
+	while ((iEnt = FindEntityByClassname(iEnt, "tf_wearable_razorback")) != -1)
+	{
+		if (GetEntPropEnt(iEnt, Prop_Send, "m_hOwnerEntity") == iClient && !GetEntProp(iEnt, Prop_Send, "m_bDisguiseWearable"))
+		{
+			TF2_RemoveWearable(iClient, iEnt);
+			return true; /// Returns true if Shield was removed...
+		}
+	}
+	return false; /// ...and returns False if one wasn't found.
+}
+
 stock void RemovePlayerBack(int client, int[] indices, int len)
 {
 	if (len <= 0)

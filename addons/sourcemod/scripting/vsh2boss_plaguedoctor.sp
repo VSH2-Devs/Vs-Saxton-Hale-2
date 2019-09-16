@@ -423,10 +423,11 @@ public Action PlagueDoc_OnBossTakeDamage(VSH2Player victim, int &attacker, int &
 			int iCrits = GetEntProp(attacker, Prop_Send, "m_iRevengeCrits");
 			SetEntProp(attacker, Prop_Send, "m_iRevengeCrits", iCrits+2);
 		}
+		/// connivers kunai
 		if( wepindex == 356 ) {
 			int health = GetClientHealth(attacker)+180;
 			if (health > 195)
-				health = 400;
+				health = 250;
 			SetEntProp(attacker, Prop_Data, "m_iHealth", health);
 			SetEntProp(attacker, Prop_Send, "m_iHealth", health);
 		}
@@ -686,6 +687,22 @@ public Action PlagueDoc_OnBossDealDamage(VSH2Player victim, int &attacker, int &
 	while( (ent = FindEntityByClassname(ent, "tf_wearable_demoshield")) != -1 ) {
 		if( GetOwner(ent) == client
 			/*&& damage >= float(GetClientHealth(client))*/
+			&& !TF2_IsPlayerInCondition(client, TFCond_Ubercharged)
+			&& !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable")
+			&& weapon == GetPlayerWeaponSlot(attacker, 2) )
+		{
+			victim.SetPropInt("iHits", victim.GetPropInt("iHits")+1);
+			/// Patch: Nov 14, 2017 - removing post-bonk slowdown.
+			TF2_AddCondition(client, TFCond_PasstimeInterception, 0.1);
+			TF2_AddCondition(client, TFCond_SpeedBuffAlly, 1.0);
+			TF2_RemoveWearable(client, ent);
+			EmitSoundToAll("player/spy_shield_break.wav", client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
+			break;
+		}
+	}
+	ent = -1;
+	while( (ent = FindEntityByClassname(ent, "tf_wearable_razorback")) != -1 ) {
+		if( GetOwner(ent) == client
 			&& !TF2_IsPlayerInCondition(client, TFCond_Ubercharged)
 			&& !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable")
 			&& weapon == GetPlayerWeaponSlot(attacker, 2) )

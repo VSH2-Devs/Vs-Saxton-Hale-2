@@ -2,7 +2,7 @@
 
 #### Current STABLE Version: *2.0.5*
 [![Master Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=master)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
-#### Current DEVELOPMENT Version: *2.2.1*
+#### Current DEVELOPMENT Version: *2.2.2*
 [![Develop Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=develop)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
 ======
 VSH2 is rewrite of VSH 1. VSH and FF2 were made as very bad frameworks using shoddy, hacky coding. VSH2 combines the best of both FF2 and VSH by not only having multiplayer boss support but also to make it easier to add new bosses and give them truly unique abilities and mechanics through giving the developer full, uninhibited control by code rather than config files.
@@ -34,7 +34,7 @@ If you do require help in setting up the bosses or at least need some info on th
 
 * **Main Plugin Developer:** *Nergal the Ashurian/Assyrian* - https://forums.alliedmods.net/member.php?u=176545
 * **Repository Manager and Contributor:** *Starblaster 64* - https://forums.alliedmods.net/member.php?u=261662
-* **Contributor:** *Scags* 
+* **Contributor:** *Scags/RageNewb* 
 
 ### Contribution Rules
 #### Code Format:
