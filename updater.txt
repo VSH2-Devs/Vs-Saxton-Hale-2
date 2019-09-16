@@ -4,19 +4,11 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.2.3"
+			"Latest"	"2.2.4"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.2.3:"
-		"Notes"	"Changed gunboats to reduce RJ jump damage by 80%"
-		"Notes"	"Changed mantreads to give more jump height by 50%"
-		"Notes"	"Once again, attempted to fix multi-boss naming. This time successful by setting boss naming in Equip() methods."
-		"Notes"	"Added new forward 'OnScoreTally' which allows a dev to hook when a player's score and queue points are tallied but BEFORE applying them to the player data."
-		"Notes"	"Removed spy's temporary uber on backstab."
-		"Notes"	"Changed Saxton Hale's model to use the Jungle Inferno model."
-		"Notes"	"Changed the Natives Tester plugin to execute 'OnAllPluginsLoaded'."
-		"Notes"	"Replaced Spy's nailgun with a more appropriate throwing kunai."
-		"Notes"	"Changed Medic's 'uber-shield' so that getting hit reduces your full uber to 10%, you take 10% of the original damage, and you gain a speed boost for 5 seconds."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.2.4:"
+		"Notes"	"hotfix correcting the new saxton model not getting his materials."
 	}
 	
 	"Files"

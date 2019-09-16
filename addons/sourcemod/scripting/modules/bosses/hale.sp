@@ -6,6 +6,7 @@
 
 /// materials
 static const char HaleMatsV2[][] = {
+	/*
 	"materials/models/player/saxton_test4/eyeball_l.vmt",
 	"materials/models/player/saxton_test4/eyeball_r.vmt",
 	"materials/models/player/saxton_test4/halebody.vmt",
@@ -18,6 +19,46 @@ static const char HaleMatsV2[][] = {
 	"materials/models/player/saxton_test4/halephongmask.vtf"
 	//"materials/models/player/saxton_test4/halegibs.vmt",
 	//"materials/models/player/saxton_test4/halegibs.vtf"
+	*/
+	
+	"materials/models/player/saxton_hale/hale_misc_normal.vtf",
+	"materials/models/player/saxton_hale/hale_body_normal.vtf",
+	"materials/models/player/saxton_hale/eyeball_l.vmt",
+	"materials/models/player/saxton_hale/eyeball_r.vmt",
+	"materials/models/player/saxton_hale/hale_egg.vtf",
+	"materials/models/player/saxton_hale/hale_egg.vmt",
+	"materials/models/player/hwm_saxton_hale/saxton_belt.vmt",
+	"materials/models/player/hwm_saxton_hale/saxton_belt_high.vmt",
+	"materials/models/player/hwm_saxton_hale/saxton_belt_high.vtf",
+	"materials/models/player/hwm_saxton_hale/saxton_belt_high_normal.vtf",
+	"materials/models/player/hwm_saxton_hale/saxton_body.vmt",
+	"materials/models/player/hwm_saxton_hale/saxton_body.vtf",
+	"materials/models/player/hwm_saxton_hale/saxton_body_alt.vmt",
+	"materials/models/player/hwm_saxton_hale/saxton_body_exp.vtf",
+	"materials/models/player/hwm_saxton_hale/saxton_body_normal.vtf",
+	"materials/models/player/hwm_saxton_hale/saxton_body_saxxy.vmt",
+	"materials/models/player/hwm_saxton_hale/saxton_body_saxxy.vtf",
+	"materials/models/player/hwm_saxton_hale/saxton_hat_color.vmt",
+	"materials/models/player/hwm_saxton_hale/saxton_hat_color.vtf",
+	"materials/models/player/hwm_saxton_hale/saxton_hat_saxxy.vmt",
+	"materials/models/player/hwm_saxton_hale/saxton_hat_saxxy.vtf",
+	"materials/models/player/hwm_saxton_hale/tongue_saxxy.vmt",
+	"materials/models/player/hwm_saxton_hale/hwm/saxton_head.vmt",
+	"materials/models/player/hwm_saxton_hale/hwm/saxton_head.vtf",
+	"materials/models/player/hwm_saxton_hale/hwm/saxton_head_exponent.vtf",
+	"materials/models/player/hwm_saxton_hale/hwm/saxton_head_normal.vtf",
+	"materials/models/player/hwm_saxton_hale/hwm/saxton_head_saxxy.vmt",
+	"materials/models/player/hwm_saxton_hale/hwm/saxton_head_saxxy.vtf",
+	"materials/models/player/hwm_saxton_hale/hwm/tongue.vmt",
+	"materials/models/player/hwm_saxton_hale/hwm/tongue.vtf",
+	"materials/models/player/hwm_saxton_hale/shades/eye.vtf",
+	"materials/models/player/hwm_saxton_hale/shades/eyeball_l.vmt",
+	"materials/models/player/hwm_saxton_hale/shades/eyeball_r.vmt",
+	"materials/models/player/hwm_saxton_hale/shades/eyeball_saxxy.vmt",
+	"materials/models/player/hwm_saxton_hale/shades/eye-extra.vtf",
+	"materials/models/player/hwm_saxton_hale/shades/eye-saxxy.vtf",
+	"materials/models/player/hwm_saxton_hale/shades/inv.vmt",
+	"materials/models/player/hwm_saxton_hale/shades/null.vtf"
 };
 
 
