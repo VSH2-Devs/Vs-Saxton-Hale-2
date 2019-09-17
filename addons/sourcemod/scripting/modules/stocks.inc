@@ -1257,7 +1257,7 @@ stock float GetConditionDuration(const int client, const TFCond cond)
 
 	int m_Shared = FindSendPropInfo("CTFPlayer", "m_Shared");
 	
-	Address aCondSource   = view_as< Address >(ReadInt(GetEntityAddress(client) + view_as< Address >(m_Shared + 8)));
+	Address aCondSource   = view_as< Address >(LoadFromAddress(GetEntityAddress(client) + view_as< Address >(m_Shared + 8), NumberType_Int32));
 	Address aCondDuration = view_as< Address >(view_as< int >(aCondSource) + (view_as< int >(cond) * 20) + (2 * 4));
 	
 	float flDuration = view_as< float >(LoadFromAddress(aCondDuration, NumberType_Int32));
@@ -1270,7 +1270,7 @@ stock void SetConditionDuration(const int client, const TFCond cond, const float
 
 	int m_Shared = FindSendPropInfo("CTFPlayer", "m_Shared");
 
-	Address aCondSource   = view_as< Address >(ReadInt(GetEntityAddress(client) + view_as< Address >(m_Shared + 8)));
+	Address aCondSource   = view_as< Address >(LoadFromAddress(GetEntityAddress(client) + view_as< Address >(m_Shared + 8), NumberType_Int32));
 	Address aCondDuration = view_as< Address >(view_as< int >(aCondSource) + (view_as< int >(cond) * 20) + (2 * 4));
 
 	StoreToAddress(aCondDuration, view_as< int >(duration), NumberType_Int32));
