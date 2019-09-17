@@ -547,18 +547,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		return GetHealingTarget(this.index);
 	}
 	public bool IsNearDispenser() {
-		int client = this.index;
-		int medics=0;
-		int healers = GetEntProp(client, Prop_Send, "m_nNumHealers");
-		if( healers > 0 ) {
-			for( int i=MaxClients; i; --i ) {
-				if( !IsValidClient(i) )
-					continue;
-				else if( GetHealingTarget(i) == client )
-					medics++;
-			}
-		}
-		return( healers > medics );
+		return IsNearSpencer(this.index);
 	}
 	public bool IsInRange(const int target, const float dist, bool pTrace=false) {
 		return IsInRange(this.index, target, dist, pTrace);
