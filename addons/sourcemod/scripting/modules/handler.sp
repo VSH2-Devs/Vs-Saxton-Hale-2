@@ -1075,9 +1075,10 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 			case -1: {}
 			case HHHjr: {
 				if( base.iClimbs < cvarVSH2[HHHMaxClimbs].IntValue ) {
-					base.ClimbWall(weapon, 600.0, 0.0, false);
-					base.flWeighDown = 0.0;
-					base.iClimbs++;
+					if( base.ClimbWall(weapon, 600.0, 0.0, false) ) {
+						base.flWeighDown = 0.0;
+						base.iClimbs++;
+					}
 				}
 			}
 		}

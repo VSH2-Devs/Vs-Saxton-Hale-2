@@ -122,7 +122,7 @@ methodmap VSH2Player {
 	public native void IncreaseHeadCount();
 	public native void SpawnSmallHealthPack(int ownerteam=0);
 	public native void ForceTeamChange(const int team);
-	public native void ClimbWall(const int weapon, const float upwardVel, const float health, const bool attackdelay);
+	public native bool ClimbWall(const int weapon, const float upwardVel, const float health, const bool attackdelay);
 	public native void HelpPanelClass();
 	public native int GetAmmoTable(const int wepslot);
 	public native void SetAmmoTable(const int wepslot, const int amount);

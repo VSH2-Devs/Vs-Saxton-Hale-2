@@ -867,7 +867,7 @@ public void ShowPlayerScores()
 	BaseBoss(0).iDamage = 0;
 	BaseBoss player;
 	for( int i=MaxClients; i; --i ) {
-		if( !IsClientValid(i) )
+		if( !IsValidClient(i) || GetClientTeam(i) <= VSH2Team_Spectator )
 			continue;
 		
 		player = BaseBoss(i);
@@ -875,6 +875,8 @@ public void ShowPlayerScores()
 			player.iDamage = 0;
 			continue;
 		}
+		else if( player.iDamage == 0 )
+			continue;
 		
 		if( player.iDamage >= hTop[0].iDamage ) {
 			hTop[2] = hTop[1];
@@ -892,24 +894,24 @@ public void ShowPlayerScores()
 		SetPawnTimer(OverNineThousand, 1.0);    /// in stocks.inc
 	
 	char score1[PATH], score2[PATH], score3[PATH];
-	if( IsValidClient(hTop[0].index) && (GetClientTeam(hTop[0].index) > VSH2Team_Spectator) )
+	if( hTop[0].index )
 		GetClientName(hTop[0].index, score1, PATH);
 	else {
-		Format(score1, PATH, "nil");
+		strcopy(score1, PATH, "nil");
 		hTop[0] = view_as< BaseBoss >(0);
 	}
 	
-	if( IsValidClient(hTop[1].index) && (GetClientTeam(hTop[1].index) > VSH2Team_Spectator) )
+	if( hTop[1].index )
 		GetClientName(hTop[1].index, score2, PATH);
 	else {
-		Format(score2, PATH, "nil");
+		strcopy(score2, PATH, "nil");
 		hTop[1] = view_as< BaseBoss >(0);
 	}
 	
-	if( IsValidClient(hTop[2].index) && (GetClientTeam(hTop[2].index) > VSH2Team_Spectator) )
+	if( hTop[2].index )
 		GetClientName(hTop[2].index, score3, PATH);
 	else {
-		Format(score3, PATH, "nil");
+		strcopy(score3, PATH, "nil");
 		hTop[2] = view_as< BaseBoss >(0);
 	}
 	SetHudTextParams(-1.0, 0.4, 10.0, 255, 255, 255, 255);
@@ -922,7 +924,7 @@ public void ShowPlayerScores()
 			continue;
 		if( !(GetClientButtons(i) & IN_SCORE) ) {
 			player = BaseBoss(i);
-			SetGlobalTransTarget(i);
+			//SetGlobalTransTarget(i);
 			ShowHudText(i, -1, "Most damage dealt by:\n1)%i - %s\n2)%i - %s\n3)%i - %s\n\nDamage Dealt: %i\nScore for this round: %i", hTop[0].iDamage, score1, hTop[1].iDamage, score2, hTop[2].iDamage, score3, player.iDamage, (player.iDamage/600));
 		}
 	}
@@ -983,7 +985,7 @@ public Action Timer_DrawGame(Handle timer)
 	
 	SetHudTextParams(-1.0, 0.17, 1.1, 255, 255, 255, 255);
 	for( int i=MaxClients; i; --i ) {
-		if( !IsValidClient(i) || !IsClientConnected(i) )
+		if( !IsValidClient(i) )
 			continue;
 		ShowSyncHudText(i, timeleftHUD, strTime);
 	}
@@ -1391,7 +1393,7 @@ public int Native_VSH2_ClimbWall(Handle plugin, int numParams)
 	float spawntime = view_as< float >( GetNativeCell(3) );
 	float healthdmg = view_as< float >( GetNativeCell(4) );
 	bool attackdelay = GetNativeCell(5);
-	player.ClimbWall(wep, spawntime, healthdmg, attackdelay);
+	return player.ClimbWall(wep, spawntime, healthdmg, attackdelay);
 }
 
 public int Native_VSH2_HelpPanelClass(Handle plugin, int numParams)

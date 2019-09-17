@@ -1452,3 +1452,20 @@ stock void SetActiveWep(const int client, const int wep)
 	if (wep > MaxClients && IsValidEntity(wep))
 		SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", wep);
 }
+stock int GetRandomClient(bool balive = true, int team = 0)
+{
+	int[] players = new int[MaxClients];
+	int count;
+	for (int i=MaxClients; i; --i)
+	{
+		if (!IsValidClient(i))
+			continue;
+		else if (balive && !IsPlayerAlive(i))
+			continue;
+		else if (team && GetClientTeam(i) != team)
+			continue;
+
+		players[count++] = i;
+	}
+	return !count ? -1 : players[GetRandomInt(0, count-1)];
+}

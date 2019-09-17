@@ -58,19 +58,20 @@ methodmap CHHHJr < BaseBoss
 		else {
 			float EyeAngles[3]; GetClientEyeAngles(this.index, EyeAngles);
 			if( (this.flCharge == HALEHHH_TELEPORTCHARGE || this.bSuperCharge) && EyeAngles[0] < -5.0 ) {
-				int living;
+				int target = -1;
+				/*int living;
 				switch( GetClientTeam(this.index) ) {
 					case 2: living = GetLivingPlayers(VSH2Team_Boss);
 					case 3: living = GetLivingPlayers(VSH2Team_Red);
 				}
-				int target = -1;
 				while( living > 0 ) {
 					target = GetRandomInt(1, MaxClients);
 					if( !IsValidClient(target) || !IsPlayerAlive(target) || target == this.index || GetClientTeam(target) == GetClientTeam(this.index) )
 						continue;
 					break;
-				}
-				if( IsValidClient(target) ) {
+				}*/
+				target = GetRandomClient(_, VSH2Team_Red);
+				if( target != -1 ) {
 					/// Chdata's HHH teleport rework
 					if (TF2_GetPlayerClass(target) != TFClass_Scout && TF2_GetPlayerClass(target) != TFClass_Soldier) {
 						/// Makes HHH clipping go away for player and some projectiles
@@ -78,7 +79,7 @@ methodmap CHHHJr < BaseBoss
 						SetPawnTimer(HHHTeleCollisionReset, 2.0, this.userid);
 					}
 					
-					CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(AttachParticle(this.index, "ghost_appearation")));
+					CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(AttachParticle(this.index, "ghost_appearation")));	/// Why does this not appear?
 					float pos[3]; GetClientAbsOrigin(target, pos);
 					SetEntPropFloat(this.index, Prop_Send, "m_flNextAttack", currtime+2);
 					if( GetEntProp(target, Prop_Send, "m_bDucked") ) {

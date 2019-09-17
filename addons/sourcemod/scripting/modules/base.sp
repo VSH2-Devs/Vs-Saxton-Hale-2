@@ -468,12 +468,12 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			TF2_RespawnPlayer(this.index);
 		}
 	}
-	public void ClimbWall(const int weapon, const float upwardvel, const float health, const bool attackdelay)
+	public bool ClimbWall(const int weapon, const float upwardvel, const float health, const bool attackdelay)
 	/// Credit to Mecha the Slag
 	{
 		/// Have to baby players so they don't accidentally kill themselves trying to escape...
 		if( GetClientHealth(this.index) <= health )
-			return;
+			return false;
 		
 		int client = this.index;
 		
@@ -487,28 +487,28 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		TR_TraceRayFilter(vecClientEyePos, vecClientEyeAng, MASK_PLAYERSOLID, RayType_Infinite, TraceRayDontHitSelf, client);
 		
 		if( !TR_DidHit(null) )
-			return;
+			return false;
 		
 		char classname[64];
 		int TRIndex = TR_GetEntityIndex(null);
 		GetEdictClassname(TRIndex, classname, sizeof(classname));
 		if( !StrEqual(classname, "worldspawn") )
-			return;
+			return false;
 		
 		float fNormal[3];
 		TR_GetPlaneNormal(null, fNormal);
 		GetVectorAngles(fNormal, fNormal);
 		
 		if( fNormal[0] >= 30.0 && fNormal[0] <= 330.0 )
-			return;
+			return false;
 		if( fNormal[0] <= -30.0 )
-			return;
+			return false;
 		
 		float pos[3]; TR_GetEndPosition(pos);
 		float distance = GetVectorDistance(vecClientEyePos, pos);
 		
 		if( distance >= 100.0 )
-			return;
+			return false;
 		
 		float fVelocity[3];
 		GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
@@ -519,6 +519,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		
 		if( attackdelay )
 			SetPawnTimer(NoAttacking, 0.1, EntIndexToEntRef(weapon));
+		return true;
 	}
 	public void HelpPanelClass()
 	{
