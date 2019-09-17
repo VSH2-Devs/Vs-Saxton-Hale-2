@@ -82,8 +82,10 @@ public void ManageDisconnect(const int client)
 						next = gamemode.hNextBoss;
 						gamemode.hNextBoss = view_as< BaseBoss >(0);
 					}
-					if( IsValidClient(next.index) )
+					if( IsValidClient(next.index) ) {
+						next.bIsMinion = true;	/// Dumb hack, prevents spawn hook from forcing them back to red
 						next.ForceTeamChange(VSH2Team_Boss);
+					}
 
 					if( gamemode.iRoundState == StateRunning )
 						ForceTeamWin(VSH2Team_Red);
@@ -96,8 +98,10 @@ public void ManageDisconnect(const int client)
 					next = gamemode.hNextBoss;
 					gamemode.hNextBoss = view_as< BaseBoss >(0);
 				}
-				if( IsValidClient(next.index) )
+				if( IsValidClient(next.index) ) {
+					next.bIsMinion = true;
 					next.ForceTeamChange(VSH2Team_Boss);
+				}
 
 				if( gamemode.iRoundState == StateRunning )
 					ForceTeamWin(VSH2Team_Red);

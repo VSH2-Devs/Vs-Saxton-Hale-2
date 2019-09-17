@@ -366,7 +366,7 @@ public void OnPluginStart()
 	ManageDownloads();
 	
 	for( int i=MaxClients; i; --i ) {
-		if( !IsValidClient(i) )
+		if( !IsClientInGame(i) )
 			continue;
 		OnClientPutInServer(i);
 	}

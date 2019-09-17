@@ -1312,7 +1312,7 @@ stock void PrepareSoundDir(bool valve = false, char[] dir = "sound")
 		}
 		else if (type == FileType_File)
 		{
-			if ((len = strlen(buffer) < 5))			/// .mp3, .wav, etc
+			if ((len = strlen(buffer)) < 5)			/// .mp3, .wav, etc
 				continue;
 
 			if (StrContains(buffer[len-4], ".mp3") == -1 && StrContains(buffer[len-4], ".wav") == -1 && StrContains(buffer[len-4], ".ogg") == -1)		/// Don't think TF2 supports .ogg but w/e
@@ -1321,7 +1321,7 @@ stock void PrepareSoundDir(bool valve = false, char[] dir = "sound")
 			Format(buffer, sizeof(buffer), "%s/%s", dir, buffer);
 			AddFileToDownloadsTable(buffer);
 
-			if (!IsSoundPrecached(buffer[6]))	/// Offsets 'sound'
+			if (!IsSoundPrecached(buffer[6]))	/// Offsets 'sound/'
 				PrecacheSound(buffer[6]);
 		}
 	}
