@@ -4,7 +4,7 @@ public char extensionsb[2][5] = { ".vtf", ".vmt" };
 stock int GetHealingTarget(const int client)
 {
 	int medigun = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
-	if (!IsValidEdict(medigun) || !IsValidEntity(medigun))
+	if (!IsValidEntity(medigun))
 		return -1;
 	
 	if( HasEntProp(medigun, Prop_Send, "m_bHealing") ) {
@@ -16,19 +16,19 @@ stock int GetHealingTarget(const int client)
 stock int GetActiveWep(const int client)
 {
 	int weapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-	if (IsValidEdict(weapon) && IsValidEntity(weapon))
+	if (IsValidEntity(weapon))
 		return weapon;
 	return -1;
 }
 stock float GetMediCharge(const int medigun)
 {
-	if (IsValidEdict(medigun) && IsValidEntity(medigun))
+	if (IsValidEntity(medigun))
 		return GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel");
 	return -1.0;
 }
 stock void SetMediCharge(const int medigun, const float val)
 {
-	if (IsValidEdict(medigun) && IsValidEntity(medigun))
+	if (IsValidEntity(medigun))
 		SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel", val);
 }
 stock bool IsNearSpencer(const int client)
@@ -125,13 +125,13 @@ stock void ForceTeamWin(const int team)
 }
 stock int GetItemIndex(const int item)
 {
-	if (IsValidEdict(item) && IsValidEntity(item))
+	if (IsValidEntity(item))
 		return GetEntProp(item, Prop_Send, "m_iItemDefinitionIndex");
 	return -1;
 }
 stock int GetItemQuality(const int item)
 {
-	if (IsValidEdict(item) && IsValidEntity(item))
+	if (IsValidEntity(item))
 		return GetEntProp(item, Prop_Send, "m_iEntityQuality");
 	return -1;
 }
@@ -181,7 +181,7 @@ stock int AttachParticle(const int ent, const char[] particleType, float offset 
 stock void CreateParticles(char[] particlename, float Pos[3] = NULL_VECTOR, float time)
 {
 	int particle = CreateEntityByName("info_particle_system");
-	if (IsValidEdict(particle)) {
+	if (IsValidEntity(particle)) {
 		DispatchKeyValue(particle, "effect_name", particlename);
 		ActivateEntity(particle);
 		AcceptEntityInput(particle, "start");
@@ -195,7 +195,7 @@ stock void SetWeaponInvis(const int client, const int alpha)
 	int transparent = alpha;
 	for (int i = 0; i < 5; i++) {
 		int entity = GetPlayerWeaponSlot(client, i); 
-		if( IsValidEdict(entity) && IsValidEntity(entity) )
+		if( IsValidEntity(entity) )
 		{
 			if (transparent > 255)
 				transparent = 255;
@@ -252,7 +252,7 @@ stock int ShootRocket(const int client, bool bCrit = false, float vPosition[3], 
 	int iTeam = GetClientTeam(client);
 	int iProjectile = CreateEntityByName("tf_projectile_rocket");
 	
-	if (!IsValidEdict(iProjectile))
+	if (!IsValidEntity(iProjectile))
 		return 0;
 	
 	float vVelocity[3];
@@ -308,13 +308,13 @@ stock bool IsValidClient(const int client, bool replaycheck = true)
 }
 stock int GetOwner(const int ent)
 {
-	if( IsValidEdict(ent) && IsValidEntity(ent) )
+	if( IsValidEntity(ent) )
 		return GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity");
 	return -1;
 }
 stock int GetBuilder(const int ent)
 {
-	if( IsValidEdict(ent) && IsValidEntity(ent) )
+	if( IsValidEntity(ent) )
 		return GetEntPropEnt(ent, Prop_Send, "m_hBuilder");
 	return -1;
 }
@@ -692,7 +692,7 @@ stock void SetControlPoint(const bool enable)
 {
 	int CPm = -1;
 	while ( (CPm = FindEntityByClassname(CPm, "team_control_point")) != -1 ) {
-		if( CPm > MaxClients && IsValidEdict(CPm) ) {
+		if( CPm > MaxClients && IsValidEntity(CPm) ) {
 			AcceptEntityInput(CPm, (enable ? "ShowModel" : "HideModel"));
 			SetVariantInt(enable ? 0 : 1);
 			AcceptEntityInput(CPm, "SetLocked");
@@ -977,7 +977,7 @@ public void _NoHonorBound(const int userid)
 		int index = GetItemIndex(weapon);
 		int active = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 		char classname[32];
-		if( IsValidEdict(active) )
+		if( IsValidEntity(active) )
 			GetEdictClassname(active, classname, sizeof(classname));
 		if( index == 357 && active == weapon && !strcmp(classname, "tf_weapon_katana", false) )
 		{
@@ -1115,7 +1115,7 @@ stock int AttachProjectileModel(const int entity, const char[] strModel, char[] 
 	if (!IsValidEntity(entity))
 		return -1;
 	int model = CreateEntityByName("prop_dynamic");
-	if (IsValidEdict(model)) {
+	if (IsValidEntity(model)) {
 		float pos[3], ang[3];
 		GetEntPropVector(entity, Prop_Send, "m_vecOrigin", pos);
 		GetEntPropVector(entity, Prop_Send, "m_angRotation", ang);
@@ -1226,4 +1226,14 @@ stock bool ValidateName(const char[] name)
 	}
 	/// A name is, of course, only valid if it's 1 or more chars long, though longer is recommended
 	return (length > 0);
+}
+/// Thx Pelipoika
+stock int GetHealerByIndex(int client, int index)
+{
+	int m_aHealers = FindSendPropInfo("CTFPlayer", "m_nNumHealers") + 12;
+
+	Address m_Shared = GetEntityAddress(client) + view_as< Address >(m_aHealers);
+	Address aHealers = view_as< Address >(LoadFromAddress(m_Shared, NumberType_Int32));
+
+	return (LoadFromAddress(aHealers + view_as< Address >(index * 0x24), NumberType_Int32) & 0xFFF);
 }

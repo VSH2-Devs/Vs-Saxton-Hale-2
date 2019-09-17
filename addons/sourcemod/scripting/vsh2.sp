@@ -1195,6 +1195,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2GameMode_GetBossType", Native_VSH2GameMode_GetBossType);
 	CreateNative("VSH2GameMode_GetTotalRedPlayers", Native_VSH2GameMode_GetTotalRedPlayers);
 	CreateNative("VSH2GameMode_GetHUDHandle", Native_VSH2GameMode_GetHUDHandle);
+	CreateNative("VSH2GameMode_GetBosses", Native_VSH2GameMode_GetBosses);
 	
 	MarkNativeAsOptional("Steam_SetGameDescription");
 	
@@ -1596,4 +1597,13 @@ public int Native_VSH2GameMode_GetTotalRedPlayers(Handle plugin, int numParams)
 public int Native_VSH2GameMode_GetHUDHandle(Handle plugin, int numParams)
 {
 	return view_as< int >(hHudText);
+}
+
+public int Native_VSH2GameMode_GetBosses(Handle plugin, int numParams)
+{
+	BaseBoss[] bosses = new BaseBoss[MaxClients];
+	bool balive = GetNativeCell(2);
+	int numbosses = gamemode.GetBosses(bosses, balive);
+	SetNativeArray(1, bosses, MaxClients);
+	return numbosses;
 }

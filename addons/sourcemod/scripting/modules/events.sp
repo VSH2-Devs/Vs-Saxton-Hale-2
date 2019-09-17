@@ -17,7 +17,7 @@ public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 				player.iHealth = player.iMaxHealth;
 		}
 		
-		if( !player.bIsBoss && gamemode.iRoundState > StateDisabled && !player.bIsMinion) {
+		if( !player.bIsBoss && StateDisabled < gamemode.iRoundState < StateEnding && !player.bIsMinion) {
 			if( GetClientTeam(player.index) == VSH2Team_Boss )
 				player.ForceTeamChange(VSH2Team_Red);
 			SetPawnTimer( PrepPlayers, 0.2, player );

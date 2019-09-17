@@ -552,6 +552,23 @@ methodmap VSHGameMode { /* < StringMap */
 		}
 		delete file;
 	}
+
+	public int GetBosses(BaseBoss[] bossarray, const bool balive)
+	{
+		int count;
+		BaseBoss boss;
+		for( int i=MaxClients; i; --i ) {
+			if( !IsClientInGame(i) )
+				continue;
+			else if( balive && !IsPlayerAlive(i) )
+				continue;
+
+			boss = BaseBoss(i);
+			if( boss.bIsBoss )
+				bossarray[count++] = boss;
+		}
+		return count;
+	}
 };
 
 public Action SetSmallAmmoPack(Handle timer, DataPack pack) {

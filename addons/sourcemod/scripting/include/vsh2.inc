@@ -338,6 +338,7 @@ native int VSH2GameMode_CountMinions(const bool IsAlive);
 native int VSH2GameMode_CountBosses(const bool IsAlive);
 native int VSH2GameMode_GetTotalBossHealth();
 native int VSH2GameMode_GetTotalRedPlayers();
+native int VSH2GameMode_GetBosses(VSH2Player[] bosses, bool balive);
 
 native void VSH2GameMode_SearchForItemPacks();
 native void VSH2GameMode_UpdateBossHealth();
@@ -426,5 +427,6 @@ public __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2GameMode_GetBossType");
 	MarkNativeAsOptional("VSH2GameMode_GetTotalRedPlayers");
 	MarkNativeAsOptional("VSH2GameMode_GetHUDHandle");
+	MarkNativeAsOptional("VSH2GameMode_GetBosses");
 }
 #endif

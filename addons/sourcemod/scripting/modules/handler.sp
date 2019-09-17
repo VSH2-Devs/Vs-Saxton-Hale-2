@@ -67,8 +67,42 @@ public void ManageDisconnect(const int client)
 {
 	BaseBoss leaver = BaseBoss(client);
 	if( leaver.bIsBoss ) {
-		if( gamemode.iRoundState == StateRunning && !gamemode.CountBosses(true) )
-			ForceTeamWin(VSH2Team_Red);
+		if( gamemode.iRoundState >= StateRunning ) {	/// Arena mode flips out when no one is on the other team
+			BaseBoss[] bosses = new BaseBoss[MaxClients];
+			int numbosses = gamemode.GetBosses(bosses, false);
+			if( numbosses-1 > 0 ) {	/// Exclude leaver, this is why CountBosses() can't be used
+				for( int i=0; i<numbosses; i++ ) {
+					if( bosses[i] == leaver )
+						continue;
+					if( IsPlayerAlive(bosses[i].index) )
+						break;
+
+					BaseBoss next = gamemode.FindNextBoss();
+					if( gamemode.hNextBoss ) {
+						next = gamemode.hNextBoss;
+						gamemode.hNextBoss = view_as< BaseBoss >(0);
+					}
+					if( IsValidClient(next.index) )
+						next.ForceTeamChange(VSH2Team_Boss);
+
+					if( gamemode.iRoundState == StateRunning )
+						ForceTeamWin(VSH2Team_Red);
+					break;
+				}
+			}
+			else {	/// No bosses left
+				BaseBoss next = gamemode.FindNextBoss();
+				if( gamemode.hNextBoss ) {
+					next = gamemode.hNextBoss;
+					gamemode.hNextBoss = view_as< BaseBoss >(0);
+				}
+				if( IsValidClient(next.index) )
+					next.ForceTeamChange(VSH2Team_Boss);
+
+				if( gamemode.iRoundState == StateRunning )
+					ForceTeamWin(VSH2Team_Red);
+			}
+		}
 		else if( gamemode.iRoundState == StateStarting ) {
 			BaseBoss replace = gamemode.FindNextBoss();
 			if( gamemode.hNextBoss ) {
@@ -76,14 +110,14 @@ public void ManageDisconnect(const int client)
 				gamemode.hNextBoss = view_as< BaseBoss >(0);
 			}
 			if( IsValidClient(replace.index) ) {
-				replace.MakeBossAndSwitch(leaver.iBossType, true);
-				CPrintToChat(replace.index, "{olive}[VSH 2]{default} {green}Surprise! You're on NOW!{default}");
+				replace.MakeBossAndSwitch(replace.iPresetType == -1 ? leaver.iBossType : replace.iPresetType, true);
+				CPrintToChat(replace.index, "{olive}[VSH 2]{default} {green}Surprise! You're on NOW!");
 			}
 		}
-		CPrintToChatAll("{olive}[VSH 2]{default} {red}A Boss Just Disconnected!{default}");
+		CPrintToChatAll("{olive}[VSH 2]{red} A Boss Just Disconnected!");
 	} else {
 		SetPawnTimer(CheckAlivePlayers, 0.2);
-		if( IsClientInGame(client) && client == gamemode.FindNextBoss().index )
+		if( client == gamemode.FindNextBoss().index )
 			SetPawnTimer(_SkipBossPanel, 1.0);
 		
 		if( leaver.userid == gamemode.hNextBoss.userid )
@@ -443,23 +477,22 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 			}
 			switch( wepindex ) {
 				case 593: {	/// Third Degree
-					int healers[MAXPLAYERS];
-					int healercount = 0;
-					for( int i=MaxClients; i; --i ) {
-						if( IsClientValid(i) && IsPlayerAlive(i) && GetHealingTarget(i) == attacker )
-						{
-							healers[healercount] = i;
-							healercount++;
-						}
+					int medics;
+					int numhealers = GetEntProp(attacker, Prop_Send, "m_nNumHealers");
+					int healer;
+					int i;
+					for( i=0; i<numhealers; i++ ) {
+						if( 0 < GetHealerByIndex(attacker, i) <= MaxClients )	/// Dispensers > MaxClients
+							medics++;
 					}
-					for( int i=0; i<healercount; i++ ) {
-						if( IsValidClient(healers[i]) && IsPlayerAlive(healers[i]) ) {
-							int medigun = GetPlayerWeaponSlot(healers[i], TFWeaponSlot_Secondary);
+					for( i=0; i<numhealers; i++ ) {
+						if( 0 < (healer = GetHealerByIndex(attacker, i)) <= MaxClients ) {
+							int medigun = GetPlayerWeaponSlot(healer, TFWeaponSlot_Secondary);
 							if( IsValidEntity(medigun) ) {
 								char cls[32];
 								GetEdictClassname(medigun, cls, sizeof(cls));
 								if( !strcmp(cls, "tf_weapon_medigun", false) ) {
-									float uber = GetMediCharge(medigun) + (0.1/healercount);
+									float uber = GetMediCharge(medigun) + (0.1/medics);
 									float max = 1.0;
 									if( GetEntProp(medigun, Prop_Send, "m_bChargeRelease") )
 										max = 1.5;
@@ -565,7 +598,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					int index = GetItemIndex(weap);
 					int active = GetEntPropEnt(victim.index, Prop_Send, "m_hActiveWeapon");
 					if( index == 357 && active == weap ) {
-						damage = 195.0;
+						damage = 195.0/3.0;
 						return Plugin_Changed;
 					}
 				}
@@ -850,29 +883,23 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 		int div = cvarVSH2[AirStrikeDamage].IntValue;
 		SetEntProp(attacker.index, Prop_Send, "m_iDecapitations", attacker.iAirDamage/div);
 	}
-
-	int healers[MAXPLAYERS];
-	int healercount = 0;
-	for( int i=MaxClients; i; --i ) {
-		if( !IsValidClient(i) || !IsPlayerAlive(i) )
-			continue;
-		
-		if( GetHealingTarget(i) == attacker.index ) {
-			healers[healercount] = i;
-			healercount++;
-		}
-	}
 	
 	/// Medics now count as 3/5 of a backstab, similar to telefrag assists.
+	int healers = GetEntProp(attacker.index, Prop_Send, "m_nNumHealers");
+	int healercount;
+	for( int i=0; i<healers; i++) {
+		if( 0 < GetHealerByIndex(attacker.index, i) <= MaxClients )
+			healercount++;
+	}
+
 	BaseBoss medic;
-	for( int r=0; r<healercount; r++ ) {
-		if( !IsValidClient(healers[r]) || !IsPlayerAlive(healers[r]) )
-			continue;
-		
-		medic = BaseBoss(healers[r]);
-		if( damage < 10 || medic.iUberTarget == attacker.userid )
-			medic.iDamage += damage;
-		else medic.iDamage += damage/(healercount+1);
+	for( int r=0; r<healers; r++ ) {
+		medic = BaseBoss(GetHealerByIndex(attacker.index, r));
+		if( 0 < medic.index <= MaxClients) {
+			if( damage < 10 || medic.iUberTarget == attacker.userid )
+				medic.iDamage += damage;
+			else medic.iDamage += damage/(healercount+1);
+		}
 	}
 }
 
@@ -1839,8 +1866,9 @@ public void ManageFighterThink(const BaseBoss fighter)
 	
 	bool addthecrit = false;
 	bool addmini = false;
-	for( int u=MaxClients; u; --u ) {
-		if( IsValidClient(u) && IsPlayerAlive(i) && GetHealingTarget(u) == i ) {
+	int healers = GetEntProp(i, Prop_Send, "m_nNumHealers");
+	for( int u=0; u<healers; u++ ) {
+		if( 0 < GetHealerByIndex(i, u) <= MaxClients ) {
 			addmini = true;
 			break;
 		}
