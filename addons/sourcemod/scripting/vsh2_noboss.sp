@@ -1,4 +1,4 @@
-public Plugin:myinfo = {
+public Plugin myinfo = {
 	name        = "VSH2 Noboss",
 	author      = "Bottiger",
 	description = "Adds the command !noboss to reset queue points every round automatically",
