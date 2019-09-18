@@ -115,7 +115,7 @@ public void ManageDisconnect(const int client)
 			}
 			if( IsValidClient(replace.index) ) {
 				replace.MakeBossAndSwitch(replace.iPresetType == -1 ? leaver.iBossType : replace.iPresetType, true);
-				CPrintToChat(replace.index, "{olive}[VSH 2]{default} {green}Surprise! You're on NOW!");
+				CPrintToChat(replace.index, "{olive}[VSH 2]{green} Surprise! You're on NOW!");
 			}
 		}
 		CPrintToChatAll("{olive}[VSH 2]{red} A Boss Just Disconnected!");
@@ -213,7 +213,8 @@ public void ManageBossDeath(const BaseBoss base)
 		case Bunny:		ToCBunny(base).Death();
 		default: Call_OnBossDeath(base);
 	}
-	gamemode.iHealthBarState = !gamemode.iHealthBarState;
+	if( !gamemode.CountBosses(true) )
+		gamemode.iHealthBarState = !gamemode.iHealthBarState;
 }
 
 public void ManageBossEquipment(const BaseBoss base)
