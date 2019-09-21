@@ -86,8 +86,8 @@ methodmap CVagineer < BaseBoss
 				this.flCharge = -100.0;
 				Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerJump, GetRandomInt(1, 2));
 				
-				EmitSoundToAll(snd, this.index);
-				EmitSoundToAll(snd, this.index);
+				EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
+				EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 			}
 			else this.flCharge = 0.0;
 		}
@@ -142,7 +142,7 @@ methodmap CVagineer < BaseBoss
 		this.RemoveAllItems();
 		char attribs[128];
 		
-		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.1; 259; 1.0; 436; 1.0");
+		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.1; 259; 1.0; 436; 1.0; 252; 0.7");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_wrench", 169, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
@@ -161,13 +161,13 @@ methodmap CVagineer < BaseBoss
 			strcopy(snd, PLATFORM_MAX_PATH, VagineerRageSound);
 		else
 			Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerRageSound2, GetRandomInt(1, 2));
-		EmitSoundToAll(snd, this.index); EmitSoundToAll(snd, this.index);
+		EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 	}
 
 	public void KilledPlayer(const BaseBoss victim, Event event)
 	{
 		strcopy(snd, PLATFORM_MAX_PATH, VagineerHit);
-		EmitSoundToAll(snd, this.index); EmitSoundToAll(snd, this.index);
+		EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 		
 		float curtime = GetGameTime();
 		if( curtime <= this.flKillSpree )
@@ -180,11 +180,17 @@ methodmap CVagineer < BaseBoss
 				case 2: strcopy(snd, PLATFORM_MAX_PATH, VagineerKSpree2);
 				default: Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerKSpreeNew, GetRandomInt(1, 5));
 			}
-			EmitSoundToAll(snd, this.index); EmitSoundToAll(snd, this.index);
+			EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 			this.iKills = 0;
 		}
 		else this.flKillSpree = curtime+5;
 	}
+	
+	public void Stabbed() {
+		EmitSoundToAll("vo/engineer_positivevocalization01.mp3", this.index, _, SNDLEVEL_TRAFFIC);
+		EmitSoundToAll("vo/engineer_positivevocalization01.mp3", this.index, _, SNDLEVEL_TRAFFIC);
+	}
+	
 	public void Help()
 	{
 		if( IsVoteInProgress() )

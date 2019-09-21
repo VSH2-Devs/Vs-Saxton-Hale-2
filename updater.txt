@@ -4,11 +4,28 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.2.4"
+			"Latest"	"2.3.0"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.2.4:"
-		"Notes"	"hotfix correcting the new saxton model not getting his materials."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.0:"
+		"Notes"	"Fixed glitch with demo knight crits being applied to non-demoknight demos."
+		"Notes"	"Unbanned Razorback and now blocks ONE fatal hit."
+		"Notes"	"Added some knockback resistance to the Christian Brutal Sniper and Vagineer."
+		"Notes"	"Nerfed boss rage regeneration by half."
+		"Notes"	"refactored player and boss disconnection code (Scags)."
+		"Notes"	"Refactored Third Degree medic uber buff code (Scags)."
+		"Notes"	"Changed 'ClimbWall' to return a bool value (Scags)."
+		"Notes"	"Added a massive amount of stocks (Scags)."
+		"Notes"	"Improved round end damage scoreboard code (Scags)."
+		"Notes"	"Improved round end damage scoreboard for damage tracker addon plugin."
+		"Notes"	"Added new gamemode method+native 'GetBosses' (Scags)."
+		"Notes"	"minor change to market gardening code to take amount of bosses into calculation."
+		"Notes"	"Added new forward 'OnItemOverride', called when OnGiveNamedItem has modified a weapon and before the changes are finalized."
+		"Notes"	"Divided OnBossDealDamage into multiple, more specific forwards concerning specific damage dealing."
+		"Notes"	"Divided OnBossTakeDamage into multiple, more specific forwards concerning specific damage dealing."
+		"Notes"	"Removed pointless return statement in 'OnPreThinkPost'."
+		"Notes"	"Moved backstab boss noises to their respective boss scripts."
+		"Notes"	"Optimized the noboss addon (Bottiger)."
 	}
 	
 	"Files"
@@ -18,6 +35,7 @@
 		"Source"	"Path_SM/scripting/vsh2.sp"
 		"Source"	"Path_SM/scripting/vsh2_addon_dmgtracker.sp"
 		"Source"	"Path_SM/scripting/vsh2boss_plaguedoctor.sp"
+		"Source"	"Path_SM/scripting/vsh2_addon_noboss.sp"
 		
 		"Source"	"Path_SM/scripting/modules/base.sp"
 		"Source"	"Path_SM/scripting/modules/bosses.sp"

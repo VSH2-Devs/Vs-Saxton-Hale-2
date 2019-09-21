@@ -68,8 +68,8 @@ methodmap CPlague < BaseBoss
 				this.flCharge = -100.0;
 				strcopy(snd, PLATFORM_MAX_PATH, "vo/medic_yes01.mp3");
 				
-				EmitSoundToAll(snd, this.index);
-				EmitSoundToAll(snd, this.index);
+				EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
+				EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 			}
 			else this.flCharge = 0.0;
 		}

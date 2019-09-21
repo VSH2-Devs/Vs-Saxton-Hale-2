@@ -167,11 +167,13 @@ methodmap CBunny < BaseBoss
 				this.flCharge = -100.0;
 				strcopy(snd, PLATFORM_MAX_PATH, BunnyJump[GetRandomInt(0, sizeof(BunnyJump)-1)]);
 				
-				EmitSoundToAll(snd, this.index);
-				EmitSoundToAll(snd, this.index);
+				EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
+				EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 			}
 			else this.flCharge = 0.0;
 		}
+		
+		/// todo: add cvar for scout rage regeneration.
 		if( OnlyScoutsLeft(VSH2Team_Red) )
 			this.flRAGE += 0.5;
 		
@@ -240,15 +242,14 @@ methodmap CBunny < BaseBoss
 		SetWeaponAmmo(weapon, 0);
 		
 		this.DoGenericStun(VAGRAGEDIST);
-		
 		strcopy(snd, PLATFORM_MAX_PATH, BunnyRage[GetRandomInt(1, sizeof(BunnyRage)-1)]);
-		EmitSoundToAll(snd, this.index); EmitSoundToAll(snd, this.index);
+		EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 	}
 	
 	public void KilledPlayer(const BaseBoss victim, Event event)
 	{
 		strcopy(snd, PLATFORM_MAX_PATH, BunnyKill[GetRandomInt(0, sizeof(BunnyKill)-1)]);
-		EmitSoundToAll(snd, this.index); EmitSoundToAll(snd, this.index);
+		EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 		SpawnManyAmmoPacks(victim.index, EggModel, 1);
 		float curtime = GetGameTime();
 		if( curtime <= this.flKillSpree )
@@ -257,11 +258,17 @@ methodmap CBunny < BaseBoss
 		
 		if( this.iKills == 3 && GetLivingPlayers(VSH2Team_Red) != 1 ) {
 			strcopy(snd, PLATFORM_MAX_PATH, BunnySpree[GetRandomInt(0, sizeof(BunnySpree)-1)]);
-			EmitSoundToAll(snd, this.index); EmitSoundToAll(snd, this.index);
+			EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 			this.iKills = 0;
 		}
 		else this.flKillSpree = curtime+5;
 	}
+	
+	public void Stabbed() {
+		strcopy(snd, PLATFORM_MAX_PATH, BunnyPain[GetRandomInt(0, sizeof(BunnyPain)-1)]);
+		EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
+	}
+	
 	public void Help()
 	{
 		if( IsVoteInProgress() )

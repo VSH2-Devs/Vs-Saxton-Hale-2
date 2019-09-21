@@ -49,7 +49,8 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			int player = this.index;
 			if( !player )
 				return 0;
-			else if( !AreClientCookiesCached(player) || IsFakeClient(player) ) {	/// If the coookies aren't cached yet, use array
+			/// If the coookies aren't cached yet, use array
+			else if( !AreClientCookiesCached(player) || IsFakeClient(player) ) {
 				int i; hPlayerFields[player].GetValue("iQueue", i);
 				return i;
 			}
@@ -364,7 +365,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		int transparent = alpha;
 		for( int i=0; i<5; i++ ) {
 			int entity = GetPlayerWeaponSlot(this.index, i); 
-			if( IsValidEdict(entity) && IsValidEntity(entity) ) {
+			if( IsValidEntity(entity) ) {
 				if( transparent > 255 )
 					transparent = 255;
 				if( transparent < 0 )
@@ -435,7 +436,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		int health = GetClientHealth(this.index);
 		//health += (decapitations >= 4 ? 10 : 15);
 		if( health < 300 )
-			health += 15; /// <-- TODO: cvar this?
+			health += 15; /// <-- TODO: add cvar for this?
 		SetEntProp(this.index, Prop_Data, "m_iHealth", health);
 		SetEntProp(this.index, Prop_Send, "m_iHealth", health);
 		TF2_AddCondition(this.index, TFCond_SpeedBuffAlly, 0.01);   /// recalc their speed
@@ -468,12 +469,12 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			TF2_RespawnPlayer(this.index);
 		}
 	}
-	public void ClimbWall(const int weapon, const float upwardvel, const float health, const bool attackdelay)
+	public bool ClimbWall(const int weapon, const float upwardvel, const float health, const bool attackdelay)
 	/// Credit to Mecha the Slag
 	{
 		/// Have to baby players so they don't accidentally kill themselves trying to escape...
 		if( GetClientHealth(this.index) <= health )
-			return;
+			return false;
 		
 		int client = this.index;
 		
@@ -487,28 +488,28 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		TR_TraceRayFilter(vecClientEyePos, vecClientEyeAng, MASK_PLAYERSOLID, RayType_Infinite, TraceRayDontHitSelf, client);
 		
 		if( !TR_DidHit(null) )
-			return;
+			return false;
 		
 		char classname[64];
 		int TRIndex = TR_GetEntityIndex(null);
 		GetEdictClassname(TRIndex, classname, sizeof(classname));
 		if( !StrEqual(classname, "worldspawn") )
-			return;
+			return false;
 		
 		float fNormal[3];
 		TR_GetPlaneNormal(null, fNormal);
 		GetVectorAngles(fNormal, fNormal);
 		
 		if( fNormal[0] >= 30.0 && fNormal[0] <= 330.0 )
-			return;
+			return false;
 		if( fNormal[0] <= -30.0 )
-			return;
+			return false;
 		
 		float pos[3]; TR_GetEndPosition(pos);
 		float distance = GetVectorDistance(vecClientEyePos, pos);
 		
 		if( distance >= 100.0 )
-			return;
+			return false;
 		
 		float fVelocity[3];
 		GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
@@ -519,6 +520,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		
 		if( attackdelay )
 			SetPawnTimer(NoAttacking, 0.1, EntIndexToEntRef(weapon));
+		return true;
 	}
 	public void HelpPanelClass()
 	{
@@ -532,7 +534,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			case TFClass_DemoMan: Format(helpstr, sizeof(helpstr), "Demoman:\nThe shields block at least one hit from Boss melees.\nUsing shields grants crits on all weapons.\nEyelander/reskins gain heads on hit.\nHalf-Zatoichi heals 35HP on hit and can overheal to +25. Honorbound is removed on hit.\nPersian Persuader gives 2x reserve ammo.\nBoots do stomp damage.\nLoch-n-Load does afterburn on hit.\nGrenade Launcher & Cannon reduces explosive jumping if the weapon is active.\nStickyJumper replaced with Sticky Launcher.\nDecapitator taunt gives 4 heads if Successful.");
 			case TFClass_Heavy: Format(helpstr, sizeof(helpstr), "Heavy:\nthe KGB & Fists of Steel are replaced with the\nGloves of Running, and Fists, respectively.\nThe Gloves of Running are fast but cause you to take more damage.\nThe Holiday Punch will remove any stun on you if you hit Hale while stunned.\nMiniguns get +15% damage boost when being healed by a medic.\nShotguns give damage back as some health.\n");
 			case TFClass_Engineer: Format(helpstr, sizeof(helpstr), "Engineer:\nWrenches give an extra +25HP.\nGunslinger gives +55HP\nThe Frontier Justice gains crits only while your sentry is targetting Hale.\nThe Eureka Effect is disabled for now.\nTelefrags kill Bosses in one shot.");
-			case TFClass_Medic: Format(helpstr, sizeof(helpstr), "Medic:\nCharge: Kritz+Uber+Ammo. Charge starts at 40percent.\nCharge lasts for 150 percent after activation.\nSyringe Guns: on hit: +5 to Uber.\nCrossbow: 100 percent crits, +150pct damage, +15 uber on hit.\nUber gives patient infinite ammo until Uber is depleted.\nhaving 90% or higher Uber protects you from one Melee hit from Boss.\nBlutsauger + Overdose are Unlocked + give 1 pct Uber on hit.\nHealing Heavies give them damage boost on Miniguns.");
+			case TFClass_Medic: Format(helpstr, sizeof(helpstr), "Medic:\nCharge: Kritz+Uber. Charge starts at 40percent.\nCharge lasts for 150 percent after activation.\nSyringe Guns: on hit: +5 to Uber.\nCrossbow: 100 percent crits, +150%% damage, +15 uber on hit.\nhaving 90% or higher Uber protects you from one Melee hit from Boss.\nBlutsauger + Overdose are Unlocked + give 1%% Uber on hit.\nHealing Heavies give them damage boost on Miniguns.");
 			case TFClass_Sniper: Format(helpstr, sizeof(helpstr), "Sniper:\nJarate removes small pct of Boss Rage.\nBack-equipped weapons are replaced with SMG.\nSniper Rifles causes Certain Bosses to glow. Glow time scales with charge.\nAll Sniper melees climb walls, but has slower rate of fire.\nHuntsman carries 2x more ammo.\nBazaar Bargain gains heads on headshot.\n");
 			case TFClass_Spy: Format(helpstr, sizeof(helpstr), "Spy:\nBackstab does about 10+ percent of a Boss' max HP.\nCloaknDagger replaced with normal inviswatch.\nAll revolvers minicrit.\nYour Eternal Reward backstabs will disguise you.\nKunai backstabs will get you a health bonus.\nSappers are replaced with a throwing kunai.\nDiamondback gets 2 crits on backstab.\nBig Earner gives full Cloak on backstab.\nAmbassador headshots do extra damage.");
 		}
@@ -547,18 +549,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		return GetHealingTarget(this.index);
 	}
 	public bool IsNearDispenser() {
-		int client = this.index;
-		int medics=0;
-		int healers = GetEntProp(client, Prop_Send, "m_nNumHealers");
-		if( healers > 0 ) {
-			for( int i=MaxClients; i; --i ) {
-				if( !IsValidClient(i) )
-					continue;
-				else if( GetHealingTarget(i) == client )
-					medics++;
-			}
-		}
-		return( healers > medics );
+		return IsNearSpencer(this.index);
 	}
 	public bool IsInRange(const int target, const float dist, bool pTrace=false) {
 		return IsInRange(this.index, target, dist, pTrace);
@@ -574,7 +565,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 	}
 };
 
-methodmap BaseBoss < BaseFighter
+methodmap BaseBoss < BaseFighter {
 /**
  * the methodmap/interface for all bosses to use. Use this if you're making a totally different boss
  * Property Organization
@@ -583,7 +574,6 @@ methodmap BaseBoss < BaseFighter
  * Floats
  * Methods
  */
-{
 	public BaseBoss(const int ind, bool uid=false) {
 		return view_as< BaseBoss >( BaseFighter(ind, uid) );
 	}
@@ -751,7 +741,7 @@ methodmap BaseBoss < BaseFighter
 	}
 	
 	public void GiveRage(const int damage) {
-		this.flRAGE += ( damage/SquareRoot(float(this.iHealth))*4.0 );
+		this.flRAGE += ( damage / SquareRoot(this.iHealth+0.0) * 1.76 );
 	}
 	public void MakeBossAndSwitch(const int type, const bool callEvent) {
 		this.bSetOnSpawn = true;

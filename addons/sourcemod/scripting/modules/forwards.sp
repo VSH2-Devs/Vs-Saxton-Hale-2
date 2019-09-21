@@ -66,6 +66,33 @@ void InitializeForwards()
 	g_hForwards[OnPlayerHurt] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell, Param_Cell) );
 	g_hForwards[OnBossMenu] = new PrivateForward( CreateForward(ET_Ignore, Param_CellByRef) );
 	g_hForwards[OnScoreTally] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_CellByRef, Param_CellByRef) );
+	g_hForwards[OnItemOverride] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_String, Param_Cell, Param_CellByRef) );
+	
+	/// OnBossDealDamage Specific Forwards.
+	g_hForwards[OnBossDealDamage_OnStomp] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossDealDamage_OnHitDefBuff] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossDealDamage_OnHitCritMmmph] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossDealDamage_OnHitMedic] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossDealDamage_OnHitDeadRinger] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossDealDamage_OnHitCloakedSpy] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossDealDamage_OnHitShield] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	
+	/// OnBossTakeDamage Specific Forwards
+	g_hForwards[OnBossTakeDamage_OnStabbed] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossTakeDamage_OnTelefragged] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossTakeDamage_OnSwordTaunt] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossTakeDamage_OnHeavyShotgun] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossTakeDamage_OnSniped] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossTakeDamage_OnThirdDegreed] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossTakeDamage_OnHitSword] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossTakeDamage_OnHitFanOWar] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossTakeDamage_OnHitCandyCane] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossTakeDamage_OnMarketGardened] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossTakeDamage_OnPowerJack] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossTakeDamage_OnKatana] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossTakeDamage_OnAmbassadorHeadshot] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossTakeDamage_OnDiamondbackManmelterCrit] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossTakeDamage_OnHolidayPunch] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
 }
 
 void Call_OnCallDownloads()
@@ -333,4 +360,368 @@ void Call_OnScoreTally(const BaseBoss player, int& points_earned, int& queue_ear
 	Call_PushCellRef(points_earned);
 	Call_PushCellRef(queue_earned);
 	Call_Finish();
+}
+void Call_OnItemOverride(const BaseBoss player, const char[] classname, int itemdef, Handle& item)
+{
+	g_hForwards[OnItemOverride].Start();
+	Call_PushCell(player);
+	Call_PushString(classname);
+	Call_PushCell(itemdef);
+	Call_PushCellRef(item);
+	Call_Finish();
+}
+Action Call_OnBossDealDamage_OnStomp(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossDealDamage_OnStomp].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossDealDamage_OnHitDefBuff(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossDealDamage_OnHitDefBuff].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossDealDamage_OnHitCritMmmph(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossDealDamage_OnHitCritMmmph].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossDealDamage_OnHitMedic(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossDealDamage_OnHitMedic].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossDealDamage_OnHitDeadRinger(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossDealDamage_OnHitDeadRinger].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossDealDamage_OnHitCloakedSpy(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossDealDamage_OnHitCloakedSpy].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossDealDamage_OnHitShield(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossDealDamage_OnHitShield].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+
+
+/// OnBossTakeDamage forwards.
+Action Call_OnBossTakeDamage_OnStabbed(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossTakeDamage_OnStabbed].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossTakeDamage_OnTelefragged(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossTakeDamage_OnTelefragged].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossTakeDamage_OnSwordTaunt(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossTakeDamage_OnSwordTaunt].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossTakeDamage_OnHeavyShotgun(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossTakeDamage_OnHeavyShotgun].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossTakeDamage_OnSniped(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossTakeDamage_OnSniped].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossTakeDamage_OnThirdDegreed(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossTakeDamage_OnThirdDegreed].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossTakeDamage_OnHitSword(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossTakeDamage_OnHitSword].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossTakeDamage_OnHitFanOWar(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossTakeDamage_OnHitFanOWar].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossTakeDamage_OnHitCandyCane(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossTakeDamage_OnHitCandyCane].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossTakeDamage_OnMarketGardened(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossTakeDamage_OnMarketGardened].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossTakeDamage_OnPowerJack(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossTakeDamage_OnPowerJack].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossTakeDamage_OnKatana(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossTakeDamage_OnKatana].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossTakeDamage_OnAmbassadorHeadshot(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossTakeDamage_OnAmbassadorHeadshot].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossTakeDamage_OnDiamondbackManmelterCrit(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossTakeDamage_OnDiamondbackManmelterCrit].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+Action Call_OnBossTakeDamage_OnHolidayPunch(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossTakeDamage_OnHolidayPunch].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
 }

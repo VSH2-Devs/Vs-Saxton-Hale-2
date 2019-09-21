@@ -2,6 +2,8 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <clientprefs>
+
 #include <morecolors>
 #include <vsh2>
 
@@ -22,14 +24,21 @@ public Plugin myinfo = {
 	url = "http://uno-gamer.com"
 };
 
-public void OnPluginStart()
+Handle haledmg_cookie;
+
+public void OnAllPluginsLoaded()
 {
+	haledmg_cookie = RegClientCookie("vsh2_haledmg", "cookie to track boss damage settings", CookieAccess_Public);
 	RegConsoleCmd("haledmg", Command_damagetracker, "haledmg - Enable/disable the damage tracker.");
 	RegConsoleCmd("vsh2dmg", Command_damagetracker, "haledmg - Enable/disable the damage tracker.");
 	RegConsoleCmd("ff2dmg", Command_damagetracker, "haledmg - Enable/disable the damage tracker.");
-	CreateTimer(0.15, Timer_Millisecond);
 	CreateTimer(180.0, Timer_Advertise);
 	damageHUD = CreateHudSynchronizer();
+}
+
+public void OnMapStart()
+{
+	CreateTimer(0.1, Timer_Millisecond, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public Action Timer_Advertise(Handle timer)
@@ -76,10 +85,13 @@ public Action Command_damagetracker(int client, int args)
 		if (newval != 0 && damageTracker[client] > 0)
 			newsetting = "on";
 		CPrintToChat(client, "{olive}[VSH 2]{default} The damage tracker is now {lightgreen}%s{default}!", newsetting);
+		
+		if( AreClientCookiesCached(client) ) {
+			SetClientCookie(client, haledmg_cookie, damageTracker[client] ? "1" : "0");
+		}
 	}
 	
 	char r[4], g[4], b[4], a[4];
-	
 	if(args >= 2) {
 		GetCmdArg(2, r, sizeof(r));
 		if(!StrEqual(r, "_"))
@@ -91,19 +103,16 @@ public Action Command_damagetracker(int client, int args)
 		if(!StrEqual(g, "_"))
 			RGBA[client][GREEN] = StringToInt(g);
 	}
-	
 	if(args >= 4) {
 		GetCmdArg(4, b, sizeof(b));
 		if(!StrEqual(b, "_"))
 			RGBA[client][BLUE] = StringToInt(b);
 	}
-	
 	if(args >= 5) {
 		GetCmdArg(5, a, sizeof(a));
 		if(!StrEqual(a, "_"))
 			RGBA[client][ALPHA] = StringToInt(a);
 	}
-	
 	return Plugin_Handled;
 }
 
@@ -114,17 +123,20 @@ public void OnClientPutInServer(int client)
 	RGBA[client][GREEN] = 90;
 	RGBA[client][BLUE] = 30;
 	RGBA[client][ALPHA] = 255;
+	
+	if( AreClientCookiesCached(client) ) {
+		char setting[2]; GetClientCookie(client, haledmg_cookie, setting, sizeof(setting));
+		damageTracker[client] = StringToInt(setting);
+	}
 }
 
 public Action Timer_Millisecond(Handle timer)
 {
-	CreateTimer(0.1, Timer_Millisecond);
 	if( VSH2GameMode_GetPropInt("iRoundState") != StateRunning )
 		return Plugin_Continue;
 	
 	int i;
 	VSH2Player hTop[3];
-	
 	VSH2Player(0).SetPropInt("iDamage", 0);
 	VSH2Player player;
 	for (i=MaxClients; i; --i) {
@@ -132,44 +144,56 @@ public Action Timer_Millisecond(Handle timer)
 			continue;
 		
 		player = VSH2Player(i);
-		if (player.GetPropInt("bIsBoss"))
+		if (player.GetPropInt("bIsBoss") || player.GetPropInt("iDamage") == 0)
 			continue;
-		
-		if (player.GetPropInt("iDamage") >= hTop[0].GetPropInt("iDamage")) {
+		else if (player.GetPropInt("iDamage") >= hTop[0].GetPropInt("iDamage")) {
 			hTop[2] = hTop[1];
 			hTop[1] = hTop[0];
-			hTop[0] = VSH2Player(i);
+			hTop[0] = player;
 		} else if (player.GetPropInt("iDamage") >= hTop[1].GetPropInt("iDamage")) {
 			hTop[2] = hTop[1];
-			hTop[1] = VSH2Player(i);
+			hTop[1] = player;
 		} else if (player.GetPropInt("iDamage") >= hTop[2].GetPropInt("iDamage"))
-			hTop[2] = VSH2Player(i);
+			hTop[2] = player;
 	}
 	
-	char first[64], second[64], third[64];
-	for (int z=MaxClients; z; --z) {
-		if (!IsValidClient(z))
+	char score1[64], score2[64], score3[64];
+	if( hTop[0].index )
+		GetClientName(hTop[0].index, score1, sizeof(score1));
+	else {
+		strcopy(score1, sizeof(score1), "nil");
+		hTop[0] = view_as< VSH2Player >(0);
+	}
+	
+	if( hTop[1].index )
+		GetClientName(hTop[1].index, score2, sizeof(score2));
+	else {
+		strcopy(score2, sizeof(score2), "nil");
+		hTop[1] = view_as< VSH2Player >(0);
+	}
+	
+	if( hTop[2].index )
+		GetClientName(hTop[2].index, score3, sizeof(score3));
+	else {
+		strcopy(score3, sizeof(score3), "nil");
+		hTop[2] = view_as< VSH2Player >(0);
+	}
+	
+	for (i=MaxClients; i; --i) {
+		if (!IsValidClient(i))
 			continue;
 		player = VSH2Player(i);
-		if (damageTracker[z] > 0) {
-			if (!player.GetPropInt("bIsBoss") && !(GetClientButtons(z) & IN_SCORE)) {
-				SetHudTextParams(0.0, 0.0, 0.2, RGBA[z][RED], RGBA[z][GREEN], RGBA[z][BLUE], RGBA[z][ALPHA]);
-				if(IsValidClient(hTop[0].index))
-					Format(first, sizeof(first), "[1] %N - %d\n", hTop[0].index, hTop[0].GetPropInt("iDamage"));
-				else Format(first, sizeof(first), "[1] nil - 0\n");
-				
-				if(IsValidClient(hTop[1].index))
-					Format(second, sizeof(second), "[2] %N - %d\n", hTop[1].index, hTop[1].GetPropInt("iDamage"));
-				else Format(second, sizeof(second), "[2] nil - 0\n");
-				
-				if(IsValidClient(hTop[2].index))
-					Format(third, sizeof(third), "[3] %N - %d\n", hTop[2].index, hTop[2].GetPropInt("iDamage"));
-				else Format(third, sizeof(third), "[3] nil - 0\n");
-				ShowSyncHudText(z, damageHUD, "%s%s%s", first, second, third);
+		if (damageTracker[i] > 0) {
+			if (!player.GetPropInt("bIsBoss") && !(GetClientButtons(i) & IN_SCORE)) {
+				int dmg1 = hTop[0].GetPropInt("iDamage");
+				int dmg2 = hTop[1].GetPropInt("iDamage");
+				int dmg3 = hTop[2].GetPropInt("iDamage");
+				SetHudTextParams(0.0, 0.0, 0.2, RGBA[i][RED], RGBA[i][GREEN], RGBA[i][BLUE], RGBA[i][ALPHA]);
+				ShowSyncHudText(i, damageHUD, "%s - %i\n%s - %i\n%s - %i", score1, dmg1, score2, dmg2, score3, dmg3);
 			}
 		}
 	}
-	return Plugin_Handled;
+	return Plugin_Continue;
 }
 
 stock bool IsValidClient(const int client, bool nobots=false)
@@ -177,4 +201,4 @@ stock bool IsValidClient(const int client, bool nobots=false)
 	if (client <= 0 || client > MaxClients || !IsClientConnected(client) || (nobots && IsFakeClient(client)))
 		return false; 
 	return IsClientInGame(client); 
-}  
+}

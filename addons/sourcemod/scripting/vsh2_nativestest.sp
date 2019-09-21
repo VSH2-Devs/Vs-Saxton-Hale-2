@@ -122,10 +122,60 @@ public Action fwdOnBossTakeDamage(VSH2Player victim, int& attacker, int& inflict
 	PrintToConsole(victim.index, "fwdOnBossTakeDamage:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
 	return Plugin_Continue;
 }
+
 public Action fwdOnBossDealDamage(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	PrintToConsole(attacker, "fwdOnBossDealDamage:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
 	PrintToConsole(victim.index, "fwdOnBossDealDamage:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	return Plugin_Continue;
+}
+
+public Action fwdOnBossDealDamage_OnStomp(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	PrintToConsole(attacker, "fwdOnBossDealDamage_OnStomp:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	PrintToConsole(victim.index, "fwdOnBossDealDamage_OnStomp:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	return Plugin_Continue;
+}
+
+public Action fwdOnBossDealDamage_OnHitDefBuff(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	PrintToConsole(attacker, "fwdOnBossDealDamage_OnHitDefBuff:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	PrintToConsole(victim.index, "fwdOnBossDealDamage_OnHitDefBuff:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	return Plugin_Continue;
+}
+
+public Action fwdOnBossDealDamage_OnHitCritMmmph(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	PrintToConsole(attacker, "fwdOnBossDealDamage_OnHitCritMmmph:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	PrintToConsole(victim.index, "fwdOnBossDealDamage_OnHitCritMmmph:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	return Plugin_Continue;
+}
+
+public Action fwdOnBossDealDamage_OnHitMedic(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	PrintToConsole(attacker, "fwdOnBossDealDamage_OnHitMedic:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	PrintToConsole(victim.index, "fwdOnBossDealDamage_OnHitMedic:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	return Plugin_Continue;
+}
+
+public Action fwdOnBossDealDamage_OnHitDeadRinger(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	PrintToConsole(attacker, "fwdOnBossDealDamage_OnHitDeadRinger:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	PrintToConsole(victim.index, "fwdOnBossDealDamage_OnHitDeadRinger:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	return Plugin_Continue;
+}
+
+public Action fwdOnBossDealDamage_OnHitCloakedSpy(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	PrintToConsole(attacker, "fwdOnBossDealDamage_OnHitCloakedSpy:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	PrintToConsole(victim.index, "fwdOnBossDealDamage_OnHitCloakedSpy:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	return Plugin_Continue;
+}
+
+public Action fwdOnBossDealDamage_OnHitShield(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	PrintToConsole(attacker, "fwdOnBossDealDamage_OnHitShield:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	PrintToConsole(victim.index, "fwdOnBossDealDamage_OnHitShield:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
 	return Plugin_Continue;
 }
 
@@ -232,6 +282,11 @@ public void fwdOnScoreTally(const VSH2Player player, int& points_earned, int& qu
 	PrintToChatAll("fwdOnScoreTally:: %N: points - %i, queue - %i", player.index, points_earned, queue_earned);
 }
 
+public void fwdOnItemOverride(const VSH2Player player, const char[] classname, int itemdef, Handle& item)
+{
+	PrintToChat(player.index, "%s - %i", classname, itemdef);
+}
+
 
 public void LoadVSH2Hooks()
 {
@@ -333,4 +388,28 @@ public void LoadVSH2Hooks()
 		
 	if (!VSH2_HookEx(OnScoreTally, fwdOnScoreTally))
 		LogError("Error loading OnScoreTally forwards for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnItemOverride, fwdOnItemOverride))
+		LogError("Error loading OnItemOverride forwards for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnBossDealDamage_OnStomp, fwdOnBossDealDamage_OnStomp))
+		LogError("Error loading OnBossDealDamage_OnStomp forwards for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnBossDealDamage_OnHitDefBuff, fwdOnBossDealDamage_OnHitDefBuff))
+		LogError("Error loading OnBossDealDamage_OnHitDefBuff forwards for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnBossDealDamage_OnHitCritMmmph, fwdOnBossDealDamage_OnHitCritMmmph))
+		LogError("Error loading OnBossDealDamage_OnHitCritMmmph forwards for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnBossDealDamage_OnHitMedic, fwdOnBossDealDamage_OnHitMedic))
+		LogError("Error loading OnBossDealDamage_OnHitMedic forwards for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnBossDealDamage_OnHitDeadRinger, fwdOnBossDealDamage_OnHitDeadRinger))
+		LogError("Error loading OnBossDealDamage_OnHitDeadRinger forwards for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnBossDealDamage_OnHitCloakedSpy, fwdOnBossDealDamage_OnHitCloakedSpy))
+		LogError("Error loading OnBossDealDamage_OnHitCloakedSpy forwards for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnBossDealDamage_OnHitShield, fwdOnBossDealDamage_OnHitShield))
+		LogError("Error loading OnBossDealDamage_OnHitShield forwards for VSH2 Test plugin.");
 }

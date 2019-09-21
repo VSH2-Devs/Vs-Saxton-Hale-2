@@ -4,7 +4,7 @@ public char extensionsb[2][5] = { ".vtf", ".vmt" };
 stock int GetHealingTarget(const int client)
 {
 	int medigun = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
-	if (!IsValidEdict(medigun) || !IsValidEntity(medigun))
+	if( !IsValidEntity(medigun) )
 		return -1;
 	
 	if( HasEntProp(medigun, Prop_Send, "m_bHealing") ) {
@@ -16,30 +16,39 @@ stock int GetHealingTarget(const int client)
 stock int GetActiveWep(const int client)
 {
 	int weapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-	if (IsValidEdict(weapon) && IsValidEntity(weapon))
-		return weapon;
-	return -1;
+	return( IsValidEntity(weapon) ) ? weapon : -1;
 }
 stock float GetMediCharge(const int medigun)
 {
-	if (IsValidEdict(medigun) && IsValidEntity(medigun))
-		return GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel");
-	return -1.0;
+	return( IsValidEntity(medigun) ) ? GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel") : -1.0;
 }
 stock void SetMediCharge(const int medigun, const float val)
 {
-	if (IsValidEdict(medigun) && IsValidEntity(medigun))
+	if( IsValidEntity(medigun) )
 		SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel", val);
 }
 stock bool IsNearSpencer(const int client)
 {
-	int medics = 0;
-	for (int i=MaxClients; i; --i) {
-		if (IsValidClient(i) && GetHealingTarget(i) == client)
-			medics++;
+	int healers = GetEntProp(client, Prop_Send, "m_nNumHealers");
+	int medics;
+	if( healers > 0 ) {
+		for( int i=MaxClients; i; --i ) {
+			if( IsValidClient(i) && GetHealingTarget(i) == client )
+				medics++;
+		}
 	}
-	return (GetEntProp(client, Prop_Send, "m_nNumHealers") > medics);
+	return (healers > medics);
 }
+
+stock bool IsHealedByMedic(const int client)
+{
+	int numhealers = GetEntProp(client, Prop_Send, "m_nNumHealers");
+	for( int i=0; i<numhealers; i++ )
+		if( 0 < GetHealerByIndex(client, i) <= MaxClients )
+			return true;
+	return false;
+}
+
 /// Prepare content stocks
 stock void CheckDownload(const char[] dlpath)
 {
@@ -125,15 +134,11 @@ stock void ForceTeamWin(const int team)
 }
 stock int GetItemIndex(const int item)
 {
-	if (IsValidEdict(item) && IsValidEntity(item))
-		return GetEntProp(item, Prop_Send, "m_iItemDefinitionIndex");
-	return -1;
+	return( IsValidEntity(item) ) ? GetEntProp(item, Prop_Send, "m_iItemDefinitionIndex") : -1;
 }
 stock int GetItemQuality(const int item)
 {
-	if (IsValidEdict(item) && IsValidEntity(item))
-		return GetEntProp(item, Prop_Send, "m_iEntityQuality");
-	return -1;
+	return( IsValidEntity(item) ) ? GetEntProp(item, Prop_Send, "m_iEntityQuality") : -1;
 }
 stock int GetIndexOfWeaponSlot(const int client, const int slot)
 {
@@ -181,7 +186,7 @@ stock int AttachParticle(const int ent, const char[] particleType, float offset 
 stock void CreateParticles(char[] particlename, float Pos[3] = NULL_VECTOR, float time)
 {
 	int particle = CreateEntityByName("info_particle_system");
-	if (IsValidEdict(particle)) {
+	if (IsValidEntity(particle)) {
 		DispatchKeyValue(particle, "effect_name", particlename);
 		ActivateEntity(particle);
 		AcceptEntityInput(particle, "start");
@@ -193,10 +198,9 @@ stock void CreateParticles(char[] particlename, float Pos[3] = NULL_VECTOR, floa
 stock void SetWeaponInvis(const int client, const int alpha)
 {
 	int transparent = alpha;
-	for (int i = 0; i < 5; i++) {
+	for( int i; i<5; i++ ) {
 		int entity = GetPlayerWeaponSlot(client, i); 
-		if( IsValidEdict(entity) && IsValidEntity(entity) )
-		{
+		if( IsValidEntity(entity) ) {
 			if (transparent > 255)
 				transparent = 255;
 			if (transparent < 0)
@@ -205,7 +209,6 @@ stock void SetWeaponInvis(const int client, const int alpha)
 			SetEntityRenderColor(entity, 150, 150, 150, transparent); 
 		}
 	}
-	return;
 }
 stock int SetWeaponAmmo(const int weapon, const int ammo)
 {
@@ -252,7 +255,7 @@ stock int ShootRocket(const int client, bool bCrit = false, float vPosition[3], 
 	int iTeam = GetClientTeam(client);
 	int iProjectile = CreateEntityByName("tf_projectile_rocket");
 	
-	if (!IsValidEdict(iProjectile))
+	if (!IsValidEntity(iProjectile))
 		return 0;
 	
 	float vVelocity[3];
@@ -291,7 +294,7 @@ stock void SetClientOverlay(const int client, const char[] strOverlay)
 	ClientCommand(client, "r_screenoverlay \"%s\"", strOverlay);
 }
 
-stock bool IsValidClient(const int client, bool replaycheck = true)
+stock bool IsValidClient(const int client, bool replaycheck=true)
 {
 	if (client <= 0 || client > MaxClients)
 		return false;
@@ -308,21 +311,15 @@ stock bool IsValidClient(const int client, bool replaycheck = true)
 }
 stock int GetOwner(const int ent)
 {
-	if( IsValidEdict(ent) && IsValidEntity(ent) )
-		return GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity");
-	return -1;
+	return( IsValidEntity(ent) ) ? GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity") : -1;
 }
 stock int GetBuilder(const int ent)
 {
-	if( IsValidEdict(ent) && IsValidEntity(ent) )
-		return GetEntPropEnt(ent, Prop_Send, "m_hBuilder");
-	return -1;
+	return( IsValidEntity(ent) ) ? GetEntPropEnt(ent, Prop_Send, "m_hBuilder") : -1;
 }
 stock int GetGroundEntity(const int client)
 {
-	if( IsValidClient(client, false)) )
-		return GetEntPropEnt(client, Prop_Send, "m_hGroundEntity");
-	return -1;
+	return( IsValidClient(client) ) ? GetEntPropEnt(client, Prop_Send, "m_hGroundEntity") : -1;
 }
 stock int FindTeleOwner(const int client)
 {
@@ -691,8 +688,8 @@ stock void SetClientGlow(const int client, const float time1, float clampfl = 0.
 stock void SetControlPoint(const bool enable)
 {
 	int CPm = -1;
-	while ( (CPm = FindEntityByClassname(CPm, "team_control_point")) != -1 ) {
-		if( CPm > MaxClients && IsValidEdict(CPm) ) {
+	while( (CPm = FindEntityByClassname(CPm, "team_control_point")) != -1 ) {
+		if( CPm > MaxClients && IsValidEntity(CPm) ) {
 			AcceptEntityInput(CPm, (enable ? "ShowModel" : "HideModel"));
 			SetVariantInt(enable ? 0 : 1);
 			AcceptEntityInput(CPm, "SetLocked");
@@ -977,7 +974,7 @@ public void _NoHonorBound(const int userid)
 		int index = GetItemIndex(weapon);
 		int active = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 		char classname[32];
-		if( IsValidEdict(active) )
+		if( IsValidEntity(active) )
 			GetEdictClassname(active, classname, sizeof(classname));
 		if( index == 357 && active == weapon && !strcmp(classname, "tf_weapon_katana", false) )
 		{
@@ -1115,7 +1112,7 @@ stock int AttachProjectileModel(const int entity, const char[] strModel, char[] 
 	if (!IsValidEntity(entity))
 		return -1;
 	int model = CreateEntityByName("prop_dynamic");
-	if (IsValidEdict(model)) {
+	if (IsValidEntity(model)) {
 		float pos[3], ang[3];
 		GetEntPropVector(entity, Prop_Send, "m_vecOrigin", pos);
 		GetEntPropVector(entity, Prop_Send, "m_angRotation", ang);
@@ -1179,7 +1176,7 @@ stock int GetClip(const int client, const int slot)
 	return 0;
 }
 
-stock void SkipBossPanelNotify(const int client, bool newchoice = true)
+stock void SkipBossPanelNotify(const int client/*, bool newchoice = true*/)
 {
 	if (!bEnabled.BoolValue || !IsValidClient(client) || IsFakeClient(client) || IsVoteInProgress())
 		return;
@@ -1226,4 +1223,209 @@ stock bool ValidateName(const char[] name)
 	}
 	/// A name is, of course, only valid if it's 1 or more chars long, though longer is recommended
 	return (length > 0);
+}
+/// Thx Pelipoika
+stock int GetHealerByIndex(const int client, const int index)
+{
+	int m_aHealers = FindSendPropInfo("CTFPlayer", "m_nNumHealers") + 12;
+	Address m_Shared = GetEntityAddress(client) + view_as< Address >(m_aHealers);
+	Address aHealers = view_as< Address >(LoadFromAddress(m_Shared, NumberType_Int32));
+	return (LoadFromAddress(aHealers + view_as< Address >(index * 0x24), NumberType_Int32) & 0xFFF);
+}
+stock float GetConditionDuration(const int client, const TFCond cond)
+{
+	if (!TF2_IsPlayerInCondition(client, cond))
+		return 0.0;
+	
+	int m_Shared = FindSendPropInfo("CTFPlayer", "m_Shared");
+	Address aCondSource   = view_as< Address >(LoadFromAddress(GetEntityAddress(client) + view_as< Address >(m_Shared + 8), NumberType_Int32));
+	Address aCondDuration = view_as< Address >(view_as< int >(aCondSource) + (view_as< int >(cond) * 20) + (2 * 4));
+	
+	float flDuration = view_as< float >(LoadFromAddress(aCondDuration, NumberType_Int32));
+	return flDuration;
+}
+stock void SetConditionDuration(const int client, const TFCond cond, const float duration)
+{
+	if (!TF2_IsPlayerInCondition(client, cond))
+		return;
+	
+	int m_Shared = FindSendPropInfo("CTFPlayer", "m_Shared");
+	Address aCondSource   = view_as< Address >(LoadFromAddress(GetEntityAddress(client) + view_as< Address >(m_Shared + 8), NumberType_Int32));
+	Address aCondDuration = view_as< Address >(view_as< int >(aCondSource) + (view_as< int >(cond) * 20) + (2 * 4));
+	StoreToAddress(aCondDuration, view_as< int >(duration), NumberType_Int32));
+}
+
+enum {
+	TF_AMMO_DUMMY = 0,    /// Dummy index to make the CAmmoDef indices correct for the other ammo types.
+	TF_AMMO_PRIMARY,
+	TF_AMMO_SECONDARY,
+	TF_AMMO_METAL,
+	TF_AMMO_GRENADES1,
+	TF_AMMO_GRENADES2,
+	TF_AMMO_COUNT
+};
+stock void SetAmmoPackData(int pack, int type, int val)
+{
+	int offset = ((type * 4) + (FindDataMapInfo(pack, "m_vOriginalSpawnAngles") + 20));
+
+	SetEntData(pack, offset, val, _, true);
+}
+stock void PrepareSoundDir(bool valve = false, char[] dir = "sound")
+{
+	DirectoryListing l = OpenDirectory(dir, valve);
+	char buffer[PLATFORM_MAX_PATH];
+	FileType type;
+	int len;
+	l.GetNext(buffer, sizeof(buffer));
+	
+	while (l.GetNext(buffer, sizeof(buffer), type)) {
+		if (buffer[0] == '\0' || !strcmp(buffer, ".", false) || !strcmp(buffer, "..", false))
+			continue;
+		
+		if (type == FileType_Directory) {
+			Format(buffer, PLATFORM_MAX_PATH, "%s/%s", dir, buffer);
+			PrepareSoundDir(valve, buffer);
+		} else if (type == FileType_File) {
+			if ((len = strlen(buffer)) < 5)			/// .mp3, .wav, etc
+				continue;
+			
+			if (StrContains(buffer[len-4], ".mp3") == -1 && StrContains(buffer[len-4], ".wav") == -1 && StrContains(buffer[len-4], ".ogg") == -1)		/// Don't think TF2 supports .ogg but w/e
+				continue;
+			
+			Format(buffer, sizeof(buffer), "%s/%s", dir, buffer);
+			AddFileToDownloadsTable(buffer);
+			
+			if (!IsSoundPrecached(buffer[6]))	/// Offsets 'sound/'
+				PrecacheSound(buffer[6]);
+		}
+	}
+	delete l;
+}
+stock void PrepareModelDir(bool valve = false, char[] dir = "models")
+{
+	DirectoryListing l = OpenDirectory(dir, valve);
+	char buffer[PLATFORM_MAX_PATH];
+	FileType type;
+	l.GetNext(buffer, sizeof(buffer));
+	
+	while (l.GetNext(buffer, sizeof(buffer), type)) {
+		if (buffer[0] == '\0' || !strcmp(buffer, ".", false) || !strcmp(buffer, "..", false))
+			continue;
+		
+		if (type == FileType_Directory) {
+			Format(buffer, PLATFORM_MAX_PATH, "%s/%s", dir, buffer);
+			PrepareModelDir(valve, buffer);
+		} else if (type == FileType_File) {
+			if (strlen(buffer) < 5)
+				continue;
+			
+			if (StrContains(buffer, ".dx80.vtx") == -1 && StrContains(buffer, ".dx90.vtx") == -1 && StrContains(buffer, ".mdl") == -1
+			 && StrContains(buffer, ".phy") == -1 && StrContains(buffer, ".sw.vtx") == -1 && StrContains(buffer, ".vvd") == -1)
+				continue;
+			
+			Format(buffer, sizeof(buffer), "%s/%s", dir, buffer);
+			AddFileToDownloadsTable(buffer);
+			if (StrContains(buffer, ".mdl", false) != -1 && !IsModelPrecached(buffer))
+				PrecacheModel(buffer);
+		}
+	}
+	delete l;
+}
+stock void PrepareMaterialDir(bool valve = false, char[] dir = "materials")
+{
+	DirectoryListing l = OpenDirectory(dir, valve);
+	char buffer[PLATFORM_MAX_PATH];
+	FileType type;
+	l.GetNext(buffer, sizeof(buffer));
+	
+	while (l.GetNext(buffer, sizeof(buffer), type)) {
+		if (buffer[0] == '\0' || !strcmp(buffer, ".", false) || !strcmp(buffer, "..", false))
+			continue;
+		
+		if (type == FileType_Directory) {
+			Format(buffer, PLATFORM_MAX_PATH, "%s/%s", dir, buffer);
+			PrepareMaterialDir(valve, buffer);
+		} else if (type == FileType_File) {
+			if (strlen(buffer) < 5)
+				continue;
+			
+			if (StrContains(buffer, ".vmt") == -1 && StrContains(buffer, ".vtf") == -1)
+				continue;
+			
+			Format(buffer, sizeof(buffer), "%s/%s", dir, buffer);
+			AddFileToDownloadsTable(buffer);
+		}
+	}
+	delete l;
+}
+stock char[] TF2_GetPlayerClassname(const int client, bool capitalize = false)
+{
+	char s[16];
+	switch (TF2_GetPlayerClass(client)) {
+		case TFClass_Scout: s = "scout";
+		case TFClass_Soldier: s = "soldier";
+		case TFClass_Pyro: s = "pyro";
+		case TFClass_DemoMan: s = "demoman";
+		case TFClass_Medic: s = "medic";
+		case TFClass_Heavy: s = "heavy";
+		case TFClass_Pyro: s = "pyro";
+		case TFClass_Spy: s = "spy";
+		case TFClass_Engineer: s = "engineer";
+	}
+	
+	if (capitalize)
+		s[0] = CharToUpper(s[0]);
+	return s;
+}
+stock int FindMatchingTeleporter(const int tele)
+{
+	if (!HasEntProp(tele, Prop_Send, "m_bMatchBuilding"))
+		return;
+	
+	int offset = FindSendPropInfo("CObjectTeleporter", "m_bMatchBuilding")+4;
+	return GetEntDataEnt2(tele, offset);
+}
+stock bool TF2_IsKillable(const int entity)
+{
+	bool bResult = true;
+	if( 0 < entity <= MaxClients ) {
+		if(TF2_IsPlayerInCondition(entity, TFCond_Ubercharged) 
+		|| TF2_IsPlayerInCondition(entity, TFCond_UberchargedHidden) 
+		|| TF2_IsPlayerInCondition(entity, TFCond_UberchargedCanteen)
+		|| TF2_IsPlayerInCondition(entity, TFCond_Bonked)
+		|| TF2_IsPlayerInCondition(entity, TFCond_PasstimeInterception))
+		{
+			bResult = false;
+		}
+	}
+	if (GetEntProp(entity, Prop_Data, "m_takedamage") != 2)
+		bResult = false;
+	
+	return bResult;
+}
+stock int SetMetal(const int client, const int amount)
+{
+	int iMetalTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
+	SetEntData(client, iMetalTable + (4*3), 200, 4, true);
+}
+stock void SetActiveWep(const int client, const int wep)
+{
+	if (wep > MaxClients && IsValidEntity(wep))
+		SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", wep);
+}
+stock int GetRandomClient(bool balive=true, int team=0)
+{
+	int[] players = new int[MaxClients];
+	int count;
+	for( int i=MaxClients; i; --i ) {
+		if( !IsValidClient(i) )
+			continue;
+		else if( balive && !IsPlayerAlive(i) )
+			continue;
+		else if( team && GetClientTeam(i) != team )
+			continue;
+		
+		players[count++] = i;
+	}
+	return !count ? -1 : players[GetRandomInt(0, count-1)];
 }

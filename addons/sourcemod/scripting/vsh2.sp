@@ -25,7 +25,8 @@
 #pragma semicolon        1
 #pragma newdecls         required
 
-#define PLUGIN_VERSION   "2.2.4"
+#define PLUGIN_VERSION   "2.3.0"
+#define PLUGIN_VERSION_INT   "2.3.0"
 #define PLUGIN_DESCRIPT  "VS Saxton Hale 2"
 
 
@@ -249,6 +250,10 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_ff2help", HelpPanelCmd);
 	RegConsoleCmd("sm_ff2_help", HelpPanelCmd);
 	
+	RegConsoleCmd("sm_hale", HelpPanelCmd);
+	RegConsoleCmd("sm_boss", HelpPanelCmd);
+	RegConsoleCmd("sm_ff2", HelpPanelCmd);
+	
 	RegConsoleCmd("sm_resetq", ResetQueue);
 	RegConsoleCmd("sm_resetqueue", ResetQueue);
 	
@@ -281,7 +286,7 @@ public void OnPluginStart()
 	timeleftHUD = CreateHudSynchronizer();
 	
 	bEnabled = CreateConVar("vsh2_enabled", "1", "Enable VSH 2 plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	cvarVSH2[VersionNumber] = CreateConVar("vsh2_version", PLUGIN_VERSION, "VSH 2 Plugin Version. (DO NOT CHANGE)", FCVAR_NOTIFY|FCVAR_CHEAT);
+	cvarVSH2[VersionNumber] = CreateConVar("vsh2_version", PLUGIN_VERSION, "VSH 2 Plugin Version. (DO NOT CHANGE)", FCVAR_NOTIFY);
 	cvarVSH2[PointType] = CreateConVar("vsh2_point_type", "0", "Select condition to enable point (0 - alive players, 1 - time)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	cvarVSH2[PointDelay] = CreateConVar("vsh2_point_delay", "6", "Addition (for each player) delay before point's activation.", FCVAR_NOTIFY);
 	cvarVSH2[AliveToEnable] = CreateConVar("vsh2_point_alive", "5", "Enable control points when there are X people left alive.", FCVAR_NOTIFY, true, 1.0, true, 32.0);
@@ -366,7 +371,7 @@ public void OnPluginStart()
 	ManageDownloads();
 	
 	for( int i=MaxClients; i; --i ) {
-		if( !IsValidClient(i) )
+		if( !IsClientInGame(i) )
 			continue;
 		OnClientPutInServer(i);
 	}
@@ -379,7 +384,7 @@ public void OnPluginStart()
 	AddMultiTargetFilter("@!hale", HaleTargetFilter, "all non-Boss players", false);
 	AddMultiTargetFilter("@!minion", MinionTargetFilter, "all non-Minions", false);
 	AddMultiTargetFilter("@!minions", MinionTargetFilter, "all non-Minions", false);
-
+	
 	hPlayerFields[0] = new StringMap();   /// This will be freed when plugin is unloaded again
 	g_hPluginsRegistered = new ArrayList();
 }
@@ -490,7 +495,7 @@ public void OnConfigsExecuted()
 	static char szOldVersion[PATH];
 	cvarVSH2[VersionNumber].GetString(szOldVersion, sizeof(szOldVersion));
 	if( !StrEqual(szOldVersion, PLUGIN_VERSION) )
-		LogMessage("[VSH2] Warning: your config may be outdated. Back up your tf/cfg/sourcemod/VSHv2.cfg file and delete it, and this plugin will generate a new one that you can then modify to your original values.");
+		LogMessage("[VSH2] Warning: your config is outdated. Back up your tf/cfg/sourcemod/VSHv2.cfg file and delete it, and this plugin will generate a new one that you can then modify to your original values.");
 	cvarVSH2[VersionNumber].SetString(PLUGIN_VERSION, false, true);
 	
 	if( gamemode.IsVSHMap() ) {
@@ -525,7 +530,6 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 	SDKHook(client, SDKHook_TraceAttack, TraceAttack);
 	SDKHook(client, SDKHook_Touch, OnTouch);
-	
 	SDKHook(client, SDKHook_PreThinkPost, OnPreThinkPost);
 	
 	if( hPlayerFields[client] != null )
@@ -743,7 +747,7 @@ public void OnPreThinkPost(int client)
 				cloak = 0.0;
 			SetEntPropFloat(client, Prop_Send, "m_flCloakMeter", cloak);
 		}
-	} return;
+	}
 }
 
 
@@ -766,9 +770,17 @@ public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& dam
 	
 	BaseBoss BossVictim = BaseBoss(victim);
 	int bFallDamage = (damagetype & DMG_FALL);
-	if( BossVictim.bIsBoss && attacker <= 0 && bFallDamage ) {
-		damage = (BossVictim.iHealth > 100) ? 1.0 : 30.0;
-		return Plugin_Changed;
+	if( attacker <= 0 && bFallDamage ) {
+		if( BossVictim.bIsBoss ) {
+			damage = (BossVictim.iHealth > 100) ? 1.0 : 30.0;
+			return Plugin_Changed;
+		}
+		/*
+		else if( !BossVictim.bIsBoss && BossVictim.FindBack({ 444 }, 1) ) {
+			damage *= 0.3;
+			return Plugin_Changed;
+		}
+		*/
 	}
 	
 	if( BossVictim.bIsBoss ) /// in handler.sp
@@ -846,7 +858,7 @@ public void OnEntityCreated(int entity, const char[] classname)
 public Action OnWeaponSpawned(Handle timer, any ref)
 {
 	int wep = EntRefToEntIndex(ref);
-	if( IsValidEntity(wep) && IsValidEdict(wep) ) {
+	if( IsValidEntity(wep) ) {
 		int client = GetOwner(wep);
 		if( IsValidClient(client) && GetClientTeam(client) == VSH2Team_Red ) {
 			int slot = GetSlotFromWeapon(client, wep);
@@ -863,11 +875,10 @@ public Action OnWeaponSpawned(Handle timer, any ref)
 public void ShowPlayerScores()
 {
 	BaseBoss hTop[3];
-	
 	BaseBoss(0).iDamage = 0;
 	BaseBoss player;
 	for( int i=MaxClients; i; --i ) {
-		if( !IsClientValid(i) )
+		if( !IsValidClient(i) || GetClientTeam(i) <= VSH2Team_Spectator )
 			continue;
 		
 		player = BaseBoss(i);
@@ -875,41 +886,42 @@ public void ShowPlayerScores()
 			player.iDamage = 0;
 			continue;
 		}
+		else if( player.iDamage == 0 )
+			continue;
 		
 		if( player.iDamage >= hTop[0].iDamage ) {
 			hTop[2] = hTop[1];
 			hTop[1] = hTop[0];
-			hTop[0] = BaseBoss(i);
-		}
-		else if( player.iDamage >= hTop[1].iDamage ) {
+			hTop[0] = player;
+		} else if( player.iDamage >= hTop[1].iDamage ) {
 			hTop[2] = hTop[1];
-			hTop[1] = BaseBoss(i);
+			hTop[1] = player;
 		}
 		else if( player.iDamage >= hTop[2].iDamage )
-			hTop[2] = BaseBoss(i);
+			hTop[2] = player;
 	}
 	if( hTop[0].iDamage > 9000 )
 		SetPawnTimer(OverNineThousand, 1.0);    /// in stocks.inc
 	
 	char score1[PATH], score2[PATH], score3[PATH];
-	if( IsValidClient(hTop[0].index) && (GetClientTeam(hTop[0].index) > VSH2Team_Spectator) )
+	if( hTop[0].index )
 		GetClientName(hTop[0].index, score1, PATH);
 	else {
-		Format(score1, PATH, "nil");
+		strcopy(score1, PATH, "nil");
 		hTop[0] = view_as< BaseBoss >(0);
 	}
 	
-	if( IsValidClient(hTop[1].index) && (GetClientTeam(hTop[1].index) > VSH2Team_Spectator) )
+	if( hTop[1].index )
 		GetClientName(hTop[1].index, score2, PATH);
 	else {
-		Format(score2, PATH, "nil");
+		strcopy(score2, PATH, "nil");
 		hTop[1] = view_as< BaseBoss >(0);
 	}
 	
-	if( IsValidClient(hTop[2].index) && (GetClientTeam(hTop[2].index) > VSH2Team_Spectator) )
+	if( hTop[2].index )
 		GetClientName(hTop[2].index, score3, PATH);
 	else {
-		Format(score3, PATH, "nil");
+		strcopy(score3, PATH, "nil");
 		hTop[2] = view_as< BaseBoss >(0);
 	}
 	SetHudTextParams(-1.0, 0.4, 10.0, 255, 255, 255, 255);
@@ -922,8 +934,7 @@ public void ShowPlayerScores()
 			continue;
 		if( !(GetClientButtons(i) & IN_SCORE) ) {
 			player = BaseBoss(i);
-			SetGlobalTransTarget(i);
-			ShowHudText(i, -1, "Most damage dealt by:\n1)%i - %s\n2)%i - %s\n3)%i - %s\n\nDamage Dealt: %i\nScore for this round: %i", hTop[0].iDamage, score1, hTop[1].iDamage, score2, hTop[2].iDamage, score3, player.iDamage, (player.iDamage/600));
+			ShowHudText(i, -1, "Most damage dealt by:\n1)%i - %s\n2)%i - %s\n3)%i - %s\n\nDamage Dealt: %i", hTop[0].iDamage, score1, hTop[1].iDamage, score2, hTop[2].iDamage, score3, player.iDamage);
 		}
 	}
 }
@@ -983,7 +994,7 @@ public Action Timer_DrawGame(Handle timer)
 	
 	SetHudTextParams(-1.0, 0.17, 1.1, 255, 255, 255, 255);
 	for( int i=MaxClients; i; --i ) {
-		if( !IsValidClient(i) || !IsClientConnected(i) )
+		if( !IsValidClient(i) )
 			continue;
 		ShowSyncHudText(i, timeleftHUD, strTime);
 	}
@@ -1195,6 +1206,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2GameMode_GetBossType", Native_VSH2GameMode_GetBossType);
 	CreateNative("VSH2GameMode_GetTotalRedPlayers", Native_VSH2GameMode_GetTotalRedPlayers);
 	CreateNative("VSH2GameMode_GetHUDHandle", Native_VSH2GameMode_GetHUDHandle);
+	CreateNative("VSH2GameMode_GetBosses", Native_VSH2GameMode_GetBosses);
 	
 	MarkNativeAsOptional("Steam_SetGameDescription");
 	
@@ -1390,7 +1402,7 @@ public int Native_VSH2_ClimbWall(Handle plugin, int numParams)
 	float spawntime = view_as< float >( GetNativeCell(3) );
 	float healthdmg = view_as< float >( GetNativeCell(4) );
 	bool attackdelay = GetNativeCell(5);
-	player.ClimbWall(wep, spawntime, healthdmg, attackdelay);
+	return view_as< int >(player.ClimbWall(wep, spawntime, healthdmg, attackdelay));
 }
 
 public int Native_VSH2_HelpPanelClass(Handle plugin, int numParams)
@@ -1596,4 +1608,13 @@ public int Native_VSH2GameMode_GetTotalRedPlayers(Handle plugin, int numParams)
 public int Native_VSH2GameMode_GetHUDHandle(Handle plugin, int numParams)
 {
 	return view_as< int >(hHudText);
+}
+
+public int Native_VSH2GameMode_GetBosses(Handle plugin, int numParams)
+{
+	BaseBoss[] bosses = new BaseBoss[MaxClients];
+	bool balive = GetNativeCell(2);
+	int numbosses = gamemode.GetBosses(bosses, balive);
+	SetNativeArray(1, bosses, MaxClients);
+	return numbosses;
 }

@@ -161,8 +161,8 @@ methodmap CHale < BaseBoss
 				this.flCharge = -100.0;
 				Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", GetRandomInt(0, 1) ? HaleJump : HaleJump132, GetRandomInt(1, 2));
 				
-				EmitSoundToAll(snd, this.index);
-				EmitSoundToAll(snd, this.index);
+				EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
+				EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 			}
 			else this.flCharge = 0.0;
 		}
@@ -227,7 +227,7 @@ methodmap CHale < BaseBoss
 		}
 		this.DoGenericStun(HALERAGEDIST);
 		Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleRageSound, GetRandomInt(1, 4));
-		EmitSoundToAll(snd, this.index); EmitSoundToAll(snd, this.index);
+		EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 	}
 	public void KilledPlayer(const BaseBoss victim, Event event)
 	{
@@ -262,7 +262,7 @@ methodmap CHale < BaseBoss
 					else Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillEngie132, GetRandomInt(1, 2));
 				}
 			}
-			EmitSoundToAll(snd, this.index); EmitSoundToAll(snd, this.index);
+			EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 		}
 
 		float curtime = GetGameTime();
@@ -277,10 +277,16 @@ methodmap CHale < BaseBoss
 			else if( randsound < 5 && randsound > 1 )
 				Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKSpreeNew, GetRandomInt(1, 5));
 			else Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillKSpree132, GetRandomInt(1, 2));
-			EmitSoundToAll(snd, this.index); EmitSoundToAll(snd, this.index);
+			EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 			this.iKills = 0;
 		}
 		else this.flKillSpree = curtime+5;
+	}
+	
+	public void Stabbed() {
+		Format(snd, FULLPATH, "%s%i.wav", HaleStubbed132, GetRandomInt(1, 4));
+		EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
+		EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 	}
 	public void Help()
 	{
@@ -398,15 +404,15 @@ public void AddHaleToMenu ( Menu& menu )
 public void EnableSG(const int iid)
 {
 	int i = EntRefToEntIndex(iid);
-	if (IsValidEdict(i) && i > MaxClients) {
+	if (IsValidEntity(i) && i > MaxClients) {
 		char s[32]; GetEdictClassname(i, s, sizeof(s));
 		if( StrEqual(s, "obj_sentrygun") ) {
 			SetEntProp(i, Prop_Send, "m_bDisabled", 0);
 			int higher = MaxClients+1;
 			for( int ent=2048; ent>higher; --ent ) {
-				if( !IsValidEdict(ent) || ent <= 0 )
+				if( !IsValidEntity(ent) || ent <= 0 )
 					continue;
-
+			
 				char s2[32]; GetEdictClassname(ent, s2, sizeof(s2));
 				if( StrEqual(s2, "info_particle_system") && GetOwner(ent) == i )
 					AcceptEntityInput(ent, "Kill");

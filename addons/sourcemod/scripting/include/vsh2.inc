@@ -122,7 +122,7 @@ methodmap VSH2Player {
 	public native void IncreaseHeadCount();
 	public native void SpawnSmallHealthPack(int ownerteam=0);
 	public native void ForceTeamChange(const int team);
-	public native void ClimbWall(const int weapon, const float upwardVel, const float health, const bool attackdelay);
+	public native bool ClimbWall(const int weapon, const float upwardVel, const float health, const bool attackdelay);
 	public native void HelpPanelClass();
 	public native int GetAmmoTable(const int wepslot);
 	public native void SetAmmoTable(const int wepslot, const int amount);
@@ -192,6 +192,30 @@ enum { /// VSH2HookType
 	OnPrepRedTeam,
 	OnPlayerHurt,
 	OnScoreTally,
+	OnItemOverride,
+	OnBossDealDamage_OnStomp,
+	OnBossDealDamage_OnHitDefBuff,
+	OnBossDealDamage_OnHitCritMmmph,
+	OnBossDealDamage_OnHitMedic,
+	OnBossDealDamage_OnHitDeadRinger,
+	OnBossDealDamage_OnHitCloakedSpy,
+	OnBossDealDamage_OnHitShield,
+	
+	OnBossTakeDamage_OnStabbed,
+	OnBossTakeDamage_OnTelefragged,
+	OnBossTakeDamage_OnSwordTaunt,
+	OnBossTakeDamage_OnHeavyShotgun,
+	OnBossTakeDamage_OnSniped,
+	OnBossTakeDamage_OnThirdDegreed,
+	OnBossTakeDamage_OnHitSword,
+	OnBossTakeDamage_OnHitFanOWar,
+	OnBossTakeDamage_OnHitCandyCane,
+	OnBossTakeDamage_OnMarketGardened,
+	OnBossTakeDamage_OnPowerJack,
+	OnBossTakeDamage_OnKatana,
+	OnBossTakeDamage_OnAmbassadorHeadshot,
+	OnBossTakeDamage_OnDiamondbackManmelterCrit,
+	OnBossTakeDamage_OnHolidayPunch,
 	OnRedPlayerThink
 };
 
@@ -216,45 +240,71 @@ typeset VSH2HookCB {
 		OnRedPlayerThink
 		OnLastPlayer - Player is a random boss in this case.
 	*/
-	function void (const VSH2Player Player);
+	function void (const VSH2Player player);
 	
 	/**
 		OnTouchPlayer - victim is boss, attacker is other player.
 		OnBossJarated
 		OnUberDeployed, OnUberLoop - Victim is medic, Attacker is uber target
 	*/
-	function void (const VSH2Player Victim, const VSH2Player Attacker);
+	function void (const VSH2Player victim, const VSH2Player attacker);
 	
 	/// OnTouchBuilding
-	function void (const VSH2Player Attacker, const int BuildingRef);
+	function void (const VSH2Player attacker, const int BuildingRef);
 	
 	/// OnBossKillBuilding
-	function void (const VSH2Player Attacker, const int building, Event event);
+	function void (const VSH2Player attacker, const int building, Event event);
 	
-	/// OnBossTakeDamage , OnBossDealDamage
-	function Action (VSH2Player Victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom);
+	/** Boss Specific OnTakeDamage hooks
+	 * OnBossTakeDamage -> use if your boss requires completely custom take damage code.
+	 * OnBossDealDamage -> use if your boss requires completely custom deal damage code.
+	 * OnBossDealDamage_OnStomp -> when boss mantread-stomps a player.
+	 * OnBossDealDamage_OnHitDefBuff -> hit's players buffed with Battalion's Backup banner.
+	 * OnBossDealDamage_OnHitCritMmmph -> hitting someone under phlog buff.
+	 * OnBossDealDamage_OnHitMedic -> hitting a medic.
+	 * OnBossDealDamage_OnHitDeadRinger -> hitting a spy that has Dead Ringer primed.
+	 * OnBossDealDamage_OnHitCloakedSpy -> hitting a spy that is cloaked.
+	 * OnBossDealDamage_OnHitShield -> hitting a player equipped with demoknight shield or razorback.
+	 * 
+	 * OnBossTakeDamage_OnStabbed -> boss got backstabbed!
+	 * OnBossTakeDamage_OnTelefragged -> boss got telefragged
+	 * OnBossTakeDamage_OnSwordTaunt -> boss got hit by a demo sword swing taunt.
+	 * OnBossTakeDamage_OnHeavyShotgun -> boss got shot by a heavy weapons guy's shotgun.
+	 * OnBossTakeDamage_OnSniped -> Boss is shot with a sniper rifle.
+	 * OnBossTakeDamage_OnThirdDegreed -> Boss is hit with third degree pyro melee.
+	 * OnBossTakeDamage_OnHitSword -> Boss is hit with demo sword that accrues heads.
+	 * OnBossTakeDamage_OnHitFanOWar -> boss is hit with scout Fan O' War.
+	 * OnBossTakeDamage_OnHitCandyCane -> boss is hit with scout Candy Cane.
+	 * OnBossTakeDamage_OnMarketGardened -> boss is hit with market garden in midair.
+	 * OnBossTakeDamage_OnPowerJack -> boss is hit with power jack.
+	 * OnBossTakeDamage_OnKatana -> boss is hit with katana.
+	 * OnBossTakeDamage_OnAmbassadorHeadshot -> boss is headshotted with ambassador spy pistol.
+	 * OnBossTakeDamage_OnDiamondbackManmelterCrit -> boss is hit with a crit from manmelter or diamondback.
+	 * OnBossTakeDamage_OnHolidayPunch -> boss is hit with the Holiday Punch HWG melee.
+	 */
+	function Action (VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom);
 	
 	/**
 		OnPlayerKilled
 		OnPlayerAirblasted - player is the airblaster
 		OnPlayerHurt
 	*/
-	function void (const VSH2Player Player, const VSH2Player Victim, Event event);
+	function void (const VSH2Player player, const VSH2Player victim, Event event);
 	
 	/// OnTraceAttack
-	function void (const VSH2Player Victim, const VSH2Player attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup);
+	function void (const VSH2Player victim, const VSH2Player attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup);
 	
 	/// OnMessageIntro
-	function void (const VSH2Player Player, char message[512]);
+	function void (const VSH2Player player, char message[512]);
 	
 	/**
 		OnBossHealthCheck - bossBool determines if command user was the boss
 		OnRoundEndInfo - bossBool determines if boss won the round
 	*/
-	function void (const VSH2Player Player, bool bossBool, char message[512]);
+	function void (const VSH2Player player, bool bossBool, char message[512]);
 	
 	/// OnMusic
-	function void (char song[PLATFORM_MAX_PATH], float& time, const VSH2Player Player);
+	function void (char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player);
 	
 	/// OnControlPointCapped
 	function void (char cappers[MAXPLAYERS+1], const int team);
@@ -263,13 +313,16 @@ typeset VSH2HookCB {
 	function void ();
 	
 	/// OnBossPickUpItem
-	function void (const VSH2Player Player, const char item[64]);
+	function void (const VSH2Player player, const char item[64]);
 	
 	/// OnBossMenu
 	function void (Menu& menu);
 	
 	/// OnScoreTally
-	function void (const VSH2Player Player, int& points_earned, int& queue_earned);
+	function void (const VSH2Player player, int& points_earned, int& queue_earned);
+	
+	/// OnItemOverride
+	function void (const VSH2Player player, const char[] classname, int itemdef, Handle& item);
 };
 
 /// Use hooktype enum on these.
@@ -338,6 +391,7 @@ native int VSH2GameMode_CountMinions(const bool IsAlive);
 native int VSH2GameMode_CountBosses(const bool IsAlive);
 native int VSH2GameMode_GetTotalBossHealth();
 native int VSH2GameMode_GetTotalRedPlayers();
+native int VSH2GameMode_GetBosses(VSH2Player[] bosses, bool balive); 
 
 native void VSH2GameMode_SearchForItemPacks();
 native void VSH2GameMode_UpdateBossHealth();
@@ -357,7 +411,7 @@ public SharedPlugin __pl_vsh2 = {
 };
 
 #if !defined REQUIRE_PLUGIN
-public __pl_vsh2_SetNTVOptional()
+public void __pl_vsh2_SetNTVOptional()
 {
 	MarkNativeAsOptional("VSH2_RegisterPlugin");
 	MarkNativeAsOptional("VSH2Player.VSH2Player");
@@ -426,5 +480,6 @@ public __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2GameMode_GetBossType");
 	MarkNativeAsOptional("VSH2GameMode_GetTotalRedPlayers");
 	MarkNativeAsOptional("VSH2GameMode_GetHUDHandle");
+	MarkNativeAsOptional("VSH2GameMode_GetBosses");
 }
 #endif

@@ -17,7 +17,7 @@ public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 				player.iHealth = player.iMaxHealth;
 		}
 		
-		if( !player.bIsBoss && gamemode.iRoundState > StateDisabled && !player.bIsMinion) {
+		if( !player.bIsBoss && (StateDisabled < gamemode.iRoundState < StateEnding) && !player.bIsMinion) {
 			if( GetClientTeam(player.index) == VSH2Team_Boss )
 				player.ForceTeamChange(VSH2Team_Red);
 			SetPawnTimer( PrepPlayers, 0.2, player );
@@ -47,19 +47,20 @@ public Action Resupply(Event event, const char[] name, bool dontBroadcast)
 
 public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !bEnabled.BoolValue || gamemode.iRoundState == StateDisabled )	/// Bug patch: first round kill immediately ends the round.
+	/// Bug patch: first round kill immediately ends the round.
+	if( !bEnabled.BoolValue || gamemode.iRoundState == StateDisabled )
 		return Plugin_Continue;
-
+	
 	BaseBoss victim = BaseBoss( event.GetInt("userid"), true );
 	BaseBoss fighter = BaseBoss( event.GetInt("attacker"), true );
-
+	
 	//if( fighter.bIsBoss && !player.bIsBoss )	/// If Boss is killer and victim is not a Boss
 	ManageBossKillPlayer(fighter, victim, event);
-
+	
 	//if( fighter.bIsBoss && victim.bIsBoss )	/// clash of the titans - when both killer and victim are Bosses
-
-
-	if( !victim.bIsBoss && !victim.bIsMinion )	/// Patch: Don't want multibosses playing last-player sound clips when a BOSS dies...
+	
+	/// Patch: Don't want multibosses playing last-player sound clips when a BOSS dies...
+	if( !victim.bIsBoss && !victim.bIsMinion )
 		SetPawnTimer(CheckAlivePlayers, 0.2);
 	
 	if( (gamemode.bMedieval || cvarVSH2[ForceLives].BoolValue)
@@ -86,7 +87,7 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 				}
 				case 2: {
 					for( int ent=MaxClients+1; ent<2048; ++ent ) {
-						if( !IsValidEdict(ent) ) 
+						if( !IsValidEntity(ent) ) 
 							continue;
 						else if( !HasEntProp(ent, Prop_Send, "m_hBuilder") )
 							continue;
@@ -143,7 +144,7 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 
 	int playing;
 	for( int iplay=MaxClients; iplay; --iplay ) {
-		if( !IsClientInGame(iplay) )
+		if( !IsValidClient(iplay) || !IsClientInGame(iplay) )
 			continue;
 		
 		ManageResetVariables(BaseBoss(iplay));    /// in handler.sp
@@ -257,11 +258,10 @@ public Action ObjectDestroyed(Event event, const char[] name, bool dontBroadcast
 {
 	if( !bEnabled.BoolValue )
 		return Plugin_Continue;
-
+	
 	BaseBoss boss = BaseBoss(event.GetInt("attacker"), true);
 	int building = event.GetInt("index");
 	int objecttype = event.GetInt("objecttype");
-
 	ManageBuildingDestroyed(boss, building, objecttype, event);
 	return Plugin_Continue;
 }
@@ -270,20 +270,18 @@ public Action PlayerJarated(Event event, const char[] name, bool dontBroadcast)
 {
 	if( !bEnabled.BoolValue )
 		return Plugin_Continue;
-
+	
 	BaseBoss jarateer = BaseBoss(event.GetInt("thrower_entindex"), true);
 	BaseBoss jarateed = BaseBoss(event.GetInt("victim_entindex"), true);
 	ManagePlayerJarated(jarateer, jarateed);
-
 	return Plugin_Continue;
 }
 public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	gamemode.iRoundCount++;
-	
 	if( !bEnabled.BoolValue || gamemode.iRoundState == StateDisabled )
 		return Plugin_Continue;
-
+	
 	gamemode.iRoundState = StateEnding;
 	gamemode.flMusicTime = 0.0;
 	BaseBoss boss;
@@ -306,11 +304,11 @@ public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 	for( i=MaxClients; i; --i ) {	/// Loop again for bosses only
 		if( !IsValidClient(i) )
 			continue;
-
+		
 		boss = BaseBoss(i);
 		if( !boss.bIsBoss )
 			continue;
-
+		
 		if( !IsPlayerAlive(i) ) {
 			if( GetClientTeam(i) != VSH2Team_Boss/*gamemode.iHaleTeam*/ )
 				boss.ForceTeamChange(VSH2Team_Boss);

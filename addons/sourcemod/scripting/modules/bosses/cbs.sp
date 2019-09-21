@@ -74,8 +74,8 @@ methodmap CChristian < BaseBoss
 				this.flCharge = -100.0;
 				strcopy(snd, PLATFORM_MAX_PATH, CBSJump1);
 				
-				EmitSoundToAll(snd, this.index);
-				EmitSoundToAll(snd, this.index);
+				EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
+				EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 			}
 			else this.flCharge = 0.0;
 		}
@@ -117,7 +117,7 @@ methodmap CChristian < BaseBoss
 	
 	public void Death ()
 	{
-		//EmitSoundToAll(snd, this.index);
+		//EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 	}
 	
 	public void Equip ()
@@ -125,7 +125,7 @@ methodmap CChristian < BaseBoss
 		this.SetName("The Christian Brutal Sniper");
 		this.RemoveAllItems();
 		char attribs[128];
-		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.1; 259; 1.0");
+		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.1; 259; 1.0; 252; 0.7");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_club", 171, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
@@ -176,7 +176,7 @@ methodmap CChristian < BaseBoss
 				case 5: clubindex = 423;
 				case 6: clubindex = 474;
 			}
-			weapon = this.SpawnWeapon("tf_weapon_club", clubindex, 100, 5, "68; 2.0; 2; 3.1; 259; 1.0");
+			weapon = this.SpawnWeapon("tf_weapon_club", clubindex, 100, 5, "68; 2.0; 2; 3.1; 259; 1.0; 252; 0.7");
 			SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", weapon);
 		}
 
