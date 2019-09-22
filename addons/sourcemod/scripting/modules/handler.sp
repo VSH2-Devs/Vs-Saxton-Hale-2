@@ -45,12 +45,12 @@ public void ManageDownloads()
 	PrecacheSound("vo/announcer_ends_5sec.mp3", true);
 	PrecacheSound("items/pumpkin_pickup.wav", true);
 	
-	AddHaleToDownloads    ();
-	AddVagToDownloads     ();
-	AddCBSToDownloads     ();
-	AddHHHToDownloads     ();
-	AddBunnyToDownloads   ();
-	Call_OnCallDownloads  ();    /// in forwards.sp
+	AddHaleToDownloads   ();
+	AddVagToDownloads    ();
+	AddCBSToDownloads    ();
+	AddHHHToDownloads    ();
+	AddBunnyToDownloads  ();
+	Call_OnCallDownloads ();    /// in forwards.sp
 }
 
 public void ManageMenu(Menu& menu)
@@ -411,7 +411,11 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 			if( damagecustom == TF_CUSTOM_TELEFRAG ) {
 				if( Call_OnBossTakeDamage_OnTelefragged(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
 					damage = victim.iHealth+0.2;
-					return Plugin_Changed;
+				}
+				int teleowner = FindTeleOwner(attacker);
+				if( teleowner != -1 && teleowner != attacker ) {
+					BaseBoss builder = BaseBoss(teleowner);
+					builder.iDamage += RoundFloat(damage) / 2;
 				}
 				return Plugin_Changed;
 			}
@@ -448,7 +452,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					int health = GetClientHealth(attacker);
 					//int maxhp = GetEntProp(attacker, Prop_Data, "m_iMaxHealth");
 					
-					/// TODO: add cvar for this.
+					/// TODO: add cvar for this?
 					int heavy_overheal = 450;
 					if( health < heavy_overheal ) {
 						int health_from_dmg = RoundFloat((damage / 2) + health);
@@ -463,7 +467,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					time += (bossGlow > 10 ? (bossGlow > 20 ? 1 : 2) : 4)*(chargelevel/100);
 					bossGlow += RoundToCeil(time);
 					if( bossGlow > 30.0 )
-						bossGlow = 30.0;
+						bossGlow = 30.0; /// TODO: Add cvar for this?
 					victim.flGlowtime = bossGlow;
 				}
 				/// bazaar bargain I think
@@ -478,9 +482,8 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					SetEntPropFloat(attacker, Prop_Send, "m_flRageMeter", (rage + add > 100) ? 100.0 : rage + add);
 				}
 				
-				/// todo: add cvar for this.
 				if( wepindex == 230 )
-					victim.flRAGE -= (damage * 0.01);
+					victim.flRAGE -= (damage * cvarVSH2[SydneySleeperRageRemove].FloatValue);
 				
 				if( !(damagetype & DMG_CRIT) ) {
 					bool ministatus = (TF2_IsPlayerInCondition(attacker, TFCond_CritCola) || TF2_IsPlayerInCondition(attacker, TFCond_Buffed) || TF2_IsPlayerInCondition(attacker, TFCond_CritHype));
@@ -921,7 +924,6 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 		}
 		default: victim.iHealth -= damage;
 	}
-	
 	Call_OnPlayerHurt(attacker, victim, event);
 	
 	/// Minions shouldn't have their damage tracked.
@@ -932,7 +934,11 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 	if( custom == TF_CUSTOM_TELEFRAG )
 		damage = (IsPlayerAlive(attacker.index) ? 9001 : 1);
 	
+	/// block off bosses from doing the rest of things but track their damage.
 	attacker.iDamage += damage;
+	if( attacker.bIsBoss )
+		return;
+	
 	if( !GetEntProp(attacker.index, Prop_Send, "m_bShieldEquipped")
 		&& GetPlayerWeaponSlot(attacker.index, TFWeaponSlot_Secondary) <= 0
 		&& TF2_GetPlayerClass(attacker.index) == TFClass_DemoMan )
@@ -941,6 +947,7 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 		if( iReqDmg>0 ) {
 			attacker.iShieldDmg += damage;
 			if( attacker.iShieldDmg >= iReqDmg ) {
+				/// TODO: figure out a better way to regenerate shield.
 				/// save data so we can get our shield back.
 				/// save health, heads, and weapon data.
 				int client = attacker.index;
@@ -957,8 +964,13 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 				
 				/// reset old data
 				SetEntityHealth(client, health);
-				if( HasEntProp(client, Prop_Send, "m_iDecapitations") && heads > 0 )
-					SetEntProp(client, Prop_Send, "m_iDecapitations", heads);
+				
+				/// PATCH Sept 22, 2019: Demos that lost shield but changed loadouts during round retaining their heads...
+				if( HasEntProp(client, Prop_Send, "m_iDecapitations") && heads > 0 ) {
+					if( GetEntProp(client, Prop_Send, "m_bShieldEquipped") )
+						SetEntProp(client, Prop_Send, "m_iDecapitations", heads);
+					else SetEntProp(client, Prop_Send, "m_iDecapitations", 0);
+				}
 				SetAmmo(client, TFWeaponSlot_Primary, primammo);
 				SetClip(client, TFWeaponSlot_Primary, primclip);
 				attacker.iShieldDmg = 0;
@@ -1524,7 +1536,7 @@ public void _SkipBossPanel()
 		if( !j )
 			SkipBossPanelNotify(upnext[j].index);
 		else if( !IsFakeClient(upnext[j].index) )
-			CPrintToChat(upnext[j].index, "{olive}[VSH]{default} You are going to be a Boss soon! Type {olive}/halenext{default} to check/reset your queue points.");
+			CPrintToChat(upnext[j].index, "{olive}[VSH 2]{default} You are going to be a Boss soon! Type {olive}/halenext{default} to check/reset your queue points.");
 	}
 	
 	/// Ughhh, reset shit...
@@ -1560,14 +1572,15 @@ public void PrepPlayers(const BaseBoss player)
 	/// Fixes mantreads to have jump height again
 	if( gamemode.bTF2Attribs && IsValidEntity(FindPlayerBack(client, { 444 }, 1)) )
 		/// "self dmg push force increased"
-		TF2Attrib_SetByDefIndex(client, 58, 2.0);
+		TF2Attrib_SetByDefIndex(client, 58, 1.8);
 #endif
 	int weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 	int index = -1;
 	if( weapon > MaxClients && IsValidEntity(weapon) ) {
 		index = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 		switch( index ) {
-			case 237: {	/// blocks rocket jumper
+			/// blocks rocket jumper
+			case 237: {
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
 				weapon = player.SpawnWeapon("tf_weapon_rocketlauncher", 18, 1, 0, "114; 1.0");
 				SetWeaponAmmo(weapon, 20);
@@ -1584,11 +1597,15 @@ public void PrepPlayers(const BaseBoss player)
 	if( weapon > MaxClients && IsValidEntity(weapon) ) {
 		index = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 		switch( index ) {
-			case 57: {	/// Razorback
+			/// Razorback
+			/*
+			case 57: {
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
 				weapon = player.SpawnWeapon("tf_weapon_smg", 16, 1, 0, "");
 			}
-			case 265: {	/// Stickyjumper
+			*/
+			/// Stickyjumper
+			case 265: {
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
 				weapon = player.SpawnWeapon("tf_weapon_pipebomblauncher", 20, 1, 0, "");
 				SetWeaponAmmo(weapon, 24);
@@ -1614,7 +1631,8 @@ public void PrepPlayers(const BaseBoss player)
 				weapon = player.SpawnWeapon("tf_weapon_flaregun", index, 5, 10, "551; 1; 25; 0.5; 207; 1.33; 144; 1; 58; 3.2");
 				SetWeaponAmmo(weapon, 20);
 			}
-			case 740: { /// scorch shot
+			/// scorch shot
+			case 740: {
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
 				weapon = player.SpawnWeapon("tf_weapon_flaregun", index, 5, 10, "551; 1; 25; 0.5; 207; 1.33; 416; 3; 58; 2.08; 1; 0.65");
 				SetWeaponAmmo(weapon, 20);
@@ -1622,8 +1640,7 @@ public void PrepPlayers(const BaseBoss player)
 		}
 	}
 	/*
-	if( IsValidEntity (FindPlayerBack(client, { 57 }, 1)) )
-	{
+	if( IsValidEntity (FindPlayerBack(client, { 57 }, 1)) ) {
 		RemovePlayerBack(client, { 57 }, 1);
 		weapon = player.SpawnWeapon("tf_weapon_smg", 16, 1, 0, "");
 	}
@@ -1646,8 +1663,7 @@ public void PrepPlayers(const BaseBoss player)
 		}
 	}
 	weapon = GetPlayerWeaponSlot(client, 4);
-	if( weapon > MaxClients && IsValidEntity(weapon) && GetItemIndex(weapon) == 60 )
-	{
+	if( weapon > MaxClients && IsValidEntity(weapon) && GetItemIndex(weapon) == 60 ) {
 		TF2_RemoveWeaponSlot(client, 4);
 		weapon = player.SpawnWeapon("tf_weapon_invis", 30, 1, 0, "2; 1.0");
 	}
@@ -1661,7 +1677,7 @@ public void PrepPlayers(const BaseBoss player)
 			//	if( cvarVSH2[PermOverheal].BoolValue )
 			//		weapon = player.SpawnWeapon("tf_weapon_medigun", 35, 5, 10, "14; 0.0; 18; 0.0; 10; 1.25; 178; 0.75");
 			//	else weapon = player.SpawnWeapon("tf_weapon_medigun", 35, 5, 10, "18; 0.0; 10; 1.25; 178; 0.75");
-				/// 200; 1 for area of effect healing, 178; 0.75 Faster switch-to, 14; 0.0 perm overheal, 11; 1.25 Higher overheal
+			/// 200; 1 for area of effect healing, 178; 0.75 Faster switch-to, 14; 0.0 perm overheal, 11; 1.25 Higher overheal
 			if( GetMediCharge(weapon) != 0.41 )
 				SetMediCharge(weapon, 0.41);
 			//}
@@ -1758,16 +1774,28 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		//case 325, 452: {
 		//	hItemOverride = PrepareItemHandle(hItemCast, _, _, "204 ; 0 ; 149 ; 5", true);
 		//}
+		/// gas passer
+		case 1180: {
+			hItemOverride = PrepareItemHandle(hItemCast, _, _, "875 ; 1.0");
+		}
+		/// thermal thruster
+		case 1179: {
+			hItemOverride = PrepareItemHandle(hItemCast, _, _, "872 ; 1.0");
+		}
+		/// Axtinguisher, Postal Pummeler, & Festive Axtinguisher
+		case 38, 457, 1000: {
+			hItemOverride = PrepareItemHandle(hItemCast, _, _, "795 ; 1.15");
+		}
 	}
 	if( hItemOverride != null ) {
+		Call_OnItemOverride(BaseBoss(client), classname, iItemDefinitionIndex, view_as< Handle >(hItemOverride));
+		delete hItem;
 		hItem = view_as< Handle >(hItemOverride);
-		Call_OnItemOverride(BaseBoss(client), classname, iItemDefinitionIndex, hItem);
 		return Plugin_Changed;
 	}
 	
 	TFClassType iClass = TF2_GetPlayerClass(client);
-	if( !strncmp(classname, "tf_weapon_rocketlauncher", 24, false) || !strncmp(classname, "tf_weapon_particle_cannon", 25, false) )
-	{
+	if( !strncmp(classname, "tf_weapon_rocketlauncher", 24, false) || !strncmp(classname, "tf_weapon_particle_cannon", 25, false) ) {
 		switch( iItemDefinitionIndex ) {
 			/// Direct Hit
 			case 127: hItemOverride = PrepareItemHandle(hItemCast, _, _, "114; 1.0; 179; 1.0");
@@ -1781,8 +1809,7 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 			default: hItemOverride = PrepareItemHandle(hItemCast, _, _, "114; 1.0");
 		}
 	}
-	if( !strncmp(classname, "tf_weapon_grenadelauncher", 25, false) || !strncmp(classname, "tf_weapon_cannon", 16, false) )
-	{
+	if( !strncmp(classname, "tf_weapon_grenadelauncher", 25, false) /*|| !strncmp(classname, "tf_weapon_cannon", 16, false)*/ ) {
 		switch( iItemDefinitionIndex ) {
 			/// loch n load
 			case 308: hItemOverride = PrepareItemHandle(hItemCast, _, _, "114; 1.0; 208; 1.0");
@@ -1792,8 +1819,7 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 	if( !strncmp(classname, "tf_weapon_sword", 15, false) ) {
 		hItemOverride = PrepareItemHandle(hItemCast, _, _, "178; 0.8");
 	}
-	if( !strncmp(classname, "tf_weapon_shotgun", 17, false) || !strncmp(classname, "tf_weapon_sentry_revenge", 24, false) )
-	{
+	if( !StrContains(classname, "tf_weapon_shotgun", false) || !strncmp(classname, "tf_weapon_sentry_revenge", 24, false) ) {
 		switch( iClass ) {
 			case TFClass_Soldier:
 				hItemOverride = PrepareItemHandle(hItemCast, _, _, "135; 0.6; 114; 1.0");
@@ -1801,8 +1827,7 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		}
 		//hItemOverride = PrepareItemHandle(hItem, _, _, "114; 1.0");
 	}
-	if( !strncmp(classname, "tf_weapon_wrench", 16, false) || !strncmp(classname, "tf_weapon_robot_arm", 19, false) )
-	{
+	if( !strncmp(classname, "tf_weapon_wrench", 16, false) || !strncmp(classname, "tf_weapon_robot_arm", 19, false) ) {
 		if( iItemDefinitionIndex == 142 )
 			hItemOverride = PrepareItemHandle(hItemCast, _, _, "26; 55");
 		else hItemOverride = PrepareItemHandle(hItemCast, _, _, "26; 25");
@@ -1833,11 +1858,12 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		}
 	}
 	if( hItemOverride != null ) {
+		Call_OnItemOverride(BaseBoss(client), classname, iItemDefinitionIndex, view_as< Handle >(hItemOverride));
+		delete hItem;
 		hItem = view_as< Handle >(hItemOverride);
-		Call_OnItemOverride(BaseBoss(client), classname, iItemDefinitionIndex, hItem);
 		return Plugin_Changed;
 	}
-	return Plugin_Continue;
+	return Call_OnItemOverride(BaseBoss(client), classname, iItemDefinitionIndex, hItem);
 }
 
 public void ManageFighterThink(const BaseBoss fighter)
@@ -2012,10 +2038,6 @@ public void ManageFighterThink(const BaseBoss fighter)
 		}
 		/// Market Gardener
 		case 416: {
-			addthecrit = false;
-		}
-		/// Axtinguisher, Postal Pummeler
-		case 38, 457, 1000: {
 			addthecrit = false;
 		}
 	}

@@ -322,7 +322,7 @@ typeset VSH2HookCB {
 	function void (const VSH2Player player, int& points_earned, int& queue_earned);
 	
 	/// OnItemOverride
-	function void (const VSH2Player player, const char[] classname, int itemdef, Handle& item);
+	function Action (const VSH2Player player, const char[] classname, int itemdef, Handle& item);
 };
 
 /// Use hooktype enum on these.

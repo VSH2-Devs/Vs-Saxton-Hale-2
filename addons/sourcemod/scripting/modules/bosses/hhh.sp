@@ -15,20 +15,17 @@
 #define HALEHHH_TELEPORTCHARGE         (25.0 * HALEHHH_TELEPORTCHARGETIME)
 
 
-methodmap CHHHJr < BaseBoss
-{
-	public CHHHJr(const int ind, bool uid=false)
-	{
+methodmap CHHHJr < BaseBoss {
+	public CHHHJr(const int ind, bool uid=false) {
 		return view_as<CHHHJr>( BaseBoss(ind, uid) );
 	}
 	
-	public void PlaySpawnClip()
-	{
+	public void PlaySpawnClip() {
 		strcopy(snd, PLATFORM_MAX_PATH, "ui/halloween_boss_summoned_fx.wav");
 		EmitSoundToAll(snd);
 	}
 	
-	public void Think ()
+	public void Think()
 	{
 		if( !IsPlayerAlive(this.index) )
 			return;
@@ -112,7 +109,7 @@ methodmap CHHHJr < BaseBoss
 			else this.flCharge = 0.0;
 		}
 		if( OnlyScoutsLeft(VSH2Team_Red) )
-			this.flRAGE += 0.5;
+			this.flRAGE += cvarVSH2[ScoutRageGen].FloatValue;
 		
 		if( flags & FL_ONGROUND ) {
 			this.flWeighDown = 0.0;
@@ -138,22 +135,19 @@ methodmap CHHHJr < BaseBoss
 			ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i / %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.iClimbs, max_climbs);
 		else ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i / %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.iClimbs, max_climbs, this.flRAGE);
 	}
-	public void SetModel ()
-	{
+	public void SetModel() {
 		SetVariantString(HHHModel);
 		AcceptEntityInput(this.index, "SetCustomModel");
 		SetEntProp(this.index, Prop_Send, "m_bUseClassAnimations", 1);
 		//SetEntPropFloat(client, Prop_Send, "m_flModelScale", 1.25);
 	}
 	
-	public void Death ()
-	{
+	public void Death() {
 		Format(snd, PLATFORM_MAX_PATH, "vo/halloween_boss/knight_death0%d.mp3", GetRandomInt(1, 2));
 		EmitSoundToAll(snd);
 	}
 	
-	public void Equip ()
-	{
+	public void Equip() {
 		this.SetName("The Horseless Headless Horsemann Jr.");
 		this.RemoveAllItems();
 		char attribs[128];
@@ -172,13 +166,12 @@ methodmap CHHHJr < BaseBoss
 			this.SetModel();
 		}
 		this.DoGenericStun(HALERAGEDIST);
-
+		
 		strcopy(snd, PLATFORM_MAX_PATH, HHHRage2);
 		EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 	}
 	
-	public void KilledPlayer(const BaseBoss victim, Event event)
-	{
+	public void KilledPlayer(const BaseBoss victim, Event event) {
 		int living = GetLivingPlayers(VSH2Team_Red);
 		Format(snd, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHAttack, GetRandomInt(1, 4));
 		EmitSoundToAll(snd);

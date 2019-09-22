@@ -4,7 +4,7 @@ public Action QueuePanelCmd(int client, int args)
 		return Plugin_Continue;
 
 	if( !client ) {
-		ReplyToCommand(client, "[VSH 2] You can only use this command ingame.");
+		CReplyToCommand(client, "{olive}[VSH 2]{default} You can only use this command ingame.");
 		return Plugin_Handled;
 	}
 	QueuePanel(client);
@@ -16,7 +16,7 @@ public Action ResetQueue(int client, int args)
 	if( !bEnabled.BoolValue )
 		return Plugin_Continue;
 	if( !client ) {
-		ReplyToCommand(client, "[VSH 2] You can only use this command ingame.");
+		CReplyToCommand(client, "{olive}[VSH 2]{default} You can only use this command ingame.");
 		return Plugin_Handled;
 	}
 	BaseBoss(client).iQueue = 0;
@@ -103,8 +103,8 @@ public int SkipHalePanelH(Menu menu, MenuAction action, int client, int param2)
 {
 	/*
 	if( IsValidAdmin(client, "b") )
-		SetBossMenu( client, -1 );
-	else CommandSetSkill( client, -1 );
+		SetBossMenu(client, -1);
+	else CommandSetSkill(client, -1);
 	*/
 }
 
@@ -122,9 +122,12 @@ public Action SetNextSpecial(int client, int args)
 
 public int MenuHandler_PickBossSpecial(Menu menu, MenuAction action, int client, int select)
 {
-	char info1[16]; menu.GetItem(select, info1, sizeof(info1));
-	if( action == MenuAction_Select )
+	char bossname[MAX_BOSS_NAME_SIZE];
+	char info1[16]; menu.GetItem(select, info1, sizeof(info1), _, bossname, sizeof(bossname));
+	if( action == MenuAction_Select ) {
 		gamemode.iSpecial = StringToInt(info1);
+		CPrintToChat(client, "{olive}[VSH 2]{default} Next Boss will be {olive}%s{default}!", bossname);
+	}
 	else if( action == MenuAction_End )
 		delete menu;
 }
@@ -156,19 +159,19 @@ public Action CommandBossSelect(int client, int args)
 {
 	if( !bEnabled.BoolValue )
 		return Plugin_Continue;
-	if( args < 1 ) {
-		ReplyToCommand(client, "[VSH 2] Usage: boss_select <target>");
+	else if( args < 1 ) {
+		CReplyToCommand(client, "{olive}[VSH 2]{default} Usage: boss_select <target>");
 		return Plugin_Handled;
 	}
 	char targetname[32]; GetCmdArg(1, targetname, sizeof(targetname));
 	if( !strcmp(targetname, "@me", false) && IsValidClient(client) ) {
 		gamemode.hNextBoss = BaseBoss(client);
-		ReplyToCommand(client, "[VSH 2] You've set yourself as the next Boss!");
+		CReplyToCommand(client, "{olive}[VSH 2]{default} You've set yourself as the next Boss!");
 	} else {
 		int target = FindTarget(client, targetname);
 		if( IsValidClient(target) ) {
 			gamemode.hNextBoss = BaseBoss(target);
-			ReplyToCommand(client, "[VSH 2] %N is set as next Boss!", gamemode.hNextBoss.index);
+			CReplyToCommand(client, "{olive}[VSH 2]{default} %N is set as next Boss!", gamemode.hNextBoss.index);
 		}
 		else gamemode.hNextBoss = view_as< BaseBoss >(0);
 	}
@@ -188,10 +191,12 @@ public Action SetBossMenu(int client, int args)
 }
 public int MenuHandler_PickBosses(Menu menu, MenuAction action, int client, int select)
 {
-	char info1[16]; menu.GetItem(select, info1, sizeof(info1));
+	char bossname[MAX_BOSS_NAME_SIZE];
+	char info1[16]; menu.GetItem(select, info1, sizeof(info1), _, bossname, sizeof(bossname));
 	if( action == MenuAction_Select ) {
 		BaseBoss player = BaseBoss(client);
 		player.iPresetType = StringToInt(info1);
+		CPrintToChat(client, "{olive}[VSH 2]{default} Your boss is set to {olive}%s{default}!", bossname);
 	} else if( action == MenuAction_End )
 		delete menu;
 }
@@ -236,13 +241,13 @@ public Action ForceBossRealtime(int client, int args)
 		return Plugin_Continue;
 	
 	if( !client ) {
-		ReplyToCommand(client, "[VSH 2] You can only use this command ingame.");
+		CReplyToCommand(client, "{olive}[VSH 2]{default} You can only use this command ingame.");
 		return Plugin_Handled;
 	} else if( args < 2 ) {
-		ReplyToCommand(client, "[VSH 2] Usage: boss_force <target> <boss id>");
+		CReplyToCommand(client, "{olive}[VSH 2]{default} Usage: boss_force <target> <boss id>");
 		return Plugin_Handled;
 	} else if( gamemode.iRoundState > StateStarting ) {
-		ReplyToCommand(client, "[VSH 2] You can't force a boss after a round started...");
+		CReplyToCommand(client, "{olive}[VSH 2]{default} You can't force a boss after a round started...");
 		return Plugin_Handled;
 	}
 	
@@ -279,7 +284,7 @@ public Action ForceBossRealtime(int client, int args)
 			CPrintToChat(player.index, "{orange}[VSH 2]{default} an Admin has forced you to be a Boss!");
 		}
 	}
-	ReplyToCommand(client, "[VSH 2] Forced %s as a Boss", target_name);
+	CReplyToCommand(client, "{olive}[VSH 2]{default} Forced %s as a Boss", target_name);
 	return Plugin_Handled;
 }
 
@@ -289,7 +294,7 @@ public Action CommandAddPoints(int client, int args)
 		return Plugin_Continue;
 	
 	if( args < 2 ) {
-		ReplyToCommand(client, "[VSH] Usage: hale_addpoints <target> <points>");
+		CReplyToCommand(client, "{olive}[VSH 2]{default} Usage: hale_addpoints <target> <points>");
 		return Plugin_Handled;
 	}
 	char targetname[32];	GetCmdArg(1, targetname, sizeof(targetname));
@@ -320,7 +325,7 @@ public Action CommandAddPoints(int client, int args)
 			LogAction(client, target_list[i], "\"%L\" added %d VSH2 queue points to \"%L\"", client, points, target_list[i]);
 		}
 	}
-	ReplyToCommand(client, "[VSH 2] Added %d queue points to %s", points, target_name);
+	CReplyToCommand(client, "{olive}[VSH 2]{default} Added %d queue points to %s", points, target_name);
 	return Plugin_Handled;
 }
 
@@ -330,7 +335,7 @@ public Action CommandSetPoints(int client, int args)
 		return Plugin_Continue;
 	
 	if( args < 2 ) {
-		ReplyToCommand(client, "[VSH] Usage: hale_setpoints <target> <points>");
+		CReplyToCommand(client, "{olive}[VSH 2]{default} Usage: hale_setpoints <target> <points>");
 		return Plugin_Handled;
 	}
 	char targetname[32]; GetCmdArg(1, targetname, sizeof(targetname));
@@ -353,7 +358,7 @@ public Action CommandSetPoints(int client, int args)
 			LogAction(client, target_list[i], "\"%L\" set %d VSH2 queue points to \"%L\"", client, points, target_list[i]);
 		}
 	}
-	ReplyToCommand(client, "[VSH 2] Added %d queue points to %s", points, target_name);
+	CReplyToCommand(client, "{olive}[VSH 2]{default} Added %d queue points to %s", points, target_name);
 	return Plugin_Handled;
 }
 
@@ -362,7 +367,7 @@ public Action HelpPanelCmd(int client, int args)
 	if( !bEnabled.BoolValue )
 		return Plugin_Continue;
 	else if( !client ) {
-		ReplyToCommand(client, "[VSH 2] You can only use this command ingame.");
+		CReplyToCommand(client, "{olive}[VSH 2]{default} You can only use this command ingame.");
 		return Plugin_Handled;
 	}
 	//char strHelp[512];
@@ -390,15 +395,13 @@ public int HelpPanelH(Menu menu, MenuAction action, int param1, int param2)
 			}
 			case 2: {
 				BaseBoss player = BaseBoss(param1);
-				if( player.bIsBoss || player.bIsMinion )
+				if( player.bIsBoss )
 					ManageBossHelp(player);
-				else player.HelpPanelClass();
+				else if( !player.bIsMinion && GetClientTeam(param1)==VSH2Team_Red )
+					player.HelpPanelClass();
 			}
 			case 3: QueuePanel(param1);
-			case 4: {
-				BaseBoss(param1).iQueue = 0;
-				CPrintToChat(param1, "{olive}[VSH 2]{default} Your Queue has been set to 0!");
-			}
+			case 4: TurnToZeroPanel(param1);
 			default: return;
 		}
 	}
@@ -408,7 +411,7 @@ public Action MenuDoClassRush(int client, int args)
 	if( !bEnabled.BoolValue )
 		return Plugin_Continue;
 	else if( !client ) {
-		ReplyToCommand(client, "[VSH 2] You can only use this command ingame.");
+		CReplyToCommand(client, "{olive}[VSH 2]{default} You can only use this command ingame.");
 		return Plugin_Handled;
 	}
 	
@@ -430,16 +433,19 @@ public Action MenuDoClassRush(int client, int args)
 
 public int MenuHandler_ClassRush(Menu menu, MenuAction action, int client, int pick)
 {
-	char info[32]; GetMenuItem(menu, pick, info, sizeof(info));
+	char classname[64];
+	char info[10]; menu.GetItem(pick, info, sizeof(info), _, classname, sizeof(classname));
 	if( action == MenuAction_Select ) {
 		int classtype = StringToInt(info);
 		for( int i=MaxClients; i; --i ) {
-			if( !IsValidClient(i) || !IsPlayerAlive(i) || GetClientTeam(i) != VSH2Team_Red )
+			if( !IsValidClient(i) || GetClientTeam(i) != VSH2Team_Red || !IsPlayerAlive(i) )
 				continue;
 			SetEntProp(i, Prop_Send, "m_iClass", classtype);
 			TF2_RegeneratePlayer(i);
 			SetPawnTimer( PrepPlayers, 0.2, BaseBoss(i) );
+			CPrintToChat(i, "{olive}[VSH 2]{default} You've been forced to {cyan}%s{default}.", classname);
 		}
+		CPrintToChat(client, "{olive}[VSH 2]{default} Forced everybody to {cyan}%s{default}.", classname);
 	}
 	else if( action == MenuAction_End )
 		delete menu;

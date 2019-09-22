@@ -10,28 +10,24 @@
 #define PlagueRage2			"vo/medic_specialcompleted06.mp3"
 
 
-methodmap CPlague < BaseBoss
-{
-	public CPlague(const int ind, bool uid=false)
-	{
+methodmap CPlague < BaseBoss {
+	public CPlague(const int ind, bool uid=false) {
 		return view_as<CPlague>( BaseBoss(ind, uid) );
 	}
-
-	public void PlaySpawnClip()
-	{
+	
+	public void PlaySpawnClip() {
 		strcopy(snd, PLATFORM_MAX_PATH, PlagueIntro);
 		EmitSoundToAll(snd);
 	}
-
-	public void Think ()
-	{
+	
+	public void Think() {
 		if( !IsPlayerAlive(this.index) )
 			return;
-
+		
 		int buttons = GetClientButtons(this.index);
 		//float currtime = GetGameTime();
 		int flags = GetEntityFlags(this.index);
-
+		
 		//int maxhp = GetEntProp(this.index, Prop_Data, "m_iMaxHealth");
 		int health = this.iHealth;
 		float speed = HALESPEED + 0.7 * (100-health*100/this.iMaxHealth);
@@ -43,7 +39,7 @@ methodmap CPlague < BaseBoss
 		}
 		else if( this.flGlowtime <= 0.0 )
 			this.bGlow = 0;
-
+		
 		if( ((buttons & IN_DUCK) || (buttons & IN_ATTACK2)) && (this.flCharge >= 0.0) ) {
 			if( this.flCharge+2.5 < HALE_JUMPCHARGE )
 				this.flCharge += 2.5;
@@ -74,12 +70,12 @@ methodmap CPlague < BaseBoss
 			else this.flCharge = 0.0;
 		}
 		if( OnlyScoutsLeft(VSH2Team_Red) )
-			this.flRAGE += 0.5;
-
+			this.flRAGE += cvarVSH2[ScoutRageGen].FloatValue;
+		
 		if( flags & FL_ONGROUND )
 			this.flWeighDown = 0.0;
 		else this.flWeighDown += 0.1;
-
+		
 		if( (buttons & IN_DUCK) && this.flWeighDown >= HALE_WEIGHDOWN_TIME ) {
 			float ang[3]; GetClientEyeAngles(this.index, ang);
 			if( ang[0] > 60.0 ) {
@@ -100,16 +96,14 @@ methodmap CPlague < BaseBoss
 			ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp));
 		else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.flRAGE);
 	}
-	public void SetModel ()
-	{
+	public void SetModel() {
 		SetVariantString(PlagueModel);
 		AcceptEntityInput(this.index, "SetCustomModel");
 		SetEntProp(this.index, Prop_Send, "m_bUseClassAnimations", 1);
 		//SetEntPropFloat(client, Prop_Send, "m_flModelScale", 1.25);
 	}
-
-	public void Equip ()
-	{
+	
+	public void Equip() {
 		this.SetName("The Plague Doctor");
 		this.RemoveAllItems();
 		char attribs[128];
@@ -154,8 +148,7 @@ methodmap CPlague < BaseBoss
 			}
 		}
 	}
-	public void KilledPlayer(const BaseBoss victim, Event event)
-	{
+	public void KilledPlayer(const BaseBoss victim, Event event) {
 		/// GLITCH: suiciding allows boss to become own minion.
 		if( this.userid == victim.userid )
 			return;
@@ -168,8 +161,7 @@ methodmap CPlague < BaseBoss
 		victim.iOwnerBoss = this.userid;
 		victim.ConvertToMinion(0.4);
 	}
-	public void RecruitMinion(const BaseBoss base)
-	{
+	public void RecruitMinion(const BaseBoss base) {
 		TF2_SetPlayerClass(base.index, TFClass_Scout, _, false);
 		TF2_RemoveAllWeapons(base.index);
 #if defined _tf2attributes_included
@@ -187,8 +179,7 @@ methodmap CPlague < BaseBoss
 		SetEntityRenderMode(base.index, RENDER_TRANSCOLOR);
 		SetEntityRenderColor(base.index, 30, 160, 255, 255);
 	}
-	public void Help()
-	{
+	public void Help() {
 		if( IsVoteInProgress() )
 			return;
 		char helpstr[] = "Plague Doctor:Kill enemies and turn them into loyal Zombies!\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Powerup Minions): taunt when Rage is full to give powerups to your Zombies.";
@@ -218,7 +209,7 @@ public void AddPlagueDocToDownloads()
 	PrecacheSound(PlagueRage2, true);
 }
 
-public void AddPlagueToMenu ( Menu& menu )
+public void AddPlagueToMenu(Menu& menu)
 {
 	menu.AddItem("6", "Plague Doctor");
 }

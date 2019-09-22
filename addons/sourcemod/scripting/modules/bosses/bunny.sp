@@ -110,20 +110,17 @@ char BunnyRandomVoice[][] = {
 };
 
 
-methodmap CBunny < BaseBoss
-{
-	public CBunny(const int ind, bool uid=false)
-	{
+methodmap CBunny < BaseBoss {
+	public CBunny(const int ind, bool uid=false) {
 		return view_as<CBunny>( BaseBoss(ind, uid) );
 	}
 	
-	public void PlaySpawnClip()
-	{
+	public void PlaySpawnClip() {
 		strcopy(snd, PLATFORM_MAX_PATH, BunnyStart[GetRandomInt(0, sizeof(BunnyStart)-1)]);
 		EmitSoundToAll(snd);
 	}
 	
-	public void Think ()
+	public void Think()
 	{
 		if( !IsPlayerAlive(this.index) )
 			return;
@@ -173,9 +170,8 @@ methodmap CBunny < BaseBoss
 			else this.flCharge = 0.0;
 		}
 		
-		/// todo: add cvar for scout rage regeneration.
 		if( OnlyScoutsLeft(VSH2Team_Red) )
-			this.flRAGE += 0.5;
+			this.flRAGE += cvarVSH2[ScoutRageGen].FloatValue;
 		
 		if( flags & FL_ONGROUND )
 			this.flWeighDown = 0.0;
@@ -201,23 +197,20 @@ methodmap CBunny < BaseBoss
 			ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp));
 		else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.flRAGE);
 	}
-	public void SetModel ()
-	{
+	public void SetModel() {
 		SetVariantString(BunnyModel);
 		AcceptEntityInput(this.index, "SetCustomModel");
 		SetEntProp(this.index, Prop_Send, "m_bUseClassAnimations", 1);
 		//SetEntPropFloat(client, Prop_Send, "m_flModelScale", 1.25);
 	}
 	
-	public void Death ()
-	{
+	public void Death() {
 		strcopy(snd, PLATFORM_MAX_PATH, BunnyFail[GetRandomInt(0, sizeof(BunnyFail)-1)]);
 		EmitSoundToAll(snd);
 		SpawnManyAmmoPacks(this.index, EggModel, 1);
 	}
 	
-	public void Equip ()
-	{
+	public void Equip() {
 		this.SetName("The Easter Bunny");
 		this.RemoveAllItems();
 		char attribs[128];
@@ -225,8 +218,7 @@ methodmap CBunny < BaseBoss
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_bottle", 169, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
-	public void RageAbility()
-	{
+	public void RageAbility() {
 		TF2_AddCondition(this.index, view_as<TFCond>(42), 4.0);
 		if( !GetEntProp(this.index, Prop_Send, "m_bIsReadyToHighFive")
 			&& !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
@@ -246,8 +238,7 @@ methodmap CBunny < BaseBoss
 		EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 	}
 	
-	public void KilledPlayer(const BaseBoss victim, Event event)
-	{
+	public void KilledPlayer(const BaseBoss victim, Event event) {
 		strcopy(snd, PLATFORM_MAX_PATH, BunnyKill[GetRandomInt(0, sizeof(BunnyKill)-1)]);
 		EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 		SpawnManyAmmoPacks(victim.index, EggModel, 1);
@@ -269,8 +260,7 @@ methodmap CBunny < BaseBoss
 		EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 	}
 	
-	public void Help()
-	{
+	public void Help() {
 		if( IsVoteInProgress() )
 			return;
 		char helpstr[] = "The Easter Bunny:\nI think he wants to give out candy? Maybe?\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Happy Easter, Fools): taunt when Rage Meter is full.\nNearby enemies are stunned.";
@@ -280,8 +270,7 @@ methodmap CBunny < BaseBoss
 		panel.Send(this.index, HintPanel, 10);
 		delete panel;
 	}
-	public void LastPlayerSoundClip()
-	{
+	public void LastPlayerSoundClip() {
 		strcopy(snd, PLATFORM_MAX_PATH, BunnyLast[GetRandomInt(0, sizeof(BunnyLast)-1)]);
 		EmitSoundToAll(snd);
 	}
@@ -315,7 +304,7 @@ public void AddBunnyToDownloads()
 	PrecacheSoundList(BunnyRandomVoice, sizeof(BunnyRandomVoice));
 }
 
-public void AddBunnyToMenu ( Menu& menu )
+public void AddBunnyToMenu(Menu& menu)
 {
 	menu.AddItem("4", "Easter Bunny Demoman");
 }

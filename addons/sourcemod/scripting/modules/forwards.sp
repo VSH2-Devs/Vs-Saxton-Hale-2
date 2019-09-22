@@ -66,7 +66,7 @@ void InitializeForwards()
 	g_hForwards[OnPlayerHurt] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell, Param_Cell) );
 	g_hForwards[OnBossMenu] = new PrivateForward( CreateForward(ET_Ignore, Param_CellByRef) );
 	g_hForwards[OnScoreTally] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_CellByRef, Param_CellByRef) );
-	g_hForwards[OnItemOverride] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_String, Param_Cell, Param_CellByRef) );
+	g_hForwards[OnItemOverride] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_String, Param_Cell, Param_CellByRef) );
 	
 	/// OnBossDealDamage Specific Forwards.
 	g_hForwards[OnBossDealDamage_OnStomp] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
@@ -361,14 +361,16 @@ void Call_OnScoreTally(const BaseBoss player, int& points_earned, int& queue_ear
 	Call_PushCellRef(queue_earned);
 	Call_Finish();
 }
-void Call_OnItemOverride(const BaseBoss player, const char[] classname, int itemdef, Handle& item)
+Action Call_OnItemOverride(const BaseBoss player, const char[] classname, int itemdef, Handle& item)
 {
+	Action result = Plugin_Continue;
 	g_hForwards[OnItemOverride].Start();
 	Call_PushCell(player);
 	Call_PushString(classname);
 	Call_PushCell(itemdef);
 	Call_PushCellRef(item);
-	Call_Finish();
+	Call_Finish(result);
+	return result;
 }
 Action Call_OnBossDealDamage_OnStomp(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {

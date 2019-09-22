@@ -25,8 +25,7 @@
 #pragma semicolon        1
 #pragma newdecls         required
 
-#define PLUGIN_VERSION   "2.3.0"
-#define PLUGIN_VERSION_INT   "2.3.0"
+#define PLUGIN_VERSION   "2.3.1"
 #define PLUGIN_DESCRIPT  "VS Saxton Hale 2"
 
 
@@ -60,7 +59,7 @@ enum /** CvarName */ {
 	AliveToEnable,
 	FirstRound,
 	DamagePoints,
-	DamageForQueue,
+	DamageQueue,
 	QueueGained,
 	EnableMusic,
 	MusicVolume,
@@ -100,6 +99,9 @@ enum /** CvarName */ {
 	AllowRandomMultiBosses,
 	HHHMaxClimbs,
 	HealthCheckInitialDelay,
+	ScoutRageGen,
+	SydneySleeperRageRemove,
+	DamageForQueue,
 	VersionNumber
 };
 
@@ -108,7 +110,8 @@ ConVar
 	bEnabled = null
 ;
 
-ConVar cvarVSH2[VersionNumber+1]; /// Don't change this. Simply place any new CVARs above VersionNumber in the enum.
+/// Don't change this. Simply place any new CVARs above VersionNumber in the enum.
+ConVar cvarVSH2[VersionNumber+1];
 
 Handle
 	hHudText,
@@ -118,15 +121,17 @@ Handle
 	MusicCookie
 ;
 /*
-enum {
-	HudText,
-	TimeLeftHUD,
-	PointCookies,
-	BossCookies,
-	MusicCookies
+enum struct VSH2Objs {
+	Handle
+		HudText,
+		TimeLeftHUD,
+		PointCookies,
+		BossCookies,
+		MusicCookies
+	;
 };
 
-Handle VSH2Objs[MusicCookies + 1];
+VSH2Objs g_vsh2_handles;
 */
 
 methodmap TF2Item < Handle {
@@ -292,7 +297,7 @@ public void OnPluginStart()
 	cvarVSH2[AliveToEnable] = CreateConVar("vsh2_point_alive", "5", "Enable control points when there are X people left alive.", FCVAR_NOTIFY, true, 1.0, true, 32.0);
 	cvarVSH2[FirstRound] = CreateConVar("vsh2_firstround", "0", "If 1, allows the first round to start with VSH2 enabled.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	cvarVSH2[DamagePoints] = CreateConVar("vsh2_damage_points", "600", "Amount of damage needed to gain 1 point on the scoreboard.", FCVAR_NOTIFY, true, 1.0);
-	cvarVSH2[DamageForQueue] = CreateConVar("vsh2_damage_queue", "1", "Allow damage to influence increase of queue points.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	cvarVSH2[DamageQueue] = CreateConVar("vsh2_damage_queue", "1", "Allow damage to influence increase of queue points.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	cvarVSH2[QueueGained] = CreateConVar("vsh2_queue_gain", "10", "How many queue points to give at the end of each round.", FCVAR_NOTIFY, true, 0.0, true, 9999.0);
 	cvarVSH2[EnableMusic] = CreateConVar("vsh2_enable_music", "1", "Enables boss background music.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	cvarVSH2[MusicVolume] = CreateConVar("vsh2_music_volume", "0.5", "How loud the background music should be, if enabled.", FCVAR_NOTIFY, true, 0.0, true, 20.0);
@@ -332,6 +337,9 @@ public void OnPluginStart()
 	cvarVSH2[AllowRandomMultiBosses] = CreateConVar("vsh2_allow_random_multibosses", "1", "allows VSH2 to make random combinations of various bosses.", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[HHHMaxClimbs] = CreateConVar("vsh2_hhhjr_max_climbs", "10", "maximum amount of climbs HHH Jr. can do.", FCVAR_NONE, true, 0.0, true, 100.0);
 	cvarVSH2[HealthCheckInitialDelay] = CreateConVar("vsh2_initial_healthcheck_delay", "30.0", "Initial health check delay when the round starts so as to prevent wasting 10-second health checks.", FCVAR_NONE, true, 0.0, true, 999.0);
+	cvarVSH2[ScoutRageGen] = CreateConVar("vsh2_scout_rage_gen", "0.2", "rate of how much rage a boss generates when there are only scouts left.", FCVAR_NONE, true, 0.0, true, 999.0);
+	cvarVSH2[SydneySleeperRageRemove] = CreateConVar("vsh2_sydney_sleeper_rage_remove", "0.01", "how much rage (multiplied with damage) the Sydney Sleeper sniper rifle will remove from a boss' rage meter.", FCVAR_NONE, true, 0.0, true, 999.0);
+	cvarVSH2[DamageForQueue] = CreateConVar("vsh2_damage_for_queue", "1000", "if 'vsh2_damage_queue' is enabled, how much queue to give per amount of damage done.", FCVAR_NONE, true, 0.0, true, 999.0);
 	
 #if defined _steamtools_included
 	gamemode.bSteam = LibraryExists("SteamTools");
@@ -730,7 +738,7 @@ public Action Timer_PlayerThink(Handle hTimer)
 public Action CmdReloadCFG(int client, int args)
 {
 	ServerCommand("sm_rcon exec sourcemod/VSHv2.cfg");
-	ReplyToCommand(client, "**** Reloading VSH 2 ConVar Config ****");
+	CReplyToCommand(client, "**** {olive}Reloaded VSH 2 ConVar Config{default} ****");
 	return Plugin_Handled;
 }
 
@@ -953,28 +961,24 @@ public void CalcScores()
 			player.iQueue = 0;
 		else {
 			int queue_gain = cvarVSH2[QueueGained].IntValue;
-			/// TODO: Add cvar for the 1000 division.
-			int queue = (cvarVSH2[DamageForQueue].BoolValue) ? queue_gain + (player.iDamage / 1000) : queue_gain;
-			int damage = player.iDamage;
+			int queue = (cvarVSH2[DamageQueue].BoolValue) ? queue_gain + (player.iDamage / cvarVSH2[DamageForQueue].IntValue) : queue_gain;
+			int points = player.iDamage / cvarVSH2[DamagePoints].IntValue;
+			//for( j=0; damage-amount > 0; damage -= amount, j++ ) {}
 			
-			int amount = cvarVSH2[DamagePoints].IntValue;
-			int j;
-			for( j=0; damage-amount > 0; damage -= amount, j++ ) {}
-			
-			Call_OnScoreTally(player, j, queue);
+			Call_OnScoreTally(player, points, queue);
 			
 			scoring.SetInt("player", i);
-			scoring.SetInt("points", j);
+			scoring.SetInt("points", points);
 			scoring.FireToClient(i);
 			
 			player.iQueue += queue;
-			
 			CPrintToChat(i, "{olive}[VSH 2] Queue{default} You gained %i queue points.", queue);
-			CPrintToChat(i, "{olive}[VSH 2] Queue{default} You scored %i points.", j);
+			CPrintToChat(i, "{olive}[VSH 2] Queue{default} You scored %i points.", points);
 		}
 	}
 	delete scoring;
 }
+
 public Action Timer_DrawGame(Handle timer)
 {
 	if( gamemode.iHealthBarPercent < cvarVSH2[HealthPercentForLastGuy].IntValue || gamemode.iRoundState != StateRunning || gamemode.iTimeLeft < 0 )

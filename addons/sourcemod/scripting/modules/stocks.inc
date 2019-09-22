@@ -943,8 +943,8 @@ stock int FindPlayerBack(int client, int[] indices, int len)
 stock int FindSentry(const int client)
 {
 	int i = -1;
-	while ( (i = FindEntityByClassname(i, "obj_sentrygun")) != -1 )
-		if (GetEntPropEnt(i, Prop_Send, "m_hBuilder") == client)
+	while( (i = FindEntityByClassname(i, "obj_sentrygun")) != -1 )
+		if( GetEntPropEnt(i, Prop_Send, "m_hBuilder") == client )
 			return i;
 	return -1;
 }
@@ -1135,7 +1135,7 @@ stock int AttachProjectileModel(const int entity, const char[] strModel, char[] 
 }
 stock bool GetRandomBool()
 {
-	return ( !GetRandomInt(0, 1) ? false : true );
+	return( !GetRandomInt(0, 1) ? false : true );
 }
 stock void SetAmmo(const int client, const int slot, const int ammo)
 {

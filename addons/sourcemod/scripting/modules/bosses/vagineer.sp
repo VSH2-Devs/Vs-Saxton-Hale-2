@@ -41,7 +41,7 @@ methodmap CVagineer < BaseBoss
 		EmitSoundToAll(snd);
 	}
 
-	public void Think ()
+	public void Think()
 	{
 		if( !IsPlayerAlive(this.index) )
 			return;
@@ -92,7 +92,7 @@ methodmap CVagineer < BaseBoss
 			else this.flCharge = 0.0;
 		}
 		if( OnlyScoutsLeft(VSH2Team_Red) )
-			this.flRAGE += 0.5;
+			this.flRAGE += cvarVSH2[ScoutRageGen].FloatValue;
 
 		if( flags & FL_ONGROUND )
 			this.flWeighDown = 0.0;
@@ -122,7 +122,7 @@ methodmap CVagineer < BaseBoss
 			SetEntProp(this.index, Prop_Data, "m_takedamage", 0);
 		else SetEntProp(this.index, Prop_Data, "m_takedamage", 2);
 	}
-	public void SetModel ()
+	public void SetModel()
 	{
 		SetVariantString(VagineerModel);
 		AcceptEntityInput(this.index, "SetCustomModel");
@@ -130,13 +130,13 @@ methodmap CVagineer < BaseBoss
 		//SetEntPropFloat(client, Prop_Send, "m_flModelScale", 1.25);
 	}
 
-	public void Death ()
+	public void Death()
 	{
 		Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerFail, GetRandomInt(1, 2));
 		EmitSoundToAll(snd);
 	}
 
-	public void Equip ()
+	public void Equip()
 	{
 		this.SetName("The Vagineer");
 		this.RemoveAllItems();
@@ -247,7 +247,7 @@ public void AddVagToDownloads()
 	PrecacheSound("vo/engineer_positivevocalization01.mp3", true);
 }
 
-public void AddVagToMenu ( Menu& menu )
+public void AddVagToMenu(Menu& menu)
 {
 	menu.AddItem("1", "Vagineer");
 }

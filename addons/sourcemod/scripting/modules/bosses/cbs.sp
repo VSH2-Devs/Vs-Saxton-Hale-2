@@ -17,20 +17,17 @@
 
 
 
-methodmap CChristian < BaseBoss
-{
-	public CChristian(const int ind, bool uid=false)
-	{
+methodmap CChristian < BaseBoss {
+	public CChristian(const int ind, bool uid=false) {
 		return view_as<CChristian>( BaseBoss(ind, uid) );
 	}
 	
-	public void PlaySpawnClip()
-	{
+	public void PlaySpawnClip() {
 		strcopy(snd, PLATFORM_MAX_PATH, CBS0);
 		EmitSoundToAll(snd);
 	}
 	
-	public void Think ()
+	public void Think()
 	{
 		if( !IsPlayerAlive(this.index) )
 			return;
@@ -80,7 +77,7 @@ methodmap CChristian < BaseBoss
 			else this.flCharge = 0.0;
 		}
 		if( OnlyScoutsLeft(VSH2Team_Red) )
-			this.flRAGE += 0.5;
+			this.flRAGE += cvarVSH2[ScoutRageGen].FloatValue;
 		
 		if( flags & FL_ONGROUND )
 			this.flWeighDown = 0.0;
@@ -107,21 +104,18 @@ methodmap CChristian < BaseBoss
 			ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp));
 		else ShowSyncHudText(this.index, hHudText, "Jump: %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.flRAGE);
 	}
-	public void SetModel ()
-	{
+	public void SetModel() {
 		SetVariantString(CBSModel);
 		AcceptEntityInput(this.index, "SetCustomModel");
 		SetEntProp(this.index, Prop_Send, "m_bUseClassAnimations", 1);
 		//SetEntPropFloat(client, Prop_Send, "m_flModelScale", 1.25);
 	}
 	
-	public void Death ()
-	{
+	public void Death() {
 		//EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
 	}
 	
-	public void Equip ()
-	{
+	public void Equip() {
 		this.SetName("The Christian Brutal Sniper");
 		this.RemoveAllItems();
 		char attribs[128];
@@ -129,8 +123,7 @@ methodmap CChristian < BaseBoss
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_club", 171, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
-	public void RageAbility()
-	{
+	public void RageAbility() {
 		TF2_AddCondition(this.index, view_as<TFCond>(42), 4.0);
 		if( !GetEntProp(this.index, Prop_Send, "m_bIsReadyToHighFive")
 			&& !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
@@ -196,8 +189,7 @@ methodmap CChristian < BaseBoss
 		}
 		else this.flKillSpree = curtime+5;
 	}
-	public void Help()
-	{
+	public void Help() {
 		if( IsVoteInProgress() )
 			return;
 		char helpstr[] = "Christian Brutal Sniper:\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Huntsman Bow): taunt when Rage is full (9 arrows).\nVery close-by enemies are stunned.";
@@ -207,8 +199,7 @@ methodmap CChristian < BaseBoss
 		panel.Send(this.index, HintPanel, 10);
 		delete panel;
 	}
-	public void LastPlayerSoundClip()
-	{
+	public void LastPlayerSoundClip() {
 		if( !GetRandomInt(0, 2) )
 			Format(snd, PLATFORM_MAX_PATH, "%s", CBS0);
 		else Format(snd, PLATFORM_MAX_PATH, "%s%i.mp3", CBS4, GetRandomInt(1, 25));
@@ -249,7 +240,7 @@ public void AddCBSToDownloads()
 	PrecacheSound("vo/sniper_dominationspy04.mp3", true);
 }
 
-public void AddCBSToMenu ( Menu& menu )
+public void AddCBSToMenu(Menu& menu)
 {
 	menu.AddItem("2", "Christian Brutal Sniper");
 }

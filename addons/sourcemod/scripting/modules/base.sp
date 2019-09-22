@@ -29,7 +29,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 	public BaseFighter(const int ind, bool uid=false) {
 		int player=0;	/// If you're using a userid and you know 100% it's valid, then set uid to true
 		if( uid && GetClientOfUserId(ind) > 0 )
-			player = ( ind );
+			player = ind;
 		else if( IsClientValid(ind) )
 			player = GetClientUserId(ind);
 		return view_as< BaseFighter >( player );
@@ -441,8 +441,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		SetEntProp(this.index, Prop_Send, "m_iHealth", health);
 		TF2_AddCondition(this.index, TFCond_SpeedBuffAlly, 0.01);   /// recalc their speed
 	}
-	public void SpawnSmallHealthPack(int ownerteam=0)
-	{
+	public void SpawnSmallHealthPack(int ownerteam=0) {
 		if( !IsValidClient(this.index) || !IsPlayerAlive(this.index) )
 			return;
 		int healthpack = CreateEntityByName("item_healthkit_small");
@@ -456,7 +455,6 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			float vel[3];
 			vel[0] = float(GetRandomInt(-10, 10)), vel[1] = float(GetRandomInt(-10, 10)), vel[2] = 50.0;
 			TeleportEntity(healthpack, pos, NULL_VECTOR, vel);
-			//CreateTimer(17.0, Timer_RemoveCandycaneHealthPack, EntIndexToEntRef(healthpack), TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
 	public void ForceTeamChange(const int team) {
@@ -477,7 +475,6 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			return false;
 		
 		int client = this.index;
-		
 		float vecClientEyePos[3];
 		GetClientEyePosition(client, vecClientEyePos);   /// Get the position of the player's eyes
 		
@@ -486,7 +483,6 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		
 		/// Check for colliding entities
 		TR_TraceRayFilter(vecClientEyePos, vecClientEyeAng, MASK_PLAYERSOLID, RayType_Infinite, TraceRayDontHitSelf, client);
-		
 		if( !TR_DidHit(null) )
 			return false;
 		
@@ -507,14 +503,12 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		
 		float pos[3]; TR_GetEndPosition(pos);
 		float distance = GetVectorDistance(vecClientEyePos, pos);
-		
 		if( distance >= 100.0 )
 			return false;
 		
 		float fVelocity[3];
 		GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
 		fVelocity[2] = upwardvel;
-		
 		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, fVelocity);
 		SDKHooks_TakeDamage(client, client, client, health, DMG_CLUB, GetPlayerWeaponSlot(client, TFWeaponSlot_Melee));
 		
@@ -530,13 +524,13 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		switch( TF2_GetPlayerClass(this.index) ) {
 			case TFClass_Scout: Format(helpstr, sizeof(helpstr), "Scout:\nThe Crit-a-Cola grants criticals instead of minicrits.\nThe Fan O' War removes 5%% rage on hit.\nPistols gain minicrits.\nCandycane drops a health pack on hit.\nMedics healing you get a speed-buff.\nSun-on-a-Stick puts Boss on fire.\nBackscatter crits whenever it would minicrit.");
 			case TFClass_Soldier: Format(helpstr, sizeof(helpstr), "Soldier:\nThe Battalion's Backup nerfs Boss damage.\nThe Half-Zatoichi heals 35HP on hit + can overheal to +25. Honorbound is removed on hit.\nShotguns minicrit Boss in midair + lower rocketjump damage.\nDirect Hit crits when it would minicrit.\nReserve Shooter has faster weapon switch + damage buff.\nGunboats blocks 80%% of rocket jump dmg.\nMantreads gives higher jump height + no fall damage.\nRocketJumper replaced with stock Rocket Launcher.");
-			case TFClass_Pyro: Format(helpstr, sizeof(helpstr), "Pyro:\nThe Flare Gun is replaced by the MegaDetonator.\nAirblasting Bosses builds Rage and lengthens the Vagineer's uber.\nThird Degree gains uber for healers on hit.\nBackburner has Chargeable airblast.\nMannmelter crits do extra damage.");
-			case TFClass_DemoMan: Format(helpstr, sizeof(helpstr), "Demoman:\nThe shields block at least one hit from Boss melees.\nUsing shields grants crits on all weapons.\nEyelander/reskins gain heads on hit.\nHalf-Zatoichi heals 35HP on hit and can overheal to +25. Honorbound is removed on hit.\nPersian Persuader gives 2x reserve ammo.\nBoots do stomp damage.\nLoch-n-Load does afterburn on hit.\nGrenade Launcher & Cannon reduces explosive jumping if the weapon is active.\nStickyJumper replaced with Sticky Launcher.\nDecapitator taunt gives 4 heads if Successful.");
+			case TFClass_Pyro: Format(helpstr, sizeof(helpstr), "Pyro:\nThe Flare Gun is replaced by the MegaDetonator.\nAirblasting Bosses builds Rage and lengthens the Vagineer's uber.\nThird Degree gains uber for healers on hit.\nBackburner has Chargeable airblast.\nMannmelter crits do extra damage.\nAxtinguisher & Reskins do extra dmg on burning players.\nGas Passer explodes on ignition.\nThermal Thruster let's you fly mid-air.");
+			case TFClass_DemoMan: Format(helpstr, sizeof(helpstr), "Demoman:\nThe shields block at least one hit from Boss melees.\nUsing shields grants crits on all weapons.\nEyelander/reskins gain heads on hit.\nHalf-Zatoichi heals 35HP on hit and can overheal to +25. Honorbound is removed on hit.\nPersian Persuader gives 2x reserve ammo.\nBoots do stomp damage.\nLoch-n-Load does afterburn on hit.\nGrenade Launchers reduces explosive jumping if the weapon is active.\nStickyJumper replaced with Sticky Launcher.\nDecapitator taunt gives 4 heads if Successful.");
 			case TFClass_Heavy: Format(helpstr, sizeof(helpstr), "Heavy:\nthe KGB & Fists of Steel are replaced with the\nGloves of Running, and Fists, respectively.\nThe Gloves of Running are fast but cause you to take more damage.\nThe Holiday Punch will remove any stun on you if you hit Hale while stunned.\nMiniguns get +15% damage boost when being healed by a medic.\nShotguns give damage back as some health.\n");
 			case TFClass_Engineer: Format(helpstr, sizeof(helpstr), "Engineer:\nWrenches give an extra +25HP.\nGunslinger gives +55HP\nThe Frontier Justice gains crits only while your sentry is targetting Hale.\nThe Eureka Effect is disabled for now.\nTelefrags kill Bosses in one shot.");
-			case TFClass_Medic: Format(helpstr, sizeof(helpstr), "Medic:\nCharge: Kritz+Uber. Charge starts at 40percent.\nCharge lasts for 150 percent after activation.\nSyringe Guns: on hit: +5 to Uber.\nCrossbow: 100 percent crits, +150%% damage, +15 uber on hit.\nhaving 90% or higher Uber protects you from one Melee hit from Boss.\nBlutsauger + Overdose are Unlocked + give 1%% Uber on hit.\nHealing Heavies give them damage boost on Miniguns.");
-			case TFClass_Sniper: Format(helpstr, sizeof(helpstr), "Sniper:\nJarate removes small pct of Boss Rage.\nBack-equipped weapons are replaced with SMG.\nSniper Rifles causes Certain Bosses to glow. Glow time scales with charge.\nAll Sniper melees climb walls, but has slower rate of fire.\nHuntsman carries 2x more ammo.\nBazaar Bargain gains heads on headshot.\n");
-			case TFClass_Spy: Format(helpstr, sizeof(helpstr), "Spy:\nBackstab does about 10+ percent of a Boss' max HP.\nCloaknDagger replaced with normal inviswatch.\nAll revolvers minicrit.\nYour Eternal Reward backstabs will disguise you.\nKunai backstabs will get you a health bonus.\nSappers are replaced with a throwing kunai.\nDiamondback gets 2 crits on backstab.\nBig Earner gives full Cloak on backstab.\nAmbassador headshots do extra damage.");
+			case TFClass_Medic: Format(helpstr, sizeof(helpstr), "Medic:\nCharge: Kritz+Uber. Charge starts at 40percent.\nCharge lasts for 150 percent after activation.\nSyringe Guns: on hit: +5 to Uber.\nCrossbow: 100 percent crits, +150%% damage, +15 uber on hit.\nhaving 90% or higher Uber protects you from ONE fatal hit from Boss.\nBlutsauger + Overdose are Unlocked + give 1%% Uber on hit.\nHealing Heavies gives them damage boost on Miniguns.");
+			case TFClass_Sniper: Format(helpstr, sizeof(helpstr), "Sniper:\nJarate removes small pct of Boss Rage.\nBack-equipped weapons are replaced with SMG.\nSniper Rifles causes Certain Bosses to glow. Glow time scales with charge.\nAll Sniper melees climb walls, but has slower rate of fire.\nHuntsman carries 2x more ammo.\nBazaar Bargain gains heads on headshot.\nRazorback blocks one fatal hit.");
+			case TFClass_Spy: Format(helpstr, sizeof(helpstr), "Spy:\nBackstab does about 10+ percent of a Boss' max HP.\nCloaknDagger replaced with normal inviswatch.\nAll revolvers minicrit.\nYour Eternal Reward backstabs will disguise you.\nKunai backstabs will get you a health bonus.\nSappers are replaced with a rechargeable throwing kunai.\nDiamondback gets 2 crits on backstab.\nBig Earner gives full Cloak on backstab.\nAmbassador headshots do extra damage.");
 		}
 		Panel panel = new Panel();
 		panel.SetTitle(helpstr);

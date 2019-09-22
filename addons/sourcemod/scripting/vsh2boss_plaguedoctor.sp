@@ -299,7 +299,7 @@ public void PlagueDoc_OnBossThink(const VSH2Player boss)
 		else player.flCharge = 0.0;
 	}
 	if( OnlyScoutsLeft(VSH2Team_Red) )
-		player.flRAGE += 0.5;
+		player.flRAGE += FindConVar("vsh2_scout_rage_gen").FloatValue;
 	
 	/// weighdown code
 	if( flags & FL_ONGROUND )
