@@ -25,7 +25,7 @@
 #pragma semicolon        1
 #pragma newdecls         required
 
-#define PLUGIN_VERSION   "2.3.1"
+#define PLUGIN_VERSION   "2.3.2"
 #define PLUGIN_DESCRIPT  "VS Saxton Hale 2"
 
 
@@ -102,6 +102,8 @@ enum /** CvarName */ {
 	ScoutRageGen,
 	SydneySleeperRageRemove,
 	DamageForQueue,
+	DeadRingerDamage,
+	CloakDamage,
 	VersionNumber
 };
 
@@ -303,7 +305,7 @@ public void OnPluginStart()
 	cvarVSH2[MusicVolume] = CreateConVar("vsh2_music_volume", "0.5", "How loud the background music should be, if enabled.", FCVAR_NOTIFY, true, 0.0, true, 20.0);
 	cvarVSH2[HealthPercentForLastGuy] = CreateConVar("vsh2_health_percentage_last_guy", "51", "If the health bar is lower than x out of 255, the last player timer will stop.", FCVAR_NOTIFY, true, 0.0, true, 255.0);
 	cvarVSH2[HealthRegenForPlayers] = CreateConVar("vsh2_health_regen", "0", "Allow non-boss and non-minion players to have passive health regen.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	cvarVSH2[HealthRegenAmount] = CreateConVar("vsh2_health_regen_amount", "2.0", "If health regen is enabled, how much health regen per second should players get?", FCVAR_NOTIFY);
+	cvarVSH2[HealthRegenAmount] = CreateConVar("vsh2_health_regen_amount", "1.0", "If health regen is enabled, how much health regen per second should players get?", FCVAR_NOTIFY);
 	cvarVSH2[MedigunReset] = CreateConVar("vsh2_medigun_reset_amount", "0.31", "How much Uber percentage should Mediguns, after Uber, reset to?", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	cvarVSH2[StopTickleTime] = CreateConVar("vsh2_stop_tickle_time", "1.0", "How long in seconds the tickle effect from the Holiday Punch lasts before being removed.", FCVAR_NOTIFY, true, 0.01);
 	cvarVSH2[AirStrikeDamage] = CreateConVar("vsh2_airstrike_damage", "200", "How much damage needed for the Airstrike to gain +1 clipsize.", FCVAR_NOTIFY);
@@ -328,18 +330,20 @@ public void OnPluginStart()
 	cvarVSH2[BlockEureka] = CreateConVar("vsh2_allow_eureka_effect", "0", "Enables/Disables the Eureka Effect for Engineers", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[ForceLives] = CreateConVar("vsh2_force_player_lives", "0", "Forces the gamemode to apply Medieval Mode lives on players, whether or not medieval mode is enabled", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[Anchoring] = CreateConVar("vsh2_allow_boss_anchor", "1", "When enabled, reduces all knockback bosses experience when crouching.", FCVAR_NONE, true, 0.0, true, 1.0);
-	cvarVSH2[BlockRageSuicide] = CreateConVar("vsh2_block_raged_suicide", "1", "when enables, stops raged players from suiciding.", FCVAR_NONE, true, 0.0, true, 1.0);
+	cvarVSH2[BlockRageSuicide] = CreateConVar("vsh2_block_raged_suicide", "1", "when enabled, stops raged players from suiciding.", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[HealthKitLimitMax] = CreateConVar("vsh2_spawn_health_kit_limit_max", "6", "max amount of health kits that can be produced in RED spawn. 0 for unlimited amount", FCVAR_NONE, true, 0.0, true, 50.0);
 	cvarVSH2[HealthKitLimitMin] = CreateConVar("vsh2_spawn_health_kit_limit_min", "4", "minimum amount of health kits that can be produced in RED spawn. 0 for no minimum limit", FCVAR_NONE, true, 0.0, true, 50.0);
 	cvarVSH2[AmmoKitLimitMax] = CreateConVar("vsh2_spawn_ammo_kit_limit_max", "6", "max amount of ammo kits that can be produced in RED spawn. 0 for unlimited amount", FCVAR_NONE, true, 0.0, true, 50.0);
 	cvarVSH2[AmmoKitLimitMin] = CreateConVar("vsh2_spawn_ammo_kit_limit_min", "4", "minimum amount of ammo kits that can be produced in RED spawn. 0 for no minimum limit", FCVAR_NONE, true, 0.0, true, 50.0);
-	cvarVSH2[ShieldRegenDmgReq] = CreateConVar("vsh2_shield_regen_damage", "2000", "damage required for demoknights to regenerate their shield, put 0 to disable.", FCVAR_NONE, true, 0.0, true, 99999.0);
+	cvarVSH2[ShieldRegenDmgReq] = CreateConVar("vsh2_shield_regen_damage", "2000", "damage required for demoknights to regenerate their shield, put 0 to disable.", FCVAR_NONE, true, 1.0, true, 99999.0);
 	cvarVSH2[AllowRandomMultiBosses] = CreateConVar("vsh2_allow_random_multibosses", "1", "allows VSH2 to make random combinations of various bosses.", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[HHHMaxClimbs] = CreateConVar("vsh2_hhhjr_max_climbs", "10", "maximum amount of climbs HHH Jr. can do.", FCVAR_NONE, true, 0.0, true, 100.0);
 	cvarVSH2[HealthCheckInitialDelay] = CreateConVar("vsh2_initial_healthcheck_delay", "30.0", "Initial health check delay when the round starts so as to prevent wasting 10-second health checks.", FCVAR_NONE, true, 0.0, true, 999.0);
 	cvarVSH2[ScoutRageGen] = CreateConVar("vsh2_scout_rage_gen", "0.2", "rate of how much rage a boss generates when there are only scouts left.", FCVAR_NONE, true, 0.0, true, 999.0);
 	cvarVSH2[SydneySleeperRageRemove] = CreateConVar("vsh2_sydney_sleeper_rage_remove", "0.01", "how much rage (multiplied with damage) the Sydney Sleeper sniper rifle will remove from a boss' rage meter.", FCVAR_NONE, true, 0.0, true, 999.0);
 	cvarVSH2[DamageForQueue] = CreateConVar("vsh2_damage_for_queue", "1000", "if 'vsh2_damage_queue' is enabled, how much queue to give per amount of damage done.", FCVAR_NONE, true, 0.0, true, 999.0);
+	cvarVSH2[DeadRingerDamage] = CreateConVar("vsh2_dead_ringer_damage", "90.0", "damage, divided by 0.25, that dead ringer spies will take from boss melee hits.", FCVAR_NONE, true, 0.0, true, 999999.0);
+	cvarVSH2[CloakDamage] = CreateConVar("vsh2_cloak_damage", "70.0", "damage, divided by 0.8, that dead ringer spies will take from boss melee hits.", FCVAR_NONE, true, 0.0, true, 999999.0);
 	
 #if defined _steamtools_included
 	gamemode.bSteam = LibraryExists("SteamTools");
@@ -433,8 +437,9 @@ public Action BlockSuicide(int client, const char[] command, int argc)
 	if( bEnabled.BoolValue && gamemode.iRoundState == StateRunning ) {
 		BaseBoss player = BaseBoss(client);
 		if( player.bIsBoss ) {
+			/// TODO: add cvar for suicide health percentage threshold.
 			float flhp_percent = float(player.iHealth) / float(player.iMaxHealth);
-			if( flhp_percent > 0.3 ) {	/// Allow bosses to suicide if their total health is under 3%.
+			if( flhp_percent > 0.3 ) {	/// Allow bosses to suicide if their total health is under 30%.
 				CPrintToChat(client, "You cannot suicide yet as a boss. Please Use '!resetq' instead.");
 				return Plugin_Handled;
 			}

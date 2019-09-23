@@ -322,6 +322,10 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 						victim.flCharge = HALEHHH_TELEPORTCHARGE;
 					else victim.bSuperCharge = true;
 				}
+				if( damage > 500.0 ) {
+					damage = 500.0;
+					return Plugin_Changed;
+				}
 			}
 			if( attacker <= 0 || attacker > MaxClients )
 				return Plugin_Continue;
@@ -766,22 +770,28 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 			
 			/// eggs probably do melee damage to spies, then? That's not ideal, but eh.
 			if( TF2_GetPlayerClass(client) == TFClass_Spy ) {
-				if( GetEntProp(client, Prop_Send, "m_bFeignDeathReady") && !TF2_IsPlayerInCondition(client, TFCond_Cloaked) ) {
-					if( Call_OnBossDealDamage_OnHitDeadRinger(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
-						if( damagetype & DMG_CRIT )
-							damagetype &= ~DMG_CRIT;
-						damage = 85.0;
+				if( GetEntProp(client, Prop_Send, "m_bFeignDeathReady") || TF2_IsPlayerInCondition(client, TFCond_Cloaked) ) {
+					if( GetClientCloakIndex(client) == 59 ) {
+						if( Call_OnBossDealDamage_OnHitDeadRinger(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
+							if( damagetype & DMG_CRIT )
+								damagetype &= ~DMG_CRIT;
+							/// Dead ringer (tested Sep 23, 2019) reduces damage by 75%
+							if( damagetype & DMG_CLUB )
+								damage = cvarVSH2[DeadRingerDamage].FloatValue / 0.25;
+							return Plugin_Changed;
+						}
+						return Plugin_Changed;
+					} else {
+						if( Call_OnBossDealDamage_OnHitCloakedSpy(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
+							if( damagetype & DMG_CRIT )
+								damagetype &= ~DMG_CRIT;
+							/// Regular cloak (tested Sep 23, 2019) reduces damage by 20%
+							if( damagetype & DMG_CLUB )
+								damage = cvarVSH2[CloakDamage].FloatValue / 0.8;
+							return Plugin_Changed;
+						}
 						return Plugin_Changed;
 					}
-					return Plugin_Changed;
-				} else if( TF2_IsPlayerInCondition(client, TFCond_Cloaked) || TF2_IsPlayerInCondition(client, TFCond_DeadRingered) ) {
-					if( Call_OnBossDealDamage_OnHitCloakedSpy(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
-						if( damagetype & DMG_CRIT )
-							damagetype &= ~DMG_CRIT;
-						damage = 60.0;
-						return Plugin_Changed;
-					}
-					return Plugin_Changed;
 				}
 			}
 			

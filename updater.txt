@@ -4,24 +4,14 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.3.1"
+			"Latest"	"2.3.2"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.1:"
-		"Notes"	"Changed 'OnItemOverride to return an Action status & added another call at the end of OnGiveNamedItem."
-		"Notes"	"Fixed Handle leak from TF2Items (Bottiger)."
-		"Notes"	"Removed less explosive damage jumping from the Loose Cannon."
-		"Notes"	"Patched Demos that lost shield but changed loadouts during round retaining their heads."
-		"Notes"	"Patched HHH Jr. regenerating and losing his rage after killing players."
-		"Notes"	"Added cvar that controls rate of rage generation when only Scouts are left on RED Team."
-		"Notes"	"Replaced points loop with a simple division expression."
-		"Notes"	"Added cvar that controls the rage removal multiplication of the Sydney Sleeper."
-		"Notes"	"Added telefrag assistance for engies that built the teleporter but someone else got the telefrag."
-		"Notes"	"Added color to command reply chat."
-		"Notes"	"Improved the set boss and boss special selector to reply with a message."
-		"Notes"	"Added gas passer & thermal thruster; gas passer explodes on ignite and thermal thruster allows consecutive air-jumps."
-		"Notes"	"Axtinguisher & reskins do 15% more damage against burning bosses."
-		"Notes"	"Updated natives tester with latest forwards."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.2:"
+		"Notes"	"Patched bosses getting one-shotted from certain trigger_hurt's."
+		"Notes"	"Spy cloaking damage is now limited to melee hits as it should be."
+		"Notes"	"Refactoring spy cloak damage so that hitting dead ringered spies always calls 'OnBossDealDamage_OnHitDeadRinger' and hitting regular cloak always calls 'OnBossDealDamage_OnHitCloakedSpy'."
+		"Notes"	"Added cvars to control the damage spies take from cloak and dead ringer."
 	}
 	
 	"Files"

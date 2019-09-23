@@ -262,7 +262,7 @@ typeset VSH2HookCB {
 	 * OnBossDealDamage_OnHitDefBuff -> hit's players buffed with Battalion's Backup banner.
 	 * OnBossDealDamage_OnHitCritMmmph -> hitting someone under phlog buff.
 	 * OnBossDealDamage_OnHitMedic -> hitting a medic.
-	 * OnBossDealDamage_OnHitDeadRinger -> hitting a spy that has Dead Ringer primed.
+	 * OnBossDealDamage_OnHitDeadRinger -> hitting a spy that has Dead Ringer.
 	 * OnBossDealDamage_OnHitCloakedSpy -> hitting a spy that is cloaked.
 	 * OnBossDealDamage_OnHitShield -> hitting a player equipped with demoknight shield or razorback.
 	 * 
