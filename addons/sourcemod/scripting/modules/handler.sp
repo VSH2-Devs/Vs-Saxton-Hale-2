@@ -1369,6 +1369,7 @@ public void StopBackGroundMusic()
 		}
 	}
 }
+
 public void ManageRoundEndBossInfo(ArrayList bosses, bool bossWon)
 {
 	char victory[FULLPATH];
@@ -1438,7 +1439,6 @@ public void ManageBossCheckHealth(const BaseBoss base)
 				PrintCenterTextAll("%s showed his current HP: %i of %i", name, base.iHealth, base.iMaxHealth);
 			default:	Call_OnBossHealthCheck(base, true, gameMessage);
 		}
-		//Call_OnBossHealthCheck(base);
 		LastBossTotalHealth = base.iHealth;
 		return;
 	}
@@ -1470,10 +1470,13 @@ public void ManageBossCheckHealth(const BaseBoss base)
 		PrintCenterTextAll(gameMessage);
 		CPrintToChatAll("{olive}[VSH 2] Boss Health Check{default} %s", gameMessage);
 		LastBossTotalHealth = totalHealth;
-		gamemode.flHealthTime = currtime+(gamemode.iHealthChecks < 3 ? 10.0 : 60.0);
+		
+		gamemode.flHealthTime = currtime + ((gamemode.iHealthChecks < 3) ? 10.0 : 60.0);
+	} else {
+		CPrintToChat(base.index, "{olive}[VSH 2]{default} You cannot see the Boss HP now (wait %i seconds). Last known total boss health was %i.", RoundFloat(gamemode.flHealthTime-currtime), LastBossTotalHealth);
 	}
-	else CPrintToChat(base.index, "{olive}[VSH 2]{default} You cannot see the Boss HP now (wait %i seconds). Last known total boss health was %i.", RoundFloat(gamemode.flHealthTime-currtime), LastBossTotalHealth);
 }
+
 public void CheckAlivePlayers()
 {
 	if( gamemode.iRoundState != StateRunning )
@@ -1483,7 +1486,7 @@ public void CheckAlivePlayers()
 	if( !living )
 		ForceTeamWin(VSH2Team_Boss);
 	
-	if( living == 1 && gamemode.GetRandomBoss(true) && gamemode.iTimeLeft <= 0 ) {
+	if( living == 1 && gamemode.CountBosses(true) > 0 && gamemode.iTimeLeft <= 0 ) {
 		ManageLastPlayer();	/// in handler.sp
 		gamemode.iTimeLeft = cvarVSH2[LastPlayerTime].IntValue;
 		
@@ -1533,6 +1536,7 @@ public void ManageOnBossCap(char sCappers[MAXPLAYERS+1], const int CappingTeam)
 	Call_OnControlPointCapped(sCappers, CappingTeam);
 }
 
+/// TODO: fix this up so it appears more often.
 public void _SkipBossPanel()
 {
 	BaseBoss upnext[3];
@@ -1905,6 +1909,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 		else Format(HUDText, 300, "Damage: %d", fighter.iDamage);
 		ShowSyncHudText(i, hHudText, HUDText);
 	}
+	
 	if( HasEntProp(i, Prop_Send, "m_iKillStreak") ) {
 		int killstreaker = fighter.iDamage/1000;
 		if( killstreaker && GetEntProp(i, Prop_Send, "m_iKillStreak") >= 0 )
@@ -1939,7 +1944,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 			}
 			int spy_secondary = GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary);
 			if( spy_secondary > MaxClients && IsValidEntity(spy_secondary) )
-				Format(HUDText, 300, "%s | Kunai: %i", HUDText, GetWeaponAmmo(spy_secondary));
+				Format(HUDText, 300, "%s | Kunai: %s", HUDText, GetWeaponAmmo(spy_secondary) ? "Ready" : "None");
 		}
 		case TFClass_Medic: {
 			int medigun = GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary);

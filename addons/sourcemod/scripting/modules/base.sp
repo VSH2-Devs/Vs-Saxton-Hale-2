@@ -746,8 +746,9 @@ methodmap BaseBoss < BaseFighter {
 		if( GetClientTeam(this.index) == VSH2Team_Red )
 			this.ForceTeamChange(VSH2Team_Boss);
 	}
-	public void DoGenericStun(const float rageDist)
+	public void DoGenericStun(float rage_dist)
 	{
+		Call_OnBossDoRageStun(this, rage_dist);
 		int i;
 		float pos[3], pos2[3];
 		GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
@@ -756,7 +757,7 @@ methodmap BaseBoss < BaseFighter {
 				continue;
 			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
 			float distance = GetVectorDistance(pos, pos2);
-			if( !TF2_IsPlayerInCondition(i, TFCond_Ubercharged) && distance < rageDist ) {
+			if( !TF2_IsPlayerInCondition(i, TFCond_Ubercharged) && distance < rage_dist ) {
 				CreateTimer(5.0, RemoveEnt, EntIndexToEntRef(AttachParticle(i, "yikes_fx", 75.0)));
 				TF2_StunPlayer(i, 5.0, _, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, this.index);
 			}
@@ -765,7 +766,7 @@ methodmap BaseBoss < BaseFighter {
 		while( (i = FindEntityByClassname(i, "obj_sentrygun")) != -1 ) {
 			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
 			float distance = GetVectorDistance(pos, pos2);
-			if( distance < rageDist ) {
+			if( distance < rage_dist ) {
 				SetEntProp(i, Prop_Send, "m_bDisabled", 1);
 				AttachParticle(i, "yikes_fx", 75.0);
 				SetVariantInt(1);
@@ -777,7 +778,7 @@ methodmap BaseBoss < BaseFighter {
 		while( (i = FindEntityByClassname(i, "obj_dispenser")) != -1 ) {
 			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
 			float distance = GetVectorDistance(pos, pos2);
-			if( distance < rageDist ) {
+			if( distance < rage_dist ) {
 				SetVariantInt(1);
 				AcceptEntityInput(i, "RemoveHealth");
 			}
@@ -786,7 +787,7 @@ methodmap BaseBoss < BaseFighter {
 		while( (i = FindEntityByClassname(i, "obj_teleporter")) != -1 ) {
 			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
 			float distance = GetVectorDistance(pos, pos2);
-			if( distance < rageDist ) {
+			if( distance < rage_dist ) {
 				SetVariantInt(1);
 				AcceptEntityInput(i, "RemoveHealth");
 			}
@@ -818,6 +819,33 @@ methodmap BaseBoss < BaseFighter {
 	}
 	public bool SetName(const char name[MAX_BOSS_NAME_SIZE]) {
 		return hPlayerFields[this.index].SetString("strName", name);
+	}
+	
+	public void SuperJump(const float power, const float reset) {
+		Call_OnBossSuperJump(this);
+		int client = this.index;
+		float vel[3]; GetEntPropVector(client, Prop_Data, "m_vecVelocity", vel);
+		vel[2] = 750 + power * 13.0;
+		if( this.bSuperCharge ) {
+			vel[2] += 2000.0;
+			this.bSuperCharge = false;
+		}
+		SetEntProp(client, Prop_Send, "m_bJumping", 1);
+		vel[0] *= (1+Sine(power * FLOAT_PI / 50));
+		vel[1] *= (1+Sine(power * FLOAT_PI / 50));
+		TeleportEntity(client, NULL_VEC, NULL_VEC, vel);
+		this.flCharge = reset;
+	}
+	
+	public void WeighDown(const float reset) {
+		Call_OnBossWeighDown(this);
+		int client = this.index;
+		float fVelocity[3]; GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
+		fVelocity[2] = -1000.0;
+		TeleportEntity(client, NULL_VEC, NULL_VEC, fVelocity);
+		//SetEntityGravity(client, 6.0);
+		//SetPawnTimer(SetGravityNormal, 1.0, this.userid);
+		this.flWeighDown = reset;
 	}
 };
 

@@ -458,14 +458,14 @@ methodmap VSHGameMode { /* < StringMap */
 		if (!FileExists(config)) {
 			BuildPath(Path_SM, config, FULLPATH, "configs/saxton_hale/saxton_hale_maps.cfg");
 			if (!FileExists(config)) {
-				LogError("[VSH 2] ERROR: **** Unable to find VSH/FF2 Compatibility Map Configs, Disabling VSH 2 ****");
+				LogError("[VSH 2] ERROR: **** Unable to find VSH/FF2 Compatible Map Configs, Disabling VSH 2 ****");
 				return false;
 			}
 		}
 		
 		File file = OpenFile(config, "r");
 		if( !file ) {
-			LogError("[VSH 2] **** Error Reading Maps from %s Config, Disabling VSH Engine ****", config);
+			LogError("[VSH 2] **** Error Reading Maps from %s Config, Disabling VSH 2 ****", config);
 			return false;
 		}
 		
@@ -473,7 +473,7 @@ methodmap VSHGameMode { /* < StringMap */
 		while( file.ReadLine(config, sizeof(config)) && tries < 100 ) {
 			++tries;
 			if( tries == 100 ) {
-				LogError("[VSH 2] **** Breaking Loop Looking For a Map ****");
+				LogError("[VSH 2] **** Breaking Loop Looking For a Map, Disabling VSH 2 ****");
 				return false;
 			}
 			

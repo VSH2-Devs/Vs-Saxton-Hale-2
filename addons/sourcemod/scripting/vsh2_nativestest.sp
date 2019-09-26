@@ -380,6 +380,21 @@ public Action fwdOnItemOverride(const VSH2Player player, const char[] classname,
 	return Plugin_Continue;
 }
 
+public void fwdOnBossSuperJump(const VSH2Player player)
+{
+	PrintToChat(player.index, "OnBossSuperJump:: %N", player.index);
+}
+
+public void fwdOnBossDoRageStun(const VSH2Player player, float& dist)
+{
+	PrintToChat(player.index, "OnBossDoRageStun:: %N - dist: %f", player.index, dist);
+}
+
+public void fwdOnBossWeighDown(const VSH2Player player)
+{
+	PrintToChat(player.index, "OnBossWeighDown:: %N", player.index);
+}
+
 
 public void LoadVSH2Hooks()
 {
@@ -550,4 +565,13 @@ public void LoadVSH2Hooks()
 		
 	if (!VSH2_HookEx(OnBossTakeDamage_OnHolidayPunch, fwdOnBossTakeDamage_OnHolidayPunch))
 		LogError("Error Hooking OnBossTakeDamage_OnHolidayPunch forward for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnBossSuperJump, fwdOnBossSuperJump))
+		LogError("Error Hooking OnBossSuperJump forward for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnBossDoRageStun, fwdOnBossDoRageStun))
+		LogError("Error Hooking OnBossDoRageStun forward for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnBossWeighDown, fwdOnBossWeighDown))
+		LogError("Error Hooking OnBossWeighDown forward for VSH2 Test plugin.");
 }

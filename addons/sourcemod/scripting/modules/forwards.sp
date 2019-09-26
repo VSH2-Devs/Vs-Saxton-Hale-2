@@ -93,6 +93,10 @@ void InitializeForwards()
 	g_hForwards[OnBossTakeDamage_OnAmbassadorHeadshot] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
 	g_hForwards[OnBossTakeDamage_OnDiamondbackManmelterCrit] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
 	g_hForwards[OnBossTakeDamage_OnHolidayPunch] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	
+	g_hForwards[OnBossSuperJump] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell));
+	g_hForwards[OnBossDoRageStun] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_FloatByRef));
+	g_hForwards[OnBossWeighDown] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell));
 }
 
 void Call_OnCallDownloads()
@@ -726,4 +730,26 @@ Action Call_OnBossTakeDamage_OnHolidayPunch(const BaseBoss player, int& attacker
 	Call_PushCell(damagecustom);
 	Call_Finish(result);
 	return result;
+}
+
+void Call_OnBossSuperJump(const BaseBoss player)
+{
+	g_hForwards[OnBossSuperJump].Start();
+	Call_PushCell(player);
+	Call_Finish();
+}
+
+void Call_OnBossDoRageStun(const BaseBoss player, float& distance)
+{
+	g_hForwards[OnBossDoRageStun].Start();
+	Call_PushCell(player);
+	Call_PushFloatRef(distance);
+	Call_Finish();
+}
+
+void Call_OnBossWeighDown(const BaseBoss player)
+{
+	g_hForwards[OnBossWeighDown].Start();
+	Call_PushCell(player);
+	Call_Finish();
 }

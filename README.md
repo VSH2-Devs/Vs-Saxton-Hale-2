@@ -2,14 +2,14 @@
 
 #### Current STABLE Version: *2.0.5*
 [![Master Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=master)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
-#### Current DEVELOPMENT Version: *2.3.2*
+#### Current DEVELOPMENT Version: *2.3.3*
 [![Develop Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=develop)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
 ======
 VSH2 is rewrite of VSH1. VSH1 and FF2 both had a very bad code framework using shoddy, hacky coding. I could even go as far to say they probably had no framework at all and even no real structure to its code.
 
-VSH2 actually has a structured framework and combines the best features of both FF2 and VSH1 by not only having multiplayer boss support but also to make it easier to add new bosses **and** give them truly unique abilities and mechanics through giving the developer full, uninhibited control by code rather than config files.
+VSH2 actually has a structured, event-based framework and combines the best features of both FF2 and VSH1 by not only having multiplayer boss support but also to make it easier to add new bosses **and** give them truly unique abilities and mechanics through giving the developer full, uninhibited control by code rather than config files.
 
-FF2's purpose was to be very easy to add bosses. Of course there's a trade off: FF2 is alot more difficult, if not impossible, to truly customize boss mechanics and abilities without having to recode parts of FF2 itself. VSH2, since it requires experience with SourcePawn, is somewhat more difficult for a newbie than FF2 to create new bosses but it rewards taking the harder route by allowing you to control damn near every individual boss behavior and logic.
+FF2's purpose was to be very easy to add bosses in a generic, cookie-cutter manner. Of course there's a trade off: FF2 is alot more difficult, if not impossible, to truly customize boss mechanics and abilities without having to recode parts of FF2 itself. VSH2, since it requires experience with SourcePawn, is somewhat more difficult for a newbie than FF2 to create new bosses but it rewards taking the harder route by allowing you to control damn near every individual boss behavior and logic.
 
 If you do require help in setting up the bosses or at least need some info on the API for boss building in VSH2, [have a look at the VSH2 wiki](https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki)
 

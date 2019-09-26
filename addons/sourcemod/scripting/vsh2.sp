@@ -25,7 +25,7 @@
 #pragma semicolon        1
 #pragma newdecls         required
 
-#define PLUGIN_VERSION   "2.3.2"
+#define PLUGIN_VERSION   "2.3.3"
 #define PLUGIN_DESCRIPT  "VS Saxton Hale 2"
 
 
@@ -118,6 +118,7 @@ ConVar cvarVSH2[VersionNumber+1];
 Handle
 	hHudText,
 	timeleftHUD,
+	healthHUD,
 	PointCookie,
 	BossCookie,
 	MusicCookie
@@ -291,6 +292,7 @@ public void OnPluginStart()
 	
 	hHudText = CreateHudSynchronizer();
 	timeleftHUD = CreateHudSynchronizer();
+	healthHUD = CreateHudSynchronizer();
 	
 	bEnabled = CreateConVar("vsh2_enabled", "1", "Enable VSH 2 plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	cvarVSH2[VersionNumber] = CreateConVar("vsh2_version", PLUGIN_VERSION, "VSH 2 Plugin Version. (DO NOT CHANGE)", FCVAR_NOTIFY);
@@ -698,12 +700,15 @@ public Action MakeModelTimer(Handle hTimer)
 	}
 	return Plugin_Continue;
 }
+
+/*
 public void SetGravityNormal(const int userid)
 {
 	int i = GetClientOfUserId(userid);
 	if( IsValidClient(i) )
 		SetEntityGravity(i, 1.0);
 }
+*/
 
 /// the main 'mechanics' of bosses
 public Action Timer_PlayerThink(Handle hTimer)
@@ -731,6 +736,11 @@ public Action Timer_PlayerThink(Handle hTimer)
 				SDKHooks_TakeDamage(player.index, 0, 0, 100.0, DMG_DIRECT, _, _, _); //ForcePlayerSuicide(i);
 		}
 		else ManageFighterThink(player);
+		
+		if( GetLivingPlayers(VSH2Team_Red)==1 ) {
+			SetHudTextParams(-1.0, 0.20, 0.11, 255, 255, 255, 255);
+			ShowSyncHudText(i, healthHUD, "Total Boss Health: %i", gamemode.GetTotalBossHealth());
+		}
 	}
 	
 	/// If there's no active, living bosses, then force RED to win
@@ -991,15 +1001,15 @@ public Action Timer_DrawGame(Handle timer)
 	
 	int time = gamemode.iTimeLeft;
 	gamemode.iTimeLeft--;
-	char strTime[6];
+	char strTime[10];
 	
 	if( time/60 > 9 )
 		IntToString(time/60, strTime, 6);
-	else Format(strTime, 6, "0%i", time/60);
+	else Format(strTime, sizeof(strTime), "0%i", time/60);
 	
 	if( time%60 > 9 )
-		Format(strTime, 6, "%s:%i", strTime, time%60);
-	else Format(strTime, 6, "%s:0%i" , strTime, time%60);
+		Format(strTime, sizeof(strTime), "%s:%i", strTime, time%60);
+	else Format(strTime, sizeof(strTime), "%s:0%i" , strTime, time%60);
 	
 	SetHudTextParams(-1.0, 0.17, 1.1, 255, 255, 255, 255);
 	for( int i=MaxClients; i; --i ) {
@@ -1059,11 +1069,11 @@ public Action Timer_UberLoop(Handle timer, any medigunid)
 }
 public void _MusicPlay()
 {
-	if( !bEnabled.BoolValue || gamemode.iRoundState != StateRunning)
+	if( !bEnabled.BoolValue || !cvarVSH2[EnableMusic].BoolValue || gamemode.iRoundState != StateRunning )
 		return;
 	
 	float currtime = GetGameTime();
-	if( !cvarVSH2[EnableMusic].BoolValue || gamemode.flMusicTime > currtime )
+	if( gamemode.flMusicTime > currtime )
 		return;
 	
 	char sound[FULLPATH];
@@ -1216,6 +1226,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2GameMode_GetTotalRedPlayers", Native_VSH2GameMode_GetTotalRedPlayers);
 	CreateNative("VSH2GameMode_GetHUDHandle", Native_VSH2GameMode_GetHUDHandle);
 	CreateNative("VSH2GameMode_GetBosses", Native_VSH2GameMode_GetBosses);
+	CreateNative("VSH2GameMode_IsVSHMap", Native_VSH2GameMode_IsVSHMap);
 	
 	MarkNativeAsOptional("Steam_SetGameDescription");
 	
@@ -1626,4 +1637,9 @@ public int Native_VSH2GameMode_GetBosses(Handle plugin, int numParams)
 	int numbosses = gamemode.GetBosses(bosses, balive);
 	SetNativeArray(1, bosses, MaxClients);
 	return numbosses;
+}
+
+public int Native_VSH2GameMode_IsVSHMap(Handle plugin, int numParams)
+{
+	return gamemode.IsVSHMap();
 }

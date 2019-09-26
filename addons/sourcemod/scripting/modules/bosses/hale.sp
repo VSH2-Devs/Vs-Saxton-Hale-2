@@ -144,22 +144,11 @@ methodmap CHale < BaseBoss {
 		else {
 			float EyeAngles[3]; GetClientEyeAngles(this.index, EyeAngles);
 			if( this.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
-				float vel[3]; GetEntPropVector(this.index, Prop_Data, "m_vecVelocity", vel);
-				vel[2] = 750 + this.flCharge * 13.0;
-				if( this.bSuperCharge ) {
-					vel[2] += 2000.0;
-					this.bSuperCharge = false;
-				}
-				
-				SetEntProp(this.index, Prop_Send, "m_bJumping", 1);
-				vel[0] *= (1+Sine(this.flCharge * FLOAT_PI / 50));
-				vel[1] *= (1+Sine(this.flCharge * FLOAT_PI / 50));
-				TeleportEntity(this.index, NULL_VEC, NULL_VEC, vel);
-				this.flCharge = -100.0;
+				this.SuperJump(this.flCharge, -100.0);
 				Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", GetRandomInt(0, 1) ? HaleJump : HaleJump132, GetRandomInt(1, 2));
 				
-				EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
-				EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
+				EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
+				EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
 			}
 			else this.flCharge = 0.0;
 		}
@@ -173,13 +162,7 @@ methodmap CHale < BaseBoss {
 		if( (buttons & IN_DUCK) && this.flWeighDown >= HALE_WEIGHDOWN_TIME ) {
 			float ang[3]; GetClientEyeAngles(this.index, ang);
 			if( ang[0] > 60.0 ) {
-				//float fVelocity[3];
-				//GetEntPropVector(this.index, Prop_Data, "m_vecVelocity", fVelocity);
-				//fVelocity[2] = -500.0;
-				//TeleportEntity(this.index, NULL_VECTOR, NULL_VECTOR, fVelocity);
-				SetEntityGravity(this.index, 6.0);
-				SetPawnTimer(SetGravityNormal, 1.0, this.userid);
-				this.flWeighDown = 0.0;
+				this.WeighDown(0.0);
 			}
 		}
 		SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
@@ -220,7 +203,7 @@ methodmap CHale < BaseBoss {
 		}
 		this.DoGenericStun(HALERAGEDIST);
 		Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleRageSound, GetRandomInt(1, 4));
-		EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
+		EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
 	}
 	public void KilledPlayer(const BaseBoss victim, Event event)
 	{
@@ -255,7 +238,7 @@ methodmap CHale < BaseBoss {
 					else Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillEngie132, GetRandomInt(1, 2));
 				}
 			}
-			EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
+			EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
 		}
 		
 		float curtime = GetGameTime();
@@ -270,7 +253,7 @@ methodmap CHale < BaseBoss {
 			else if( randsound < 5 && randsound > 1 )
 				Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKSpreeNew, GetRandomInt(1, 5));
 			else Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillKSpree132, GetRandomInt(1, 2));
-			EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
+			EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
 			this.iKills = 0;
 		}
 		else this.flKillSpree = curtime+5;
@@ -278,8 +261,8 @@ methodmap CHale < BaseBoss {
 	
 	public void Stabbed() {
 		Format(snd, FULLPATH, "%s%i.wav", HaleStubbed132, GetRandomInt(1, 4));
-		EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
-		EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
+		EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
+		EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
 	}
 	public void Help() {
 		if( IsVoteInProgress() )

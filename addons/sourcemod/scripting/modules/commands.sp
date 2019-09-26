@@ -30,14 +30,14 @@ public void QueuePanel(const int client)
 	char strBossList[512];
 	Format(strBossList, 512, "VSH2 Boss Queue:");
 	panel.SetTitle(strBossList);
-
+	
 	BaseBoss Boss = gamemode.GetRandomBoss(false);
 	if( Boss ) {
 		Format(strBossList, sizeof(strBossList), "%N - %i", Boss.index, Boss.iQueue);
 		panel.DrawItem(strBossList);
 	}
 	else panel.DrawItem("None");
-
+	
 	for( int i=0; i<8; ++i ) {
 		Boss = gamemode.FindNextBoss();	/// Using Boss to look at the next boss
 		if( Boss ) {
@@ -58,7 +58,7 @@ public void QueuePanel(const int client)
 		if( !Boss.bIsBoss )
 			Boss.bSetOnSpawn = false;
 	}
-
+	
 	Format(strBossList, 64, "Your queue points: %i (select to set to 0)", BaseBoss(client).iQueue );
 	panel.DrawItem(strBossList);
 	panel.Send(client, QueuePanelH, 9001);

@@ -216,6 +216,10 @@ enum { /// VSH2HookType
 	OnBossTakeDamage_OnAmbassadorHeadshot,
 	OnBossTakeDamage_OnDiamondbackManmelterCrit,
 	OnBossTakeDamage_OnHolidayPunch,
+	
+	OnBossSuperJump,
+	OnBossDoRageStun,
+	OnBossWeighDown,
 	OnRedPlayerThink
 };
 
@@ -239,6 +243,8 @@ typeset VSH2HookCB {
 		OnPrepRedTeam
 		OnRedPlayerThink
 		OnLastPlayer - Player is a random boss in this case.
+		OnBossSuperJump
+		OnBossWeighDown
 	*/
 	function void (const VSH2Player player);
 	
@@ -323,6 +329,9 @@ typeset VSH2HookCB {
 	
 	/// OnItemOverride
 	function Action (const VSH2Player player, const char[] classname, int itemdef, Handle& item);
+	
+	/// OnBossDoRageStun
+	function void (const VSH2Player player, float& distance);
 };
 
 /// Use hooktype enum on these.
@@ -391,13 +400,15 @@ native int VSH2GameMode_CountMinions(const bool IsAlive);
 native int VSH2GameMode_CountBosses(const bool IsAlive);
 native int VSH2GameMode_GetTotalBossHealth();
 native int VSH2GameMode_GetTotalRedPlayers();
-native int VSH2GameMode_GetBosses(VSH2Player[] bosses, bool balive); 
+native int VSH2GameMode_GetBosses(VSH2Player[] bosses, bool balive);
 
 native void VSH2GameMode_SearchForItemPacks();
 native void VSH2GameMode_UpdateBossHealth();
 native void VSH2GameMode_GetBossType();
 
 native Handle VSH2GameMode_GetHUDHandle();
+
+native bool VSH2GameMode_IsVSHMap();
 
 
 public SharedPlugin __pl_vsh2 = {
@@ -481,5 +492,6 @@ public void __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2GameMode_GetTotalRedPlayers");
 	MarkNativeAsOptional("VSH2GameMode_GetHUDHandle");
 	MarkNativeAsOptional("VSH2GameMode_GetBosses");
+	MarkNativeAsOptional("VSH2GameMode_IsVSHMap");
 }
 #endif

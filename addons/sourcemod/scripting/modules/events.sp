@@ -2,14 +2,13 @@ public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 {
 	if( !bEnabled.BoolValue )
 		return Plugin_Continue;
-
+	
 	BaseBoss player = BaseBoss( event.GetInt("userid"), true );
 	if( player && IsClientInGame(player.index) ) {
 		SetVariantString(""); AcceptEntityInput(player.index, "SetCustomModel");
 		player.SetOverlay("0"); //SetClientOverlay(client, "0");
 		
-		if( player.bIsBoss && gamemode.iRoundState < StateEnding && gamemode.iRoundState != StateDisabled )
-		{
+		if( player.bIsBoss && gamemode.iRoundState < StateEnding && gamemode.iRoundState != StateDisabled ) {
 			if( GetClientTeam(player.index) != VSH2Team_Boss )
 				player.ForceTeamChange(VSH2Team_Boss);
 			player.ConvertToBoss();		/// in base.sp
@@ -29,14 +28,13 @@ public Action Resupply(Event event, const char[] name, bool dontBroadcast)
 {
 	if( !bEnabled.BoolValue )
 		return Plugin_Continue;
-
+	
 	BaseBoss player = BaseBoss( event.GetInt("userid"), true );
 	if( player && IsClientInGame(player.index) ) {
 		SetVariantString(""); AcceptEntityInput(player.index, "SetCustomModel");
 		player.SetOverlay("0"); //SetClientOverlay(client, "0");
-
-		if( player.bIsBoss && gamemode.iRoundState < StateEnding && gamemode.iRoundState != StateDisabled )
-		{
+		
+		if( player.bIsBoss && gamemode.iRoundState < StateEnding && gamemode.iRoundState != StateDisabled ) {
 			if( GetClientTeam(player.index) != VSH2Team_Boss )
 				player.ForceTeamChange(VSH2Team_Boss);
 			player.ConvertToBoss();		/// in base.sp

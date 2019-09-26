@@ -120,9 +120,7 @@ methodmap CHHHJr < BaseBoss {
 		if( (buttons & IN_DUCK) && this.flWeighDown >= 1.0 ) {
 			float ang[3]; GetClientEyeAngles(this.index, ang);
 			if( ang[0] > 60.0 ) {
-				SetEntityGravity(this.index, 6.0);
-				SetPawnTimer(SetGravityNormal, 1.0, this.userid);
-				this.flWeighDown = 0.0;
+				this.WeighDown(0.0);
 			}
 		}
 		SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
@@ -168,7 +166,7 @@ methodmap CHHHJr < BaseBoss {
 		this.DoGenericStun(HALERAGEDIST);
 		
 		strcopy(snd, PLATFORM_MAX_PATH, HHHRage2);
-		EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
+		EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
 	}
 	
 	public void KilledPlayer(const BaseBoss victim, Event event) {
@@ -183,7 +181,7 @@ methodmap CHHHJr < BaseBoss {
 		
 		if( this.iKills == 3 && living != 1 ) {
 			Format(snd, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHLaught, GetRandomInt(1, 4));
-			EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
+			EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
 			this.iKills = 0;
 		}
 		else this.flKillSpree = curtime+5;
@@ -191,7 +189,7 @@ methodmap CHHHJr < BaseBoss {
 	
 	public void Stabbed() {
 		Format(snd, FULLPATH, "vo/halloween_boss/knight_pain0%d.mp3", GetRandomInt(1, 3));
-		EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, _, SNDLEVEL_TRAFFIC);
+		EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
 	}
 	
 	public void Help()

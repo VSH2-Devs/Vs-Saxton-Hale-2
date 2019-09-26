@@ -641,8 +641,6 @@ stock bool DoWeighdown(const int client, const float req_time, float &wdtime, co
 			GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
 			fVelocity[2] = -1000.0;
 			TeleportEntity(client, NULL_VEC, NULL_VEC, fVelocity);
-			SetEntityGravity(client, 6.0);
-			CreateTimer(2.0, TimerGravityCat, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 			wdtime = set_wdtime;
 			return true;
 		}

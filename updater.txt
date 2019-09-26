@@ -4,14 +4,15 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.3.2"
+			"Latest"	"2.3.3"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.2:"
-		"Notes"	"Patched bosses getting one-shotted from certain trigger_hurt's."
-		"Notes"	"Spy cloaking damage is now limited to melee hits as it should be."
-		"Notes"	"Refactoring spy cloak damage so that hitting dead ringered spies always calls 'OnBossDealDamage_OnHitDeadRinger' and hitting regular cloak always calls 'OnBossDealDamage_OnHitCloakedSpy'."
-		"Notes"	"Added cvars to control the damage spies take from cloak and dead ringer."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.3:"
+		"Notes"	"Added Old VSH compatibility layer (requires removing the actual Old VSH plugin though)."
+		"Notes"	"Made 'IsVSHMap()' as a gamemode native for the old VSH compatibility layer."
+		"Notes"	"moved super jump and weighdown code into their own base boss methods."
+		"Notes"	"implemented forward calls into super jump, generic stun, and weighdown for the old VSH compatibility layer."
+		"Notes"	"Last player timer now properly draws total boss health."
 	}
 	
 	"Files"
