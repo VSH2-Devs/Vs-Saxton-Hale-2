@@ -40,7 +40,7 @@ public void OnScore(const VSH2Player player, int& points_earned, int& queue_earn
 	char setting[2];
 	GetClientCookie(player.index, g_noboss_cookie, setting, sizeof(setting));
 	if(setting[0] == '1') {
-		CPrintToChat(player.index, "{olive}[VSH 2]{default} Points set to 0. Type /noboss to toggle.");
+		CPrintToChat(player.index, "{olive}[VSH 2]{default} Queue Points set to 0. Type /noboss to toggle.");
 		queue_earned = 0;
 	}
 }

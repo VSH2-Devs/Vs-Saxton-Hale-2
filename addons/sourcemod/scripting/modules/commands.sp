@@ -1,6 +1,6 @@
 public Action QueuePanelCmd(int client, int args)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 
 	if( !client ) {
@@ -13,7 +13,7 @@ public Action QueuePanelCmd(int client, int args)
 
 public Action ResetQueue(int client, int args)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 	if( !client ) {
 		CReplyToCommand(client, "{olive}[VSH 2]{default} You can only use this command ingame.");
@@ -110,7 +110,7 @@ public int SkipHalePanelH(Menu menu, MenuAction action, int client, int param2)
 
 public Action SetNextSpecial(int client, int args)
 {
-	if( bEnabled.BoolValue ) {
+	if( cvarVSH2[Enabled].BoolValue ) {
 		Menu bossmenu = new Menu(MenuHandler_PickBossSpecial);
 		bossmenu.SetTitle("Set Next Boss Type Menu: ");
 		bossmenu.AddItem("-1", "None (Random Boss)");
@@ -135,7 +135,7 @@ public int MenuHandler_PickBossSpecial(Menu menu, MenuAction action, int client,
 
 public Action ChangeHealthBarColor(int client, int args)
 {
-	if( bEnabled.BoolValue ) {
+	if( cvarVSH2[Enabled].BoolValue ) {
 		char number[4]; GetCmdArg( 1, number, sizeof(number) );
 		int type = StringToInt(number);
 		gamemode.iHealthBarState = type;
@@ -146,7 +146,7 @@ public Action ChangeHealthBarColor(int client, int args)
 
 public Action Command_GetHPCmd(int client, int args)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 	else if( gamemode.iRoundState != StateRunning )
 		return Plugin_Handled;
@@ -157,7 +157,7 @@ public Action Command_GetHPCmd(int client, int args)
 }
 public Action CommandBossSelect(int client, int args)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 	else if( args < 1 ) {
 		CReplyToCommand(client, "{olive}[VSH 2]{default} Usage: boss_select <target>");
@@ -179,7 +179,7 @@ public Action CommandBossSelect(int client, int args)
 }
 public Action SetBossMenu(int client, int args)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 	
 	Menu bossmenu = new Menu(MenuHandler_PickBosses);
@@ -203,14 +203,14 @@ public int MenuHandler_PickBosses(Menu menu, MenuAction action, int client, int 
 
 public Action MusicTogglePanelCmd(int client, int args)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 	MusicTogglePanel(client);
 	return Plugin_Handled;
 }
 public void MusicTogglePanel(const int client)
 {
-	if( !bEnabled.BoolValue || !IsValidClient(client) )
+	if( !cvarVSH2[Enabled].BoolValue || !IsValidClient(client) )
 		return;
 	Panel panel = new Panel();
 	panel.SetTitle("Turn the VS Saxton Hale Music...");
@@ -237,7 +237,7 @@ public int MusicTogglePanelH(Menu menu, MenuAction action, int param1, int param
 
 public Action ForceBossRealtime(int client, int args)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 	
 	if( !client ) {
@@ -290,7 +290,7 @@ public Action ForceBossRealtime(int client, int args)
 
 public Action CommandAddPoints(int client, int args)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 	
 	if( args < 2 ) {
@@ -331,7 +331,7 @@ public Action CommandAddPoints(int client, int args)
 
 public Action CommandSetPoints(int client, int args)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 	
 	if( args < 2 ) {
@@ -364,7 +364,7 @@ public Action CommandSetPoints(int client, int args)
 
 public Action HelpPanelCmd(int client, int args)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 	else if( !client ) {
 		CReplyToCommand(client, "{olive}[VSH 2]{default} You can only use this command ingame.");
@@ -408,7 +408,7 @@ public int HelpPanelH(Menu menu, MenuAction action, int param1, int param2)
 }
 public Action MenuDoClassRush(int client, int args)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 	else if( !client ) {
 		CReplyToCommand(client, "{olive}[VSH 2]{default} You can only use this command ingame.");

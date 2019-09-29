@@ -1,6 +1,6 @@
 public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue || gamemode.iRoundState == StateDisabled )
 		return Plugin_Continue;
 	
 	BaseBoss player = BaseBoss( event.GetInt("userid"), true );
@@ -8,9 +8,10 @@ public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 		SetVariantString(""); AcceptEntityInput(player.index, "SetCustomModel");
 		player.SetOverlay("0"); //SetClientOverlay(client, "0");
 		
-		if( player.bIsBoss && gamemode.iRoundState < StateEnding && gamemode.iRoundState != StateDisabled ) {
+		if( player.bIsBoss && (StateDisabled < gamemode.iRoundState < StateEnding) ) {
 			if( GetClientTeam(player.index) != VSH2Team_Boss )
 				player.ForceTeamChange(VSH2Team_Boss);
+			
 			player.ConvertToBoss();		/// in base.sp
 			if( player.iHealth <= 0 )
 				player.iHealth = player.iMaxHealth;
@@ -19,14 +20,14 @@ public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 		if( !player.bIsBoss && (StateDisabled < gamemode.iRoundState < StateEnding) && !player.bIsMinion) {
 			if( GetClientTeam(player.index) == VSH2Team_Boss )
 				player.ForceTeamChange(VSH2Team_Red);
-			SetPawnTimer( PrepPlayers, 0.2, player );
+			SetPawnTimer(PrepPlayers, 0.2, player);
 		}
 	}
 	return Plugin_Continue;
 }
 public Action Resupply(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue || gamemode.iRoundState == StateDisabled )
 		return Plugin_Continue;
 	
 	BaseBoss player = BaseBoss( event.GetInt("userid"), true );
@@ -34,7 +35,7 @@ public Action Resupply(Event event, const char[] name, bool dontBroadcast)
 		SetVariantString(""); AcceptEntityInput(player.index, "SetCustomModel");
 		player.SetOverlay("0"); //SetClientOverlay(client, "0");
 		
-		if( player.bIsBoss && gamemode.iRoundState < StateEnding && gamemode.iRoundState != StateDisabled ) {
+		if( player.bIsBoss && (StateDisabled < gamemode.iRoundState < StateEnding) ) {
 			if( GetClientTeam(player.index) != VSH2Team_Boss )
 				player.ForceTeamChange(VSH2Team_Boss);
 			player.ConvertToBoss();		/// in base.sp
@@ -46,7 +47,7 @@ public Action Resupply(Event event, const char[] name, bool dontBroadcast)
 public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
 	/// Bug patch: first round kill immediately ends the round.
-	if( !bEnabled.BoolValue || gamemode.iRoundState == StateDisabled )
+	if( !cvarVSH2[Enabled].BoolValue || gamemode.iRoundState == StateDisabled )
 		return Plugin_Continue;
 	
 	BaseBoss victim = BaseBoss( event.GetInt("userid"), true );
@@ -103,7 +104,7 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 }
 public Action PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 
 	BaseBoss victim = BaseBoss( event.GetInt("userid"), true );
@@ -122,7 +123,7 @@ public Action PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 }
 public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !bEnabled.BoolValue ) {
+	if( !cvarVSH2[Enabled].BoolValue ) {
 #if defined _steamtools_included
 		Steam_SetGameDescription("Team Fortress");
 #endif
@@ -239,7 +240,7 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 }
 public Action ObjectDeflected(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 
 	BaseBoss airblaster = BaseBoss( event.GetInt("userid"), true );
@@ -254,7 +255,7 @@ public Action ObjectDeflected(Event event, const char[] name, bool dontBroadcast
 
 public Action ObjectDestroyed(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 	
 	BaseBoss boss = BaseBoss(event.GetInt("attacker"), true);
@@ -266,7 +267,7 @@ public Action ObjectDestroyed(Event event, const char[] name, bool dontBroadcast
 
 public Action PlayerJarated(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 	
 	BaseBoss jarateer = BaseBoss(event.GetInt("thrower_entindex"), true);
@@ -277,7 +278,7 @@ public Action PlayerJarated(Event event, const char[] name, bool dontBroadcast)
 public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	gamemode.iRoundCount++;
-	if( !bEnabled.BoolValue || gamemode.iRoundState == StateDisabled )
+	if( !cvarVSH2[Enabled].BoolValue || gamemode.iRoundState == StateDisabled )
 		return Plugin_Continue;
 	
 	gamemode.iRoundState = StateEnding;
@@ -327,7 +328,7 @@ public void OnHookedEvent(Event event, const char[] name, bool dontBroadcast)
 }
 public Action ItemPickedUp(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !bEnabled.BoolValue || gamemode.iRoundState != StateRunning )
+	if( !cvarVSH2[Enabled].BoolValue || gamemode.iRoundState != StateRunning )
 		return Plugin_Continue;
 	
 	BaseBoss player = BaseBoss(event.GetInt("userid"), true);
@@ -338,7 +339,7 @@ public Action ItemPickedUp(Event event, const char[] name, bool dontBroadcast)
 
 public Action UberDeployed(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !bEnabled.BoolValue || gamemode.iRoundState == StateDisabled)
+	if( !cvarVSH2[Enabled].BoolValue || gamemode.iRoundState == StateDisabled)
 		return Plugin_Continue;
 	
 	BaseBoss medic = BaseBoss(event.GetInt("userid"), true);
@@ -348,7 +349,7 @@ public Action UberDeployed(Event event, const char[] name, bool dontBroadcast)
 }
 public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !bEnabled.BoolValue || gamemode.iRoundState == StateDisabled )
+	if( !cvarVSH2[Enabled].BoolValue || gamemode.iRoundState == StateDisabled )
 		return Plugin_Continue;
 	
 	BaseBoss boss;
@@ -414,7 +415,7 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 
 public Action PointCapture(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !bEnabled.BoolValue || gamemode.iRoundState != StateRunning || !cvarVSH2[MultiCapture].BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue || gamemode.iRoundState != StateRunning || !cvarVSH2[MultiCapture].BoolValue )
 		return Plugin_Continue;
 	
 	// int iCap = GetEventInt(event, "cp"); /// Doesn't seem to give the correct origin vectors
@@ -433,5 +434,19 @@ public Action PointCapture(Event event, const char[] name, bool dontBroadcast)
 	char sCappers[MAXPLAYERS+1];
 	event.GetString("cappers", sCappers, MAXPLAYERS);
 	ManageOnBossCap(sCappers, iCapTeam);
+	return Plugin_Continue;
+}
+
+public Action RPSTaunt(Event event, const char[] name, bool dontBroadcast)
+{
+	if( !cvarVSH2[Enabled].BoolValue || gamemode.iRoundState != StateRunning )
+		return Plugin_Continue;
+	
+	BaseBoss winner = BaseBoss(event.GetInt("winner"));
+	BaseBoss loser = BaseBoss(event.GetInt("loser"));
+	if( !winner || !loser )
+		return Plugin_Continue;
+	
+	ManageOnRPS(winner, loser);
 	return Plugin_Continue;
 }

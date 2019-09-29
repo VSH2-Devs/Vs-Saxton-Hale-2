@@ -65,7 +65,7 @@ methodmap VSH2Player {
 	 * @param value			data you want the property to hold.
 	 * @noreturn
 	 */
-	#pragma deprecated Use SetIntProp, SetFloatProp, or SetAnyProp instead.
+	#pragma deprecated Use SetPropInt, SetPropFloat, or SetPropAny instead.
 	public native void SetProperty(const char prop_name[64], any value);
 	
 	public native int GetPropInt(const char prop_name[64]);
@@ -91,6 +91,7 @@ methodmap VSH2Player {
 	
 	** use like a bool **
 	property int bGlow
+	
 	property bool bIsMinion
 	property bool bInJump
 	property float flGlowtime
@@ -145,6 +146,9 @@ methodmap VSH2Player {
 	
 	public native bool GetName(const char buffer[MAX_BOSS_NAME_SIZE]);
 	public native bool SetName(const char name[MAX_BOSS_NAME_SIZE]);
+	
+	public native void SuperJump(const float power, const float reset);
+	public native void WeighDown(const float reset);
 };
 
 
@@ -220,6 +224,7 @@ enum { /// VSH2HookType
 	OnBossSuperJump,
 	OnBossDoRageStun,
 	OnBossWeighDown,
+	OnRPSTaunt,
 	OnRedPlayerThink
 };
 
@@ -252,6 +257,7 @@ typeset VSH2HookCB {
 		OnTouchPlayer - victim is boss, attacker is other player.
 		OnBossJarated
 		OnUberDeployed, OnUberLoop - Victim is medic, Attacker is uber target
+		OnRPSTaunt - victim is loser, attacker is winner.
 	*/
 	function void (const VSH2Player victim, const VSH2Player attacker);
 	
@@ -340,6 +346,9 @@ native bool VSH2_HookEx(const int callbacktype, VSH2HookCB callback);
 
 native void VSH2_Unhook(const int callbacktype, VSH2HookCB callback);
 native bool VSH2_UnhookEx(const int callbacktype, VSH2HookCB callback);
+
+native int VSH2_GetMaxBosses();
+
 
 
 native any VSH2GameMode_GetProperty(const char prop_name[64]);
@@ -473,10 +482,14 @@ public void __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2Player.GetName");
 	MarkNativeAsOptional("VSH2Player.SetName");
 	
+	MarkNativeAsOptional("VSH2Player.SuperJump");
+	MarkNativeAsOptional("VSH2Player.WeighDown");
+	
 	MarkNativeAsOptional("VSH2_Hook");
 	MarkNativeAsOptional("VSH2_HookEx");
 	MarkNativeAsOptional("VSH2_Unhook");
 	MarkNativeAsOptional("VSH2_UnhookEx");
+	MarkNativeAsOptional("VSH2_GetMaxBosses");
 	
 	MarkNativeAsOptional("VSH2GameMode_GetProperty");
 	MarkNativeAsOptional("VSH2GameMode_SetProperty");

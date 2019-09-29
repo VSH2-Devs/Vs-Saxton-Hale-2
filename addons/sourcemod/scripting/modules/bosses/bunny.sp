@@ -222,7 +222,8 @@ methodmap CBunny < BaseBoss {
 	public void KilledPlayer(const BaseBoss victim, Event event) {
 		if( GetRandomInt(0, 3) ) {
 			strcopy(snd, PLATFORM_MAX_PATH, BunnyKill[GetRandomInt(0, sizeof(BunnyKill)-1)]);
-			EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
+			EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
+			EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
 		}
 		SpawnManyAmmoPacks(victim.index, EggModel, 1);
 		float curtime = GetGameTime();

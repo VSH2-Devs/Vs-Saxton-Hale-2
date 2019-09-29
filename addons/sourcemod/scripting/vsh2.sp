@@ -25,7 +25,7 @@
 #pragma semicolon        1
 #pragma newdecls         required
 
-#define PLUGIN_VERSION   "2.3.3"
+#define PLUGIN_VERSION   "2.3.4"
 #define PLUGIN_DESCRIPT  "VS Saxton Hale 2"
 
 
@@ -52,6 +52,7 @@ public Plugin myinfo = {
 	version 		= PLUGIN_VERSION,
 	url 			= "https://forums.alliedmods.net/showthread.php?t=286701"
 };
+
 
 enum /** CvarName */ {
 	PointType = 0,
@@ -104,13 +105,11 @@ enum /** CvarName */ {
 	DamageForQueue,
 	DeadRingerDamage,
 	CloakDamage,
+	Enabled,
+	AllowLateSpawn,
+	SuicidePercent,
 	VersionNumber
 };
-
-/// cvar + handles
-ConVar
-	bEnabled = null
-;
 
 /// Don't change this. Simply place any new CVARs above VersionNumber in the enum.
 ConVar cvarVSH2[VersionNumber+1];
@@ -289,12 +288,14 @@ public void OnPluginStart()
 	AddCommandListener(BlockSuicide, "explode");
 	AddCommandListener(BlockSuicide, "kill");
 	AddCommandListener(BlockSuicide, "jointeam");
+	AddCommandListener(CheckLateSpawn, "joinclass");
+	AddCommandListener(CheckLateSpawn, "join_class");
 	
 	hHudText = CreateHudSynchronizer();
 	timeleftHUD = CreateHudSynchronizer();
 	healthHUD = CreateHudSynchronizer();
 	
-	bEnabled = CreateConVar("vsh2_enabled", "1", "Enable VSH 2 plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	cvarVSH2[Enabled] = CreateConVar("vsh2_enabled", "1", "Enable VSH 2 plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	cvarVSH2[VersionNumber] = CreateConVar("vsh2_version", PLUGIN_VERSION, "VSH 2 Plugin Version. (DO NOT CHANGE)", FCVAR_NOTIFY);
 	cvarVSH2[PointType] = CreateConVar("vsh2_point_type", "0", "Select condition to enable point (0 - alive players, 1 - time)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	cvarVSH2[PointDelay] = CreateConVar("vsh2_point_delay", "6", "Addition (for each player) delay before point's activation.", FCVAR_NOTIFY);
@@ -346,6 +347,8 @@ public void OnPluginStart()
 	cvarVSH2[DamageForQueue] = CreateConVar("vsh2_damage_for_queue", "1000", "if 'vsh2_damage_queue' is enabled, how much queue to give per amount of damage done.", FCVAR_NONE, true, 0.0, true, 999.0);
 	cvarVSH2[DeadRingerDamage] = CreateConVar("vsh2_dead_ringer_damage", "90.0", "damage, divided by 0.25, that dead ringer spies will take from boss melee hits.", FCVAR_NONE, true, 0.0, true, 999999.0);
 	cvarVSH2[CloakDamage] = CreateConVar("vsh2_cloak_damage", "70.0", "damage, divided by 0.8, that dead ringer spies will take from boss melee hits.", FCVAR_NONE, true, 0.0, true, 999999.0);
+	cvarVSH2[AllowLateSpawn] = CreateConVar("vsh2_allow_late_spawning", "0", "allows if unassigned spectators can respawn during an active round.", FCVAR_NONE, true, 0.0, true, 1.0);
+	cvarVSH2[SuicidePercent] = CreateConVar("vsh2_boss_suicide_percent", "0.3", "Allow the boss to suicide if their health percentage goes at or below this amount (0.3 == 30%).", FCVAR_NONE, true, 0.0, true, 1.0);
 	
 #if defined _steamtools_included
 	gamemode.bSteam = LibraryExists("SteamTools");
@@ -372,6 +375,7 @@ public void OnPluginStart()
 	HookEvent("player_chargedeployed", UberDeployed);
 	HookEvent("arena_round_start", ArenaRoundStart);
 	HookEvent("teamplay_point_captured", PointCapture, EventHookMode_Post);
+	HookEvent("rps_taunt_event", RPSTaunt, EventHookMode_Post);
 	
 	//AddCommandListener(DoTaunt, "+taunt");
 	AddCommandListener(cdVoiceMenu, "voicemenu");
@@ -408,7 +412,7 @@ public bool HaleTargetFilter(const char[] pattern, Handle clients)
 	bool non = StrContains(pattern, "!", false) != -1;
 	for( int i=MaxClients; i; i-- ) {
 		if( IsClientValid(i) && FindValueInArray(clients, i) == -1 ) {
-			if( bEnabled.BoolValue && BaseBoss(i).bIsBoss ) {
+			if( cvarVSH2[Enabled].BoolValue && BaseBoss(i).bIsBoss ) {
 				if( !non )
 					PushArrayCell(clients, i);
 			}
@@ -423,7 +427,7 @@ public bool MinionTargetFilter(const char[] pattern, Handle clients)
 	bool non = StrContains(pattern, "!", false) != -1;
 	for( int i=MaxClients; i; i-- ) {
 		if( IsClientValid(i) && FindValueInArray(clients, i) == -1 ) {
-			if( bEnabled.BoolValue && BaseBoss(i).bIsMinion ) {
+			if( cvarVSH2[Enabled].BoolValue && BaseBoss(i).bIsMinion ) {
 				if( !non )
 					PushArrayCell(clients, i);
 			}
@@ -434,15 +438,29 @@ public bool MinionTargetFilter(const char[] pattern, Handle clients)
 	return true;
 }
 
+public Action CheckLateSpawn(int client, const char[] command, int argc)
+{
+	if( !cvarVSH2[Enabled].BoolValue || gamemode.iRoundState != StateRunning )
+		return Plugin_Continue;
+	
+	/// deal with late spawners, force them to spectator.
+	if( !cvarVSH2[AllowLateSpawn].BoolValue && TF2_GetPlayerClass(client)==TFClass_Unknown ) {
+		CPrintToChat(client, "{olive}[VSH 2]{default} Late Spawn Blocked.");
+		ForceClientTeamChange(client, VSH2Team_Spectator);
+		return Plugin_Handled;
+	}
+	return Plugin_Continue;
+}
+
 public Action BlockSuicide(int client, const char[] command, int argc)
 {
-	if( bEnabled.BoolValue && gamemode.iRoundState == StateRunning ) {
+	if( cvarVSH2[Enabled].BoolValue && gamemode.iRoundState == StateRunning ) {
 		BaseBoss player = BaseBoss(client);
 		if( player.bIsBoss ) {
-			/// TODO: add cvar for suicide health percentage threshold.
+			/// Allow bosses to suicide if their total health is under a certain percentage.
 			float flhp_percent = float(player.iHealth) / float(player.iMaxHealth);
-			if( flhp_percent > 0.3 ) {	/// Allow bosses to suicide if their total health is under 30%.
-				CPrintToChat(client, "You cannot suicide yet as a boss. Please Use '!resetq' instead.");
+			if( flhp_percent > cvarVSH2[SuicidePercent].FloatValue ) {
+				CPrintToChat(client, "{olive}[VSH 2]{default} You cannot suicide yet as a boss. Please Use '!resetq' instead.");
 				return Plugin_Handled;
 			}
 		} else {
@@ -713,7 +731,7 @@ public void SetGravityNormal(const int userid)
 /// the main 'mechanics' of bosses
 public Action Timer_PlayerThink(Handle hTimer)
 {
-	if( !bEnabled.BoolValue || gamemode.iRoundState != StateRunning )
+	if( !cvarVSH2[Enabled].BoolValue || gamemode.iRoundState != StateRunning )
 		return Plugin_Continue;
 	
 	gamemode.UpdateBossHealth();
@@ -759,7 +777,7 @@ public Action CmdReloadCFG(int client, int args)
 
 public void OnPreThinkPost(int client)
 {
-	if( !bEnabled.BoolValue || IsClientObserver(client) || !IsPlayerAlive(client) )
+	if( !cvarVSH2[Enabled].BoolValue || IsClientObserver(client) || !IsPlayerAlive(client) )
 		return;
 	
 	//BaseBoss player = BaseBoss(client);
@@ -776,7 +794,7 @@ public void OnPreThinkPost(int client)
 
 public Action TraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &ammotype, int hitbox, int hitgroup)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 	
 	if( IsClientValid(attacker) && IsClientValid(victim) ) {
@@ -788,7 +806,7 @@ public Action TraceAttack(int victim, int &attacker, int &inflictor, float &dama
 }
 public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	if( !bEnabled.BoolValue || !IsClientValid(victim) )
+	if( !cvarVSH2[Enabled].BoolValue || !IsClientValid(victim) )
 		return Plugin_Continue;
 	
 	BaseBoss BossVictim = BaseBoss(victim);
@@ -797,13 +815,10 @@ public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& dam
 		if( BossVictim.bIsBoss ) {
 			damage = (BossVictim.iHealth > 100) ? 1.0 : 30.0;
 			return Plugin_Changed;
-		}
-		/*
-		else if( !BossVictim.bIsBoss && BossVictim.FindBack({ 444 }, 1) ) {
-			damage *= 0.3;
+		} else if( BossVictim.FindBack({ 444 }, 1) ) {
+			damage /= 10;
 			return Plugin_Changed;
 		}
-		*/
 	}
 	
 	if( BossVictim.bIsBoss ) /// in handler.sp
@@ -823,7 +838,7 @@ public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& dam
 #if defined _goomba_included_
 public Action OnStomp(int attacker, int victim, float& damageMultiplier, float& damageAdd, float& JumpPower)
 {
-	if( !bEnabled.BoolValue ) {
+	if( !cvarVSH2[Enabled].BoolValue ) {
 		return Plugin_Continue;
 	}
 	return ManageOnGoombaStomp(attacker, victim, damageMultiplier, damageAdd, JumpPower);
@@ -840,7 +855,7 @@ public Action RemoveEnt(Handle timer, any entid)
 
 public Action cdVoiceMenu(int client, const char[] command, int argc)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 	if( argc < 2 || !IsPlayerAlive(client) )
 		return Plugin_Handled;
@@ -858,7 +873,7 @@ public Action cdVoiceMenu(int client, const char[] command, int argc)
 
 public Action DoTaunt(int client, const char[] command, int argc)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 	
 	BaseBoss boss = BaseBoss(client);
@@ -870,7 +885,7 @@ public Action DoTaunt(int client, const char[] command, int argc)
 
 public void OnEntityCreated(int entity, const char[] classname)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return;
 	else if( !strncmp(classname, "tf_weapon_", 10, false) && IsValidEntity(entity) )
 		CreateTimer( 0.2, OnWeaponSpawned, EntIndexToEntRef(entity) );
@@ -947,7 +962,7 @@ public void ShowPlayerScores()
 		strcopy(score3, PATH, "nil");
 		hTop[2] = view_as< BaseBoss >(0);
 	}
-	SetHudTextParams(-1.0, 0.4, 10.0, 255, 255, 255, 255);
+	SetHudTextParams(-1.0, 0.35, 10.0, 255, 255, 255, 255);
 	
 	/// Should clear center text
 	PrintCenterTextAll("");
@@ -1069,7 +1084,7 @@ public Action Timer_UberLoop(Handle timer, any medigunid)
 }
 public void _MusicPlay()
 {
-	if( !bEnabled.BoolValue || !cvarVSH2[EnableMusic].BoolValue || gamemode.iRoundState != StateRunning )
+	if( !cvarVSH2[Enabled].BoolValue || !cvarVSH2[EnableMusic].BoolValue || gamemode.iRoundState != StateRunning )
 		return;
 	
 	float currtime = GetGameTime();
@@ -1209,6 +1224,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2Player.RemoveAllItems", Native_VSH2_RemoveAllItems);
 	CreateNative("VSH2Player.GetName", Native_VSH2_GetName);
 	CreateNative("VSH2Player.SetName", Native_VSH2_SetName);
+	CreateNative("VSH2Player.SuperJump", Native_VSH2_SuperJump);
+	CreateNative("VSH2Player.WeighDown", Native_VSH2_WeighDown);
 	
 	/// VSH2 Game Mode Managers Methods
 	CreateNative("VSH2GameMode_GetProperty", Native_VSH2GameMode_GetProperty);
@@ -1227,6 +1244,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2GameMode_GetHUDHandle", Native_VSH2GameMode_GetHUDHandle);
 	CreateNative("VSH2GameMode_GetBosses", Native_VSH2GameMode_GetBosses);
 	CreateNative("VSH2GameMode_IsVSHMap", Native_VSH2GameMode_IsVSHMap);
+	
+	CreateNative("VSH2_GetMaxBosses", Native_VSH2_GetMaxBosses);
 	
 	MarkNativeAsOptional("Steam_SetGameDescription");
 	
@@ -1349,6 +1368,7 @@ public int Native_UnhookEx(Handle plugin, int numParams)
 		return g_hForwards[vsh2Hook].Remove(plugin, GetNativeFunction(2));
 	return 0;
 }
+
 
 public int Native_VSH2_ConvertToMinion(Handle plugin, int numParams)
 {
@@ -1560,7 +1580,22 @@ public int Native_VSH2_SetName(Handle plugin, int numParams)
 	return view_as< int >(player.SetName(name));
 }
 
+public int Native_VSH2_SuperJump(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	float power = GetNativeCell(2);
+	float reset = GetNativeCell(3);
+	player.SuperJump(power, reset);
+	return 0;
+}
 
+public int Native_VSH2_WeighDown(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	float reset = GetNativeCell(2);
+	player.WeighDown(reset);
+	return 0;
+}
 
 
 public int Native_VSH2GameMode_GetProperty(Handle plugin, int numParams)
@@ -1642,4 +1677,9 @@ public int Native_VSH2GameMode_GetBosses(Handle plugin, int numParams)
 public int Native_VSH2GameMode_IsVSHMap(Handle plugin, int numParams)
 {
 	return gamemode.IsVSHMap();
+}
+
+public int Native_VSH2_GetMaxBosses(Handle plugin, int numParams)
+{
+	return MAXBOSS;
 }

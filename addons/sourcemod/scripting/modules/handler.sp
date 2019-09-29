@@ -322,6 +322,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 						victim.flCharge = HALEHHH_TELEPORTCHARGE;
 					else victim.bSuperCharge = true;
 				}
+				
 				if( damage > 500.0 ) {
 					damage = 500.0;
 					return Plugin_Changed;
@@ -330,6 +331,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 			if( attacker <= 0 || attacker > MaxClients )
 				return Plugin_Continue;
 			
+			victim.iHits++;
 			char classname[64], strEntname[32];
 			if( IsValidEntity(inflictor) )
 				GetEntityClassname(inflictor, strEntname, sizeof(strEntname));
@@ -775,9 +777,8 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 						if( Call_OnBossDealDamage_OnHitDeadRinger(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
 							if( damagetype & DMG_CRIT )
 								damagetype &= ~DMG_CRIT;
-							/// Dead ringer (tested Sep 23, 2019) reduces damage by 75%
 							if( damagetype & DMG_CLUB )
-								damage = cvarVSH2[DeadRingerDamage].FloatValue / 0.25;
+								damage = cvarVSH2[DeadRingerDamage].FloatValue / FindConVar("tf_feign_death_damage_scale").FloatValue;
 							return Plugin_Changed;
 						}
 						return Plugin_Changed;
@@ -785,9 +786,8 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 						if( Call_OnBossDealDamage_OnHitCloakedSpy(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
 							if( damagetype & DMG_CRIT )
 								damagetype &= ~DMG_CRIT;
-							/// Regular cloak (tested Sep 23, 2019) reduces damage by 20%
 							if( damagetype & DMG_CLUB )
-								damage = cvarVSH2[CloakDamage].FloatValue / 0.8;
+								damage = cvarVSH2[CloakDamage].FloatValue / FindConVar("tf_stealth_damage_reduction").FloatValue;
 							return Plugin_Changed;
 						}
 						return Plugin_Changed;
@@ -1039,7 +1039,7 @@ public void ManageTraceHit(const BaseBoss victim, const BaseBoss attacker, int& 
 }
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
-	if( !bEnabled.BoolValue || !IsPlayerAlive(client) )
+	if( !cvarVSH2[Enabled].BoolValue || !IsPlayerAlive(client) )
 		return Plugin_Continue;
 
 	BaseBoss base = BaseBoss(client);
@@ -1123,11 +1123,10 @@ public void ManagePlayerJarated(const BaseBoss attacker, const BaseBoss victim)
 }
 public Action HookSound(int clients[64], int& numClients, char sample[FULLPATH], int& entity, int& channel, float& volume, int& level, int& pitch, int& flags)
 {
-	if( !bEnabled.BoolValue || !IsValidClient(entity) )
+	if( !cvarVSH2[Enabled].BoolValue || !IsValidClient(entity) )
 		return Plugin_Continue;
 	
 	BaseBoss base = BaseBoss(entity);
-	
 	switch( base.iBossType ) {
 		case -1: {}
 		case Hale: {
@@ -1178,7 +1177,7 @@ public Action HookSound(int clients[64], int& numClients, char sample[FULLPATH],
 
 public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname, bool& result)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 	
 	BaseBoss base = BaseBoss(client);
@@ -1477,6 +1476,11 @@ public void ManageBossCheckHealth(const BaseBoss base)
 	}
 }
 
+public void ManageOnRPS(const BaseBoss boss, const BaseBoss victim)
+{
+	Call_OnRPSTaunt(victim, boss);
+}
+
 public void CheckAlivePlayers()
 {
 	if( gamemode.iRoundState != StateRunning )
@@ -1706,7 +1710,7 @@ public void PrepPlayers(const BaseBoss player)
 
 public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDefinitionIndex, Handle &hItem)
 {
-	if( !bEnabled.BoolValue )
+	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
 	
 	TF2Item hItemOverride = null;
@@ -1769,9 +1773,9 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case 133: {	/// Gunboats; make gunboats attractive compared to the mantreads by having it reduce more rj dmg
 			hItemOverride = PrepareItemHandle(hItemCast, _, _, "135; 0.2", true);
 		}
-		case 444: {    /// Mantreads
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, " 275 ; 1");
-		}
+		//case 444: {    /// Mantreads
+		//	hItemOverride = PrepareItemHandle(hItemCast, _, _, " 275 ; 1");
+		//}
 		/// Enforcer
 		case 460: {
 			hItemOverride = PrepareItemHandle(hItemCast, _, _, "2; 1.2");
@@ -1798,7 +1802,11 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		}
 		/// Axtinguisher, Postal Pummeler, & Festive Axtinguisher
 		case 38, 457, 1000: {
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "795 ; 1.15");
+			hItemOverride = PrepareItemHandle(hItemCast, _, _, "795 ; 1.20");
+		}
+		/// Hot Hand
+		case 1181: {
+			hItemOverride = PrepareItemHandle(hItemCast, _, _, "877 ; 2.0");
 		}
 	}
 	if( hItemOverride != null ) {

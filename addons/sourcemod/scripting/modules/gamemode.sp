@@ -382,7 +382,7 @@ methodmap VSHGameMode { /* < StringMap */
 		ent = -1;
 		count = 0;
 		while( (ent = FindEntityByClassname(ent, "item_healthkit_small")) != -1 ) {
-			SetEntProp(ent, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+			SetEntProp(ent, Prop_Send, "m_iTeamNum", cvarVSH2[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 			count++;
 			if( !foundHealth )
 				foundHealth = (count > 4); //true;
@@ -390,7 +390,7 @@ methodmap VSHGameMode { /* < StringMap */
 		ent = -1;
 		count = 0;
 		while( (ent = FindEntityByClassname(ent, "item_healthkit_medium")) != -1 ) {
-			SetEntProp(ent, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+			SetEntProp(ent, Prop_Send, "m_iTeamNum", cvarVSH2[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 			count++;
 			if (!foundHealth)
 				foundHealth = (count > 2);//true;
@@ -398,7 +398,7 @@ methodmap VSHGameMode { /* < StringMap */
 		ent = -1;
 		count = 0;
 		while( (ent = FindEntityByClassname(ent, "item_healthkit_full")) != -1 ) {
-			SetEntProp(ent, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+			SetEntProp(ent, Prop_Send, "m_iTeamNum", cvarVSH2[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 			count++;
 			if( !foundHealth )
 				foundHealth = (count > 2); //true;

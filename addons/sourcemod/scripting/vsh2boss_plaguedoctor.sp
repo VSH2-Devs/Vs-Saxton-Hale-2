@@ -154,8 +154,17 @@ public Plugin myinfo = {
 
 int g_iPlagueDocID;
 
+ConVar
+	g_vsh2_scout_rage_gen,
+	g_vsh2_airblast_rage,
+	g_vsh2_jarate_rage
+;
+
 public void OnAllPluginsLoaded()
 {
+	g_vsh2_scout_rage_gen = FindConVar("vsh2_scout_rage_gen");
+	g_vsh2_airblast_rage = FindConVar("vsh2_airblast_rage");
+	g_vsh2_jarate_rage = FindConVar("vsh2_jarate_rage");
 	g_iPlagueDocID = VSH2_RegisterPlugin("plague_doctor");
 	LoadVSH2Hooks();
 }
@@ -276,30 +285,20 @@ public void PlagueDoc_OnBossThink(const VSH2Player boss)
 		if( player.flCharge+2.5 < (25*1.0) )
 			player.flCharge += 2.5;
 		else player.flCharge = 25.0;
-	}
-	else if( player.flCharge < 0.0 )
+	} else if( player.flCharge < 0.0 )
 		player.flCharge += 2.5;
 	else {
 		float EyeAngles[3]; GetClientEyeAngles(client, EyeAngles);
 		if( player.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
-			float vel[3]; GetEntPropVector(client, Prop_Data, "m_vecVelocity", vel);
-			vel[2] = 750 + player.flCharge * 13.0;
-			if( player.GetPropInt("bSuperCharge") ) {
-				vel[2] += 2000.0;
-				player.SetPropAny("bSuperCharge", false);
-			}
-			
-			SetEntProp(client, Prop_Send, "m_bJumping", 1);
-			vel[0] *= (1+Sine(player.flCharge * FLOAT_PI / 50));
-			vel[1] *= (1+Sine(player.flCharge * FLOAT_PI / 50));
-			TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, vel);
-			player.flCharge = -100.0;
-			EmitSoundToAll("vo/medic_yes01.mp3", client); EmitSoundToAll("vo/medic_yes01.mp3", client);
+			player.SuperJump(player.flCharge, -100.0);
+			EmitSoundToAll("vo/medic_yes01.mp3", client);
+			EmitSoundToAll("vo/medic_yes01.mp3", client);
 		}
 		else player.flCharge = 0.0;
 	}
+	
 	if( OnlyScoutsLeft(VSH2Team_Red) )
-		player.flRAGE += FindConVar("vsh2_scout_rage_gen").FloatValue;
+		player.flRAGE += g_vsh2_scout_rage_gen.FloatValue;
 	
 	/// weighdown code
 	if( flags & FL_ONGROUND )
@@ -308,9 +307,7 @@ public void PlagueDoc_OnBossThink(const VSH2Player boss)
 	if( (buttons & IN_DUCK) && player.flWeighDown >= 3.0 ) {
 		float ang[3]; GetClientEyeAngles(client, ang);
 		if( ang[0] > 60.0 ) {
-			SetEntityGravity(client, 6.0);
-			SetPawnTimer(SetGravityNormal, 1.0, player.userid);
-			player.flWeighDown = 0.0;
+			player.WeighDown(0.0);
 		}
 	}
 	/// hud code
@@ -411,7 +408,7 @@ public void PlagueDoc_OnPlayerAirblasted(const VSH2Player airblaster, const VSH2
 	if( !IsPlagueDoctor(airblasted) )
 		return;
 	float rage = airblasted.GetPropFloat("flRAGE");
-	airblasted.SetPropFloat("flRAGE", rage + FindConVar("vsh2_airblast_rage").FloatValue);
+	airblasted.SetPropFloat("flRAGE", rage + g_vsh2_airblast_rage.FloatValue);
 }
 public void PlagueDoc_OnBossMedicCall(const VSH2Player rager)
 {
@@ -429,7 +426,7 @@ public void PlagueDoc_OnBossJarated(const VSH2Player victim, const VSH2Player th
 	if( !IsPlagueDoctor(victim) )
 		return;
 	float rage = victim.GetPropFloat("flRAGE");
-	victim.SetPropFloat("flRAGE", rage - FindConVar("vsh2_jarate_rage").FloatValue);
+	victim.SetPropFloat("flRAGE", rage - g_vsh2_jarate_rage.FloatValue);
 }
 public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname, bool &result)
 {
@@ -479,23 +476,6 @@ public void PlagueDoc_OnBossHealthCheck(const VSH2Player player, bool bossBool, 
 }
 
 
-
-
-public void StopTickle(const int userid)
-{
-	int client = GetClientOfUserId(userid);
-	if (!IsValidClient(client) || !IsPlayerAlive(client))
-		return;
-	if (!GetEntProp(client, Prop_Send, "m_bIsReadyToHighFive") && !IsValidEntity(GetEntPropEnt(client, Prop_Send, "m_hHighFivePartner")))
-		TF2_RemoveCondition(client, TFCond_Taunting);
-}
-
-public void SetGravityNormal(const int userid)
-{
-	int i = GetClientOfUserId(userid);
-	if( IsValidClient(i) )
-		SetEntityGravity(i, 1.0);
-}
 
 void RecruitMinion(const VSH2Player base)
 {
@@ -618,25 +598,6 @@ public Action DoThink(Handle hTimer, DataPack hndl)
 	return Plugin_Continue;
 }
 
-stock void IncrementHeadCount(const int client, bool addhealth = true, int addheads = 1)
-{
-	if( (TF2_GetPlayerClass(client) == TFClass_DemoMan) && !TF2_IsPlayerInCondition(client, TFCond_DemoBuff) )
-		TF2_AddCondition(client, TFCond_DemoBuff, TFCondDuration_Infinite);
-	int decapitations = GetEntProp(client, Prop_Send, "m_iDecapitations");
-	SetEntProp(client, Prop_Send, "m_iDecapitations", decapitations + addheads);
-	if( addhealth )
-	{
-		int health = GetClientHealth(client);
-		//health += (decapitations >= 4 ? 10 : 15);
-		if( health + (15 * addheads) <= 300 )
-			health += 15 * addheads;
-		else
-			health = 300;
-		SetEntProp(client, Prop_Data, "m_iHealth", health);
-		SetEntProp(client, Prop_Send, "m_iHealth", health);
-	}
-	TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
-}
 
 stock float GetMediCharge(const int medigun)
 {
@@ -655,19 +616,6 @@ stock int GetItemIndex(const int item)
 {
 	if (IsValidEntity(item))
 		return GetEntProp(item, Prop_Send, "m_iItemDefinitionIndex");
-	return -1;
-}
-
-stock int GetHealingTarget(const int client)
-{
-	int medigun = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
-	if (!IsValidEntity(medigun))
-		return -1;
-	
-	if( HasEntProp(medigun, Prop_Send, "m_bHealing") ) {
-		if( GetEntProp(medigun, Prop_Send, "m_bHealing") )
-			return GetEntPropEnt( medigun, Prop_Send, "m_hHealingTarget" );
-	}
 	return -1;
 }
 

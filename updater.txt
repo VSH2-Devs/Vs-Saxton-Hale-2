@@ -4,15 +4,24 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.3.3"
+			"Latest"	"2.3.4"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.3:"
-		"Notes"	"Added Old VSH compatibility layer (requires removing the actual Old VSH plugin though)."
-		"Notes"	"Made 'IsVSHMap()' as a gamemode native for the old VSH compatibility layer."
-		"Notes"	"moved super jump and weighdown code into their own base boss methods."
-		"Notes"	"implemented forward calls into super jump, generic stun, and weighdown for the old VSH compatibility layer."
-		"Notes"	"Last player timer now properly draws total boss health."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.4:"
+		"Notes"	"Added native to get Max Bosses value."
+		"Notes"	"Exposed the SuperJump and Weighdown methods as natives."
+		"Notes"	"Modified the plague doctor add-on boss to use the new superjump and weighdown natives."
+		"Notes"	"Corrected deprecated message for 'SetProp*'."
+		"Notes"	"Added the Hot Hand and gave it speed boost on slap."
+		"Notes"	"Added Rock Paper Scissors taunt event and forward hook."
+		"Notes"	"Replaced damage modifiers for cloak damage with tf2's cvars."
+		"Notes"	"Merged standalone 'bEnabled' cvar into the VSH2 ConVar array."
+		"Notes"	"in Plague Doctor boss add-on, cached certain VSH2 convars for rage oriented code."
+		"Notes"	"Replaced some respawn conditional code with a ternary conditional."
+		"Notes"	"Added cvar that enables or disables late spawning, default value disables."
+		"Notes"	"Added cvar to control the percentage threshold to allow bosses to suicide."
+		"Notes"	"Buffed Axtinguisher and reskins by 5%."
+		"Notes"	"Modified forward in old VSH Compatibility Layer plugin to call if a player is indeed the next boss."
 	}
 	
 	"Files"

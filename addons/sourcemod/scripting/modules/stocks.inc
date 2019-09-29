@@ -739,7 +739,7 @@ stock void SpawnRandomAmmo()
 		int ammo = CreateEntityByName("item_ammopack_small");
 		TeleportEntity(ammo, vPos, vAng, NULL_VECTOR);
 		DispatchSpawn(ammo);
-		SetEntProp(ammo, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+		SetEntProp(ammo, Prop_Send, "m_iTeamNum", cvarVSH2[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 		++spawned;
 	}
 }
@@ -763,7 +763,7 @@ stock void SpawnRandomHealth()
 		int healthkit = CreateEntityByName("item_healthkit_small");
 		TeleportEntity(healthkit, vPos, vAng, NULL_VECTOR);
 		DispatchSpawn(healthkit);
-		SetEntProp(healthkit, Prop_Send, "m_iTeamNum", bEnabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+		SetEntProp(healthkit, Prop_Send, "m_iTeamNum", cvarVSH2[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 		++spawned;
 	}
 }
@@ -1176,7 +1176,7 @@ stock int GetClip(const int client, const int slot)
 
 stock void SkipBossPanelNotify(const int client/*, bool newchoice = true*/)
 {
-	if (!bEnabled.BoolValue || !IsValidClient(client) || IsFakeClient(client) || IsVoteInProgress())
+	if (!cvarVSH2[Enabled].BoolValue || !IsValidClient(client) || IsFakeClient(client) || IsVoteInProgress())
 		return;
 	
 	Panel panel = new Panel();

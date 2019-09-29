@@ -97,6 +97,8 @@ void InitializeForwards()
 	g_hForwards[OnBossSuperJump] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell));
 	g_hForwards[OnBossDoRageStun] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_FloatByRef));
 	g_hForwards[OnBossWeighDown] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell));
+	
+	g_hForwards[OnRPSTaunt] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell));
 }
 
 void Call_OnCallDownloads()
@@ -751,5 +753,13 @@ void Call_OnBossWeighDown(const BaseBoss player)
 {
 	g_hForwards[OnBossWeighDown].Start();
 	Call_PushCell(player);
+	Call_Finish();
+}
+
+void Call_OnRPSTaunt(const BaseBoss loser, const BaseBoss winner)
+{
+	g_hForwards[OnRPSTaunt].Start();
+	Call_PushCell(loser);
+	Call_PushCell(winner);
 	Call_Finish();
 }

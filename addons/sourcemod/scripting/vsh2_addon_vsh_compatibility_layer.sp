@@ -97,10 +97,12 @@ public void VSH_OnMusic(char song[PLATFORM_MAX_PATH], float& time, const VSH2Pla
 
 public void VSH_OnNextHale(const VSH2Player player)
 {
-	Action action = Plugin_Continue;
-	Call_StartForward(g_vsh_forwards[OnHaleNext]);
-	Call_PushCell(player.index);
-	Call_Finish(action);
+	if( VSH2GameMode_FindNextBoss()==player ) {
+		Action action = Plugin_Continue;
+		Call_StartForward(g_vsh_forwards[OnHaleNext]);
+		Call_PushCell(player.index);
+		Call_Finish(action);
+	}
 }
 
 
@@ -137,7 +139,7 @@ public int Native_IsVSHMap(Handle plugin, int numParams)
 
 public int Native_IsEnabled(Handle plugin, int numParams)
 {
-	return FindConVar("vsh2_enabled").BoolValue;
+	return vsh2_enabled.BoolValue;
 }
 
 public int Native_GetHale(Handle plugin, int numParams)
