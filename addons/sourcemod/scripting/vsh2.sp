@@ -25,7 +25,7 @@
 #pragma semicolon        1
 #pragma newdecls         required
 
-#define PLUGIN_VERSION   "2.3.4"
+#define PLUGIN_VERSION   "2.3.5"
 #define PLUGIN_DESCRIPT  "VS Saxton Hale 2"
 
 
@@ -446,7 +446,6 @@ public Action CheckLateSpawn(int client, const char[] command, int argc)
 	/// deal with late spawners, force them to spectator.
 	if( !cvarVSH2[AllowLateSpawn].BoolValue && TF2_GetPlayerClass(client)==TFClass_Unknown ) {
 		CPrintToChat(client, "{olive}[VSH 2]{default} Late Spawn Blocked.");
-		ForceClientTeamChange(client, VSH2Team_Spectator);
 		return Plugin_Handled;
 	}
 	return Plugin_Continue;
@@ -810,28 +809,24 @@ public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& dam
 		return Plugin_Continue;
 	
 	BaseBoss BossVictim = BaseBoss(victim);
-	int bFallDamage = (damagetype & DMG_FALL);
-	if( attacker <= 0 && bFallDamage ) {
-		if( BossVictim.bIsBoss ) {
-			damage = (BossVictim.iHealth > 100) ? 1.0 : 30.0;
-			return Plugin_Changed;
-		} else if( BossVictim.FindBack({ 444 }, 1) ) {
-			damage /= 10;
-			return Plugin_Changed;
-		}
-	}
-	
 	if( BossVictim.bIsBoss ) /// in handler.sp
 		return ManageOnBossTakeDamage(BossVictim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 	
 	/// BUG PATCH: Client index 0 is invalid
-	if( !IsClientValid(attacker) )
+	if( !IsClientValid(attacker) ) {
+		if( (damagetype & DMG_FALL) && !BossVictim.bIsBoss ) {
+			int item = GetPlayerWeaponSlot(victim, (TF2_GetPlayerClass(victim) == TFClass_DemoMan ? TFWeaponSlot_Primary : TFWeaponSlot_Secondary));
+			if( item <= 0 || !IsValidEntity(item) ) {
+				damage /= 10;
+				return Plugin_Changed;
+			}
+		}
 		return Plugin_Continue;
+	}
 	
 	BaseBoss BossAttacker = BaseBoss(attacker);
 	if( BossAttacker.bIsBoss ) /// in handler.sp
 		return ManageOnBossDealDamage(BossVictim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
-	
 	return Plugin_Continue;
 }
 
@@ -980,7 +975,6 @@ public void ShowPlayerScores()
 public void CalcScores()
 {
 	BaseBoss player;
-	Event scoring = CreateEvent("player_escort_score", true);
 	for( int i=MaxClients; i; --i ) {
 		if( !IsClientValid(i) || GetClientTeam(i) < VSH2Team_Red )
 			continue;
@@ -993,20 +987,18 @@ public void CalcScores()
 			int queue_gain = cvarVSH2[QueueGained].IntValue;
 			int queue = (cvarVSH2[DamageQueue].BoolValue) ? queue_gain + (player.iDamage / cvarVSH2[DamageForQueue].IntValue) : queue_gain;
 			int points = player.iDamage / cvarVSH2[DamagePoints].IntValue;
-			//for( j=0; damage-amount > 0; damage -= amount, j++ ) {}
-			
 			Call_OnScoreTally(player, points, queue);
 			
+			Event scoring = CreateEvent("player_escort_score", true);
 			scoring.SetInt("player", i);
 			scoring.SetInt("points", points);
-			scoring.FireToClient(i);
+			scoring.Fire();
 			
 			player.iQueue += queue;
 			CPrintToChat(i, "{olive}[VSH 2] Queue{default} You gained %i queue points.", queue);
 			CPrintToChat(i, "{olive}[VSH 2] Queue{default} You scored %i points.", points);
 		}
 	}
-	delete scoring;
 }
 
 public Action Timer_DrawGame(Handle timer)

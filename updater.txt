@@ -4,24 +4,14 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.3.4"
+			"Latest"	"2.3.5"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.4:"
-		"Notes"	"Added native to get Max Bosses value."
-		"Notes"	"Exposed the SuperJump and Weighdown methods as natives."
-		"Notes"	"Modified the plague doctor add-on boss to use the new superjump and weighdown natives."
-		"Notes"	"Corrected deprecated message for 'SetProp*'."
-		"Notes"	"Added the Hot Hand and gave it speed boost on slap."
-		"Notes"	"Added Rock Paper Scissors taunt event and forward hook."
-		"Notes"	"Replaced damage modifiers for cloak damage with tf2's cvars."
-		"Notes"	"Merged standalone 'bEnabled' cvar into the VSH2 ConVar array."
-		"Notes"	"in Plague Doctor boss add-on, cached certain VSH2 convars for rage oriented code."
-		"Notes"	"Replaced some respawn conditional code with a ternary conditional."
-		"Notes"	"Added cvar that enables or disables late spawning, default value disables."
-		"Notes"	"Added cvar to control the percentage threshold to allow bosses to suicide."
-		"Notes"	"Buffed Axtinguisher and reskins by 5%."
-		"Notes"	"Modified forward in old VSH Compatibility Layer plugin to call if a player is indeed the next boss."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.5:"
+		"Notes"	"Moved fall damage code to their respective manager functions."
+		"Notes"	"Removed forcing player to spec when blocking late spawn."
+		"Notes"	"Changed scoring Event to create and fire per individual player."
+		"Notes"	"Added RPS taunt hook to natives tester."
 	}
 	
 	"Files"

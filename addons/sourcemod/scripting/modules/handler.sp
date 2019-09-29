@@ -263,7 +263,7 @@ public void ManageMinionTransition(const BaseBoss base)
 	int ent = -1;
 	while( (ent = FindEntityByClassname(ent, "tf_wearable")) != -1 ) {
 		if( GetOwner(ent) == base.index ) {
-			int index = GetEntProp(ent, Prop_Send, "m_iItemDefinitionIndex");
+			int index = GetItemIndex(ent);
 			switch( index ) {
 				case 438, 463, 167, 477, 493, 233, 234, 241, 280, 281, 282, 283, 284, 286, 288, 362, 364, 365, 536, 542, 577, 599, 673, 729, 791, 839, 1015, 5607: {}
 				default: TF2_RemoveWearable(base.index, ent); //AcceptEntityInput(ent, "kill");
@@ -273,7 +273,7 @@ public void ManageMinionTransition(const BaseBoss base)
 	ent = -1;
 	while( (ent = FindEntityByClassname(ent, "tf_powerup_bottle")) != -1 ) {
 		if( GetOwner(ent) == base.index ) {
-			int index = GetEntProp(ent, Prop_Send, "m_iItemDefinitionIndex");
+			int index = GetItemIndex(ent);
 			switch( index ) {
 				case 438, 463, 167, 477, 493, 233, 234, 241, 280, 281, 282, 283, 284, 286, 288, 362, 364, 365, 536, 542, 577, 599, 673, 729, 791, 839, 1015, 5607: {}
 				default: TF2_RemoveWearable(base.index, ent); //AcceptEntityInput(ent, "kill");
@@ -311,6 +311,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 	switch( victim.iBossType ) {
 		case -1: {}
 		default: {
+			int bFallDamage = (damagetype & DMG_FALL);
 			char trigger[32];
 			if( attacker > MaxClients && GetEdictClassname(attacker, trigger, sizeof(trigger)) && !strcmp(trigger, "trigger_hurt", false) )
 			{
@@ -327,7 +328,11 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					damage = 500.0;
 					return Plugin_Changed;
 				}
+			} else if( attacker <= 0 && bFallDamage ) {
+				damage = (victim.iHealth > 100) ? 1.0 : 30.0;
+				return Plugin_Changed;
 			}
+			
 			if( attacker <= 0 || attacker > MaxClients )
 				return Plugin_Continue;
 			
@@ -1577,9 +1582,10 @@ public void PrepPlayers(const BaseBoss player)
 	if( gamemode.bTF2Attribs )
 		TF2Attrib_RemoveAll(client);
 #endif
+	/// Added fix by Chdata to correct team colors
 	if( GetClientTeam(client) != VSH2Team_Red && GetClientTeam(client) > VSH2Team_Spectator ) {
 		player.ForceTeamChange(VSH2Team_Red);
-		TF2_RegeneratePlayer(client); /// Added fix by Chdata to correct team colors
+		TF2_RegeneratePlayer(client);
 	}
 	TF2_RegeneratePlayer(client);
 	SetEntityHealth(client, GetEntProp(client, Prop_Data, "m_iMaxHealth"));
@@ -1595,7 +1601,7 @@ public void PrepPlayers(const BaseBoss player)
 	int weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 	int index = -1;
 	if( weapon > MaxClients && IsValidEntity(weapon) ) {
-		index = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
+		index = GetItemIndex(weapon);
 		switch( index ) {
 			/// blocks rocket jumper
 			case 237: {
@@ -1613,7 +1619,7 @@ public void PrepPlayers(const BaseBoss player)
 	}
 	weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 	if( weapon > MaxClients && IsValidEntity(weapon) ) {
-		index = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
+		index = GetItemIndex(weapon);
 		switch( index ) {
 			/// Razorback
 			/*
@@ -1665,7 +1671,7 @@ public void PrepPlayers(const BaseBoss player)
 	*/
 	weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
 	if( weapon > MaxClients && IsValidEntity(weapon) ) {
-		index = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
+		index = GetItemIndex(weapon);
 		switch( index ) {
 			case 331: {
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
@@ -1770,9 +1776,9 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 			//hItemOverride = PrepareItemHandle(hItemCast, _, _, "106; 0.3; 4; 1.33; 45; 0.6; 114; 1.0", true);
 			hItemOverride = PrepareItemHandle(hItemCast, _, _, "418 ; 1; 49 ; 1; 3 ; 0.66; 532 ; 1; 793 ; 1; 36 ; 1.25", true);
 		}
-		case 133: {	/// Gunboats; make gunboats attractive compared to the mantreads by having it reduce more rj dmg
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "135; 0.2", true);
-		}
+		//case 133: {	/// Gunboats; make gunboats attractive compared to the mantreads by having it reduce more rj dmg
+		//	hItemOverride = PrepareItemHandle(hItemCast, _, _, "135; 0.2", true);
+		//}
 		//case 444: {    /// Mantreads
 		//	hItemOverride = PrepareItemHandle(hItemCast, _, _, " 275 ; 1");
 		//}

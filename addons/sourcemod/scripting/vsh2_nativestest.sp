@@ -395,6 +395,11 @@ public void fwdOnBossWeighDown(const VSH2Player player)
 	PrintToChat(player.index, "OnBossWeighDown:: %N", player.index);
 }
 
+public void fwdOnRPSTaunt(const VSH2Player loser, const VSH2Player winner)
+{
+	PrintToChatAll("fwdOnRPSTaunt:: winner: %N | loser: %N", winner.index, loser.index);
+}
+
 
 public void LoadVSH2Hooks()
 {
@@ -574,4 +579,7 @@ public void LoadVSH2Hooks()
 		
 	if (!VSH2_HookEx(OnBossWeighDown, fwdOnBossWeighDown))
 		LogError("Error Hooking OnBossWeighDown forward for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnRPSTaunt, fwdOnRPSTaunt))
+		LogError("Error Hooking OnRPSTaunt forward for VSH2 Test plugin.");
 }
