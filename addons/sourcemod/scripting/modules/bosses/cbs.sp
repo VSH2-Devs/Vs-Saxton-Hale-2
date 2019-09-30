@@ -60,8 +60,18 @@ methodmap CChristian < BaseBoss {
 				this.SuperJump(this.flCharge, -100.0);
 				strcopy(snd, PLATFORM_MAX_PATH, CBSJump1);
 				
-				EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
-				EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
+				float pos[3];
+				GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
+				EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+				EmitSoundToAll(snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+				for( int i=MaxClients; i; --i )
+				{
+					if( IsClientInGame(i) && i != this.index )
+					{
+						EmitSoundToClient(i, snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+						EmitSoundToClient(i, snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+					}
+				}
 			}
 			else this.flCharge = 0.0;
 		}
@@ -118,7 +128,20 @@ methodmap CChristian < BaseBoss {
 		if( GetRandomInt(0, 1) )
 			Format(snd, PLATFORM_MAX_PATH, "%s", CBS1);
 		else Format(snd, PLATFORM_MAX_PATH, "%s", CBS3);
-		EmitSoundToAll(snd);
+
+		float pos[3];
+		GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
+		EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+		EmitSoundToAll(snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+		for( int i=MaxClients; i; --i )
+		{
+			if( IsClientInGame(i) && i != this.index )
+			{
+				EmitSoundToClient(i, snd, this.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+				EmitSoundToClient(i, snd, this.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+			}
+		}
+
 		TF2_RemoveWeaponSlot(this.index, TFWeaponSlot_Primary);
 		int bow = this.SpawnWeapon("tf_weapon_compound_bow", 1005, 100, 5, "2; 2.1; 6; 0.5; 37; 0.0; 280; 19; 551; 1");
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", bow); /// 266; 1.0 - penetration
@@ -134,7 +157,8 @@ methodmap CChristian < BaseBoss {
 			switch( TF2_GetPlayerClass(victim.index) ) {
 				case TFClass_Spy: {
 					strcopy(snd, PLATFORM_MAX_PATH, "vo/sniper_dominationspy04.mp3");
-					EmitSoundToAll(snd);
+					EmitSoundToAll(snd, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+					EmitSoundToAll(snd, _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
 				}
 			}
 		}
@@ -166,7 +190,8 @@ methodmap CChristian < BaseBoss {
 			else if( !GetRandomInt(0, 3) )
 				Format(snd, PLATFORM_MAX_PATH, CBS1);
 			else Format(snd, PLATFORM_MAX_PATH, "%s%02i.mp3", CBS2, GetRandomInt(1, 9));
-			EmitSoundToAll(snd);
+			EmitSoundToAll(snd, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+			EmitSoundToAll(snd, _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
 			this.iKills = 0;
 		}
 		else this.flKillSpree = curtime+5;
@@ -185,7 +210,10 @@ methodmap CChristian < BaseBoss {
 		if( !GetRandomInt(0, 2) )
 			Format(snd, PLATFORM_MAX_PATH, "%s", CBS0);
 		else Format(snd, PLATFORM_MAX_PATH, "%s%i.mp3", CBS4, GetRandomInt(1, 25));
-		EmitSoundToAll(snd);
+		
+		float pos[3]; GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
+		EmitSoundToAll(snd, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, false, 0.0);
+		EmitSoundToAll(snd, _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, false, 0.0);
 	}
 };
 

@@ -75,8 +75,18 @@ methodmap CVagineer < BaseBoss
 				this.SuperJump(this.flCharge, -100.0);
 				Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerJump, GetRandomInt(1, 2));
 				
-				EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
-				EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
+				float pos[3];
+				GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
+				EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+				EmitSoundToAll(snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+				for( int i=MaxClients; i; --i )
+				{
+					if( IsClientInGame(i) && i != this.index )
+					{
+						EmitSoundToClient(i, snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+						EmitSoundToClient(i, snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+					}
+				}
 			}
 			else this.flCharge = 0.0;
 		}
@@ -144,13 +154,26 @@ methodmap CVagineer < BaseBoss
 			strcopy(snd, PLATFORM_MAX_PATH, VagineerRageSound);
 		else
 			Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerRageSound2, GetRandomInt(1, 2));
-		EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
+		
+		float pos[3];
+		GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
+		EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+		EmitSoundToAll(snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+		for( int i=MaxClients; i; --i )
+		{
+			if( IsClientInGame(i) && i != this.index )
+			{
+				EmitSoundToClient(i, snd, this.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+				EmitSoundToClient(i, snd, this.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+			}
+		}
 	}
 
 	public void KilledPlayer(const BaseBoss victim, Event event)
 	{
 		strcopy(snd, PLATFORM_MAX_PATH, VagineerHit);
-		EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
+		EmitSoundToAll(snd, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+		EmitSoundToAll(snd, _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
 		
 		float curtime = GetGameTime();
 		if( curtime <= this.flKillSpree )
@@ -163,15 +186,16 @@ methodmap CVagineer < BaseBoss
 				case 2: strcopy(snd, PLATFORM_MAX_PATH, VagineerKSpree2);
 				default: Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerKSpreeNew, GetRandomInt(1, 5));
 			}
-			EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC); EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
+			EmitSoundToAll(snd, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+			EmitSoundToAll(snd, _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
 			this.iKills = 0;
 		}
 		else this.flKillSpree = curtime+5;
 	}
 	
 	public void Stabbed() {
-		EmitSoundToAll("vo/engineer_positivevocalization01.mp3", this.index, _, SNDLEVEL_TRAFFIC);
-		EmitSoundToAll("vo/engineer_positivevocalization01.mp3", this.index, _, SNDLEVEL_TRAFFIC);
+		EmitSoundToAll("vo/engineer_positivevocalization01.mp3", _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+		EmitSoundToAll("vo/engineer_positivevocalization01.mp3", _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
 	}
 	
 	public void Help()
@@ -188,7 +212,10 @@ methodmap CVagineer < BaseBoss
 	public void LastPlayerSoundClip()
 	{
 		strcopy(snd, PLATFORM_MAX_PATH, VagineerLastA);
-		EmitSoundToAll(snd);
+		
+		float pos[3]; GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
+		EmitSoundToAll(snd, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, false, 0.0);
+		EmitSoundToAll(snd, _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, false, 0.0);
 	}
 };
 

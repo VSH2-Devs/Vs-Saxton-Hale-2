@@ -1111,7 +1111,8 @@ public void ManageBuildingDestroyed(const BaseBoss base, const int building, con
 			event.SetString("weapon", "fists");
 			if( !GetRandomInt(0, 3) ) {
 				strcopy(snd, FULLPATH, HaleSappinMahSentry132);
-				EmitSoundToAll(snd, base.index);
+				EmitSoundToAll(snd, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, base.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+				EmitSoundToAll(snd, _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, base.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
 			}
 		}
 		default: Call_OnBossKillBuilding(base, building, event);
@@ -1403,7 +1404,10 @@ public void ManageRoundEndBossInfo(ArrayList bosses, bool bossWon)
 				case Hale:	Format(victory, FULLPATH, "%s%i.wav", HaleWin, GetRandomInt(1, 2));
 			}
 			if( victory[0] != '\0' )
-				EmitSoundToAll(victory);
+			{
+				EmitSoundToAll(victory, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, base.index, _, NULL_VECTOR, false, 0.0);
+				EmitSoundToAll(victory, _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, base.index, _, NULL_VECTOR, false, 0.0);
+			}
 		}
 	}
 	if( gameMessage[0] != '\0' ) {

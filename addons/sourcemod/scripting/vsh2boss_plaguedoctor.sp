@@ -96,9 +96,24 @@ methodmap CPlague < VSH2Player {
 			#endif
 			}
 		}
+
+		char s[PLATFORM_MAX_PATH];
 		if( GetRandomInt(0, 2) )
-			EmitSoundToAll(PlagueRage1);
-		else EmitSoundToAll(PlagueRage2);
+			strcopy(s, sizeof(s), PlagueRage1);
+		else strcopy(s, sizeof(s), PlagueRage2);
+
+		float pos[3];
+		GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
+		EmitSoundToAll(s, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+		EmitSoundToAll(s, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+		for( int i=MaxClients; i; --i )
+		{
+			if( IsClientInGame(i) && i != this.index )
+			{
+				EmitSoundToClient(i, s, this.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+				EmitSoundToClient(i, s, this.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+			}
+		}
 	}
 	public void KilledPlayer(const VSH2Player victim, Event event) {
 		/// GLITCH: suiciding allows boss to become own minion.
@@ -291,8 +306,20 @@ public void PlagueDoc_OnBossThink(const VSH2Player boss)
 		float EyeAngles[3]; GetClientEyeAngles(client, EyeAngles);
 		if( player.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
 			player.SuperJump(player.flCharge, -100.0);
-			EmitSoundToAll("vo/medic_yes01.mp3", client);
-			EmitSoundToAll("vo/medic_yes01.mp3", client);
+
+			char[] s = "vo/medic_yes01.mp3";
+			float pos[3];
+			GetEntPropVector(player.index, Prop_Send, "m_vecOrigin", pos);
+			EmitSoundToAll(s, player.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, player.index, pos, NULL_VECTOR, true, 0.0);
+			EmitSoundToAll(s, player.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, player.index, pos, NULL_VECTOR, true, 0.0);
+			for( int i=MaxClients; i; --i )
+			{
+				if( IsClientInGame(i) && i != player.index )
+				{
+					EmitSoundToClient(i, s, player.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, player.index, pos, NULL_VECTOR, true, 0.0);
+					EmitSoundToClient(i, s, player.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, player.index, pos, NULL_VECTOR, true, 0.0);
+				}
+			}
 		}
 		else player.flCharge = 0.0;
 	}

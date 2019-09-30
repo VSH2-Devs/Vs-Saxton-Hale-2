@@ -53,8 +53,18 @@ methodmap CPlague < BaseBoss {
 				this.SuperJump(this.flCharge, -100.0);
 				strcopy(snd, PLATFORM_MAX_PATH, "vo/medic_yes01.mp3");
 				
-				EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
-				EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
+				float pos[3];
+				GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
+				EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+				EmitSoundToAll(snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+				for( int i=MaxClients; i; --i )
+				{
+					if( IsClientInGame(i) && i != this.index )
+					{
+						EmitSoundToClient(i, snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+						EmitSoundToClient(i, snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
+					}
+				}
 			}
 			else this.flCharge = 0.0;
 		}
