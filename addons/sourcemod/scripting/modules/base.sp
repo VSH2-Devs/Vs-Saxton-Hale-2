@@ -510,7 +510,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
 		fVelocity[2] = upwardvel;
 		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, fVelocity);
-		SDKHooks_TakeDamage(client, client, client, health, DMG_CLUB, GetPlayerWeaponSlot(client, TFWeaponSlot_Melee));
+		SDKHooks_TakeDamage(client, client, client, health, DMG_CLUB, 0);	/// Inflictor is 0 to prevent Shiv self-bleed
 		
 		if( attackdelay )
 			SetPawnTimer(NoAttacking, 0.1, EntIndexToEntRef(weapon));
