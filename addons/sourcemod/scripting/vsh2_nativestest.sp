@@ -400,6 +400,19 @@ public void fwdOnRPSTaunt(const VSH2Player loser, const VSH2Player winner)
 	PrintToChatAll("fwdOnRPSTaunt:: winner: %N | loser: %N", winner.index, loser.index);
 }
 
+public Action fwdOnBossAirShotProj(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	PrintToConsole(attacker, "fwdOnBossAirShotProj:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	PrintToConsole(victim.index, "fwdOnBossAirShotProj:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	return Plugin_Continue;
+}
+
+public Action fwdOnBossTakeFallDamage(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	PrintToConsole(victim.index, "fwdOnBossTakeFallDamage:: ==> victim name: %N | damage: %f", victim.index, damage);
+	return Plugin_Continue;
+}
+
 
 public void LoadVSH2Hooks()
 {
@@ -582,4 +595,10 @@ public void LoadVSH2Hooks()
 		
 	if (!VSH2_HookEx(OnRPSTaunt, fwdOnRPSTaunt))
 		LogError("Error Hooking OnRPSTaunt forward for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnBossAirShotProj, fwdOnBossAirShotProj))
+		LogError("Error Hooking OnBossAirShotProj forward for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnBossTakeFallDamage, fwdOnBossTakeFallDamage))
+		LogError("Error Hooking OnBossTakeFallDamage forward for VSH2 Test plugin.");
 }

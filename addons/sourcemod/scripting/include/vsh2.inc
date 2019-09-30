@@ -21,6 +21,36 @@ enum { /** VSH2 Teams */
 	VSH2Team_Boss
 };
 
+
+enum { /** Voice Clip Flags */
+	VSH2_VOICE_BOSSENT = 1, /// use boss as entity to emit from.
+	VSH2_VOICE_BOSSPOS = 2, /// use boss position for sound origin.
+	VSH2_VOICE_TOALL = 4,   /// sound replay to each individual player.
+	VSH2_VOICE_ALLCHAN = 8, /// if sound replay should use auto sound channel.
+	VSH2_VOICE_ONCE = 16    /// play a clip once to all. (does not cancel out 'VSH2_VOICE_TOALL')
+};
+
+#define VSH2_VOICE_ALL     (VSH2_VOICE_BOSSENT|VSH2_VOICE_BOSSPOS|VSH2_VOICE_TOALL|VSH2_VOICE_ALLCHAN|VSH2_VOICE_ONCE)
+
+/// For when boss does something like a superjump, etc.
+#define VSH2_VOICE_ABILITY (VSH2_VOICE_BOSSENT|VSH2_VOICE_BOSSPOS|VSH2_VOICE_TOALL)
+
+/// For when boss does something like rage or special ability.
+#define VSH2_VOICE_RAGE    (VSH2_VOICE_BOSSENT|VSH2_VOICE_BOSSPOS|VSH2_VOICE_TOALL|VSH2_VOICE_ALLCHAN)
+
+/// For when boss gets stabbed or goes on a killing spree.
+#define VSH2_VOICE_SPREE   (0)
+#define VSH2_VOICE_STABBED VSH2_VOICE_SPREE
+
+#define VSH2_VOICE_WIN     (VSH2_VOICE_ONCE)
+#define VSH2_VOICE_LOSE    VSH2_VOICE_WIN
+#define VSH2_VOICE_INTRO   VSH2_VOICE_WIN
+
+/// For when there's only one target left!
+#define VSH2_VOICE_LASTGUY (VSH2_VOICE_BOSSPOS)
+
+
+
 methodmap VSH2Player {
 	/** [ C O N S T R U C T O R ]
 	 * Constructs an instance of the BaseBoss internal methodmap
@@ -149,6 +179,9 @@ methodmap VSH2Player {
 	
 	public native void SuperJump(const float power, const float reset);
 	public native void WeighDown(const float reset);
+	
+	/** use the VSH2_VOICE_* flags above^^^. */
+	public native void PlayVoiceClip(const char[] voiceclip, const int flags);
 };
 
 
@@ -225,6 +258,8 @@ enum { /// VSH2HookType
 	OnBossDoRageStun,
 	OnBossWeighDown,
 	OnRPSTaunt,
+	OnBossAirShotProj,
+	OnBossTakeFallDamage,
 	OnRedPlayerThink
 };
 
@@ -293,6 +328,8 @@ typeset VSH2HookCB {
 	 * OnBossTakeDamage_OnAmbassadorHeadshot -> boss is headshotted with ambassador spy pistol.
 	 * OnBossTakeDamage_OnDiamondbackManmelterCrit -> boss is hit with a crit from manmelter or diamondback.
 	 * OnBossTakeDamage_OnHolidayPunch -> boss is hit with the Holiday Punch HWG melee.
+	 * OnBossAirShotProj -> when a boss was airshotted by a projectile.
+	 * OnBossTakeFallDamage
 	 */
 	function Action (VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom);
 	
@@ -484,6 +521,7 @@ public void __pl_vsh2_SetNTVOptional()
 	
 	MarkNativeAsOptional("VSH2Player.SuperJump");
 	MarkNativeAsOptional("VSH2Player.WeighDown");
+	MarkNativeAsOptional("VSH2Player.PlayVoiceClip");
 	
 	MarkNativeAsOptional("VSH2_Hook");
 	MarkNativeAsOptional("VSH2_HookEx");

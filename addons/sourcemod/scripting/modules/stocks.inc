@@ -121,6 +121,10 @@ public bool TraceRayDontHitSelf(int entity, int mask, any data)
 {
 	return (entity != data);
 }
+public bool TraceRayIgnoreEnts(int entity, int mask, any data)
+{
+	return entity==0;
+}
 stock void ForceTeamWin(const int team)
 {
 	int entity = FindEntityByClassname(-1, "team_control_point_master");
@@ -360,7 +364,7 @@ stock void TeleportToSpawn(const int client, int team = 0)
 	float vPos[3], vAng[3];
 	GetEntPropVector(spawn, Prop_Send, "m_vecOrigin", vPos);
 	GetEntPropVector(spawn, Prop_Send, "m_angRotation", vAng);
-	TeleportEntity(spawn, vPos, vAng, NULL_VEC);
+	TeleportEntity(spawn, vPos, vAng, NULL_VECTOR);
 }
 
 stock void DoExplosion(const int owner, const int damage, const int radius, float pos[3])
@@ -624,7 +628,7 @@ stock bool DoSuperJump(const int client, const float power, int& charge, const i
 		SetEntProp(client, Prop_Send, "m_bJumping", 1);
 		vel[0] *= (1+Sine(power * FLOAT_PI / 50));
 		vel[1] *= (1+Sine(power * FLOAT_PI / 50));
-		TeleportEntity(client, NULL_VEC, NULL_VEC, vel);
+		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, vel);
 		charge = new_charge;
 		return true;
 	}
@@ -640,7 +644,7 @@ stock bool DoWeighdown(const int client, const float req_time, float &wdtime, co
 			float fVelocity[3];
 			GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
 			fVelocity[2] = -1000.0;
-			TeleportEntity(client, NULL_VEC, NULL_VEC, fVelocity);
+			TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, fVelocity);
 			wdtime = set_wdtime;
 			return true;
 		}

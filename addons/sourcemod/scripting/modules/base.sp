@@ -1,7 +1,7 @@
 int Munitions[PLYR][2][2];    /// first index obviously player, slot, ammo-0, clip-1
 
 /// Gonna leave these here so we can reduce stack memory for calling boss specific Download function calls
-public char snd[FULLPATH]; /// How is this even used?
+public char snd[PLATFORM_MAX_PATH]; /// How is this even used?
 
 /// Moved to stocks.inc
 // public char extensions[][] = { ".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd", ".phy" };
@@ -9,7 +9,7 @@ public char snd[FULLPATH]; /// How is this even used?
 
 #define MAXMESSAGE    512
 public char gameMessage[MAXMESSAGE];    /// Just incase...
-public char BackgroundSong[FULLPATH];
+public char BackgroundSong[PLATFORM_MAX_PATH];
 
 
 /**
@@ -423,7 +423,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		float ang[3];
 		GetEntPropVector(spawn, Prop_Send, "m_vecOrigin", pos);
 		GetEntPropVector(spawn, Prop_Send, "m_angRotation", ang);
-		TeleportEntity(this.index, pos, ang, NULL_VEC);
+		TeleportEntity(this.index, pos, ang, NULL_VECTOR);
 		return true;
 	}
 	
@@ -510,7 +510,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
 		fVelocity[2] = upwardvel;
 		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, fVelocity);
-		SDKHooks_TakeDamage(client, client, client, health, DMG_CLUB, 0);	/// Inflictor is 0 to prevent Shiv self-bleed
+		SDKHooks_TakeDamage(client, client, client, health, DMG_CLUB, 0); /// Inflictor is 0 to prevent Shiv self-bleed
 		
 		if( attackdelay )
 			SetPawnTimer(NoAttacking, 0.1, EntIndexToEntRef(weapon));
@@ -833,7 +833,7 @@ methodmap BaseBoss < BaseFighter {
 		SetEntProp(client, Prop_Send, "m_bJumping", 1);
 		vel[0] *= (1+Sine(power * FLOAT_PI / 50));
 		vel[1] *= (1+Sine(power * FLOAT_PI / 50));
-		TeleportEntity(client, NULL_VEC, NULL_VEC, vel);
+		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, vel);
 		this.flCharge = reset;
 	}
 	
@@ -842,10 +842,31 @@ methodmap BaseBoss < BaseFighter {
 		int client = this.index;
 		float fVelocity[3]; GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
 		fVelocity[2] = -1000.0;
-		TeleportEntity(client, NULL_VEC, NULL_VEC, fVelocity);
+		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, fVelocity);
 		//SetEntityGravity(client, 6.0);
 		//SetPawnTimer(SetGravityNormal, 1.0, this.userid);
 		this.flWeighDown = reset;
+	}
+	
+	public void PlayVoiceClip(const char[] vclip, const int flags) {
+		int client = this.index;
+		float pos[3];
+		if( flags & VSH2_VOICE_BOSSPOS )
+			GetEntPropVector(client, Prop_Send, "m_vecOrigin", pos);
+		
+		EmitSoundToAll(vclip, (flags & VSH2_VOICE_BOSSENT) ? client : SOUND_FROM_PLAYER, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, (flags & VSH2_VOICE_BOSSPOS) ? pos : NULL_VECTOR, NULL_VECTOR, true, 0.0);
+		
+		if( !(flags & VSH2_VOICE_ONCE) )
+			EmitSoundToAll(vclip, (flags & VSH2_VOICE_BOSSENT) ? client : SOUND_FROM_PLAYER, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, (flags & VSH2_VOICE_BOSSPOS) ? pos : NULL_VECTOR, NULL_VECTOR, true, 0.0);
+		
+		if( flags & VSH2_VOICE_TOALL ) {
+			for( int i=MaxClients; i; --i ) {
+				if( IsClientInGame(i) && i != client ) {
+					repeat(2)
+						EmitSoundToClient(i, vclip, client, (flags & VSH2_VOICE_ALLCHAN) ? SNDCHAN_AUTO : SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, (flags & VSH2_VOICE_BOSSPOS) ? pos : NULL_VECTOR, NULL_VECTOR, true, 0.0);
+				}
+			}
+		}
 	}
 };
 

@@ -25,7 +25,7 @@
 #pragma semicolon        1
 #pragma newdecls         required
 
-#define PLUGIN_VERSION   "2.3.5"
+#define PLUGIN_VERSION   "2.3.6"
 #define PLUGIN_DESCRIPT  "VS Saxton Hale 2"
 
 
@@ -38,11 +38,9 @@
 #define Handle(%1)			view_as<Handle>(%1)
 
 /// misc.
-#define NULL_VEC			NULL_VECTOR
 #define PLYR				MAXPLAYERS+1
 #define PATH				64
-#define FULLPATH			PLATFORM_MAX_PATH
-#define repeat(%1)			for (int __i=0; __i<(%1); ++__i)
+#define repeat(%1)			for( int __i=0; __i<(%1); ++__i )
 
 
 public Plugin myinfo = {
@@ -108,6 +106,7 @@ enum /** CvarName */ {
 	Enabled,
 	AllowLateSpawn,
 	SuicidePercent,
+	AirShotDist,
 	VersionNumber
 };
 
@@ -349,6 +348,7 @@ public void OnPluginStart()
 	cvarVSH2[CloakDamage] = CreateConVar("vsh2_cloak_damage", "70.0", "damage, divided by 0.8, that dead ringer spies will take from boss melee hits.", FCVAR_NONE, true, 0.0, true, 999999.0);
 	cvarVSH2[AllowLateSpawn] = CreateConVar("vsh2_allow_late_spawning", "0", "allows if unassigned spectators can respawn during an active round.", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[SuicidePercent] = CreateConVar("vsh2_boss_suicide_percent", "0.3", "Allow the boss to suicide if their health percentage goes at or below this amount (0.3 == 30%).", FCVAR_NONE, true, 0.0, true, 1.0);
+	cvarVSH2[AirShotDist] = CreateConVar("vsh2_airshot_dist", "80.0", "distance (from the air to the ground) to count as a skilled airshot.", FCVAR_NONE, true, 10.0, true, 9999.0);
 	
 #if defined _steamtools_included
 	gamemode.bSteam = LibraryExists("SteamTools");
@@ -444,7 +444,7 @@ public Action CheckLateSpawn(int client, const char[] command, int argc)
 		return Plugin_Continue;
 	
 	/// deal with late spawners, force them to spectator.
-	if( !cvarVSH2[AllowLateSpawn].BoolValue && TF2_GetPlayerClass(client)==TFClass_Unknown ) {
+	if( !cvarVSH2[AllowLateSpawn].BoolValue && GetClientTeam(client) > VSH2Team_Spectator && TF2_GetPlayerClass(client)==TFClass_Unknown ) {
 		CPrintToChat(client, "{olive}[VSH 2]{default} Late Spawn Blocked.");
 		return Plugin_Handled;
 	}
@@ -1029,8 +1029,8 @@ public Action Timer_DrawGame(Handle timer)
 		case 30: EmitSoundToAll("vo/announcer_ends_30sec.mp3");
 		case 10: EmitSoundToAll("vo/announcer_ends_10sec.mp3");
 		case 1, 2, 3, 4, 5: {
-			char sound[FULLPATH];
-			Format(sound, FULLPATH, "vo/announcer_ends_%isec.mp3", time);
+			char sound[PLATFORM_MAX_PATH];
+			Format(sound, PLATFORM_MAX_PATH, "vo/announcer_ends_%isec.mp3", time);
 			EmitSoundToAll(sound);
 		}
 		
@@ -1083,15 +1083,15 @@ public void _MusicPlay()
 	if( gamemode.flMusicTime > currtime )
 		return;
 	
-	char sound[FULLPATH];
+	char sound[PLATFORM_MAX_PATH];
 	float time = -1.0;
 	ManageMusic(sound, time);	/// in handler.sp
 	
 	BaseBoss boss;
 	float vol = cvarVSH2[MusicVolume].FloatValue;
 	if( sound[0] != '\0' ) {
-		strcopy(BackgroundSong, FULLPATH, sound);
-		//Format(sound, FULLPATH, "#%s", sound);
+		strcopy(BackgroundSong, PLATFORM_MAX_PATH, sound);
+		//Format(sound, PLATFORM_MAX_PATH, "#%s", sound);
 		for( int i=MaxClients; i; --i ) {
 			if( !IsClientValid(i) )
 				continue;
@@ -1218,6 +1218,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2Player.SetName", Native_VSH2_SetName);
 	CreateNative("VSH2Player.SuperJump", Native_VSH2_SuperJump);
 	CreateNative("VSH2Player.WeighDown", Native_VSH2_WeighDown);
+	CreateNative("VSH2Player.PlayVoiceClip", Native_VSH2_PlayVoiceClip);
 	
 	/// VSH2 Game Mode Managers Methods
 	CreateNative("VSH2GameMode_GetProperty", Native_VSH2GameMode_GetProperty);
@@ -1514,7 +1515,7 @@ public int Native_VSH2_ShootRocket(Handle plugin, int numParams)
 	float vang[3]; GetNativeArray(4, vang, 3);
 	float speed = GetNativeCell(5);
 	float dmg = GetNativeCell(6);
-	char modelname[FULLPATH]; GetNativeString(7, modelname, FULLPATH);
+	char modelname[PLATFORM_MAX_PATH]; GetNativeString(7, modelname, PLATFORM_MAX_PATH);
 	bool arc = GetNativeCell(8);
 	
 	return player.ShootRocket(crit, vpos, vang, speed, dmg, modelname, arc);
@@ -1586,6 +1587,15 @@ public int Native_VSH2_WeighDown(Handle plugin, int numParams)
 	BaseBoss player = GetNativeCell(1);
 	float reset = GetNativeCell(2);
 	player.WeighDown(reset);
+	return 0;
+}
+
+public int Native_VSH2_PlayVoiceClip(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	char sound[PLATFORM_MAX_PATH]; GetNativeString(2, sound, sizeof(sound));
+	int flags = GetNativeCell(3);
+	player.PlayVoiceClip(sound, flags);
 	return 0;
 }
 

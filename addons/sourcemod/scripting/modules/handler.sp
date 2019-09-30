@@ -329,7 +329,8 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					return Plugin_Changed;
 				}
 			} else if( attacker <= 0 && bFallDamage ) {
-				damage = (victim.iHealth > 100) ? 1.0 : 30.0;
+				if( Call_OnBossTakeFallDamage(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed )
+					damage = (victim.iHealth > 100) ? 1.0 : 30.0;
 				return Plugin_Changed;
 			}
 			
@@ -337,9 +338,9 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				return Plugin_Continue;
 			
 			victim.iHits++;
-			char classname[64], strEntname[32];
+			char classname[64], inflictor_name[32];
 			if( IsValidEntity(inflictor) )
-				GetEntityClassname(inflictor, strEntname, sizeof(strEntname));
+				GetEntityClassname(inflictor, inflictor_name, sizeof(inflictor_name));
 			if( IsValidEntity(weapon) )
 				GetEdictClassname(weapon, classname, sizeof(classname));
 			
@@ -409,15 +410,6 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				}
 				return Plugin_Changed;
 			}
-			/*
-			/// Detects if boss is damaged by Rock Paper Scissors
-			if( !damagecustom && TF2_IsPlayerInCondition(victim.index, TFCond_Taunting) && TF2_IsPlayerInCondition(attacker, TFCond_Taunting) )
-			{
-				damage = victim.iHealth+0.1;
-				BaseBoss(attacker).iDamage += RoundFloat(damage);
-				return Plugin_Changed;
-			}
-			*/
 			
 			if( damagecustom == TF_CUSTOM_TELEFRAG ) {
 				if( Call_OnBossTakeDamage_OnTelefragged(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
@@ -430,6 +422,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				}
 				return Plugin_Changed;
 			}
+			
 			if( cvarVSH2[Anchoring].BoolValue ) {
 				int iFlags = GetEntityFlags(victim.index);
 #if defined _tf2attributes_included
@@ -581,16 +574,19 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 						victim.flRAGE -= (damage * 0.035);
 				}
 				*/
+				/// Swords
 				case 132, 266, 482, 1082: {
 					IncrementHeadCount(attacker);
 					if( Call_OnBossTakeDamage_OnHitSword(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) == Plugin_Changed )
 						return Plugin_Changed;
 				}
+				/// Fan O War
 				case 355: {
 					victim.flRAGE -= cvarVSH2[FanoWarRage].FloatValue;
 					if( Call_OnBossTakeDamage_OnHitFanOWar(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) == Plugin_Changed )
 						return Plugin_Changed;
 				}
+				/// Candy Cane
 				case 317: {
 					SpawnSmallHealthPackAt(attacker, GetClientTeam(attacker));
 					if( Call_OnBossTakeDamage_OnHitCandyCane(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) == Plugin_Changed )
@@ -621,6 +617,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 						return Plugin_Changed;
 					}
 				}
+				/// PowerJackass
 				case 214: {
 					int health = GetClientHealth(attacker);
 					int max = GetEntProp(attacker, Prop_Data, "m_iMaxHealth");
@@ -637,6 +634,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					if( Call_OnBossTakeDamage_OnPowerJack(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) == Plugin_Changed )
 						return Plugin_Changed;
 				}
+				/// Katana
 				case 357: {
 					SetEntProp(weapon, Prop_Send, "m_bIsBloody", 1);
 					if( GetEntProp(attacker, Prop_Send, "m_iKillCountSinceLastDeploy") < 1 )
@@ -664,6 +662,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					}
 					*/
 				}
+				/// Ambassador + Festive ver.
 				case 61, 1006: {  /// Ambassador does 2.5x damage on headshot
 					if( damagecustom == TF_CUSTOM_HEADSHOT ) {
 						if( Call_OnBossTakeDamage_OnAmbassadorHeadshot(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed )
@@ -689,6 +688,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 						return Plugin_Changed;
 					}
 				}
+				/// Tickle Hoovy Fists.
 				case 656: {
 					SetPawnTimer(_StopTickle, cvarVSH2[StopTickleTime].FloatValue, victim.userid);
 					if( TF2_IsPlayerInCondition(attacker, TFCond_Dazed) )
@@ -696,6 +696,17 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					
 					if( Call_OnBossTakeDamage_OnHolidayPunch(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) == Plugin_Changed )
 						return Plugin_Changed;
+				}
+			}
+			
+			if( !(GetEntityFlags(victim.index) & FL_ONGROUND) && !StrContains(inflictor_name, "tf_projectile_", false) ) {
+				float ray_angle[] = { 90.0, 0.0, 0.0 };
+				TR_TraceRayFilter(damagePosition, ray_angle, MASK_PLAYERSOLID_BRUSHONLY, RayType_Infinite, TraceRayIgnoreEnts);
+				if( TR_DidHit() ) {
+					float end_pos[3]; TR_GetEndPosition(end_pos);
+					if( GetVectorDistance(damagePosition, end_pos) >= cvarVSH2[AirShotDist].FloatValue )
+						if( Call_OnBossAirShotProj(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) == Plugin_Changed )
+							return Plugin_Changed;
 				}
 			}
 			
@@ -934,10 +945,8 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 	switch( victim.iBossType ) {
 		case -1: {}
 		case Hale, Vagineer, CBS, HHHjr, Bunny: {
-			victim.iHealth -= damage;
 			victim.GiveRage(damage);
 		}
-		default: victim.iHealth -= damage;
 	}
 	Call_OnPlayerHurt(attacker, victim, event);
 	
@@ -1109,11 +1118,7 @@ public void ManageBuildingDestroyed(const BaseBoss base, const int building, con
 		case -1: {}
 		case Hale: {
 			event.SetString("weapon", "fists");
-			if( !GetRandomInt(0, 3) ) {
-				strcopy(snd, FULLPATH, HaleSappinMahSentry132);
-				EmitSoundToAll(snd, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, base.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-				EmitSoundToAll(snd, _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, base.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-			}
+			ToCHale(base).KillToy();
 		}
 		default: Call_OnBossKillBuilding(base, building, event);
 	}
@@ -1127,7 +1132,7 @@ public void ManagePlayerJarated(const BaseBoss attacker, const BaseBoss victim)
 		default: Call_OnBossJarated(victim, attacker);
 	}
 }
-public Action HookSound(int clients[64], int& numClients, char sample[FULLPATH], int& entity, int& channel, float& volume, int& level, int& pitch, int& flags)
+public Action HookSound(int clients[64], int& numClients, char sample[PLATFORM_MAX_PATH], int& entity, int& channel, float& volume, int& level, int& pitch, int& flags)
 {
 	if( !cvarVSH2[Enabled].BoolValue || !IsValidClient(entity) )
 		return Plugin_Continue;
@@ -1141,19 +1146,19 @@ public Action HookSound(int clients[64], int& numClients, char sample[FULLPATH],
 		}
 		case Vagineer: {
 			if( StrContains(sample, "vo/engineer_laughlong01", false) != -1 ) {
-				strcopy(sample, FULLPATH, VagineerKSpree);
+				strcopy(sample, PLATFORM_MAX_PATH, VagineerKSpree);
 				return Plugin_Changed;
 			}
 			if( !strncmp(sample, "vo", 2, false) ) {
 				if( StrContains(sample, "positivevocalization01", false) != -1 )	/// For backstab sound
 					return Plugin_Continue;
 				if( StrContains(sample, "engineer_moveup", false) != -1 )
-					Format(sample, FULLPATH, "%s%i.wav", VagineerJump, GetRandomInt(1, 2));
+					Format(sample, PLATFORM_MAX_PATH, "%s%i.wav", VagineerJump, GetRandomInt(1, 2));
 
 				else if( StrContains(sample, "engineer_no", false) != -1 || GetRandomInt(0, 9) > 6 )
-					strcopy(sample, FULLPATH, "vo/engineer_no01.mp3");
+					strcopy(sample, PLATFORM_MAX_PATH, "vo/engineer_no01.mp3");
 
-				else strcopy(sample, FULLPATH, "vo/engineer_jeers02.mp3");
+				else strcopy(sample, PLATFORM_MAX_PATH, "vo/engineer_jeers02.mp3");
 				return Plugin_Changed;
 			}
 			else return Plugin_Continue;
@@ -1161,7 +1166,7 @@ public Action HookSound(int clients[64], int& numClients, char sample[FULLPATH],
 		case HHHjr: {
 			if( !strncmp(sample, "vo", 2, false) ) {
 				if( GetRandomInt(0, 30) <= 10 ) {
-					Format(sample, FULLPATH, "%s0%i.mp3", HHHLaught, GetRandomInt(1, 4));
+					Format(sample, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHLaught, GetRandomInt(1, 4));
 					return Plugin_Changed;
 				}
 				if( StrContains(sample, "halloween_boss") == -1 )
@@ -1344,7 +1349,7 @@ public void ManageUberDeploy(const BaseBoss medic, const BaseBoss patient)
 	}
 }
 
-public void ManageMusic(char song[FULLPATH], float& time)
+public void ManageMusic(char song[PLATFORM_MAX_PATH], float& time)
 {
 	/// UNFORTUNATELY, we have to get a random boss so we can set our music, tragic I know...
 	/// Remember that you can get a random boss filtered by type as well!
@@ -1377,7 +1382,6 @@ public void StopBackGroundMusic()
 
 public void ManageRoundEndBossInfo(ArrayList bosses, bool bossWon)
 {
-	char victory[FULLPATH];
 	gameMessage[0] = '\0';
 	int i=0;
 	BaseBoss base;
@@ -1396,17 +1400,11 @@ public void ManageRoundEndBossInfo(ArrayList bosses, bool bossWon)
 			default: Call_OnRoundEndInfo(base, bossWon, gameMessage);
 		}
 		if( bossWon ) {
-			victory[0] = '\0';
 			switch( base.iBossType ) {
 				case -1: {}
-				case Vagineer:	Format(victory, FULLPATH, "%s%i.wav", VagineerKSpreeNew, GetRandomInt(1, 5));
-				case Bunny:	strcopy(victory, FULLPATH, BunnyWin[GetRandomInt(0, sizeof(BunnyWin)-1)]);
-				case Hale:	Format(victory, FULLPATH, "%s%i.wav", HaleWin, GetRandomInt(1, 2));
-			}
-			if( victory[0] != '\0' )
-			{
-				EmitSoundToAll(victory, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, base.index, _, NULL_VECTOR, false, 0.0);
-				EmitSoundToAll(victory, _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, base.index, _, NULL_VECTOR, false, 0.0);
+				case Vagineer:	ToCVagineer(base).PlayWinSound();
+				case Bunny:	ToCBunny(base).PlayWinSound();
+				case Hale:	ToCHale(base).PlayWinSound();
 			}
 		}
 	}
@@ -1532,7 +1530,7 @@ public void CheckAlivePlayers()
 		if( living == Alive )
 			EmitSoundToAll("vo/announcer_am_capenabled02.mp3");
 		else if( living < Alive ) {
-			Format(snd, FULLPATH, "vo/announcer_am_capincite0%i.mp3", GetRandomInt(0, 1) ? 1 : 3);
+			Format(snd, PLATFORM_MAX_PATH, "vo/announcer_am_capincite0%i.mp3", GetRandomInt(0, 1) ? 1 : 3);
 			EmitSoundToAll(snd);
 		}
 		SetControlPoint(true);

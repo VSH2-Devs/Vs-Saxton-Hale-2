@@ -110,7 +110,7 @@ methodmap CHale < BaseBoss {
 		if( !GetRandomInt(0, 1) )
 			Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleRoundStart, GetRandomInt(1, 5));
 		else Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleStart132, GetRandomInt(1, 5));
-		EmitSoundToAll(snd);
+		this.PlayVoiceClip(snd, VSH2_VOICE_INTRO);
 	}
 	
 	public void Think()
@@ -146,19 +146,7 @@ methodmap CHale < BaseBoss {
 			if( this.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
 				this.SuperJump(this.flCharge, -100.0);
 				Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", GetRandomInt(0, 1) ? HaleJump : HaleJump132, GetRandomInt(1, 2));
-				
-				float pos[3];
-				GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
-				EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-				EmitSoundToAll(snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-				for( int i=MaxClients; i; --i )
-				{
-					if( IsClientInGame(i) && i != this.index )
-					{
-						EmitSoundToClient(i, snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-						EmitSoundToClient(i, snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-					}
-				}
+				this.PlayVoiceClip(snd, VSH2_VOICE_ABILITY);
 			}
 			else this.flCharge = 0.0;
 		}
@@ -192,7 +180,7 @@ methodmap CHale < BaseBoss {
 	
 	public void Death() {
 		Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleFail, GetRandomInt(1, 3));
-		EmitSoundToAll(snd);
+		this.PlayVoiceClip(snd, VSH2_VOICE_LOSE);
 	}
 	
 	public void Equip() {
@@ -213,19 +201,7 @@ methodmap CHale < BaseBoss {
 		}
 		this.DoGenericStun(HALERAGEDIST);
 		Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleRageSound, GetRandomInt(1, 4));
-
-		float pos[3];
-		GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
-		EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-		EmitSoundToAll(snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-		for( int i=MaxClients; i; --i )
-		{
-			if( IsClientInGame(i) && i != this.index )
-			{
-				EmitSoundToClient(i, snd, this.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-				EmitSoundToClient(i, snd, this.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-			}
-		}
+		this.PlayVoiceClip(snd, VSH2_VOICE_RAGE);
 	}
 	public void KilledPlayer(const BaseBoss victim, Event event)
 	{
@@ -261,12 +237,8 @@ methodmap CHale < BaseBoss {
 					else Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillEngie132, GetRandomInt(1, 2));
 				}
 			}
-
 			if( snd[0] != '\0' )
-			{
-				EmitSoundToAll(snd, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-				EmitSoundToAll(snd, _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-			}
+				this.PlayVoiceClip(snd, VSH2_VOICE_SPREE);
 		}
 		
 		float curtime = GetGameTime();
@@ -281,18 +253,16 @@ methodmap CHale < BaseBoss {
 			else if( randsound < 5 && randsound > 1 )
 				Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKSpreeNew, GetRandomInt(1, 5));
 			else Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillKSpree132, GetRandomInt(1, 2));
-
-			EmitSoundToAll(snd, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-			EmitSoundToAll(snd, _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+			
+			this.PlayVoiceClip(snd, VSH2_VOICE_SPREE);
 			this.iKills = 0;
 		}
 		else this.flKillSpree = curtime+5;
 	}
 	
 	public void Stabbed() {
-		Format(snd, FULLPATH, "%s%i.wav", HaleStubbed132, GetRandomInt(1, 4));
-		EmitSoundToAll(snd, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-		EmitSoundToAll(snd, _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+		Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleStubbed132, GetRandomInt(1, 4));
+		this.PlayVoiceClip(snd, VSH2_VOICE_STABBED);
 	}
 	public void Help() {
 		if( IsVoteInProgress() )
@@ -311,10 +281,18 @@ methodmap CHale < BaseBoss {
 			case 2: strcopy(snd, PLATFORM_MAX_PATH, HaleKillLast132);
 			default: Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleLastMan, GetRandomInt(1, 5));
 		}
-
-		float pos[3]; GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
-		EmitSoundToAll(snd, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, false, 0.0);
-		EmitSoundToAll(snd, _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, false, 0.0);
+		this.PlayVoiceClip(snd, VSH2_VOICE_LASTGUY);
+	}
+	public void KillToy() {
+		if( !GetRandomInt(0, 3) ) {
+			strcopy(snd, PLATFORM_MAX_PATH, HaleSappinMahSentry132);
+			this.PlayVoiceClip(snd, VSH2_VOICE_SPREE);
+		}
+	}
+	public void PlayWinSound() {
+		char victory[PLATFORM_MAX_PATH];
+		Format(victory, PLATFORM_MAX_PATH, "%s%i.wav", HaleWin, GetRandomInt(1, 2));
+		this.PlayVoiceClip(victory, VSH2_VOICE_WIN);
 	}
 };
 

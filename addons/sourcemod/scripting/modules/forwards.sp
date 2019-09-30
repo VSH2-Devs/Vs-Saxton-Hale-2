@@ -99,6 +99,8 @@ void InitializeForwards()
 	g_hForwards[OnBossWeighDown] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell));
 	
 	g_hForwards[OnRPSTaunt] = new PrivateForward( CreateForward(ET_Ignore, Param_Cell, Param_Cell));
+	g_hForwards[OnBossAirShotProj] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossTakeFallDamage] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
 }
 
 void Call_OnCallDownloads()
@@ -762,4 +764,38 @@ void Call_OnRPSTaunt(const BaseBoss loser, const BaseBoss winner)
 	Call_PushCell(loser);
 	Call_PushCell(winner);
 	Call_Finish();
+}
+
+Action Call_OnBossAirShotProj(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossAirShotProj].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+
+Action Call_OnBossTakeFallDamage(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result = Plugin_Continue;
+	g_hForwards[OnBossTakeFallDamage].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
 }

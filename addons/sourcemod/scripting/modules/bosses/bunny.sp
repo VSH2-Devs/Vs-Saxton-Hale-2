@@ -117,7 +117,7 @@ methodmap CBunny < BaseBoss {
 	
 	public void PlaySpawnClip() {
 		strcopy(snd, PLATFORM_MAX_PATH, BunnyStart[GetRandomInt(0, sizeof(BunnyStart)-1)]);
-		EmitSoundToAll(snd);
+		this.PlayVoiceClip(snd, VSH2_VOICE_INTRO);
 	}
 	
 	public void Think()
@@ -126,9 +126,7 @@ methodmap CBunny < BaseBoss {
 			return;
 		
 		int buttons = GetClientButtons(this.index);
-		//float currtime = GetGameTime();
 		int flags = GetEntityFlags(this.index);
-		//int maxhp = GetEntProp(this.index, Prop_Data, "m_iMaxHealth");
 		int health = this.iHealth;
 		float speed = HALESPEED + 0.7 * (100-health*100/this.iMaxHealth);
 		SetEntPropFloat(this.index, Prop_Send, "m_flMaxspeed", speed);
@@ -152,19 +150,7 @@ methodmap CBunny < BaseBoss {
 			if( this.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
 				this.SuperJump(this.flCharge, -100.0);
 				strcopy(snd, PLATFORM_MAX_PATH, BunnyJump[GetRandomInt(0, sizeof(BunnyJump)-1)]);
-				
-				float pos[3];
-				GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
-				EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-				EmitSoundToAll(snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-				for( int i=MaxClients; i; --i )
-				{
-					if( IsClientInGame(i) && i != this.index )
-					{
-						EmitSoundToClient(i, snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-						EmitSoundToClient(i, snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-					}
-				}
+				this.PlayVoiceClip(snd, VSH2_VOICE_ABILITY);
 			}
 			else this.flCharge = 0.0;
 		}
@@ -198,7 +184,7 @@ methodmap CBunny < BaseBoss {
 	
 	public void Death() {
 		strcopy(snd, PLATFORM_MAX_PATH, BunnyFail[GetRandomInt(0, sizeof(BunnyFail)-1)]);
-		EmitSoundToAll(snd);
+		this.PlayVoiceClip(snd, VSH2_VOICE_LOSE);
 		SpawnManyAmmoPacks(this.index, EggModel, 1);
 	}
 	
@@ -227,26 +213,13 @@ methodmap CBunny < BaseBoss {
 		
 		this.DoGenericStun(VAGRAGEDIST);
 		strcopy(snd, PLATFORM_MAX_PATH, BunnyRage[GetRandomInt(1, sizeof(BunnyRage)-1)]);
-		
-		float pos[3];
-		GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
-		EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-		EmitSoundToAll(snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-		for( int i=MaxClients; i; --i )
-		{
-			if( IsClientInGame(i) && i != this.index )
-			{
-				EmitSoundToClient(i, snd, this.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-				EmitSoundToClient(i, snd, this.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-			}
-		}
+		this.PlayVoiceClip(snd, VSH2_VOICE_RAGE);
 	}
 	
 	public void KilledPlayer(const BaseBoss victim, Event event) {
 		if( GetRandomInt(0, 3) ) {
 			strcopy(snd, PLATFORM_MAX_PATH, BunnyKill[GetRandomInt(0, sizeof(BunnyKill)-1)]);
-			EmitSoundToAll(snd, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-			EmitSoundToAll(snd, _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+			this.PlayVoiceClip(snd, VSH2_VOICE_SPREE);
 		}
 		SpawnManyAmmoPacks(victim.index, EggModel, 1);
 		float curtime = GetGameTime();
@@ -256,8 +229,7 @@ methodmap CBunny < BaseBoss {
 		
 		if( this.iKills == 3 && GetLivingPlayers(VSH2Team_Red) != 1 ) {
 			strcopy(snd, PLATFORM_MAX_PATH, BunnySpree[GetRandomInt(0, sizeof(BunnySpree)-1)]);
-			EmitSoundToAll(snd, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-			EmitSoundToAll(snd, _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+			this.PlayVoiceClip(snd, VSH2_VOICE_SPREE);
 			this.iKills = 0;
 		}
 		else this.flKillSpree = curtime+5;
@@ -265,8 +237,7 @@ methodmap CBunny < BaseBoss {
 	
 	public void Stabbed() {
 		strcopy(snd, PLATFORM_MAX_PATH, BunnyPain[GetRandomInt(0, sizeof(BunnyPain)-1)]);
-		EmitSoundToAll(snd, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-		EmitSoundToAll(snd, _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+		this.PlayVoiceClip(snd, VSH2_VOICE_STABBED);
 	}
 	
 	public void Help() {
@@ -281,10 +252,12 @@ methodmap CBunny < BaseBoss {
 	}
 	public void LastPlayerSoundClip() {
 		strcopy(snd, PLATFORM_MAX_PATH, BunnyLast[GetRandomInt(0, sizeof(BunnyLast)-1)]);
-		
-		float pos[3]; GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
-		EmitSoundToAll(snd, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, false, 0.0);
-		EmitSoundToAll(snd, _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, false, 0.0);
+		this.PlayVoiceClip(snd, VSH2_VOICE_LASTGUY);
+	}
+	public void PlayWinSound() {
+		char victory[PLATFORM_MAX_PATH];
+		strcopy(victory, PLATFORM_MAX_PATH, BunnyWin[GetRandomInt(0, sizeof(BunnyWin)-1)]);
+		this.PlayVoiceClip(victory, VSH2_VOICE_WIN);
 	}
 };
 

@@ -22,7 +22,7 @@ methodmap CHHHJr < BaseBoss {
 	
 	public void PlaySpawnClip() {
 		strcopy(snd, PLATFORM_MAX_PATH, "ui/halloween_boss_summoned_fx.wav");
-		EmitSoundToAll(snd);
+		this.PlayVoiceClip(snd, VSH2_VOICE_INTRO);
 	}
 	
 	public void Think()
@@ -142,7 +142,7 @@ methodmap CHHHJr < BaseBoss {
 	
 	public void Death() {
 		Format(snd, PLATFORM_MAX_PATH, "vo/halloween_boss/knight_death0%d.mp3", GetRandomInt(1, 2));
-		EmitSoundToAll(snd);
+		this.PlayVoiceClip(snd, VSH2_VOICE_LOSE);
 	}
 	
 	public void Equip() {
@@ -166,27 +166,15 @@ methodmap CHHHJr < BaseBoss {
 		this.DoGenericStun(HALERAGEDIST);
 		
 		strcopy(snd, PLATFORM_MAX_PATH, HHHRage2);
-		
-		float pos[3];
-		GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
-		EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-		EmitSoundToAll(snd, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-		for( int i=MaxClients; i; --i )
-		{
-			if( IsClientInGame(i) && i != this.index )
-			{
-				EmitSoundToClient(i, snd, this.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-				EmitSoundToClient(i, snd, this.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-			}
-		}
+		this.PlayVoiceClip(snd, VSH2_VOICE_RAGE);
 	}
 	
 	public void KilledPlayer(const BaseBoss victim, Event event) {
 		int living = GetLivingPlayers(VSH2Team_Red);
-		Format(snd, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHAttack, GetRandomInt(1, 4));
-		EmitSoundToAll(snd, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-		EmitSoundToAll(snd, _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-		
+		if( victim.index != this.index ) {
+			Format(snd, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHAttack, GetRandomInt(1, 4));
+			this.PlayVoiceClip(snd, VSH2_VOICE_SPREE);
+		}
 		float curtime = GetGameTime();
 		if( curtime <= this.flKillSpree )
 			this.iKills++;
@@ -194,17 +182,15 @@ methodmap CHHHJr < BaseBoss {
 		
 		if( this.iKills == 3 && living != 1 ) {
 			Format(snd, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHLaught, GetRandomInt(1, 4));
-			EmitSoundToAll(snd, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-			EmitSoundToAll(snd, _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+			this.PlayVoiceClip(snd, VSH2_VOICE_SPREE);
 			this.iKills = 0;
 		}
 		else this.flKillSpree = curtime+5;
 	}
 	
 	public void Stabbed() {
-		Format(snd, FULLPATH, "vo/halloween_boss/knight_pain0%d.mp3", GetRandomInt(1, 3));
-		EmitSoundToAll(snd, _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-		EmitSoundToAll(snd, _, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+		Format(snd, PLATFORM_MAX_PATH, "vo/halloween_boss/knight_pain0%d.mp3", GetRandomInt(1, 3));
+		this.PlayVoiceClip(snd, VSH2_VOICE_STABBED);
 	}
 	
 	public void Help()

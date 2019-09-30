@@ -449,14 +449,14 @@ methodmap VSHGameMode { /* < StringMap */
 	/// just use arena maps as vsh/ff2 maps
 	public bool IsVSHMap()
 	{
-		char config[FULLPATH], currentmap[99];
+		char config[PLATFORM_MAX_PATH], currentmap[99];
 		GetCurrentMap(currentmap, sizeof(currentmap));
 		if( FileExists("bNextMapToFF2") || FileExists("bNextMapToHale") )
 			return true;
 		
-		BuildPath(Path_SM, config, FULLPATH, "configs/freak_fortress_2/maps.cfg");
+		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/maps.cfg");
 		if (!FileExists(config)) {
-			BuildPath(Path_SM, config, FULLPATH, "configs/saxton_hale/saxton_hale_maps.cfg");
+			BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/saxton_hale/saxton_hale_maps.cfg");
 			if (!FileExists(config)) {
 				LogError("[VSH 2] ERROR: **** Unable to find VSH/FF2 Compatible Map Configs, Disabling VSH 2 ****");
 				return false;

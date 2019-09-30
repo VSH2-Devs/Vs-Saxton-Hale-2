@@ -52,7 +52,7 @@ methodmap CPlague < VSH2Player {
 	}
 	
 	public void PlaySpawnClip() {
-		EmitSoundToAll(PlagueIntro); EmitSoundToAll(PlagueIntro);
+		this.PlayVoiceClip(PlagueIntro, VSH2_VOICE_INTRO);
 	}
 	
 	public void Equip() {
@@ -96,24 +96,9 @@ methodmap CPlague < VSH2Player {
 			#endif
 			}
 		}
-
-		char s[PLATFORM_MAX_PATH];
 		if( GetRandomInt(0, 2) )
-			strcopy(s, sizeof(s), PlagueRage1);
-		else strcopy(s, sizeof(s), PlagueRage2);
-
-		float pos[3];
-		GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
-		EmitSoundToAll(s, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-		EmitSoundToAll(s, this.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-		for( int i=MaxClients; i; --i )
-		{
-			if( IsClientInGame(i) && i != this.index )
-			{
-				EmitSoundToClient(i, s, this.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-				EmitSoundToClient(i, s, this.index, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, this.index, pos, NULL_VECTOR, true, 0.0);
-			}
-		}
+			this.PlayVoiceClip(PlagueRage1, VSH2_VOICE_RAGE);
+		else this.PlayVoiceClip(PlagueRage2, VSH2_VOICE_RAGE);
 	}
 	public void KilledPlayer(const VSH2Player victim, Event event) {
 		/// GLITCH: suiciding allows boss to become own minion.
@@ -213,12 +198,6 @@ public void LoadVSH2Hooks()
 	if (!VSH2_HookEx(OnBossPlayIntro, PlagueDoc_OnBossPlayIntro))
 		LogError("Error loading OnBossPlayIntro forwards for Plague Doctor subplugin.");
 	
-	if (!VSH2_HookEx(OnBossTakeDamage, PlagueDoc_OnBossTakeDamage))
-		LogError("Error loading OnBossTakeDamage forwards for Plague Doctor subplugin.");
-	
-	if (!VSH2_HookEx(OnBossDealDamage, PlagueDoc_OnBossDealDamage))
-		LogError("Error loading OnBossDealDamage forwards for Plague Doctor subplugin.");
-	
 	if (!VSH2_HookEx(OnPlayerKilled, PlagueDoc_OnPlayerKilled))
 		LogError("Error loading OnPlayerKilled forwards for Plague Doctor subplugin.");
 	
@@ -306,20 +285,7 @@ public void PlagueDoc_OnBossThink(const VSH2Player boss)
 		float EyeAngles[3]; GetClientEyeAngles(client, EyeAngles);
 		if( player.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
 			player.SuperJump(player.flCharge, -100.0);
-
-			char[] s = "vo/medic_yes01.mp3";
-			float pos[3];
-			GetEntPropVector(player.index, Prop_Send, "m_vecOrigin", pos);
-			EmitSoundToAll(s, player.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, player.index, pos, NULL_VECTOR, true, 0.0);
-			EmitSoundToAll(s, player.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, player.index, pos, NULL_VECTOR, true, 0.0);
-			for( int i=MaxClients; i; --i )
-			{
-				if( IsClientInGame(i) && i != player.index )
-				{
-					EmitSoundToClient(i, s, player.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, player.index, pos, NULL_VECTOR, true, 0.0);
-					EmitSoundToClient(i, s, player.index, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, player.index, pos, NULL_VECTOR, true, 0.0);
-				}
-			}
+			player.PlayVoiceClip("vo/medic_yes01.mp3", VSH2_VOICE_ABILITY);
 		}
 		else player.flCharge = 0.0;
 	}
@@ -380,16 +346,6 @@ public void PlagueDoc_OnBossPlayIntro(const VSH2Player player)
 	if( !IsPlagueDoctor(player) )
 		return;
 	ToCPlague(player).PlaySpawnClip();
-}
-
-public Action PlagueDoc_OnBossTakeDamage(VSH2Player victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	return Plugin_Continue;
-}
-
-public Action PlagueDoc_OnBossDealDamage(VSH2Player victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	return Plugin_Continue;
 }
 
 public void PlagueDoc_OnPlayerKilled(const VSH2Player attacker, const VSH2Player victim, Event event)
@@ -532,52 +488,6 @@ stock bool IsValidClient(const int client, bool nobots=false)
 		return false; 
 	return IsClientInGame(client); 
 }
-stock int SetWeaponAmmo(const int weapon, const int ammo)
-{
-	int owner = GetEntPropEnt(weapon, Prop_Send, "m_hOwnerEntity");
-	if (owner <= 0)
-		return 0;
-	if (IsValidEntity(weapon)) {
-		int iOffset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
-		int iAmmoTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
-		SetEntData(owner, iAmmoTable+iOffset, ammo, 4, true);
-	}
-	return 0;
-}
-stock int GetWeaponAmmo(int weapon)
-{
-	int owner = GetOwner(weapon);
-	if (owner <= 0)
-		return 0;
-	if (IsValidEntity(weapon)) {
-		int iOffset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
-		int iAmmoTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
-		return GetEntData(owner, iAmmoTable+iOffset, 4);
-	}
-	return 0;
-}
-stock int GetWeaponClip(const int weapon)
-{
-	if (IsValidEntity(weapon)) {
-		int AmmoClipTable = FindSendPropInfo("CTFWeaponBase", "m_iClip1");
-		return GetEntData(weapon, AmmoClipTable);
-	}
-	return 0;
-}
-stock int SetWeaponClip(const int weapon, const int ammo)
-{
-	if (IsValidEntity(weapon)) {
-		int iAmmoTable = FindSendPropInfo("CTFWeaponBase", "m_iClip1");
-		SetEntData(weapon, iAmmoTable, ammo, 4, true);
-	}
-	return 0;
-}
-stock int GetOwner(const int ent)
-{
-	if( IsValidEntity(ent) )
-		return GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity");
-	return -1;
-}
 stock int GetSlotFromWeapon(const int iClient, const int iWeapon)
 {
 	for (int i=0; i<5; i++) {
@@ -626,35 +536,8 @@ public Action DoThink(Handle hTimer, DataPack hndl)
 }
 
 
-stock float GetMediCharge(const int medigun)
-{
-	if (IsValidEntity(medigun))
-		return GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel");
-	return -1.0;
-}
-
-stock void SetMediCharge(const int medigun, const float val)
-{
-	if (IsValidEntity(medigun))
-		SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel", val);
-}
-
-stock int GetItemIndex(const int item)
-{
-	if (IsValidEntity(item))
-		return GetEntProp(item, Prop_Send, "m_iItemDefinitionIndex");
-	return -1;
-}
 
 public int HintPanel(Menu menu, MenuAction action, int param1, int param2)
 {
 	return;
-}
-
-stock int GetHealerByIndex(const int client, const int index)
-{
-	int m_aHealers = FindSendPropInfo("CTFPlayer", "m_nNumHealers") + 12;
-	Address m_Shared = GetEntityAddress(client) + view_as< Address >(m_aHealers);
-	Address aHealers = view_as< Address >(LoadFromAddress(m_Shared, NumberType_Int32));
-	return (LoadFromAddress(aHealers + view_as< Address >(index * 0x24), NumberType_Int32) & 0xFFF);
 }
