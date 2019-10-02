@@ -216,14 +216,8 @@ public void LoadVSH2Hooks()
 	if (!VSH2_HookEx(OnBossJarated, PlagueDoc_OnBossJarated))
 		LogError("Error loading OnBossJarated forwards for Plague Doctor subplugin.");
 	
-	if (!VSH2_HookEx(OnMessageIntro, PlagueDoc_OnMessageIntro))
-		LogError("Error loading OnMessageIntro forwards for Plague Doctor subplugin.");
-	
 	if (!VSH2_HookEx(OnRoundEndInfo, PlagueDoc_OnRoundEndInfo))
 		LogError("Error loading OnRoundEndInfo forwards for Plague Doctor subplugin.");
-	
-	if (!VSH2_HookEx(OnBossHealthCheck, PlagueDoc_OnBossHealthCheck))
-		LogError("Error loading OnBossHealthCheck forwards for Plague Doctor subplugin.");
 }
 stock bool IsPlagueDoctor(const VSH2Player player) {
 	return player.GetPropInt("iBossType") == g_iPlagueDocID;
@@ -334,10 +328,9 @@ public void PlagueDoc_OnBossInitialized(const VSH2Player player)
 		return;
 	SetEntProp(player.index, Prop_Send, "m_iClass", view_as<int>(TFClass_Medic));
 }
-public void PlagueDoc_OnMinionInitialized(const VSH2Player player)
+public void PlagueDoc_OnMinionInitialized(const VSH2Player player, const VSH2Player master)
 {
-	VSH2Player ownerboss = VSH2Player(player.GetPropInt("iOwnerBoss"), true);
-	if( !IsPlagueDoctor(ownerboss) )
+	if( !IsPlagueDoctor(master) )
 		return;
 	RecruitMinion(player);
 }
@@ -424,40 +417,16 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 	}
 	return Plugin_Continue;
 }
-public void PlagueDoc_OnMessageIntro(const VSH2Player player, char message[512])
-{
-	if( !IsPlagueDoctor(player) )
-		return;
-	
-	char name[MAX_BOSS_NAME_SIZE]; player.GetName(name);
-	int health = player.GetPropInt("iHealth");
-	Format(message, 512, "%s\n%N has become %s with %i Health", message, player.index, name, health);
-}
+
 public void PlagueDoc_OnRoundEndInfo(const VSH2Player player, bool bossBool, char message[512])
 {
 	if( !IsPlagueDoctor(player) )
 		return;
-	int health = player.GetPropInt("iHealth");
-	int maxhealth = player.GetPropInt("iMaxHealth");
-	char name[MAX_BOSS_NAME_SIZE]; player.GetName(name);
 	
-	Format(message, 512, "%s\n%s (%N) had %i (of %i) health left.", message, name, player.index, health, maxhealth);
 	if( bossBool ) {
 		/// play Boss Wins sounds here!
 	}
 }
-public void PlagueDoc_OnBossHealthCheck(const VSH2Player player, bool bossBool, char message[512])
-{
-	if( !IsPlagueDoctor(player) )
-		return;
-	int health = player.GetPropInt("iHealth");
-	int maxhealth = player.GetPropInt("iMaxHealth");
-	char name[MAX_BOSS_NAME_SIZE]; player.GetName(name);
-	if( bossBool )
-		PrintCenterTextAll("%s showed his current HP: %i of %i", name, health, maxhealth);
-	else Format(message, 512, "%s\n%s's current health is: %i of %i", message, name, health, maxhealth);
-}
-
 
 
 void RecruitMinion(const VSH2Player base)

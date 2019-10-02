@@ -50,58 +50,59 @@ public void OnLibraryRemoved(const char[] name) {
 	}
 }
 
-public void VSH_OnBossSuperJump(const VSH2Player player)
+public Action VSH_OnBossSuperJump(const VSH2Player player)
 {
-	Action action = Plugin_Continue;
+	Action act = Plugin_Continue;
 	bool super = player.GetPropAny("bSuperCharge");
 	Call_StartForward(g_vsh_forwards[OnHaleRage]);
 	Call_PushCellRef(super);
-	Call_Finish(action);
-	if( action==Plugin_Changed )
+	Call_Finish(act);
+	if( act==Plugin_Changed )
 		player.SetPropAny("bSuperCharge", super);
 }
 
-public void VSH_OnBossDoRageStun(VSH2Player player, float& distance)
+public Action VSH_OnBossDoRageStun(VSH2Player player, float& distance)
 {
-	Action action = Plugin_Continue;
+	Action act = Plugin_Continue;
 	float new_dist;
 	Call_StartForward(g_vsh_forwards[OnHaleRage]);
 	Call_PushFloatRef(new_dist);
-	Call_Finish(action);
-	if( action==Plugin_Changed )
+	Call_Finish(act);
+	if( act==Plugin_Changed )
 		distance = new_dist;
+	return Plugin_Continue;
 }
 
-public void VSH_OnBossWeighDown(const VSH2Player player)
+public Action VSH_OnBossWeighDown(const VSH2Player player)
 {
-	Action action = Plugin_Continue;
+	Action act = Plugin_Continue;
 	Call_StartForward(g_vsh_forwards[OnHaleWeighdown]);
-	Call_Finish(action);
+	Call_Finish(act);
 }
 
 public void VSH_OnMusic(char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player)
 {
-	Action action = Plugin_Continue;
+	Action act = Plugin_Continue;
 	float new_time;
 	char new_song[PLATFORM_MAX_PATH];
 	
 	Call_StartForward(g_vsh_forwards[OnVSHMusic]);
 	Call_PushStringEx(new_song, PLATFORM_MAX_PATH, 0, SM_PARAM_COPYBACK);
 	Call_PushFloatRef(new_time);
-	Call_Finish(action);
-	if( action==Plugin_Changed ) {
+	Call_Finish(act);
+	if( act==Plugin_Changed ) {
 		time = new_time;
 		strcopy(song, sizeof(song), new_song);
 	}
 }
 
-public void VSH_OnNextHale(const VSH2Player player)
+public Action VSH_OnNextHale(const VSH2Player player)
 {
 	if( VSH2GameMode_FindNextBoss()==player ) {
-		Action action = Plugin_Continue;
+		Action act = Plugin_Continue;
 		Call_StartForward(g_vsh_forwards[OnHaleNext]);
 		Call_PushCell(player.index);
-		Call_Finish(action);
+		Call_Finish(act);
 	}
 }
 

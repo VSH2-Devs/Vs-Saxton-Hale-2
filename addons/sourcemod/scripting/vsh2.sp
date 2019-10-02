@@ -25,7 +25,7 @@
 #pragma semicolon        1
 #pragma newdecls         required
 
-#define PLUGIN_VERSION   "2.3.6"
+#define PLUGIN_VERSION   "2.3.7"
 #define PLUGIN_DESCRIPT  "VS Saxton Hale 2"
 
 
@@ -263,6 +263,9 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_resetq", ResetQueue);
 	RegConsoleCmd("sm_resetqueue", ResetQueue);
 	
+	RegConsoleCmd("sm_vsh2wep", MakeWeapInvis);
+	RegConsoleCmd("sm_vsh2vm", MakeWeapInvis);
+	
 	RegAdminCmd("sm_reloadbosscfg", CmdReloadCFG, ADMFLAG_GENERIC);
 	RegAdminCmd("sm_hale_select", CommandBossSelect, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss.");
 	RegAdminCmd("sm_ff2_select", CommandBossSelect, ADMFLAG_VOTE, "ff2_select <target> - Select a player to be next boss.");
@@ -283,6 +286,10 @@ public void OnPluginStart()
 	
 	RegAdminCmd("sm_hale_classrush", MenuDoClassRush, ADMFLAG_GENERIC, "forces all red players to a class.");
 	RegAdminCmd("sm_vsh2_classrush", MenuDoClassRush, ADMFLAG_GENERIC, "forces all red players to a class.");
+	
+	
+	RegAdminCmd("sm_vsh2adwep", AdminMakeWeapInvis, ADMFLAG_GENERIC);
+	RegAdminCmd("sm_vsh2advm", AdminMakeWeapInvis, ADMFLAG_GENERIC);
 	
 	AddCommandListener(BlockSuicide, "explode");
 	AddCommandListener(BlockSuicide, "kill");
@@ -366,7 +373,6 @@ public void OnPluginStart()
 	HookEvent("object_deflected", ObjectDeflected);
 	HookEvent("object_destroyed", ObjectDestroyed, EventHookMode_Pre);
 	HookEvent("player_jarated", PlayerJarated);
-	//HookEvent("player_changeclass", ChangeClass);
 	HookEvent("rocket_jump", OnHookedEvent);
 	HookEvent("rocket_jump_landed", OnHookedEvent);
 	HookEvent("sticky_jump", OnHookedEvent);
@@ -377,7 +383,6 @@ public void OnPluginStart()
 	HookEvent("teamplay_point_captured", PointCapture, EventHookMode_Post);
 	HookEvent("rps_taunt_event", RPSTaunt, EventHookMode_Post);
 	
-	//AddCommandListener(DoTaunt, "+taunt");
 	AddCommandListener(cdVoiceMenu, "voicemenu");
 	AddNormalSoundHook(HookSound);
 	
@@ -445,7 +450,10 @@ public Action CheckLateSpawn(int client, const char[] command, int argc)
 	
 	/// deal with late spawners, force them to spectator.
 	if( !cvarVSH2[AllowLateSpawn].BoolValue && GetClientTeam(client) > VSH2Team_Spectator && TF2_GetPlayerClass(client)==TFClass_Unknown ) {
-		CPrintToChat(client, "{olive}[VSH 2]{default} Late Spawn Blocked.");
+		char str_tfclass[20]; GetCmdArg(1, str_tfclass, sizeof(str_tfclass));
+		TFClassType classtype = TF2_GetClass(str_tfclass);
+		CPrintToChat(client, "{olive}[VSH 2]{default} Late Spawn Blocked");
+		SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", view_as< int >(classtype));
 		return Plugin_Handled;
 	}
 	return Plugin_Continue;
@@ -593,6 +601,7 @@ public void OnClientPutInServer(int client)
 	boss.iHealth = 0;
 	boss.iMaxHealth = 0;
 	boss.iBossType = -1;
+	boss.iSubBossType = -1;
 	boss.iClimbs = 0;
 	boss.iStabbed = 0;
 	boss.iMarketted = 0;
@@ -629,14 +638,14 @@ public Action OnTouch(int client, int other)
 		BaseBoss victim = BaseBoss(other);
 		
 		if( player.bIsBoss && !victim.bIsBoss )
-			ManageOnTouchPlayer(player, victim); /// in handler.sp
+			return ManageOnTouchPlayer(player, victim); /// in handler.sp
 	} else if( other > MaxClients ) {
 		BaseBoss player = BaseBoss(client);
 		if( IsValidEntity(other) && player.bIsBoss ) {
 			char ent[5];
 			if( GetEntityClassname(other, ent, sizeof(ent)), !StrContains(ent, "obj_") ) {
 				if( GetEntProp(other, Prop_Send, "m_iTeamNum") != GetClientTeam(client) )
-					ManageOnTouchBuilding(player, other); /// in handler.sp
+					return ManageOnTouchBuilding(player, other); /// in handler.sp
 			}
 		}
 	}
@@ -795,11 +804,10 @@ public Action TraceAttack(int victim, int &attacker, int &inflictor, float &dama
 {
 	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
-	
-	if( IsClientValid(attacker) && IsClientValid(victim) ) {
+	else if( IsClientValid(attacker) && IsClientValid(victim) ) {
 		BaseBoss player = BaseBoss(victim);
 		BaseBoss enemy = BaseBoss(attacker);
-		ManageTraceHit(player, enemy, inflictor, damage, damagetype, ammotype, hitbox, hitgroup); /// in handler.sp
+		return Call_OnTraceAttack(player, enemy, inflictor, damage, damagetype, ammotype, hitbox, hitgroup);
 	}
 	return Plugin_Continue;
 }
@@ -987,7 +995,10 @@ public void CalcScores()
 			int queue_gain = cvarVSH2[QueueGained].IntValue;
 			int queue = (cvarVSH2[DamageQueue].BoolValue) ? queue_gain + (player.iDamage / cvarVSH2[DamageForQueue].IntValue) : queue_gain;
 			int points = player.iDamage / cvarVSH2[DamagePoints].IntValue;
-			Call_OnScoreTally(player, points, queue);
+			
+			Action act = Call_OnScoreTally(player, points, queue);
+			if( act > Plugin_Changed )
+				continue;
 			
 			Event scoring = CreateEvent("player_escort_score", true);
 			scoring.SetInt("player", i);
@@ -1057,15 +1068,18 @@ public Action Timer_UberLoop(Handle timer, any medigunid)
 		int medic = GetOwner(medigun);
 		float charge = GetMediCharge(medigun);
 		if( charge > 0.05 ) {
-			TF2_AddCondition(medic, TFCond_CritOnWin, 0.5);
+			BaseBoss med = BaseBoss(medic);
+			int target = med.GetHealTarget();
+			Action act = Call_OnUberLoop(med, BaseBoss(target));
+			if( act==Plugin_Stop )
+				return act;
 			
-			int target = GetHealingTarget(medic);
+			TF2_AddCondition(medic, TFCond_CritOnWin, 0.5);
 			if( IsClientValid(target) && IsPlayerAlive(target) ) {
 				TF2_AddCondition(target, TFCond_CritOnWin, 0.5);
-				BaseBoss(medic).iUberTarget = GetClientUserId(target);
-				Call_OnUberLoop(BaseBoss(medic), BaseBoss(target));
+				med.iUberTarget = GetClientUserId(target);
 			}
-			else BaseBoss(medic).iUberTarget = 0;
+			else med.iUberTarget = 0;
 		} else if( charge < 0.05 ) {
 			SetPawnTimer(_ResetMediCharge, 3.0, EntIndexToEntRef(medigun));
 			return Plugin_Stop;
@@ -1139,10 +1153,10 @@ stock Handle GetPluginByIndex(const int index)
 public int RegisterPlugin(const Handle pluginhndl, const char modulename[64])
 {
 	if( !ValidateName(modulename) ) {
-		LogError("VSH2 :: Register Plugin  **** Invalid Name For Plugin Registration ****");
+		LogError("VSH2 :: Register Plugin: **** Invalid Name For Plugin Registration ****");
 		return -1;
 	} else if( FindPluginByName(modulename) != null ) {
-		LogError("VSH2 :: Register Plugin  **** Plugin Already Registered ****");
+		LogError("VSH2 :: Register Plugin: **** Plugin Already Registered ****");
 		return -1;
 	}
 	
@@ -1239,9 +1253,13 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2GameMode_IsVSHMap", Native_VSH2GameMode_IsVSHMap);
 	
 	CreateNative("VSH2_GetMaxBosses", Native_VSH2_GetMaxBosses);
-	
+#if defined _steamtools_included
 	MarkNativeAsOptional("Steam_SetGameDescription");
-	
+#endif
+#if defined _tf2attributes_included
+	MarkNativeAsOptional("TF2Attrib_SetByDefIndex");
+	MarkNativeAsOptional("TF2Attrib_RemoveByDefIndex");
+#endif
 	RegPluginLibrary("VSH2");
 	return APLRes_Success;
 }

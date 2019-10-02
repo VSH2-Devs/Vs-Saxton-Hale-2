@@ -604,6 +604,15 @@ methodmap BaseBoss < BaseFighter {
 			hPlayerFields[this.index].SetValue("iBossType", val);
 		}
 	}
+	property int iSubBossType {
+		public get() {
+			int i; hPlayerFields[this.index].GetValue("iSubBossType", i);
+			return i;
+		}
+		public set( const int val ) {
+			hPlayerFields[this.index].SetValue("iSubBossType", val);
+		}
+	}
 	property int iClimbs {
 		public get() {
 			int i; hPlayerFields[this.index].GetValue("iClimbs", i);
@@ -748,7 +757,10 @@ methodmap BaseBoss < BaseFighter {
 	}
 	public void DoGenericStun(float rage_dist)
 	{
-		Call_OnBossDoRageStun(this, rage_dist);
+		Action act = Call_OnBossDoRageStun(this, rage_dist);
+		if( act > Plugin_Changed )
+			return;
+		
 		int i;
 		float pos[3], pos2[3];
 		GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
@@ -822,7 +834,10 @@ methodmap BaseBoss < BaseFighter {
 	}
 	
 	public void SuperJump(const float power, const float reset) {
-		Call_OnBossSuperJump(this);
+		Action act = Call_OnBossSuperJump(this);
+		if( act > Plugin_Changed )
+			return;
+		
 		int client = this.index;
 		float vel[3]; GetEntPropVector(client, Prop_Data, "m_vecVelocity", vel);
 		vel[2] = 750 + power * 13.0;
@@ -838,7 +853,9 @@ methodmap BaseBoss < BaseFighter {
 	}
 	
 	public void WeighDown(const float reset) {
-		Call_OnBossWeighDown(this);
+		Action act = Call_OnBossWeighDown(this);
+		if( act > Plugin_Changed )
+			return;
 		int client = this.index;
 		float fVelocity[3]; GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
 		fVelocity[2] = -1000.0;
@@ -854,10 +871,10 @@ methodmap BaseBoss < BaseFighter {
 		if( flags & VSH2_VOICE_BOSSPOS )
 			GetEntPropVector(client, Prop_Send, "m_vecOrigin", pos);
 		
-		EmitSoundToAll(vclip, (flags & VSH2_VOICE_BOSSENT) ? client : SOUND_FROM_PLAYER, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, (flags & VSH2_VOICE_BOSSPOS) ? pos : NULL_VECTOR, NULL_VECTOR, true, 0.0);
+		EmitSoundToAll(vclip, (flags & VSH2_VOICE_BOSSENT) ? client : SOUND_FROM_PLAYER, (flags & VSH2_VOICE_ALLCHAN) ? SNDCHAN_AUTO : SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, (flags & VSH2_VOICE_BOSSPOS) ? pos : NULL_VECTOR, NULL_VECTOR, true, 0.0);
 		
 		if( !(flags & VSH2_VOICE_ONCE) )
-			EmitSoundToAll(vclip, (flags & VSH2_VOICE_BOSSENT) ? client : SOUND_FROM_PLAYER, SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, (flags & VSH2_VOICE_BOSSPOS) ? pos : NULL_VECTOR, NULL_VECTOR, true, 0.0);
+			EmitSoundToAll(vclip, (flags & VSH2_VOICE_BOSSENT) ? client : SOUND_FROM_PLAYER, (flags & VSH2_VOICE_ALLCHAN) ? SNDCHAN_AUTO : SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, (flags & VSH2_VOICE_BOSSPOS) ? pos : NULL_VECTOR, NULL_VECTOR, true, 0.0);
 		
 		if( flags & VSH2_VOICE_TOALL ) {
 			for( int i=MaxClients; i; --i ) {

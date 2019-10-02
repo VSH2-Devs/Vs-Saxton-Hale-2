@@ -67,7 +67,7 @@ public void fwdOnDownloadsCalled()
 	for (int i=0; i < 5; ++i)
 		PrintToServer("Forward OnDownloadsCalled called");
 }
-public void fwdBossSelected(const VSH2Player base)
+public Action fwdBossSelected(const VSH2Player base)
 {
 	for (int i=MaxClients; i; --i)
 		if( IsClientInGame(i) )
@@ -85,11 +85,11 @@ public void fwdOnTouchBuilding(const VSH2Player attacker, const int building)
 	PrintToConsole(attacker.index, "fwdOnTouchBuilding:: ==> attacker name: %N | Building Reference %i", attacker.index, building);
 }
 
-public void fwdOnBossThink(const VSH2Player player)
+public Action fwdOnBossThink(const VSH2Player player)
 {
 	player.SetPropInt("iHealth", player.GetPropInt("iHealth") + 1);
 }
-public void fwdOnBossModelTimer(const VSH2Player player)
+public Action fwdOnBossModelTimer(const VSH2Player player)
 {
 	player.SetPropFloat("flRAGE", player.GetPropFloat("flRAGE") + 1.0);
 }
@@ -107,9 +107,9 @@ public void fwdOnBossInitialized(const VSH2Player player)
 {
 	PrintToConsole(player.index, "fwdOnBossInitialized:: %N", player.index);
 }
-public void fwdOnMinionInitialized(const VSH2Player player)
+public void fwdOnMinionInitialized(const VSH2Player player, const VSH2Player master)
 {
-	PrintToConsole(player.index, "fwdOnMinionInitialized:: %N", player.index);
+	PrintToConsole(player.index, "fwdOnMinionInitialized:: %N, owner boss: %N", player.index, master.index);
 }
 public void fwdOnBossPlayIntro(const VSH2Player player)
 {
@@ -369,7 +369,7 @@ public void fwdOnRedPlayerThink(const VSH2Player player)
 	player.SetPropInt("iDamage", player.GetPropInt("iDamage") + 1);
 }
 
-public void fwdOnScoreTally(const VSH2Player player, int& points_earned, int& queue_earned)
+public Action fwdOnScoreTally(const VSH2Player player, int& points_earned, int& queue_earned)
 {
 	PrintToChatAll("fwdOnScoreTally:: %N: points - %i, queue - %i", player.index, points_earned, queue_earned);
 }
@@ -385,9 +385,10 @@ public void fwdOnBossSuperJump(const VSH2Player player)
 	PrintToChat(player.index, "OnBossSuperJump:: %N", player.index);
 }
 
-public void fwdOnBossDoRageStun(const VSH2Player player, float& dist)
+public Action fwdOnBossDoRageStun(const VSH2Player player, float& dist)
 {
 	PrintToChat(player.index, "OnBossDoRageStun:: %N - dist: %f", player.index, dist);
+	return Plugin_Continue;
 }
 
 public void fwdOnBossWeighDown(const VSH2Player player)
@@ -456,7 +457,7 @@ public void LoadVSH2Hooks()
 		LogError("Error Hooking OnBossDealDamage forward for VSH2 Test plugin.");
 		
 	if (!VSH2_HookEx(OnPlayerKilled, fwdOnPlayerKilled))
-		LogError("Error Hooking OnBossSelected forward for VSH2 Test plugin.");
+		LogError("Error Hooking OnPlayerKilled forward for VSH2 Test plugin.");
 		
 	if (!VSH2_HookEx(OnPlayerAirblasted, fwdOnPlayerAirblasted))
 		LogError("Error Hooking OnPlayerAirblasted forward for VSH2 Test plugin.");

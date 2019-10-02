@@ -42,7 +42,7 @@ enum { /** Voice Clip Flags */
 #define VSH2_VOICE_SPREE   (0)
 #define VSH2_VOICE_STABBED VSH2_VOICE_SPREE
 
-#define VSH2_VOICE_WIN     (VSH2_VOICE_ONCE)
+#define VSH2_VOICE_WIN     (VSH2_VOICE_ONCE|VSH2_VOICE_ALLCHAN)
 #define VSH2_VOICE_LOSE    VSH2_VOICE_WIN
 #define VSH2_VOICE_INTRO   VSH2_VOICE_WIN
 
@@ -275,7 +275,6 @@ typeset VSH2HookCB {
 		OnBossDeath
 		OnBossEquipped
 		OnBossInitialized
-		OnMinionInitialized
 		OnBossPlayIntro
 		OnBossMedicCall
 		OnBossTaunt
@@ -286,20 +285,25 @@ typeset VSH2HookCB {
 		OnBossSuperJump
 		OnBossWeighDown
 	*/
+	function Action (const VSH2Player player);
 	function void (const VSH2Player player);
 	
 	/**
 		OnTouchPlayer - victim is boss, attacker is other player.
 		OnBossJarated
-		OnUberDeployed, OnUberLoop - Victim is medic, Attacker is uber target
+		OnUberDeployed, OnUberLoop - Victim is medic, Attacker (Check if valid) is uber target
 		OnRPSTaunt - victim is loser, attacker is winner.
+		OnMinionInitialized - victim is minion, attacker is the owner/master boss.
 	*/
+	function Action (const VSH2Player victim, const VSH2Player attacker);
 	function void (const VSH2Player victim, const VSH2Player attacker);
 	
 	/// OnTouchBuilding
+	function Action (const VSH2Player attacker, const int BuildingRef);
 	function void (const VSH2Player attacker, const int BuildingRef);
 	
 	/// OnBossKillBuilding
+	function Action (const VSH2Player attacker, const int building, Event event);
 	function void (const VSH2Player attacker, const int building, Event event);
 	
 	/** Boss Specific OnTakeDamage hooks
@@ -338,42 +342,53 @@ typeset VSH2HookCB {
 		OnPlayerAirblasted - player is the airblaster
 		OnPlayerHurt
 	*/
+	function Action (const VSH2Player player, const VSH2Player victim, Event event);
 	function void (const VSH2Player player, const VSH2Player victim, Event event);
 	
 	/// OnTraceAttack
+	function Action (const VSH2Player victim, const VSH2Player attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup);
 	function void (const VSH2Player victim, const VSH2Player attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup);
 	
 	/// OnMessageIntro
+	function Action (const VSH2Player player, char message[512]);
 	function void (const VSH2Player player, char message[512]);
 	
 	/**
 		OnBossHealthCheck - bossBool determines if command user was the boss
 		OnRoundEndInfo - bossBool determines if boss won the round
 	*/
+	function Action (const VSH2Player player, bool bossBool, char message[512]);
 	function void (const VSH2Player player, bool bossBool, char message[512]);
 	
 	/// OnMusic
+	function Action (char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player);
 	function void (char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player);
 	
 	/// OnControlPointCapped
+	function Action (char cappers[MAXPLAYERS+1], const int team);
 	function void (char cappers[MAXPLAYERS+1], const int team);
 	
 	/// OnCallDownloads
+	function Action ();
 	function void ();
 	
 	/// OnBossPickUpItem
+	function Action (const VSH2Player player, const char item[64]);
 	function void (const VSH2Player player, const char item[64]);
 	
 	/// OnBossMenu
 	function void (Menu& menu);
 	
 	/// OnScoreTally
+	function Action (const VSH2Player player, int& points_earned, int& queue_earned);
 	function void (const VSH2Player player, int& points_earned, int& queue_earned);
 	
 	/// OnItemOverride
 	function Action (const VSH2Player player, const char[] classname, int itemdef, Handle& item);
+	function void (const VSH2Player player, const char[] classname, int itemdef, Handle& item);
 	
 	/// OnBossDoRageStun
+	function Action (const VSH2Player player, float& distance);
 	function void (const VSH2Player player, float& distance);
 };
 

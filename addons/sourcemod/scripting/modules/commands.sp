@@ -2,8 +2,7 @@ public Action QueuePanelCmd(int client, int args)
 {
 	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
-
-	if( !client ) {
+	else if( !client ) {
 		CReplyToCommand(client, "{olive}[VSH 2]{default} You can only use this command ingame.");
 		return Plugin_Handled;
 	}
@@ -15,7 +14,7 @@ public Action ResetQueue(int client, int args)
 {
 	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
-	if( !client ) {
+	else if( !client ) {
 		CReplyToCommand(client, "{olive}[VSH 2]{default} You can only use this command ingame.");
 		return Plugin_Handled;
 	}
@@ -23,6 +22,49 @@ public Action ResetQueue(int client, int args)
 	CPrintToChat(client, "{olive}[VSH 2]{default} Your Queue has been set to 0!");
 	return Plugin_Handled;
 }
+
+
+public Action MakeWeapInvis(int client, int args)
+{
+	if( !client ) {
+		CReplyToCommand(client, "{olive}[VSH 2]{default} You can only use this command ingame.");
+		return Plugin_Handled;
+	} else if( args < 1 ) {
+		CReplyToCommand(client, "{olive}[VSH 2]{default} Usage: /vsh2vm <0-255>");
+		return Plugin_Handled;
+	}
+	char number[8]; GetCmdArg(1, number, sizeof(number));
+	int maxalpha = StringToInt(number);
+	BaseBoss(client).SetWepInvis(maxalpha);
+	CPrintToChat(client, "{olive}[VSH 2]{default} your weapon transparency has been set to %i.", maxalpha);
+	return Plugin_Handled;
+}
+
+public Action AdminMakeWeapInvis(int client, int args)
+{
+	if (args < 2) {
+		CReplyToCommand(client, "{olive}[VSH 2]{default} Usage: /vsh2advm <target> <0-255>");
+		return Plugin_Handled;
+	}
+	char szTargetname[64]; GetCmdArg(1, szTargetname, sizeof(szTargetname));
+	char szNum[64]; GetCmdArg(2, szNum, sizeof(szNum));
+	int maxalpha = StringToInt(szNum);
+	char target_name[MAX_TARGET_LENGTH];
+	int target_list[MAXPLAYERS+1], target_count;
+	bool tn_is_ml;
+	if ( (target_count = ProcessTargetString(szTargetname, client, target_list, MAXPLAYERS, COMMAND_FILTER_ALIVE, target_name, sizeof(target_name), tn_is_ml)) <= 0 ) {
+		ReplyToTargetError(client, target_count);
+		return Plugin_Handled;
+	}
+	for (int i=0; i < target_count; i++) {
+		if ( IsValidClient(target_list[i]) && IsPlayerAlive(target_list[i]) ) {
+			BaseBoss(target_list[i]).SetWepInvis(maxalpha);
+			CPrintToChat(target_list[i], "{olive}[VSH 2]{orange}an Admin made your weapon transparent!");
+		}
+	}
+	return Plugin_Handled;
+}
+
 
 public void QueuePanel(const int client)
 {
@@ -281,7 +323,7 @@ public Action ForceBossRealtime(int client, int args)
 		if( IsClientInGame(target_list[i]) ) {
 			player = BaseBoss(target_list[i]);
 			player.MakeBossAndSwitch(bosstype, true);
-			CPrintToChat(player.index, "{orange}[VSH 2]{default} an Admin has forced you to be a Boss!");
+			CPrintToChat(player.index, "{olive}[VSH 2]{orange} an Admin has forced you to be a Boss!");
 		}
 	}
 	CReplyToCommand(client, "{olive}[VSH 2]{default} Forced %s as a Boss", target_name);
@@ -374,10 +416,12 @@ public Action HelpPanelCmd(int client, int args)
 	//Format(strHelp, 512, "Welcome to VS Saxton Hale Mode Version 2!\nOne or more players is selected each round to become a Boss.\nEveryone else must kill them!");
 	Panel panel = new Panel();
 	panel.SetTitle("What do you want, sir?");
-	panel.DrawItem("Show Boss' health (/halehp)");
+	panel.DrawItem("Show Boss health (/halehp)");
 	panel.DrawItem("Show help about the Mode (/halehelp)");
-	panel.DrawItem("Who is the next Hale? (/halenext)");
+	panel.DrawItem("Who is the next Boss? (/halenext)");
 	panel.DrawItem("Reset Queue Points? (/resetq)");
+	panel.DrawItem("Set My Boss (/setboss)");
+	panel.DrawItem("Toggle Music (/setboss)");
 	panel.Send(client, HelpPanelH, 9001);
 	delete panel;
 	return Plugin_Handled;
@@ -391,7 +435,7 @@ public int HelpPanelH(Menu menu, MenuAction action, int param1, int param2)
 					BaseBoss player = BaseBoss(param1);
 					ManageBossCheckHealth(player);
 				}
-				else CPrintToChat(param1, "{olive}[VSH 2]{default} There's no active boss/bosses...");
+				else CPrintToChat(param1, "{olive}[VSH 2]{default} There are no active bosses...");
 			}
 			case 2: {
 				BaseBoss player = BaseBoss(param1);
@@ -402,6 +446,8 @@ public int HelpPanelH(Menu menu, MenuAction action, int param1, int param2)
 			}
 			case 3: QueuePanel(param1);
 			case 4: TurnToZeroPanel(param1);
+			case 5: SetBossMenu(param1, -1);
+			case 6: MusicTogglePanelCmd(param1, -1);
 			default: return;
 		}
 	}
@@ -443,9 +489,9 @@ public int MenuHandler_ClassRush(Menu menu, MenuAction action, int client, int p
 			SetEntProp(i, Prop_Send, "m_iClass", classtype);
 			TF2_RegeneratePlayer(i);
 			SetPawnTimer( PrepPlayers, 0.2, BaseBoss(i) );
-			CPrintToChat(i, "{olive}[VSH 2]{default} You've been forced to {cyan}%s{default}.", classname);
+			CPrintToChat(i, "{olive}[VSH 2]{default} You've been forced to {orange}%s{default}.", classname);
 		}
-		CPrintToChat(client, "{olive}[VSH 2]{default} Forced everybody to {cyan}%s{default}.", classname);
+		CPrintToChat(client, "{olive}[VSH 2]{default} Forced everybody to {orange}%s{default}.", classname);
 	}
 	else if( action == MenuAction_End )
 		delete menu;

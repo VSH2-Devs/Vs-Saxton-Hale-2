@@ -36,7 +36,7 @@ public void OnLibraryRemoved(const char[] name) {
 	}
 }
 
-public void OnScore(const VSH2Player player, int& points_earned, int& queue_earned) {
+public Action OnScore(const VSH2Player player, int& points_earned, int& queue_earned) {
 	char setting[2];
 	GetClientCookie(player.index, g_noboss_cookie, setting, sizeof(setting));
 	if(setting[0] == '1') {

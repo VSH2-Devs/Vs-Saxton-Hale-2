@@ -52,29 +52,25 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	
 	BaseBoss victim = BaseBoss( event.GetInt("userid"), true );
 	BaseBoss fighter = BaseBoss( event.GetInt("attacker"), true );
-	
-	//if( fighter.bIsBoss && !player.bIsBoss )	/// If Boss is killer and victim is not a Boss
 	ManageBossKillPlayer(fighter, victim, event);
-	
-	//if( fighter.bIsBoss && victim.bIsBoss )	/// clash of the titans - when both killer and victim are Bosses
 	
 	/// Patch: Don't want multibosses playing last-player sound clips when a BOSS dies...
 	if( !victim.bIsBoss && !victim.bIsMinion )
 		SetPawnTimer(CheckAlivePlayers, 0.2);
 	
+	int death_flags = event.GetInt("death_flags");
 	if( (gamemode.bMedieval || cvarVSH2[ForceLives].BoolValue)
 		&& !victim.bIsBoss
 		&& !victim.bIsMinion
 		&& victim.iLives
 		&& gamemode.iRoundState == StateRunning
-		&& !(event.GetInt("death_flags") & TF_DEATHFLAG_DEADRINGER) )
+		&& !(death_flags & TF_DEATHFLAG_DEADRINGER) )
 	{
 		SetPawnTimer(_RespawnPlayer, cvarVSH2[MedievalRespawnTime].FloatValue, victim.userid);
 		victim.iLives--;
 	}
 	
-	if( (TF2_GetPlayerClass(victim.index) == TFClass_Engineer) && !(event.GetInt("death_flags") & TF_DEATHFLAG_DEADRINGER) )
-	{
+	if( (TF2_GetPlayerClass(victim.index) == TFClass_Engineer) && !(death_flags & TF_DEATHFLAG_DEADRINGER) ) {
 		if( cvarVSH2[EngieBuildings].IntValue ) {
 			switch( cvarVSH2[EngieBuildings].IntValue ) {
 				case 1: {
@@ -86,13 +82,11 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 				}
 				case 2: {
 					for( int ent=MaxClients+1; ent<2048; ++ent ) {
-						if( !IsValidEntity(ent) ) 
-							continue;
-						else if( !HasEntProp(ent, Prop_Send, "m_hBuilder") )
+						if( !IsValidEntity(ent) || !HasEntProp(ent, Prop_Send, "m_hBuilder") ) 
 							continue;
 						else if( GetBuilder(ent) != victim.index )
 							continue;
-
+						
 						SetVariantInt(GetEntProp(ent, Prop_Send, "m_iMaxHealth")+8);
 						AcceptEntityInput(ent, "RemoveHealth");
 					}
@@ -440,6 +434,5 @@ public Action RPSTaunt(Event event, const char[] name, bool dontBroadcast)
 	if( !winner || !loser )
 		return Plugin_Continue;
 	
-	ManageOnRPS(winner, loser);
-	return Plugin_Continue;
+	return Call_OnRPSTaunt(loser, winner);
 }

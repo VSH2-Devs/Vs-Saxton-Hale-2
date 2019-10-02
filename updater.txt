@@ -4,23 +4,18 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.3.6"
+			"Latest"	"2.3.7"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.6:"
-		"Notes"	"Added forward for when a boss is hit by a projectile in the air aka airshot."
-		"Notes"	"Added cvar to control the distance from the air to the ground to count as an airshot."
-		"Notes"	"Removed 'NULL_VEC' define from vsh.sp."
-		"Notes"	"Created Voice clip method to help in control of playing boss voiceclips."
-		"Notes"	"Created voice clip flags in vsh2.inc to help make it easier to play certain types of boss voiceclips."
-		"Notes"	"Moved more boss specific code into their respective scripts."
-		"Notes"	"Made voice clip method as a native."
-		"Notes"	"Replaced voice clip code in Plague Doctor add-on boss to use the voice clip native."
-		"Notes"	"Removed more unused code in Plague Doctor add-on module."
-		"Notes"	"Patched Late Spawn block affecting spectators."
-		"Notes"	"Patched Boss health not lowering on fall damage."
-		"Notes"	"Patched HHH playing kill sound when he suicides."
-		"Notes"	"Removed 'FULLPATH' define from vsh.sp."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.7:"
+		"Notes"	"Added 'Action' variants for 'void' returning hooks."
+		"Notes"	"Patched an issue with late spawn blocking where it doesn't set your class on the next round."
+		"Notes"	"Added 'master' boss param for Minion based hooks."
+		"Notes"	"Added set boss and music toggle to the main Boss help panel."
+		"Notes"	"Added Removing Razorback when goomba stomped."
+		"Notes"	"Blocked dead bosses from revealing their HP (which is 0 since they're dead...)."
+		"Notes"	"Made certain TF2Attribs functions as optional natives."
+		"Notes"	"Added new player & admin command to make weapons transparent."
 	}
 	
 	"Files"

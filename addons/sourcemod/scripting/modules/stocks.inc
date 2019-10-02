@@ -615,42 +615,6 @@ public Action DoThink(Handle hTimer, DataPack hndl)
 	return Plugin_Continue;
 }
 
-stock bool DoSuperJump(const int client, const float power, int& charge, const int new_charge, const bool& duper, float jump_ang = -45.0)
-{
-	float ang[3]; GetClientEyeAngles(client, ang);
-	if( ang[0] <= jump_ang ) {
-		float vel[3]; GetEntPropVector(client, Prop_Data, "m_vecVelocity", vel);
-		vel[2] = 750 + power * 13.0;
-		if( duper ) {
-			vel[2] += 2000.0;
-			duper = false;
-		}
-		SetEntProp(client, Prop_Send, "m_bJumping", 1);
-		vel[0] *= (1+Sine(power * FLOAT_PI / 50));
-		vel[1] *= (1+Sine(power * FLOAT_PI / 50));
-		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, vel);
-		charge = new_charge;
-		return true;
-	}
-	return false;
-}
-
-
-stock bool DoWeighdown(const int client, const float req_time, float &wdtime, const float set_wdtime, float required_angle=60.0)
-{
-	if( wdtime >= req_time ) {
-		float ang[3]; GetClientEyeAngles(client, ang);
-		if( ang[0] >= required_angle ) {
-			float fVelocity[3];
-			GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
-			fVelocity[2] = -1000.0;
-			TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, fVelocity);
-			wdtime = set_wdtime;
-			return true;
-		}
-	}
-	return false;
-}
 
 stock void ForceClientTeamChange(const int client, const int iTeam)
 {
