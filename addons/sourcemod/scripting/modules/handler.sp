@@ -781,7 +781,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 					Entire team is pretty much screwed if all the medics just die.
 				*/
 				if( Call_OnBossDealDamage_OnHitMedic(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
-					if( GetMediCharge(medigun) >= 0.90 ) {
+					if( cvarVSH2[MedicUberShield].BoolValue && GetMediCharge(medigun) >= 0.90 ) {
 						SetMediCharge(medigun, 0.1);
 						ScaleVector(damageForce, 9.0);
 						damage *= 0.1;
@@ -1802,9 +1802,10 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case 36, 412: {	/// Blutsauger and Overdose
 			hItemOverride = PrepareItemHandle(hItemCast, _, _, "17; 0.01");
 		}
-		case 772: {	/// Baby Face Blaster
+		case 772: {	/// Baby Face's Blaster
 			//hItemOverride = PrepareItemHandle(hItemCast, _, _, "106; 0.3; 4; 1.33; 45; 0.6; 114; 1.0", true);
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "418 ; 1; 49 ; 1; 3 ; 0.66; 532 ; 1; 793 ; 1; 36 ; 1.25", true);
+			/// 36 ; 1.25 -> less accuracy.
+			hItemOverride = PrepareItemHandle(hItemCast, _, _, "418 ; 1; 49 ; 1; 3 ; 0.66; 532 ; 1; 793 ; 1", true);
 		}
 		//case 133: {	/// Gunboats; make gunboats attractive compared to the mantreads by having it reduce more rj dmg
 		//	hItemOverride = PrepareItemHandle(hItemCast, _, _, "135; 0.2", true);

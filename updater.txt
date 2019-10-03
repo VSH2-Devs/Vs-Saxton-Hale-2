@@ -4,18 +4,14 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.3.7"
+			"Latest"	"2.3.8"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.7:"
-		"Notes"	"Added 'Action' variants for 'void' returning hooks."
-		"Notes"	"Patched an issue with late spawn blocking where it doesn't set your class on the next round."
-		"Notes"	"Added 'master' boss param for Minion based hooks."
-		"Notes"	"Added set boss and music toggle to the main Boss help panel."
-		"Notes"	"Added Removing Razorback when goomba stomped."
-		"Notes"	"Blocked dead bosses from revealing their HP (which is 0 since they're dead...)."
-		"Notes"	"Made certain TF2Attribs functions as optional natives."
-		"Notes"	"Added new player & admin command to make weapons transparent."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.8:"
+		"Notes"	"Updated travis script for new SourceMod versions 1.9 and 1.10."
+		"Notes"	"Readded gravity power to weighdown."
+		"Notes"	"Added cvar to enable or disable medic's uber shield."
+		"Notes"	"Removed 25% accuracy penalty from Baby Face's Blaster."
 	}
 	
 	"Files"

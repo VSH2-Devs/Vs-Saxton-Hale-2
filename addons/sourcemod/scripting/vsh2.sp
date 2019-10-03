@@ -25,7 +25,7 @@
 #pragma semicolon        1
 #pragma newdecls         required
 
-#define PLUGIN_VERSION   "2.3.7"
+#define PLUGIN_VERSION   "2.3.8"
 #define PLUGIN_DESCRIPT  "VS Saxton Hale 2"
 
 
@@ -107,6 +107,7 @@ enum /** CvarName */ {
 	AllowLateSpawn,
 	SuicidePercent,
 	AirShotDist,
+	MedicUberShield,
 	VersionNumber
 };
 
@@ -207,8 +208,6 @@ ArrayList g_hPluginsRegistered;
 
 public void OnPluginStart()
 {
-	//RegConsoleCmd("sm_onboss", MakeBoss);
-	//RegConsoleCmd("sm_offboss", MakeNotBoss);
 	gamemode = VSHGameMode();
 	gamemode.Init();
 	
@@ -287,7 +286,6 @@ public void OnPluginStart()
 	RegAdminCmd("sm_hale_classrush", MenuDoClassRush, ADMFLAG_GENERIC, "forces all red players to a class.");
 	RegAdminCmd("sm_vsh2_classrush", MenuDoClassRush, ADMFLAG_GENERIC, "forces all red players to a class.");
 	
-	
 	RegAdminCmd("sm_vsh2adwep", AdminMakeWeapInvis, ADMFLAG_GENERIC);
 	RegAdminCmd("sm_vsh2advm", AdminMakeWeapInvis, ADMFLAG_GENERIC);
 	
@@ -356,6 +354,7 @@ public void OnPluginStart()
 	cvarVSH2[AllowLateSpawn] = CreateConVar("vsh2_allow_late_spawning", "0", "allows if unassigned spectators can respawn during an active round.", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[SuicidePercent] = CreateConVar("vsh2_boss_suicide_percent", "0.3", "Allow the boss to suicide if their health percentage goes at or below this amount (0.3 == 30%).", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[AirShotDist] = CreateConVar("vsh2_airshot_dist", "80.0", "distance (from the air to the ground) to count as a skilled airshot.", FCVAR_NONE, true, 10.0, true, 9999.0);
+	cvarVSH2[MedicUberShield] = CreateConVar("vsh2_use_uber_as_shield", "0", "If a medic has nearly full uber (90%+), use the uber as a shield to prevent the medic from getting killed.", FCVAR_NONE, true, 0.0, true, 1.0);
 	
 #if defined _steamtools_included
 	gamemode.bSteam = LibraryExists("SteamTools");
@@ -727,14 +726,6 @@ public Action MakeModelTimer(Handle hTimer)
 	return Plugin_Continue;
 }
 
-/*
-public void SetGravityNormal(const int userid)
-{
-	int i = GetClientOfUserId(userid);
-	if( IsValidClient(i) )
-		SetEntityGravity(i, 1.0);
-}
-*/
 
 /// the main 'mechanics' of bosses
 public Action Timer_PlayerThink(Handle hTimer)

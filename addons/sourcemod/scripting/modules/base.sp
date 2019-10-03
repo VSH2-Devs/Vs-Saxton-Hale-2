@@ -860,8 +860,8 @@ methodmap BaseBoss < BaseFighter {
 		float fVelocity[3]; GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
 		fVelocity[2] = -1000.0;
 		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, fVelocity);
-		//SetEntityGravity(client, 6.0);
-		//SetPawnTimer(SetGravityNormal, 1.0, this.userid);
+		SetEntityGravity(client, 6.0);
+		SetPawnTimer(SetGravityNormal, 1.0, this.userid);
 		this.flWeighDown = reset;
 	}
 	
@@ -890,4 +890,11 @@ methodmap BaseBoss < BaseFighter {
 
 public int HintPanel(Menu menu, MenuAction action, int param1, int param2) {
 	return;
+}
+
+public void SetGravityNormal(const int userid)
+{
+	int i = GetClientOfUserId(userid);
+	if( IsClientValid(i) )
+		SetEntityGravity(i, 1.0);
 }
