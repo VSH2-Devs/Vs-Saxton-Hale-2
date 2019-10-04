@@ -135,6 +135,7 @@ public void ManageDisconnect(const int client)
 public void ManageOnBossSelected(const BaseBoss base)
 {
 	ManageBossHelp(base);
+	SetPawnTimer(_SkipBossPanel, 4.0);
 	Action act = Call_OnBossSelected(base);
 	if( !cvarVSH2[AllowRandomMultiBosses].BoolValue || act > Plugin_Changed )
 		return;
@@ -368,9 +369,8 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				float curtime = GetGameTime();
 				SetEntPropFloat(weapon, Prop_Send, "m_flNextPrimaryAttack", curtime+2.0);
 				SetEntPropFloat(attacker, Prop_Send, "m_flNextAttack", curtime+2.0);
-				SetEntPropFloat(attacker, Prop_Send, "m_flStealthNextChangeTime", curtime+1.0);
-				TF2_AddCondition(attacker, TFCond_SpeedBuffAlly, 2.0);
-				//TF2_AddCondition(attacker, TFCond_Ubercharged, 2.0);
+				SetEntPropFloat(attacker, Prop_Send, "m_flStealthNextChangeTime", curtime+2.0);
+				
 				int vm = GetEntPropEnt(attacker, Prop_Send, "m_hViewModel");
 				if( vm > MaxClients && IsValidEntity(vm) && TF2_GetPlayerClass(attacker) == TFClass_Spy ) {
 					int melee = GetIndexOfWeaponSlot(attacker, TFWeaponSlot_Melee);
@@ -741,7 +741,6 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 					float flFallVelocity = GetEntPropFloat(inflictor, Prop_Send, "m_flFallVelocity");
 					/// TF2 Fall Damage formula, modified for VSH2
 					damage = 10.0 * (GetRandomFloat(0.8, 1.2) * (5.0 * (flFallVelocity / 300.0)));
-					return Plugin_Changed;
 				}
 				return Plugin_Changed;
 			}
@@ -749,7 +748,6 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 				if( Call_OnBossDealDamage_OnHitDefBuff(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
 					ScaleVector(damageForce, 9.0);
 					damage *= 0.3;
-					return Plugin_Changed;
 				}
 				return Plugin_Changed;
 			}
@@ -1056,8 +1054,10 @@ public void ManagePlayerAirblast(const BaseBoss airblaster, const BaseBoss airbl
 		case Hale, CBS, HHHjr, Bunny:
 			airblasted.flRAGE += cvarVSH2[AirblastRage].FloatValue;
 		case Vagineer: {
-			if( TF2_IsPlayerInCondition(airblasted.index, TFCond_Ubercharged) )
-				TF2_AddCondition(airblasted.index, TFCond_Ubercharged, 2.0);
+			if( TF2_IsPlayerInCondition(airblasted.index, TFCond_Ubercharged) ) {
+				SetConditionDuration(airblasted.index, TFCond_Ubercharged, GetConditionDuration(airblasted.index, TFCond_Ubercharged) + 2.0);
+				//TF2_AddCondition(airblasted.index, TFCond_Ubercharged, 2.0);
+			}
 			else airblasted.flRAGE += cvarVSH2[AirblastRage].FloatValue;
 		}
 	}
@@ -1225,7 +1225,7 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 			case -1: {}
 			case HHHjr: {
 				if( base.iClimbs < cvarVSH2[HHHMaxClimbs].IntValue ) {
-					if( base.ClimbWall(weapon, 600.0, 0.0, false) ) {
+					if( base.ClimbWall(weapon, cvarVSH2[HHHClimbVelocity].FloatValue, 0.0, false) ) {
 						base.flWeighDown = 0.0;
 						base.iClimbs++;
 					}

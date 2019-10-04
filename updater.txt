@@ -4,14 +4,17 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.3.8"
+			"Latest"	"2.3.9"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.8:"
-		"Notes"	"Updated travis script for new SourceMod versions 1.9 and 1.10."
-		"Notes"	"Readded gravity power to weighdown."
-		"Notes"	"Added cvar to enable or disable medic's uber shield."
-		"Notes"	"Removed 25% accuracy penalty from Baby Face's Blaster."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.9:"
+		"Notes"	"Set vsh2_shield_regen_damage cvar to allow being set to 0 to disable shield regeneration."
+		"Notes"	"Removed Spy's speed boost on stab."
+		"Notes"	"Patched Vagineer's uber not extending from airblasts."
+		"Notes"	"Increased Spy's cloaking/stealth delay by 1 second."
+		"Notes"	"Added cvar to control HHH Jr's climbing velocity."
+		"Notes"	"Removed knockback resistance from Christian Brutal Sniper & Vagineer."
+		"Notes"	"Patched Next Boss panel not showing up for Next-Boss Players."
 	}
 	
 	"Files"

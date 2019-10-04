@@ -1198,6 +1198,7 @@ stock int GetHealerByIndex(const int client, const int index)
 	Address aHealers = view_as< Address >(LoadFromAddress(m_Shared, NumberType_Int32));
 	return (LoadFromAddress(aHealers + view_as< Address >(index * 0x24), NumberType_Int32) & 0xFFF);
 }
+
 stock float GetConditionDuration(const int client, const TFCond cond)
 {
 	if (!TF2_IsPlayerInCondition(client, cond))
@@ -1210,6 +1211,7 @@ stock float GetConditionDuration(const int client, const TFCond cond)
 	float flDuration = view_as< float >(LoadFromAddress(aCondDuration, NumberType_Int32));
 	return flDuration;
 }
+
 stock void SetConditionDuration(const int client, const TFCond cond, const float duration)
 {
 	if (!TF2_IsPlayerInCondition(client, cond))
@@ -1218,7 +1220,7 @@ stock void SetConditionDuration(const int client, const TFCond cond, const float
 	int m_Shared = FindSendPropInfo("CTFPlayer", "m_Shared");
 	Address aCondSource   = view_as< Address >(LoadFromAddress(GetEntityAddress(client) + view_as< Address >(m_Shared + 8), NumberType_Int32));
 	Address aCondDuration = view_as< Address >(view_as< int >(aCondSource) + (view_as< int >(cond) * 20) + (2 * 4));
-	StoreToAddress(aCondDuration, view_as< int >(duration), NumberType_Int32));
+	StoreToAddress(aCondDuration, view_as< int >(duration), NumberType_Int32);
 }
 
 enum {
