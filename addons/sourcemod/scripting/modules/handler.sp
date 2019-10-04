@@ -134,9 +134,9 @@ public void ManageDisconnect(const int client)
 
 public void ManageOnBossSelected(const BaseBoss base)
 {
+	Action act = Call_OnBossSelected(base);
 	ManageBossHelp(base);
 	SetPawnTimer(_SkipBossPanel, 4.0);
-	Action act = Call_OnBossSelected(base);
 	if( !cvarVSH2[AllowRandomMultiBosses].BoolValue || act > Plugin_Changed )
 		return;
 	else if( gamemode.iPlaying < 10 || GetRandomInt(0, 3) > 0 )
@@ -1241,7 +1241,7 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 	}
 	if( !base.bIsBoss && !base.bIsMinion ) {
 		if( TF2_GetPlayerClass(base.index) == TFClass_Sniper && IsWeaponSlotActive(base.index, TFWeaponSlot_Melee) )
-			base.ClimbWall(weapon, cvarVSH2[SniperClimbVelocity].FloatValue, 15.0, true);
+			base.ClimbWall(weapon, cvarVSH2[SniperClimbVelocity].FloatValue, 15.0, false);
 	}
 	return Plugin_Continue;
 }
