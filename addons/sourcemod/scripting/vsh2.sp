@@ -25,7 +25,7 @@
 #pragma semicolon        1
 #pragma newdecls         required
 
-#define PLUGIN_VERSION   "2.3.9"
+#define PLUGIN_VERSION   "2.3.10"
 #define PLUGIN_DESCRIPT  "VS Saxton Hale 2"
 
 
@@ -109,6 +109,8 @@ enum /** CvarName */ {
 	AirShotDist,
 	MedicUberShield,
 	HHHClimbVelocity,
+	SniperClimbVelocity,
+	ShowBossHPLiving,
 	VersionNumber
 };
 
@@ -357,6 +359,8 @@ public void OnPluginStart()
 	cvarVSH2[AirShotDist] = CreateConVar("vsh2_airshot_dist", "80.0", "distance (from the air to the ground) to count as a skilled airshot.", FCVAR_NONE, true, 10.0, true, 9999.0);
 	cvarVSH2[MedicUberShield] = CreateConVar("vsh2_use_uber_as_shield", "0", "If a medic has nearly full uber (90%+), use the uber as a shield to prevent the medic from getting killed.", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[HHHClimbVelocity] = CreateConVar("vsh2_hhh_climb_velocity", "600.0", "in hammer units, how high of a velocity HHH Jr. will climb.", FCVAR_NONE, true, 0.0, true, 9999.0);
+	cvarVSH2[SniperClimbVelocity] = CreateConVar("vsh2_sniper_climb_velocity", "600.0", "in hammer units, how high of a velocity sniper melees will climb.", FCVAR_NONE, true, 0.0, true, 9999.0);
+	cvarVSH2[ShowBossHPLiving] = CreateConVar("vsh2_show_boss_hp_alive_players", "1", "How many players must be alive for total boss hp to show.", FCVAR_NONE, true, 1.0, true, 64.0);
 	
 #if defined _steamtools_included
 	gamemode.bSteam = LibraryExists("SteamTools");
@@ -756,7 +760,7 @@ public Action Timer_PlayerThink(Handle hTimer)
 		}
 		else ManageFighterThink(player);
 		
-		if( GetLivingPlayers(VSH2Team_Red)==1 ) {
+		if( GetLivingPlayers(VSH2Team_Red) <= cvarVSH2[ShowBossHPLiving].IntValue ) {
 			SetHudTextParams(-1.0, 0.20, 0.11, 255, 255, 255, 255);
 			ShowSyncHudText(i, healthHUD, "Total Boss Health: %i", gamemode.GetTotalBossHealth());
 		}
@@ -817,7 +821,7 @@ public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& dam
 	if( !IsClientValid(attacker) ) {
 		if( (damagetype & DMG_FALL) && !BossVictim.bIsBoss ) {
 			int item = GetPlayerWeaponSlot(victim, (TF2_GetPlayerClass(victim) == TFClass_DemoMan ? TFWeaponSlot_Primary : TFWeaponSlot_Secondary));
-			if( item <= 0 || !IsValidEntity(item) ) {
+			if( item <= 0 || !IsValidEntity(item) || (TF2_GetPlayerClass(victim)==TFClass_Spy && TF2_IsPlayerInCondition(victim, TFCond_Cloaked)) ) {
 				damage /= 10;
 				return Plugin_Changed;
 			}

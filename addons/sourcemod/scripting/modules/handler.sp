@@ -1241,7 +1241,7 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 	}
 	if( !base.bIsBoss && !base.bIsMinion ) {
 		if( TF2_GetPlayerClass(base.index) == TFClass_Sniper && IsWeaponSlotActive(base.index, TFWeaponSlot_Melee) )
-			base.ClimbWall(weapon, 600.0, 15.0, true);
+			base.ClimbWall(weapon, cvarVSH2[SniperClimbVelocity].FloatValue, 15.0, true);
 	}
 	return Plugin_Continue;
 }
