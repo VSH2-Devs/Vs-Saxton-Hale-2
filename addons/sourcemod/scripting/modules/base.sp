@@ -744,7 +744,11 @@ methodmap BaseBoss < BaseFighter {
 	}
 	
 	public void GiveRage(const int damage) {
-		this.flRAGE += ( damage / SquareRoot(this.iHealth+0.0) * 1.76 );
+		float rage_amount = damage / SquareRoot(this.iHealth+0.0) * 1.76;
+		Action act = Call_OnBossGiveRage(this, damage, rage_amount);
+		if( act > Plugin_Changed )
+			return;
+		this.flRAGE += rage_amount;
 	}
 	public void MakeBossAndSwitch(const int type, const bool callEvent) {
 		this.bSetOnSpawn = true;

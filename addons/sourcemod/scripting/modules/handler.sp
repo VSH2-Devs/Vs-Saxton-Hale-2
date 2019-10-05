@@ -134,12 +134,13 @@ public void ManageDisconnect(const int client)
 
 public void ManageOnBossSelected(const BaseBoss base)
 {
-	ManageBossHelp(base);
 	SetPawnTimer(_SkipBossPanel, 4.0);
 	Action act = Call_OnBossSelected(base);
-	if( !cvarVSH2[AllowRandomMultiBosses].BoolValue || act > Plugin_Changed )
+	if( act > Plugin_Changed )
 		return;
-	else if( gamemode.iPlaying < 10 || GetRandomInt(0, 3) > 0 )
+	
+	ManageBossHelp(base);
+	if( !cvarVSH2[AllowRandomMultiBosses].BoolValue || gamemode.iPlaying < 10 || GetRandomInt(0, 3) > 0 )
 		return;
 	
 	int playing = gamemode.iPlaying;
@@ -460,17 +461,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 			
 			/// Heavy Shotguns heal for damage dealt
 			if( StrContains(classname, "tf_weapon_shotgun", false) > -1 && TF2_GetPlayerClass(attacker) == TFClass_Heavy ) {
-				if( Call_OnBossTakeDamage_OnHeavyShotgun(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
-					int health = GetClientHealth(attacker);
-					//int maxhp = GetEntProp(attacker, Prop_Data, "m_iMaxHealth");
-					
-					/// TODO: add cvar for this?
-					int heavy_overheal = 450;
-					if( health < heavy_overheal ) {
-						int health_from_dmg = RoundFloat((damage / 2) + health);
-						SetEntityHealth(attacker, (health_from_dmg > heavy_overheal) ? heavy_overheal : health_from_dmg);
-					}
-				}
+				return Call_OnBossTakeDamage_OnHeavyShotgun(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 			} else if( StrContains(classname, "tf_weapon_sniperrifle", false) > -1 && gamemode.iRoundState != StateEnding ) {
 				if( wepindex != 230 && wepindex != 526 && wepindex != 752 && wepindex != 30665 ) {
 					float bossGlow = victim.flGlowtime;
@@ -713,7 +704,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				if( TR_DidHit() ) {
 					float end_pos[3]; TR_GetEndPosition(end_pos);
 					if( GetVectorDistance(damagePosition, end_pos) >= cvarVSH2[AirShotDist].FloatValue )
-						if( Call_OnBossAirShotProj(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) == Plugin_Changed )
+						if( Call_OnBossAirShotProj(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) )
 							return Plugin_Changed;
 				}
 			}
@@ -1022,6 +1013,19 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 			attacker.iAirDamage += damage;
 		int div = cvarVSH2[AirStrikeDamage].IntValue;
 		SetEntProp(attacker.index, Prop_Send, "m_iDecapitations", attacker.iAirDamage/div);
+	}
+	
+	/// Heavy Shotgun healing.
+	else if( TF2_GetPlayerClass(attacker.index)==TFClass_Heavy && weapon==TF_WEAPON_SHOTGUN_HWG ) {
+		int health = GetClientHealth(attacker.index);
+		int maxhp = GetEntProp(attacker.index, Prop_Data, "m_iMaxHealth");
+		
+		/// TODO: add cvar for this?
+		int heavy_overheal = 450;
+		int health_from_dmg = ( health < maxhp ) ? (maxhp - health) % damage : (heavy_overheal - health) % damage;
+		SetEntityHealth(attacker.index, (!health_from_dmg) ?
+													((health + damage) >> view_as< int >((health > maxhp))) :
+													(health + health_from_dmg));
 	}
 	
 	/// Medics now count as 3/5 of a backstab, similar to telefrag assists.

@@ -414,6 +414,10 @@ public Action fwdOnBossTakeFallDamage(VSH2Player victim, int& attacker, int& inf
 	return Plugin_Continue;
 }
 
+public void fwdOnBossGiveRage(VSH2Player player, int damage, float& amount)
+{
+	PrintToConsole(player.index, "fwdOnBossGiveRage:: ==> player name: %N | damage: %i, calculated rage amount: %f", player.index, damage, amount);
+}
 
 public void LoadVSH2Hooks()
 {
@@ -602,4 +606,7 @@ public void LoadVSH2Hooks()
 		
 	if (!VSH2_HookEx(OnBossTakeFallDamage, fwdOnBossTakeFallDamage))
 		LogError("Error Hooking OnBossTakeFallDamage forward for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnBossGiveRage, fwdOnBossGiveRage))
+		LogError("Error Hooking OnBossGiveRage forward for VSH2 Test plugin.");
 }

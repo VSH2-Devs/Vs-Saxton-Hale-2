@@ -260,6 +260,7 @@ enum { /// VSH2HookType
 	OnRPSTaunt,
 	OnBossAirShotProj,
 	OnBossTakeFallDamage,
+	OnBossGiveRage,
 	OnRedPlayerThink
 };
 
@@ -390,6 +391,10 @@ typeset VSH2HookCB {
 	/// OnBossDoRageStun
 	function Action (const VSH2Player player, float& distance);
 	function void (const VSH2Player player, float& distance);
+	
+	/// OnBossGiveRage
+	function Action (const VSH2Player player, const int damage, float& calcd_rage);
+	function void (const VSH2Player player, const int damage, float& calcd_rage);
 };
 
 /// Use hooktype enum on these.

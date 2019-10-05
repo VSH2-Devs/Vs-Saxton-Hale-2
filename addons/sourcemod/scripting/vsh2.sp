@@ -25,17 +25,12 @@
 #pragma semicolon        1
 #pragma newdecls         required
 
-#define PLUGIN_VERSION   "2.3.10"
+#define PLUGIN_VERSION   "2.3.11"
 #define PLUGIN_DESCRIPT  "VS Saxton Hale 2"
 
 
 #define IsClientValid(%1)    ( 0 < (%1) && (%1) <= MaxClients && IsClientInGame((%1)) )
 #define PLYR                 MAXPLAYERS+1
-
-
-/// functional-style typecasting
-#define int(%1)				view_as<int>(%1)
-#define Handle(%1)			view_as<Handle>(%1)
 
 /// misc.
 #define PLYR				MAXPLAYERS+1
@@ -305,24 +300,24 @@ public void OnPluginStart()
 	cvarVSH2[Enabled] = CreateConVar("vsh2_enabled", "1", "Enable VSH 2 plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	cvarVSH2[VersionNumber] = CreateConVar("vsh2_version", PLUGIN_VERSION, "VSH 2 Plugin Version. (DO NOT CHANGE)", FCVAR_NOTIFY);
 	cvarVSH2[PointType] = CreateConVar("vsh2_point_type", "0", "Select condition to enable point (0 - alive players, 1 - time)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	cvarVSH2[PointDelay] = CreateConVar("vsh2_point_delay", "6", "Addition (for each player) delay before point's activation.", FCVAR_NOTIFY);
+	cvarVSH2[PointDelay] = CreateConVar("vsh2_point_delay", "6", "Addition (for each player) delay before point's activation.", FCVAR_NOTIFY, true, 0.0, false);
 	cvarVSH2[AliveToEnable] = CreateConVar("vsh2_point_alive", "5", "Enable control points when there are X people left alive.", FCVAR_NOTIFY, true, 1.0, true, 32.0);
 	cvarVSH2[FirstRound] = CreateConVar("vsh2_firstround", "0", "If 1, allows the first round to start with VSH2 enabled.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	cvarVSH2[DamagePoints] = CreateConVar("vsh2_damage_points", "600", "Amount of damage needed to gain 1 point on the scoreboard.", FCVAR_NOTIFY, true, 1.0);
+	cvarVSH2[DamagePoints] = CreateConVar("vsh2_damage_points", "600", "Amount of damage needed to gain 1 point on the scoreboard.", FCVAR_NOTIFY, true, 1.0, false);
 	cvarVSH2[DamageQueue] = CreateConVar("vsh2_damage_queue", "1", "Allow damage to influence increase of queue points.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	cvarVSH2[QueueGained] = CreateConVar("vsh2_queue_gain", "10", "How many queue points to give at the end of each round.", FCVAR_NOTIFY, true, 0.0, true, 9999.0);
+	cvarVSH2[QueueGained] = CreateConVar("vsh2_queue_gain", "10", "How many queue points to give at the end of each round.", FCVAR_NOTIFY, true, 0.0, false);
 	cvarVSH2[EnableMusic] = CreateConVar("vsh2_enable_music", "1", "Enables boss background music.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	cvarVSH2[MusicVolume] = CreateConVar("vsh2_music_volume", "0.5", "How loud the background music should be, if enabled.", FCVAR_NOTIFY, true, 0.0, true, 20.0);
+	cvarVSH2[MusicVolume] = CreateConVar("vsh2_music_volume", "0.5", "How loud the background music should be, if enabled.", FCVAR_NOTIFY, true, 0.0, true, 5.0);
 	cvarVSH2[HealthPercentForLastGuy] = CreateConVar("vsh2_health_percentage_last_guy", "51", "If the health bar is lower than x out of 255, the last player timer will stop.", FCVAR_NOTIFY, true, 0.0, true, 255.0);
 	cvarVSH2[HealthRegenForPlayers] = CreateConVar("vsh2_health_regen", "0", "Allow non-boss and non-minion players to have passive health regen.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	cvarVSH2[HealthRegenAmount] = CreateConVar("vsh2_health_regen_amount", "1.0", "If health regen is enabled, how much health regen per second should players get?", FCVAR_NOTIFY);
+	cvarVSH2[HealthRegenAmount] = CreateConVar("vsh2_health_regen_amount", "1.0", "If health regen is enabled, how much health regen per second should players get?", FCVAR_NOTIFY, true, 0.0, false);
 	cvarVSH2[MedigunReset] = CreateConVar("vsh2_medigun_reset_amount", "0.31", "How much Uber percentage should Mediguns, after Uber, reset to?", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	cvarVSH2[StopTickleTime] = CreateConVar("vsh2_stop_tickle_time", "1.0", "How long in seconds the tickle effect from the Holiday Punch lasts before being removed.", FCVAR_NOTIFY, true, 0.01);
-	cvarVSH2[AirStrikeDamage] = CreateConVar("vsh2_airstrike_damage", "200", "How much damage needed for the Airstrike to gain +1 clipsize.", FCVAR_NOTIFY);
+	cvarVSH2[StopTickleTime] = CreateConVar("vsh2_stop_tickle_time", "1.0", "How long in seconds the tickle effect from the Holiday Punch lasts before being removed.", FCVAR_NOTIFY, true, 0.01, false);
+	cvarVSH2[AirStrikeDamage] = CreateConVar("vsh2_airstrike_damage", "200", "How much damage needed for the Airstrike to gain +1 clipsize.", FCVAR_NOTIFY, true, 0.0, false);
 	cvarVSH2[AirblastRage] = CreateConVar("vsh2_airblast_rage", "8.0", "How much Rage should airblast give/remove? (negative number to remove rage)", FCVAR_NOTIFY, true, 0.0, true, 100.0);
 	cvarVSH2[JarateRage] = CreateConVar("vsh2_jarate_rage", "8.0", "How much rage should Jarate give/remove? (negative number to add rage)", FCVAR_NOTIFY, true, 0.0, true, 100.0);
-	cvarVSH2[FanoWarRage] = CreateConVar("vsh2_fanowar_rage", "5.0", "How much rage should the Fan o' War give/remove? (negative number to add rage)", FCVAR_NOTIFY);
-	cvarVSH2[LastPlayerTime] = CreateConVar("vsh2_lastplayer_time", "180", "How many seconds to give the last player to fight the Boss(es) before a stalemate.", FCVAR_NOTIFY);
+	cvarVSH2[FanoWarRage] = CreateConVar("vsh2_fanowar_rage", "5.0", "How much rage should the Fan o' War give/remove? (negative number to add rage)", FCVAR_NOTIFY, true, 0.0, true, 100.0);
+	cvarVSH2[LastPlayerTime] = CreateConVar("vsh2_lastplayer_time", "180", "How many seconds to give the last player to fight the Boss(es) before a stalemate.", FCVAR_NOTIFY, true, 0.0, false);
 	cvarVSH2[EngieBuildings] = CreateConVar("vsh2_killbuilding_engiedeath", "1", "If 0, no building dies when engie dies. If 1, only sentry dies. If 2, all buildings die.", FCVAR_NOTIFY, true, 0.0, true, 2.0);
 	cvarVSH2[MedievalLives] = CreateConVar("vsh2_medievalmode_lives", "3", "Amount of lives red players are entitled during Medieval Mode.", FCVAR_NOTIFY, true, 0.0, true, 99.0);
 	cvarVSH2[MedievalRespawnTime] = CreateConVar("vsh2_medievalmode_respawntime", "5.0", "How long it takes for players to respawn after dying in medieval mode (if they have live left).", FCVAR_NOTIFY, true, 1.0, true, 999.0);
@@ -347,19 +342,19 @@ public void OnPluginStart()
 	cvarVSH2[AmmoKitLimitMin] = CreateConVar("vsh2_spawn_ammo_kit_limit_min", "4", "minimum amount of ammo kits that can be produced in RED spawn. 0 for no minimum limit", FCVAR_NONE, true, 0.0, true, 50.0);
 	cvarVSH2[ShieldRegenDmgReq] = CreateConVar("vsh2_shield_regen_damage", "2000", "damage required for demoknights to regenerate their shield, put 0 to disable.", FCVAR_NONE, true, 0.0, true, 99999.0);
 	cvarVSH2[AllowRandomMultiBosses] = CreateConVar("vsh2_allow_random_multibosses", "1", "allows VSH2 to make random combinations of various bosses.", FCVAR_NONE, true, 0.0, true, 1.0);
-	cvarVSH2[HHHMaxClimbs] = CreateConVar("vsh2_hhhjr_max_climbs", "10", "maximum amount of climbs HHH Jr. can do.", FCVAR_NONE, true, 0.0, true, 100.0);
+	cvarVSH2[HHHMaxClimbs] = CreateConVar("vsh2_hhhjr_max_climbs", "10", "maximum amount of climbs HHH Jr. can do.", FCVAR_NONE, true, 0.0, false);
 	cvarVSH2[HealthCheckInitialDelay] = CreateConVar("vsh2_initial_healthcheck_delay", "30.0", "Initial health check delay when the round starts so as to prevent wasting 10-second health checks.", FCVAR_NONE, true, 0.0, true, 999.0);
-	cvarVSH2[ScoutRageGen] = CreateConVar("vsh2_scout_rage_gen", "0.2", "rate of how much rage a boss generates when there are only scouts left.", FCVAR_NONE, true, 0.0, true, 999.0);
-	cvarVSH2[SydneySleeperRageRemove] = CreateConVar("vsh2_sydney_sleeper_rage_remove", "0.01", "how much rage (multiplied with damage) the Sydney Sleeper sniper rifle will remove from a boss' rage meter.", FCVAR_NONE, true, 0.0, true, 999.0);
-	cvarVSH2[DamageForQueue] = CreateConVar("vsh2_damage_for_queue", "1000", "if 'vsh2_damage_queue' is enabled, how much queue to give per amount of damage done.", FCVAR_NONE, true, 0.0, true, 999.0);
-	cvarVSH2[DeadRingerDamage] = CreateConVar("vsh2_dead_ringer_damage", "90.0", "damage, divided by 0.25, that dead ringer spies will take from boss melee hits.", FCVAR_NONE, true, 0.0, true, 999999.0);
-	cvarVSH2[CloakDamage] = CreateConVar("vsh2_cloak_damage", "70.0", "damage, divided by 0.8, that dead ringer spies will take from boss melee hits.", FCVAR_NONE, true, 0.0, true, 999999.0);
+	cvarVSH2[ScoutRageGen] = CreateConVar("vsh2_scout_rage_gen", "0.2", "rate of how much rage a boss generates when there are only scouts left.", FCVAR_NONE, true, 0.0, true, 99.0);
+	cvarVSH2[SydneySleeperRageRemove] = CreateConVar("vsh2_sydney_sleeper_rage_remove", "0.01", "how much rage (multiplied with damage) the Sydney Sleeper sniper rifle will remove from a boss' rage meter.", FCVAR_NONE, true, 0.0, true, 99.0);
+	cvarVSH2[DamageForQueue] = CreateConVar("vsh2_damage_for_queue", "1000", "if 'vsh2_damage_queue' is enabled, how much queue to give per amount of damage done.", FCVAR_NONE, true, 0.0, false);
+	cvarVSH2[DeadRingerDamage] = CreateConVar("vsh2_dead_ringer_damage", "90.0", "damage, divided by 0.25, that dead ringer spies will take from boss melee hits.", FCVAR_NONE, true, 0.0, false);
+	cvarVSH2[CloakDamage] = CreateConVar("vsh2_cloak_damage", "70.0", "damage, divided by 0.8, that dead ringer spies will take from boss melee hits.", FCVAR_NONE, true, 0.0, false);
 	cvarVSH2[AllowLateSpawn] = CreateConVar("vsh2_allow_late_spawning", "0", "allows if unassigned spectators can respawn during an active round.", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[SuicidePercent] = CreateConVar("vsh2_boss_suicide_percent", "0.3", "Allow the boss to suicide if their health percentage goes at or below this amount (0.3 == 30%).", FCVAR_NONE, true, 0.0, true, 1.0);
-	cvarVSH2[AirShotDist] = CreateConVar("vsh2_airshot_dist", "80.0", "distance (from the air to the ground) to count as a skilled airshot.", FCVAR_NONE, true, 10.0, true, 9999.0);
+	cvarVSH2[AirShotDist] = CreateConVar("vsh2_airshot_dist", "80.0", "distance (from the air to the ground) to count as a skilled airshot.", FCVAR_NONE, true, 10.0, false);
 	cvarVSH2[MedicUberShield] = CreateConVar("vsh2_use_uber_as_shield", "0", "If a medic has nearly full uber (90%+), use the uber as a shield to prevent the medic from getting killed.", FCVAR_NONE, true, 0.0, true, 1.0);
 	cvarVSH2[HHHClimbVelocity] = CreateConVar("vsh2_hhh_climb_velocity", "600.0", "in hammer units, how high of a velocity HHH Jr. will climb.", FCVAR_NONE, true, 0.0, true, 9999.0);
-	cvarVSH2[SniperClimbVelocity] = CreateConVar("vsh2_sniper_climb_velocity", "600.0", "in hammer units, how high of a velocity sniper melees will climb.", FCVAR_NONE, true, 0.0, true, 9999.0);
+	cvarVSH2[SniperClimbVelocity] = CreateConVar("vsh2_sniper_climb_velocity", "600.0", "in hammer units, how high of a velocity sniper melees will climb.", FCVAR_NONE, true, 0.0, false);
 	cvarVSH2[ShowBossHPLiving] = CreateConVar("vsh2_show_boss_hp_alive_players", "1", "How many players must be alive for total boss hp to show.", FCVAR_NONE, true, 1.0, true, 64.0);
 	
 #if defined _steamtools_included
@@ -578,7 +573,7 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_PreThinkPost, OnPreThinkPost);
 	
 	if( hPlayerFields[client] != null )
-		delete hPlayerFields[client] ;
+		delete hPlayerFields[client];
 	
 	hPlayerFields[client] = new StringMap();
 	BaseBoss boss = BaseBoss(client);

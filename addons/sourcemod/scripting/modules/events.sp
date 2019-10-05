@@ -169,7 +169,7 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 		boss = gamemode.hNextBoss;
 		gamemode.hNextBoss = view_as< BaseBoss >(0);
 	}
-
+	
 	/// Got our boss, let's prep him/her.
 	boss.bSetOnSpawn = true;
 	boss.iBossType = gamemode.iSpecial;

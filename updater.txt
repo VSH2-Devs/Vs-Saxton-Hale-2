@@ -4,13 +4,13 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.3.10"
+			"Latest"	"2.3.11"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.10:"
-		"Notes"	"Added cvar to control sniper climbing velocity."
-		"Notes"	"Added reduced fall damage when a spy is cloaked."
-		"Notes"	"Added cvar to control how many players must be alive to show total boss hp."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.11:"
+		"Notes"	"Removed functional-style typecasting for Handles and ints."
+		"Notes"	"Revamped Heavy Shotgun healing."
+		"Notes"	"Added forward for giving bosses rage."
 	}
 	
 	"Files"
