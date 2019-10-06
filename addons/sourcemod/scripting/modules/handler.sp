@@ -256,10 +256,6 @@ public void ManageBossTransition(const BaseBoss base)
 			TF2_SetPlayerClass(base.index, TFClass_DemoMan, _, false);
 	}
 	ManageBossModels(base);
-	switch( base.iBossType ) {
-		case -1: {}
-		case HHHjr: ToCHHHJr(base).flCharge = -1000.0;
-	}
 	/// Patch: Aug 18, 2018 - patching bad first person animations on custom boss models.
 	Call_OnBossInitialized(base);
 	ManageBossEquipment(base);
@@ -1021,9 +1017,7 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 	else if( TF2_GetPlayerClass(attacker.index)==TFClass_Heavy && weapon==TF_WEAPON_SHOTGUN_HWG ) {
 		int health = GetClientHealth(attacker.index);
 		int maxhp = GetEntProp(attacker.index, Prop_Data, "m_iMaxHealth");
-		
-		/// TODO: add cvar for this?
-		int heavy_overheal = 450;
+		int heavy_overheal = RoundFloat(FindConVar("tf_max_health_boost").FloatValue * maxhp);
 		int health_from_dmg = ( health < maxhp ) ? (maxhp - health) % damage : (heavy_overheal - health) % damage;
 		SetEntityHealth(attacker.index, (!health_from_dmg) ?
 													((health + damage) >> view_as< int >((health > maxhp))) :
@@ -1041,7 +1035,7 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 	BaseBoss medic;
 	for( int r=0; r<healers; r++ ) {
 		medic = BaseBoss(GetHealerByIndex(attacker.index, r));
-		if( 0 < medic.index <= MaxClients) {
+		if( 0 < medic.index <= MaxClients ) {
 			if( damage < 10 || medic.iUberTarget == attacker.userid )
 				medic.iDamage += damage;
 			else medic.iDamage += damage/(healercount+1);

@@ -4,13 +4,15 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.3.12"
+			"Latest"	"2.3.13"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.12:"
-		"Notes"	"Added new forward: OnBossCalcHealth."
-		"Notes"	"Replaced certain SetPawnTimer calls with a RequestFrame."
-		"Notes"	"Removed resetting the player's preset boss type after using it to set the gamemode special type."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.13:"
+		"Notes"	"Added FF2 Compatibility Layer Plugin (currently Alpha stage)."
+		"Notes"	"Replaced Heavy Shotgun overheal formula to use the TF2 cvar for maximum overheal."
+		"Notes"	"Moved HHH initial charge delay to his respective boss script file."
+		"Notes"	"Added cvar to control HHH Jr's teleport charge."
+		"Notes"	"Small patch for the Damage Tracker addon to properly save cookie data."
 	}
 	
 	"Files"

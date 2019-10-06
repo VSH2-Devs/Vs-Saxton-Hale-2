@@ -255,7 +255,7 @@ public void MusicTogglePanel(const int client)
 	if( !cvarVSH2[Enabled].BoolValue || !IsValidClient(client) )
 		return;
 	Panel panel = new Panel();
-	panel.SetTitle("Turn the VS Saxton Hale Music...");
+	panel.SetTitle("Turn the VS Saxton Hale 2 Music...");
 	panel.DrawItem("On?");
 	panel.DrawItem("Off?");
 	panel.Send(client, MusicTogglePanelH, 9001);
@@ -268,10 +268,10 @@ public int MusicTogglePanelH(Menu menu, MenuAction action, int param1, int param
 			BaseBoss player = BaseBoss(param1);
 			if( param2 == 1 ) {
 				player.bNoMusic = false;
-				CPrintToChat(param1, "{olive}[VSH 2]{default} You've turned On the VS Saxton Hale Music.");
+				CPrintToChat(param1, "{olive}[VSH 2]{default} You've turned On the VS Saxton Hale 2 Music.");
 			} else {
 				player.bNoMusic = true;
-				CPrintToChat(param1, "{olive}[VSH 2]{default} You've turned Off the VS Saxton Hale Music.\nWhen the music stops, it won't play again.");
+				CPrintToChat(param1, "{olive}[VSH 2]{default} You've turned Off the VS Saxton Hale 2 Music.\nWhen the music stops, it won't play again.");
 			}
 		}
 	}

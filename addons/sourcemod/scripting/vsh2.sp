@@ -20,22 +20,21 @@
 #tryinclude <updater>
 #define REQUIRE_PLUGIN
 
-#define UPDATE_URL       "https://raw.githubusercontent.com/VSH2-Devs/Vs-Saxton-Hale-2/develop/updater.txt"
+#define UPDATE_URL          "https://raw.githubusercontent.com/VSH2-Devs/Vs-Saxton-Hale-2/develop/updater.txt"
 
-#pragma semicolon        1
-#pragma newdecls         required
+#pragma semicolon            1
+#pragma newdecls             required
 
-#define PLUGIN_VERSION   "2.3.12"
-#define PLUGIN_DESCRIPT  "VS Saxton Hale 2"
+#define PLUGIN_VERSION       "2.3.13"
+#define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
 #define IsClientValid(%1)    ( 0 < (%1) && (%1) <= MaxClients && IsClientInGame((%1)) )
 #define PLYR                 MAXPLAYERS+1
 
 /// misc.
-#define PLYR				MAXPLAYERS+1
-#define PATH				64
-#define repeat(%1)			for( int __i=0; __i<(%1); ++__i )
+#define PATH                 64
+#define repeat(%1)           for( int __i=0; __i<(%1); ++__i )
 
 
 public Plugin myinfo = {
@@ -106,6 +105,7 @@ enum /** CvarName */ {
 	HHHClimbVelocity,
 	SniperClimbVelocity,
 	ShowBossHPLiving,
+	HHHTeleCooldown,
 	VersionNumber
 };
 
@@ -135,61 +135,48 @@ VSH2Objs g_vsh2_handles;
 */
 
 methodmap TF2Item < Handle {
-	/** [*C*O*N*S*T*R*U*C*T*O*R*] */
 	public TF2Item(int iFlags) {
 		return view_as<TF2Item>( TF2Items_CreateItem(iFlags) );
 	}
 	/////////////////////////////// 
 	
-	/** [ P R O P E R T I E S ] */
-	
 	property int iFlags {
 		public get()			{ return TF2Items_GetFlags(this); }
 		public set( int iVal )		{ TF2Items_SetFlags(this, iVal); }
 	}
-	
 	property int iItemIndex {
 		public get()			{return TF2Items_GetItemIndex(this);}
 		public set( int iVal )		{TF2Items_SetItemIndex(this, iVal);}
 	}
-	
 	property int iQuality {
 		public get()			{return TF2Items_GetQuality(this);}
 		public set( int iVal )		{TF2Items_SetQuality(this, iVal);}
 	}
-	
 	property int iLevel {
 		public get()			{return TF2Items_GetLevel(this);}
 		public set( int iVal )		{TF2Items_SetLevel(this, iVal);}
 	}
-	
 	property int iNumAttribs {
 		public get()			{return TF2Items_GetNumAttributes(this);}
 		public set( int iVal )		{TF2Items_SetNumAttributes(this, iVal);}
 	}
 	///////////////////////////////
 	
-	/** [ M E T H O D S ] */
 	public int GiveNamedItem(int iClient) {
 		return TF2Items_GiveNamedItem(iClient, this);
 	}
-	
 	public void SetClassname(char[] strClassName) {
 		TF2Items_SetClassname(this, strClassName);
 	}
-	
 	public void GetClassname(char[] strDest, int iDestSize) {
 		TF2Items_GetClassname(this, strDest, iDestSize);
 	}
-	
 	public void SetAttribute(int iSlotIndex, int iAttribDefIndex, float flValue) {
 		TF2Items_SetAttribute(this, iSlotIndex, iAttribDefIndex, flValue);
 	}
-	
 	public int GetAttribID(int iSlotIndex) {
 		return TF2Items_GetAttributeId(this, iSlotIndex);
 	}
-	
 	public float GetAttribValue(int iSlotIndex) {
 		return TF2Items_GetAttributeValue(this, iSlotIndex);
 	}
@@ -356,6 +343,7 @@ public void OnPluginStart()
 	cvarVSH2[HHHClimbVelocity] = CreateConVar("vsh2_hhh_climb_velocity", "600.0", "in hammer units, how high of a velocity HHH Jr. will climb.", FCVAR_NONE, true, 0.0, true, 9999.0);
 	cvarVSH2[SniperClimbVelocity] = CreateConVar("vsh2_sniper_climb_velocity", "600.0", "in hammer units, how high of a velocity sniper melees will climb.", FCVAR_NONE, true, 0.0, false);
 	cvarVSH2[ShowBossHPLiving] = CreateConVar("vsh2_show_boss_hp_alive_players", "1", "How many players must be alive for total boss hp to show.", FCVAR_NONE, true, 1.0, true, 64.0);
+	cvarVSH2[HHHTeleCooldown] = CreateConVar("vsh2_hhh_tele_cooldown", "-1100.0", "Teleportation cooldown for HHH Jr. after teleporting.", FCVAR_NONE, true, -999999.0, true, 25.0);
 	
 #if defined _steamtools_included
 	gamemode.bSteam = LibraryExists("SteamTools");

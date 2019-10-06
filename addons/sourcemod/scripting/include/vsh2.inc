@@ -42,6 +42,7 @@ enum { /** Voice Clip Flags */
 #define VSH2_VOICE_SPREE   (0)
 #define VSH2_VOICE_STABBED VSH2_VOICE_SPREE
 
+/// For when boss loses, wins, or introduces themselves like the mentlegen they are.
 #define VSH2_VOICE_WIN     (VSH2_VOICE_ONCE|VSH2_VOICE_ALLCHAN)
 #define VSH2_VOICE_LOSE    VSH2_VOICE_WIN
 #define VSH2_VOICE_INTRO   VSH2_VOICE_WIN
@@ -167,7 +168,7 @@ methodmap VSH2Player {
 	public native int FindBack(int[] indices, const int len);
 	public native int ShootRocket(bool bCrit=false, float vPosition[3], float vAngles[3], const float flSpeed, const float dmg, const char[] model, bool arc=false);
 	
-	/// Boss oriented natives ///
+	/// Boss oriented methods ///
 	public native void ConvertToBoss();
 	public native void GiveRage(const int damage);
 	public native void MakeBossAndSwitch(const int type, const bool callEvent);
@@ -186,9 +187,10 @@ methodmap VSH2Player {
 
 
 /**
- * Registers a plugin to be able to use VSH2's forwards
- * NOTE: The purpose of this native is to register boss subplugins, you don't need to register plugins to use forwards, simply hook what forward you need.
- * @param plugin_name    module name you want your calling plugin to be identified under
+ * Registers a boss module/subplugin.
+ * NOTE: The purpose of this native is to register boss modules/subplugins, you don't need to register add-on plugins to use forwards, simply hook what forward(s) you need.
+ * 
+ * @param     plugin_name -> module name you want your calling plugin to be identified under
  * @return    integer of the plugin array index, -1 if error.
  */
 native int VSH2_RegisterPlugin(const char plugin_name[64]);
@@ -266,7 +268,7 @@ enum { /// VSH2HookType
 };
 
 /**
-	IF YOU'RE USING THE HOOKING SYSTEM FOR A BOSS, YOU HAVE TO REGISTER YOUR PLUGIN WITH VSH2 BECAUSE YOU NEED THE MODULE INDEX TRACKED
+	IF YOU'RE USING THE HOOKING SYSTEM FOR A CUSTOM BOSS, YOU HAVE TO REGISTER YOUR PLUGIN WITH VSH2 BECAUSE YOU NEED THE MODULE INDEX TRACKED
 */
 
 typeset VSH2HookCB {
@@ -293,7 +295,8 @@ typeset VSH2HookCB {
 	/**
 		OnTouchPlayer - victim is boss, attacker is other player.
 		OnBossJarated
-		OnUberDeployed, OnUberLoop - Victim is medic, Attacker (Check if valid) is uber target
+		OnUberDeployed - Victim is medic, Attacker (Check if valid) is uber target
+		OnUberLoop - Victim is medic, Attacker (Check if valid) is uber target
 		OnRPSTaunt - victim is loser, attacker is winner.
 		OnMinionInitialized - victim is minion, attacker is the owner/master boss.
 	*/

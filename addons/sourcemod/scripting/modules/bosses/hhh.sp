@@ -101,7 +101,7 @@ methodmap CHHHJr < BaseBoss {
 					EmitSoundToClient(target, "misc/halloween/spell_teleport.wav");
 					PrintCenterText(target, "You've been teleported!");
 					
-					this.flCharge = -1100.0;
+					this.flCharge = cvarVSH2[HHHTeleCooldown].FloatValue;
 				}
 				if( this.bSuperCharge )
 					this.bSuperCharge = false;
@@ -153,6 +153,7 @@ methodmap CHHHJr < BaseBoss {
 		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.1; 259; 1.0; 252; 0.6; 551; 1");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_sword", 266, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
+		this.flCharge = cvarVSH2[HHHTeleCooldown].FloatValue * 0.9091;
 	}
 	public void RageAbility()
 	{

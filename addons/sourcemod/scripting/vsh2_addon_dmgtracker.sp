@@ -87,7 +87,8 @@ public Action Command_damagetracker(int client, int args)
 		CPrintToChat(client, "{olive}[VSH 2]{default} The damage tracker is now {lightgreen}%s{default}!", newsetting);
 		
 		if( AreClientCookiesCached(client) ) {
-			SetClientCookie(client, haledmg_cookie, damageTracker[client] ? "1" : "0");
+			char strval[6]; IntToString(damageTracker[client], strval, sizeof(strval));
+			SetClientCookie(client, haledmg_cookie, strval);
 		}
 	}
 	
