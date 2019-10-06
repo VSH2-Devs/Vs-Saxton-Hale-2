@@ -419,6 +419,11 @@ public void fwdOnBossGiveRage(VSH2Player player, int damage, float& amount)
 	PrintToConsole(player.index, "fwdOnBossGiveRage:: ==> player name: %N | damage: %i, calculated rage amount: %f", player.index, damage, amount);
 }
 
+public void fwdOnBossCalcHealth(VSH2Player player, int& max_health, const int boss_count, const int red_players)
+{
+	PrintToChat(player.index, "fwdOnBossCalcHealth:: ==> boss name: %N | max health: %i, boss count: %i, players: %i", player.index, max_health, boss_count, red_players);
+}
+
 public void LoadVSH2Hooks()
 {
 	if (!VSH2_HookEx(OnCallDownloads, fwdOnDownloadsCalled))
@@ -609,4 +614,7 @@ public void LoadVSH2Hooks()
 		
 	if (!VSH2_HookEx(OnBossGiveRage, fwdOnBossGiveRage))
 		LogError("Error Hooking OnBossGiveRage forward for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnBossCalcHealth, fwdOnBossCalcHealth))
+		LogError("Error Hooking OnBossCalcHealth forward for VSH2 Test plugin.");
 }

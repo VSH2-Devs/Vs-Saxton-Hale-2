@@ -550,10 +550,11 @@ public void SickleClimbWalls(const int client, const int weapon, const float upw
 	//	ClientCommand(client, "playgamesound \"%s\"", "player\\taunt_clip_spin.wav");
 	
 	if (attackdelay)
-		SetPawnTimer(NoAttacking, 0.1, EntIndexToEntRef(weapon));
+		RequestFrame(NoAttacking, EntIndexToEntRef(weapon));
 }
-public void NoAttacking(const int wepref)
+public void NoAttacking(const any ref)
 {
+	int wepref = ref;
 	int weapon = EntRefToEntIndex(wepref);
 	SetNextAttack(weapon, 1.56);
 }
@@ -1151,7 +1152,7 @@ stock void SkipBossPanelNotify(const int client/*, bool newchoice = true*/)
 	char strNotify[64];
 	
 	panel.SetTitle("[VSH2] You're The Next Boss!");
-	Format(strNotify, sizeof(strNotify), "You are going to be a Boss soon! Type /halenext to check/reset your queue points.\nAlternatively, use !resetq.");
+	Format(strNotify, sizeof(strNotify), "You are going to be a Boss soon! Type /halenext to check/reset your queue points.\nAlternatively, use !resetq.\nDon't forget to use !setboss to set your boss.");
 	
 	panel.DrawItem(strNotify);
 	panel.Send(client, SkipHalePanelH, 30); /// in commands.sp

@@ -513,7 +513,8 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		SDKHooks_TakeDamage(client, client, client, health, DMG_CLUB, 0); /// Inflictor is 0 to prevent Shiv self-bleed
 		
 		if( attackdelay )
-			SetPawnTimer(NoAttacking, 0.1, EntIndexToEntRef(weapon));
+			RequestFrame(NoAttacking, EntIndexToEntRef(weapon));
+			//SetPawnTimer(NoAttacking, 0.1, EntIndexToEntRef(weapon));
 		return true;
 	}
 	public void HelpPanelClass()

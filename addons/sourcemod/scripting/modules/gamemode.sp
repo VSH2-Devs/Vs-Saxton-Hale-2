@@ -432,10 +432,10 @@ methodmap VSHGameMode { /* < StringMap */
 				this.iSpecial = MAXBOSS;
 			return;
 		}
+		
 		BaseBoss boss = this.FindNextBoss();
 		if( boss.iPresetType > -1 && this.iSpecial == -1 ) {
 			this.iSpecial = boss.iPresetType;
-			boss.iPresetType = -1;
 			if( this.iSpecial > MAXBOSS )
 				this.iSpecial = MAXBOSS;
 			return;

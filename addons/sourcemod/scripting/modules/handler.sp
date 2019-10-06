@@ -123,7 +123,8 @@ public void ManageDisconnect(const int client)
 		}
 		CPrintToChatAll("{olive}[VSH 2]{red} A Boss Just Disconnected!");
 	} else {
-		SetPawnTimer(CheckAlivePlayers, 0.2);
+		RequestFrame(CheckAlivePlayers, 0);
+		//SetPawnTimer(CheckAlivePlayers, 0.2);
 		if( client == gamemode.FindNextBoss().index )
 			SetPawnTimer(_SkipBossPanel, 1.0);
 		
@@ -921,7 +922,8 @@ public void ManageBossKillPlayer(const BaseBoss attacker, const BaseBoss victim,
 	
 	/// If victim is a boss, kill him off
 	if( victim.bIsBoss )
-		SetPawnTimer(_BossDeath, 0.1, victim.userid);
+		RequestFrame(_BossDeath, victim.userid);
+		//SetPawnTimer(_BossDeath, 0.1, victim.userid);
 	
 	if( attacker.bIsBoss ) {
 		switch( attacker.iBossType ) {
@@ -1521,7 +1523,7 @@ public void ManageBossCheckHealth(const BaseBoss base)
 	}
 }
 
-public void CheckAlivePlayers()
+public void CheckAlivePlayers(const any nil)
 {
 	if( gamemode.iRoundState != StateRunning )
 		return;
@@ -1590,7 +1592,7 @@ public void _SkipBossPanel()
 		if( !j )
 			SkipBossPanelNotify(upnext[j].index);
 		else if( !IsFakeClient(upnext[j].index) )
-			CPrintToChat(upnext[j].index, "{olive}[VSH 2]{default} You are going to be a Boss soon! Type {olive}/halenext{default} to check/reset your queue points.");
+			CPrintToChat(upnext[j].index, "{olive}[VSH 2]{default} You are going to be a Boss soon! Type {olive}/halenext{default} to check/reset your queue points & !setboss to set your boss.");
 	}
 	
 	/// Ughhh, reset shit...

@@ -421,7 +421,7 @@ public Action HelpPanelCmd(int client, int args)
 	panel.DrawItem("Who is the next Boss? (/halenext)");
 	panel.DrawItem("Reset Queue Points? (/resetq)");
 	panel.DrawItem("Set My Boss (/setboss)");
-	panel.DrawItem("Toggle Music (/setboss)");
+	panel.DrawItem("Toggle Music (/halemusic)");
 	panel.Send(client, HelpPanelH, 9001);
 	delete panel;
 	return Plugin_Handled;
@@ -488,7 +488,7 @@ public int MenuHandler_ClassRush(Menu menu, MenuAction action, int client, int p
 				continue;
 			SetEntProp(i, Prop_Send, "m_iClass", classtype);
 			TF2_RegeneratePlayer(i);
-			SetPawnTimer( PrepPlayers, 0.2, BaseBoss(i) );
+			SetPawnTimer(PrepPlayers, 0.2, BaseBoss(i));
 			CPrintToChat(i, "{olive}[VSH 2]{default} You've been forced to {orange}%s{default}.", classname);
 		}
 		CPrintToChat(client, "{olive}[VSH 2]{default} Forced everybody to {orange}%s{default}.", classname);

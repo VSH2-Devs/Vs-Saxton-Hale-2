@@ -4,13 +4,13 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.3.11"
+			"Latest"	"2.3.12"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.11:"
-		"Notes"	"Removed functional-style typecasting for Handles and ints."
-		"Notes"	"Revamped Heavy Shotgun healing."
-		"Notes"	"Added forward for giving bosses rage."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.12:"
+		"Notes"	"Added new forward: OnBossCalcHealth."
+		"Notes"	"Replaced certain SetPawnTimer calls with a RequestFrame."
+		"Notes"	"Removed resetting the player's preset boss type after using it to set the gamemode special type."
 	}
 	
 	"Files"

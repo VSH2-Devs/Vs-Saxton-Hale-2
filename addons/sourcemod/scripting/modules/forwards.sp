@@ -101,6 +101,7 @@ void InitializeForwards()
 	g_hForwards[OnBossAirShotProj] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
 	g_hForwards[OnBossTakeFallDamage] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
 	g_hForwards[OnBossGiveRage] = new PrivateForward( CreateForward(ET_Event, Param_Cell, Param_Cell, Param_FloatByRef));
+	g_hForwards[OnBossCalcHealth] = new PrivateForward( CreateForward(ET_Event, Param_Cell, Param_CellByRef, Param_Cell, Param_Cell));
 }
 
 Action Call_OnCallDownloads()
@@ -879,6 +880,18 @@ Action Call_OnBossGiveRage(const BaseBoss player, const int damage, float& calcd
 	Call_PushCell(player);
 	Call_PushCell(damage);
 	Call_PushFloatRef(calcd_rage);
+	Call_Finish(act);
+	return act;
+}
+
+Action Call_OnBossCalcHealth(const BaseBoss player, int& max_health, const int boss_count, const int red_players)
+{
+	Action act;
+	g_hForwards[OnBossCalcHealth].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(max_health);
+	Call_PushCell(boss_count);
+	Call_PushCell(red_players);
 	Call_Finish(act);
 	return act;
 }

@@ -106,8 +106,9 @@ public Action PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 		int damage = event.GetInt("damageamount");
 		victim.iHealth -= damage;
 	}
-	int attacker = GetClientOfUserId( event.GetInt("attacker") );
+	
 	/// make sure the attacker is valid so we can set him/her as BaseBoss instance
+	int attacker = GetClientOfUserId( event.GetInt("attacker") );
 	if( victim.index == attacker || attacker <= 0 )
 		return Plugin_Continue;
 	
@@ -372,14 +373,21 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 		if( !IsPlayerAlive(i) )
 			TF2_RespawnPlayer(i);
 		
+		int red_players = gamemode.iPlaying;
 		/// Automatically divides health based on boss count but this can be changed if necessary
-		boss.iMaxHealth = CalcBossHealth(760.8, gamemode.iPlaying, 1.0, 1.0341, 2046.0) / (bosscount);	/// In stocks.sp
-		if( boss.iMaxHealth < 3000 && bosscount == 1 )
-			boss.iMaxHealth = 3000;
+		int max_health = CalcBossHealth(760.8, red_players, 1.0, 1.0341, 2046.0) / (bosscount);	/// In stocks.sp
+		if( max_health < 3000 && bosscount == 1 )
+			max_health = 3000;
 		
 		/// Putting in multiboss Handicap from complaints of fighting multiple bosses being too overpowered since teamwork itself is overpowered :).
-		else if( boss.iMaxHealth > 3000 && bosscount > 1 )
-			boss.iMaxHealth -= cvarVSH2[MultiBossHandicap].IntValue;
+		else if( max_health > 3000 && bosscount > 1 )
+			max_health -= cvarVSH2[MultiBossHandicap].IntValue;
+		
+		Action act = Call_OnBossCalcHealth(boss, max_health, bosscount, red_players);
+		if( act > Plugin_Changed )
+			continue;
+		
+		boss.iMaxHealth = max_health;
 #if defined _tf2attributes_included
 		int maxhp = GetEntProp(boss.index, Prop_Data, "m_iMaxHealth");
 		if( gamemode.bTF2Attribs ) {
@@ -392,7 +400,8 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 		gamemode.iTotalMaxHealth += boss.iMaxHealth;
 		boss.iHealth = boss.iMaxHealth;
 	}
-	SetPawnTimer(CheckAlivePlayers, 0.2);
+	RequestFrame(CheckAlivePlayers, 0);
+	//SetPawnTimer(CheckAlivePlayers, 0.2);
 	ManageMessageIntro(bosses);
 	if( gamemode.iPlaying > 5 )
 		SetControlPoint(false);

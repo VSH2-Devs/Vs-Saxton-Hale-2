@@ -261,6 +261,7 @@ enum { /// VSH2HookType
 	OnBossAirShotProj,
 	OnBossTakeFallDamage,
 	OnBossGiveRage,
+	OnBossCalcHealth,
 	OnRedPlayerThink
 };
 
@@ -395,6 +396,10 @@ typeset VSH2HookCB {
 	/// OnBossGiveRage
 	function Action (const VSH2Player player, const int damage, float& calcd_rage);
 	function void (const VSH2Player player, const int damage, float& calcd_rage);
+	
+	/// OnBossCalcHealth
+	function Action (const VSH2Player player, int& max_health, const int boss_count, const int red_players);
+	function void (const VSH2Player player, int& max_health, const int boss_count, const int red_players);
 };
 
 /// Use hooktype enum on these.

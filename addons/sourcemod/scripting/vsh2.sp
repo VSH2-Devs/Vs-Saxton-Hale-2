@@ -25,7 +25,7 @@
 #pragma semicolon        1
 #pragma newdecls         required
 
-#define PLUGIN_VERSION   "2.3.11"
+#define PLUGIN_VERSION   "2.3.12"
 #define PLUGIN_DESCRIPT  "VS Saxton Hale 2"
 
 
@@ -39,11 +39,11 @@
 
 
 public Plugin myinfo = {
-	name 			= "TF2Bosses Mod",
-	author 			= "nergal/assyrian, props to Flamin' Sarge, Chdata, & Buzzkillington",
-	description 		= "Allows Players to play as various bosses of TF2",
-	version 		= PLUGIN_VERSION,
-	url 			= "https://forums.alliedmods.net/showthread.php?t=286701"
+	name            = "TF2Bosses Mod",
+	author          = "nergal/assyrian, props to Flamin' Sarge, Chdata, & Buzzkillington",
+	description     = "Allows Players to play as various bosses of TF2",
+	version         = PLUGIN_VERSION,
+	url             = "https://forums.alliedmods.net/showthread.php?t=286701"
 };
 
 
@@ -701,7 +701,7 @@ public void _MakePlayerMinion(const int userid)
 	}
 }
 
-public void _BossDeath(const int userid)
+public void _BossDeath(const any userid)
 {
 	int client = GetClientOfUserId(userid);
 	if( IsValidClient(client, false) ) {
