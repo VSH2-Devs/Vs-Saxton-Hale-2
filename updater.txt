@@ -4,15 +4,12 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.3.13"
+			"Latest"	"2.3.14"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.13:"
-		"Notes"	"Added FF2 Compatibility Layer Plugin (currently Alpha stage)."
-		"Notes"	"Replaced Heavy Shotgun overheal formula to use the TF2 cvar for maximum overheal."
-		"Notes"	"Moved HHH initial charge delay to his respective boss script file."
-		"Notes"	"Added cvar to control HHH Jr's teleport charge."
-		"Notes"	"Small patch for the Damage Tracker addon to properly save cookie data."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.14:"
+		"Notes"	"Commented out timer code that opens up the control in the 2nd round while VSH2 round is going on."
+		"Notes"	"Added OnBossTakeDamage_OnTriggerHurt forward."
 	}
 	
 	"Files"

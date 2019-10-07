@@ -213,6 +213,11 @@ public Action fwdOnBossTakeDamage_OnHolidayPunch(VSH2Player victim, int& attacke
 	PrintToConsole(victim.index, "fwdOnBossTakeDamage_OnHolidayPunch:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
 	return Plugin_Continue;
 }
+public Action fwdOnBossTakeDamage_OnTriggerHurt(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	PrintToConsole(victim.index, "fwdOnBossTakeDamage_OnTriggerHurt:: ==> victim name: %N", victim.index);
+	return Plugin_Continue;
+}
 
 
 public Action fwdOnBossDealDamage(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
@@ -356,7 +361,11 @@ public void fwdOnBossHealthCheck(const VSH2Player player, bool bossBool, char me
 
 public void fwdOnControlPointCapped(char cappers[MAXPLAYERS+1], const int team)
 {
-	PrintToConsole(cappers[0], "fwdOnControlPointCapped:: %N", cappers[0]);
+	for( int i; i<MAXPLAYERS+1; i++ ) {
+		int client = cappers[i];
+		if( 0 < client <= MaxClients && IsClientInGame(client) )
+			PrintToConsole(client, "fwdOnControlPointCapped:: capper: %N", client);
+	}
 }
 
 public void fwdOnPrepRedTeam(const VSH2Player player)
@@ -617,4 +626,7 @@ public void LoadVSH2Hooks()
 		
 	if (!VSH2_HookEx(OnBossCalcHealth, fwdOnBossCalcHealth))
 		LogError("Error Hooking OnBossCalcHealth forward for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnBossTakeDamage_OnTriggerHurt, fwdOnBossTakeDamage_OnTriggerHurt))
+		LogError("Error Hooking OnBossTakeDamage_OnTriggerHurt forward for VSH2 Test plugin.");
 }

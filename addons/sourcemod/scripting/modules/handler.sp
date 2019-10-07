@@ -322,6 +322,10 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 			char trigger[32];
 			if( attacker > MaxClients && GetEdictClassname(attacker, trigger, sizeof(trigger)) && !strcmp(trigger, "trigger_hurt", false) )
 			{
+				Action act = Call_OnBossTakeDamage_OnTriggerHurt(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
+				if( act > Plugin_Changed )
+					return Plugin_Continue;
+				
 				if( gamemode.bTeleToSpawn || damage >= victim.iHealth )
 					victim.TeleToSpawn(VSH2Team_Boss);
 				/// TODO: add cvar for trigger_hurt threshold
@@ -330,9 +334,10 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 						victim.flCharge = HALEHHH_TELEPORTCHARGE;
 					else victim.bSuperCharge = true;
 				}
-				/// TODO: add hook for touching trigger_hurt?
+				
 				if( damage > 500.0 ) {
-					damage = 500.0;
+					if( act != Plugin_Changed )
+						damage = 500.0;
 					return Plugin_Changed;
 				}
 			} else if( attacker <= 0 && bFallDamage ) {

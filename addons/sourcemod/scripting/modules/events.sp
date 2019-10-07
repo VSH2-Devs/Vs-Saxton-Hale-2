@@ -145,15 +145,15 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 		CPrintToChatAll("{olive}[VSH 2]{default} Need more Players to Commence");
 		gamemode.iRoundState = StateDisabled;
 		SetArenaCapEnableTime(60.0);
-		SetPawnTimer(EnableCap, 71.0, gamemode.bDoors);
+		//SetPawnTimer(EnableCap, 71.0, gamemode.bDoors);
 		return Plugin_Continue;
 	} else if( gamemode.iRoundCount <= 0 && !cvarVSH2[FirstRound].BoolValue ) {
 		CPrintToChatAll("{olive}[VSH 2]{default} Normal Round while Everybody is Loading");
 		gamemode.iRoundState = StateDisabled;
 		SetArenaCapEnableTime(60.0);
-		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 1);
-		SetConVarInt(FindConVar("mp_forceautoteam"), 1);
-		SetPawnTimer(EnableCap, 71.0, gamemode.bDoors);
+		FindConVar("mp_teams_unbalance_limit").IntValue = 1;
+		FindConVar("mp_forceautoteam").IntValue = 1;
+		//SetPawnTimer(EnableCap, 71.0, gamemode.bDoors);
 		return Plugin_Continue;
 	}
 	
@@ -427,6 +427,7 @@ public Action PointCapture(Event event, const char[] name, bool dontBroadcast)
 	}
 	_SetCapOwner(VSH2Team_Neutral, gamemode.bDoors); /// in stocks.inc
 	
+	/// TODO: replace index string with BaseBoss array + size.
 	char sCappers[MAXPLAYERS+1];
 	event.GetString("cappers", sCappers, MAXPLAYERS);
 	ManageOnBossCap(sCappers, iCapTeam);

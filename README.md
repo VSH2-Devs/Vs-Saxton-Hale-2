@@ -2,7 +2,7 @@
 
 #### Current STABLE Version: *2.0.5*
 [![Master Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=master)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
-#### Current DEVELOPMENT Version: *2.3.13*
+#### Current DEVELOPMENT Version: *2.3.14*
 [![Develop Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=develop)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
 ======
 VSH2 is rewrite of VSH1. VSH1 and FF2 both had a very bad code framework using shoddy, hacky coding. I could even go as far to say they probably had no framework at all and even no real structure to its code.

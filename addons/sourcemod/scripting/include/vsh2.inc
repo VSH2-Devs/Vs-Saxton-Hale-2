@@ -264,6 +264,7 @@ enum { /// VSH2HookType
 	OnBossTakeFallDamage,
 	OnBossGiveRage,
 	OnBossCalcHealth,
+	OnBossTakeDamage_OnTriggerHurt,
 	OnRedPlayerThink
 };
 
@@ -339,6 +340,7 @@ typeset VSH2HookCB {
 	 * OnBossTakeDamage_OnHolidayPunch -> boss is hit with the Holiday Punch HWG melee.
 	 * OnBossAirShotProj -> when a boss was airshotted by a projectile.
 	 * OnBossTakeFallDamage
+	 * OnBossTakeDamage_OnTriggerHurt
 	 */
 	function Action (VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom);
 	

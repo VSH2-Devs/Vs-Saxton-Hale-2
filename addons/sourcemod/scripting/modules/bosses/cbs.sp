@@ -210,10 +210,10 @@ public void AddCBSToDownloads()
 	
 	for( i=1; i <= 25; i++ ) {
 		if( i <= 9 ) {
-			Format(s, PLATFORM_MAX_PATH, "%s%02i.mp3", CBS2, i);
+			Format(s, PLATFORM_MAX_PATH, "%s%i.mp3", CBS2, i);
 			PrecacheSound(s, true);
 		}
-		Format(s, PLATFORM_MAX_PATH, "%s%02i.mp3", CBS4, i);
+		Format(s, PLATFORM_MAX_PATH, "%s%i.mp3", CBS4, i);
 		PrecacheSound(s, true);
 	}
 	PrecacheSound("vo/sniper_dominationspy04.mp3", true);

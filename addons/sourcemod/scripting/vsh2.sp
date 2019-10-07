@@ -25,7 +25,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.3.13"
+#define PLUGIN_VERSION       "2.3.14"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -343,7 +343,7 @@ public void OnPluginStart()
 	cvarVSH2[HHHClimbVelocity] = CreateConVar("vsh2_hhh_climb_velocity", "600.0", "in hammer units, how high of a velocity HHH Jr. will climb.", FCVAR_NONE, true, 0.0, true, 9999.0);
 	cvarVSH2[SniperClimbVelocity] = CreateConVar("vsh2_sniper_climb_velocity", "600.0", "in hammer units, how high of a velocity sniper melees will climb.", FCVAR_NONE, true, 0.0, false);
 	cvarVSH2[ShowBossHPLiving] = CreateConVar("vsh2_show_boss_hp_alive_players", "1", "How many players must be alive for total boss hp to show.", FCVAR_NONE, true, 1.0, true, 64.0);
-	cvarVSH2[HHHTeleCooldown] = CreateConVar("vsh2_hhh_tele_cooldown", "-1100.0", "Teleportation cooldown for HHH Jr. after teleporting.", FCVAR_NONE, true, -999999.0, true, 25.0);
+	cvarVSH2[HHHTeleCooldown] = CreateConVar("vsh2_hhh_tele_cooldown", "-1100.0", "Teleportation cooldown for HHH Jr. after teleporting. formula is '-seconds * 25' so -1100.0 is 44 seconds", FCVAR_NONE, true, -999999.0, true, 25.0);
 	
 #if defined _steamtools_included
 	gamemode.bSteam = LibraryExists("SteamTools");
