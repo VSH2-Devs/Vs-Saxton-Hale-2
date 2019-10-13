@@ -1,26 +1,17 @@
 /**
-ALL NON-BOSS AND NON-MINION RELATED CODE IS AT THE BOTTOM. HAVE FUN CODING!
+	ALL NON-BOSS AND NON-MINION RELATED CODE IS AT THE BOTTOM. HAVE FUN CODING!
 */
 
 
-/** When you add custom Bosses into the plugin, add to the anonymous enum as the Boss' ID */
-enum /* Bosses */ {
-	Hale = 0,
-	Vagineer = 1,
-	CBS = 2,
-	HHHjr = 3,
-	Bunny = 4,
-};
-
-#define MAXBOSS    Bunny + (g_hBossesRegistered.Length)
+#define MAXBOSS    (MaxDefaultVSH2Bosses - 1) + (g_hBossesRegistered.Length)
 
 #include "modules/bosses.sp"
 
 /**
-PLEASE REMEMBER THAT PLAYERS THAT DON'T HAVE THEIR BOSS ID'S SET ARE NOT BOSSES.
-THIS PLUGIN HAS BEEN SETUP SO THAT IF YOU BECOME A BOSS, YOU MUST HAVE A VALID BOSS ID
-
-FOR MANAGEMENT FUNCTIONS, DO NOT HAVE THEM DISCRIMINATE WHO IS A BOSS OR NOT, SIMPLY CHECK THE ITYPE TO SEE IF IT REALLY WAS A BOSS PLAYER.
+	PLEASE REMEMBER THAT PLAYERS THAT DON'T HAVE THEIR BOSS ID'S SET ARE NOT ACTUAL BOSSES.
+	THIS PLUGIN HAS BEEN SETUP SO THAT IF YOU BECOME A BOSS, YOU MUST HAVE A VALID BOSS ID.
+	
+	FOR MANAGEMENT FUNCTIONS, DO NOT HAVE THEM DISCRIMINATE WHO IS A BOSS OR NOT, SIMPLY CHECK 'iBossType' TO SEE IF IT REALLY WAS A BOSS PLAYER.
 */
 
 
@@ -147,7 +138,7 @@ public void ManageOnBossSelected(const BaseBoss base)
 	if( extraBosses > cvarVSH2[MaxRandomMultiBosses].IntValue )
 		extraBosses = cvarVSH2[MaxRandomMultiBosses].IntValue;
 	while( extraBosses-- > 0 )
-		gamemode.FindNextBoss().MakeBossAndSwitch(GetRandomInt(Hale, MAXBOSS), false);
+		gamemode.FindNextBoss().MakeBossAndSwitch(GetRandomInt(VSH2Boss_Hale, MAXBOSS), false);
 }
 
 public Action ManageOnTouchPlayer(const BaseBoss base, const BaseBoss victim)
@@ -164,11 +155,11 @@ public void ManageBossHelp(const BaseBoss base)
 {
 	switch( base.iBossType ) {
 		case -1: {}
-		case Hale:		ToCHale(base).Help();
-		case Vagineer:		ToCVagineer(base).Help();
-		case CBS:		ToCChristian(base).Help();
-		case HHHjr:		ToCHHHJr(base).Help();
-		case Bunny:		ToCBunny(base).Help();
+		case VSH2Boss_Hale:		ToCHale(base).Help();
+		case VSH2Boss_Vagineer:		ToCVagineer(base).Help();
+		case VSH2Boss_CBS:		ToCChristian(base).Help();
+		case VSH2Boss_HHHjr:		ToCHHHJr(base).Help();
+		case VSH2Boss_Bunny:		ToCBunny(base).Help();
 	}
 }
 
@@ -183,11 +174,11 @@ public void ManageBossThink(const BaseBoss base)
 	
 	switch( base.iBossType ) {
 		case -1: {}
-		case Hale:		ToCHale(base).Think();
-		case Vagineer:		ToCVagineer(base).Think();
-		case CBS:		ToCChristian(base).Think();
-		case HHHjr:		ToCHHHJr(base).Think();
-		case Bunny:		ToCBunny(base).Think();
+		case VSH2Boss_Hale:		ToCHale(base).Think();
+		case VSH2Boss_Vagineer:		ToCVagineer(base).Think();
+		case VSH2Boss_CBS:		ToCChristian(base).Think();
+		case VSH2Boss_HHHjr:		ToCHHHJr(base).Think();
+		case VSH2Boss_Bunny:		ToCBunny(base).Think();
 	}
 }
 
@@ -199,11 +190,11 @@ public void ManageBossModels(const BaseBoss base)
 	
 	switch( base.iBossType ) {
 		case -1: {}
-		case Hale:		ToCHale(base).SetModel();
-		case Vagineer:		ToCVagineer(base).SetModel();
-		case CBS:		ToCChristian(base).SetModel();
-		case HHHjr:		ToCHHHJr(base).SetModel();
-		case Bunny:		ToCBunny(base).SetModel();
+		case VSH2Boss_Hale:		ToCHale(base).SetModel();
+		case VSH2Boss_Vagineer:		ToCVagineer(base).SetModel();
+		case VSH2Boss_CBS:		ToCChristian(base).SetModel();
+		case VSH2Boss_HHHjr:		ToCHHHJr(base).SetModel();
+		case VSH2Boss_Bunny:		ToCBunny(base).SetModel();
 	}
 }
 
@@ -215,11 +206,11 @@ public void ManageBossDeath(const BaseBoss base)
 	
 	switch( base.iBossType ) {
 		case -1: {}
-		case Hale:		ToCHale(base).Death();
-		case Vagineer:		ToCVagineer(base).Death();
-		case CBS:		ToCChristian(base).Death();
-		case HHHjr:		ToCHHHJr(base).Death();
-		case Bunny:		ToCBunny(base).Death();
+		case VSH2Boss_Hale:		ToCHale(base).Death();
+		case VSH2Boss_Vagineer:		ToCVagineer(base).Death();
+		case VSH2Boss_CBS:		ToCChristian(base).Death();
+		case VSH2Boss_HHHjr:		ToCHHHJr(base).Death();
+		case VSH2Boss_Bunny:		ToCBunny(base).Death();
 	}
 	gamemode.iHealthBarState = !gamemode.iHealthBarState;
 }
@@ -232,11 +223,11 @@ public void ManageBossEquipment(const BaseBoss base)
 		
 	switch( base.iBossType ) {
 		case -1: {}
-		case Hale:		ToCHale(base).Equip();
-		case Vagineer:		ToCVagineer(base).Equip();
-		case CBS:		ToCChristian(base).Equip();
-		case HHHjr:		ToCHHHJr(base).Equip();
-		case Bunny:		ToCBunny(base).Equip();
+		case VSH2Boss_Hale:		ToCHale(base).Equip();
+		case VSH2Boss_Vagineer:		ToCVagineer(base).Equip();
+		case VSH2Boss_CBS:		ToCChristian(base).Equip();
+		case VSH2Boss_HHHjr:		ToCHHHJr(base).Equip();
+		case VSH2Boss_Bunny:		ToCBunny(base).Equip();
 	}
 }
 
@@ -245,13 +236,13 @@ public void ManageBossTransition(const BaseBoss base)
 {
 	switch( base.iBossType ) {
 		case -1: {}
-		case Hale:
+		case VSH2Boss_Hale:
 			TF2_SetPlayerClass(base.index, TFClass_Soldier, _, false);
-		case Vagineer:
+		case VSH2Boss_Vagineer:
 			TF2_SetPlayerClass(base.index, TFClass_Engineer, _, false);
-		case CBS:
+		case VSH2Boss_CBS:
 			TF2_SetPlayerClass(base.index, TFClass_Sniper, _, false);
-		case HHHjr, Bunny:
+		case VSH2Boss_HHHjr, VSH2Boss_Bunny:
 			TF2_SetPlayerClass(base.index, TFClass_DemoMan, _, false);
 	}
 	ManageBossModels(base);
@@ -304,11 +295,11 @@ public void ManagePlayBossIntro(const BaseBoss base)
 	
 	switch( base.iBossType ) {
 		case -1: {}
-		case Hale:	ToCHale(base).PlaySpawnClip();
-		case Vagineer:	ToCVagineer(base).PlaySpawnClip();
-		case CBS:	ToCChristian(base).PlaySpawnClip();
-		case HHHjr:	ToCHHHJr(base).PlaySpawnClip();
-		case Bunny:	ToCBunny(base).PlaySpawnClip();
+		case VSH2Boss_Hale:	ToCHale(base).PlaySpawnClip();
+		case VSH2Boss_Vagineer:	ToCVagineer(base).PlaySpawnClip();
+		case VSH2Boss_CBS:	ToCChristian(base).PlaySpawnClip();
+		case VSH2Boss_HHHjr:	ToCHHHJr(base).PlaySpawnClip();
+		case VSH2Boss_Bunny:	ToCBunny(base).PlaySpawnClip();
 	}
 }
 
@@ -329,7 +320,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					victim.TeleToSpawn(VSH2Team_Boss);
 				/// TODO: add cvar for trigger_hurt threshold
 				else if( damage >= 200.0 ) {
-					if( victim.iBossType==HHHjr )
+					if( victim.iBossType==VSH2Boss_HHHjr )
 						victim.flCharge = HALEHHH_TELEPORTCHARGE;
 					else victim.bSuperCharge = true;
 				}
@@ -411,10 +402,10 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				
 				if( Call_OnBossTakeDamage_OnStabbed(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
 					switch( victim.iBossType ) {
-						case Hale:      ToCHale(victim).Stabbed();
-						case Vagineer:  ToCVagineer(victim).Stabbed();
-						case HHHjr:     ToCHHHJr(victim).Stabbed();
-						case Bunny:     ToCBunny(victim).Stabbed();
+						case VSH2Boss_Hale:      ToCHale(victim).Stabbed();
+						case VSH2Boss_Vagineer:  ToCVagineer(victim).Stabbed();
+						case VSH2Boss_HHHjr:     ToCHHHJr(victim).Stabbed();
+						case VSH2Boss_Bunny:     ToCBunny(victim).Stabbed();
 					}
 					return Plugin_Changed;
 				}
@@ -928,15 +919,15 @@ public void ManageBossKillPlayer(const BaseBoss attacker, const BaseBoss victim,
 	if( attacker.bIsBoss ) {
 		switch( attacker.iBossType ) {
 			case -1: {}
-			case Hale: {
+			case VSH2Boss_Hale: {
 				if( deathflags & TF_DEATHFLAG_DEADRINGER )
 					event.SetString("weapon", "fists");
 				else ToCHale(attacker).KilledPlayer(victim, event);
 			}
-			case Vagineer:	ToCVagineer(attacker).KilledPlayer(victim, event);
-			case CBS:	ToCChristian(attacker).KilledPlayer(victim, event);
-			case HHHjr:	ToCHHHJr(attacker).KilledPlayer(victim, event);
-			case Bunny:	ToCBunny(attacker).KilledPlayer(victim, event);
+			case VSH2Boss_Vagineer:	ToCVagineer(attacker).KilledPlayer(victim, event);
+			case VSH2Boss_CBS:	ToCChristian(attacker).KilledPlayer(victim, event);
+			case VSH2Boss_HHHjr:	ToCHHHJr(attacker).KilledPlayer(victim, event);
+			case VSH2Boss_Bunny:	ToCBunny(attacker).KilledPlayer(victim, event);
 		}
 	}
 }
@@ -951,7 +942,7 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 	int weapon = event.GetInt("weaponid");
 	switch( victim.iBossType ) {
 		case -1: {}
-		case Hale, Vagineer, CBS, HHHjr, Bunny: {
+		case VSH2Boss_Hale, VSH2Boss_Vagineer, VSH2Boss_CBS, VSH2Boss_HHHjr, VSH2Boss_Bunny: {
 			victim.GiveRage(damage);
 		}
 	}
@@ -1055,9 +1046,9 @@ public void ManagePlayerAirblast(const BaseBoss airblaster, const BaseBoss airbl
 	
 	switch( airblasted.iBossType ) {
 		case -1: {}
-		case Hale, CBS, HHHjr, Bunny:
+		case VSH2Boss_Hale, VSH2Boss_CBS, VSH2Boss_HHHjr, VSH2Boss_Bunny:
 			airblasted.flRAGE += cvarVSH2[AirblastRage].FloatValue;
-		case Vagineer: {
+		case VSH2Boss_Vagineer: {
 			if( TF2_IsPlayerInCondition(airblasted.index, TFCond_Ubercharged) ) {
 				float dur = GetConditionDuration(airblasted.index, TFCond_Ubercharged);
 				SetConditionDuration(airblasted.index, TFCond_Ubercharged, dur + 2.0 < VAG_UBER_TIME ? dur + 2.0 : VAG_UBER_TIME);
@@ -1080,13 +1071,13 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3
 	BaseBoss base = BaseBoss(client);
 	switch( base.iBossType ) {
 		case -1: {}
-		case Bunny: {
+		case VSH2Boss_Bunny: {
 			if( GetPlayerWeaponSlot(client, TFWeaponSlot_Primary) == GetActiveWep(client) ) {
 				buttons &= ~IN_ATTACK;
 				return Plugin_Changed;
 			}
 		}
-		case HHHjr: {
+		case VSH2Boss_HHHjr: {
 			if( base.flCharge >= 47.0 && (buttons & IN_ATTACK) ) {
 				buttons &= ~IN_ATTACK;
 				return Plugin_Changed;
@@ -1116,7 +1107,7 @@ public void ManageBossMedicCall(const BaseBoss base)
 	
 	switch( base.iBossType ) {
 		case -1: {}
-		case Hale, Vagineer, CBS, HHHjr, Bunny: {
+		case VSH2Boss_Hale, VSH2Boss_Vagineer, VSH2Boss_CBS, VSH2Boss_HHHjr, VSH2Boss_Bunny: {
 			if( base.flRAGE < 100.0 )
 				return;
 			DoTaunt(base.index, "", 0);
@@ -1132,11 +1123,11 @@ public void ManageBossTaunt(const BaseBoss base)
 	
 	switch( base.iBossType ) {
 		case -1: {}
-		case Hale:	ToCHale(base).RageAbility();
-		case Vagineer:	ToCVagineer(base).RageAbility();
-		case CBS:	ToCChristian(base).RageAbility();
-		case HHHjr:	ToCHHHJr(base).RageAbility();
-		case Bunny:	ToCBunny(base).RageAbility();
+		case VSH2Boss_Hale:	ToCHale(base).RageAbility();
+		case VSH2Boss_Vagineer:	ToCVagineer(base).RageAbility();
+		case VSH2Boss_CBS:	ToCChristian(base).RageAbility();
+		case VSH2Boss_HHHjr:	ToCHHHJr(base).RageAbility();
+		case VSH2Boss_Bunny:	ToCBunny(base).RageAbility();
 	}
 }
 public void ManageBuildingDestroyed(const BaseBoss base, const int building, const int objecttype, Event event)
@@ -1147,7 +1138,7 @@ public void ManageBuildingDestroyed(const BaseBoss base, const int building, con
 	
 	switch( base.iBossType ) {
 		case -1: {}
-		case Hale: {
+		case VSH2Boss_Hale: {
 			event.SetString("weapon", "fists");
 			ToCHale(base).KillToy();
 		}
@@ -1161,7 +1152,7 @@ public void ManagePlayerJarated(const BaseBoss attacker, const BaseBoss victim)
 	
 	switch( victim.iBossType ) {
 		case -1: {}
-		case Hale, Vagineer, CBS, HHHjr, Bunny:
+		case VSH2Boss_Hale, VSH2Boss_Vagineer, VSH2Boss_CBS, VSH2Boss_HHHjr, VSH2Boss_Bunny:
 			victim.flRAGE -= cvarVSH2[JarateRage].FloatValue;
 	}
 }
@@ -1173,11 +1164,11 @@ public Action HookSound(int clients[64], int& numClients, char sample[PLATFORM_M
 	BaseBoss base = BaseBoss(entity);
 	switch( base.iBossType ) {
 		case -1: {}
-		case Hale: {
+		case VSH2Boss_Hale: {
 			if( !strncmp(sample, "vo", 2, false) )
 				return Plugin_Handled;
 		}
-		case Vagineer: {
+		case VSH2Boss_Vagineer: {
 			if( StrContains(sample, "vo/engineer_laughlong01", false) != -1 ) {
 				strcopy(sample, PLATFORM_MAX_PATH, VagineerKSpree);
 				return Plugin_Changed;
@@ -1196,7 +1187,7 @@ public Action HookSound(int clients[64], int& numClients, char sample[PLATFORM_M
 			}
 			else return Plugin_Continue;
 		}
-		case HHHjr: {
+		case VSH2Boss_HHHjr: {
 			if( !strncmp(sample, "vo", 2, false) ) {
 				if( GetRandomInt(0, 30) <= 10 ) {
 					Format(sample, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHLaught, GetRandomInt(1, 4));
@@ -1206,7 +1197,7 @@ public Action HookSound(int clients[64], int& numClients, char sample[PLATFORM_M
 					return Plugin_Handled;
 			}
 		}
-		case Bunny: {
+		case VSH2Boss_Bunny: {
 			if( StrContains(sample, "gibberish", false) == -1
 				&& StrContains(sample, "burp", false) == -1
 				&& !GetRandomInt(0, 2) ) /// Do sound things
@@ -1228,7 +1219,7 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 	if( base.bIsBoss ) {
 		switch( base.iBossType ) {
 			case -1: {}
-			case HHHjr: {
+			case VSH2Boss_HHHjr: {
 				if( base.iClimbs < cvarVSH2[HHHMaxClimbs].IntValue ) {
 					if( base.ClimbWall(weapon, cvarVSH2[HHHClimbVelocity].FloatValue, 0.0, false) ) {
 						base.flWeighDown = 0.0;
@@ -1354,7 +1345,7 @@ public void OnEggBombSpawned(int entity)
 {
 	int owner = GetOwner(entity);
 	BaseBoss boss = BaseBoss(owner);
-	if( IsClientValid(owner) && boss.bIsBoss && boss.iBossType == Bunny )
+	if( IsClientValid(owner) && boss.bIsBoss && boss.iBossType == VSH2Boss_Bunny )
 		CreateTimer(0.0, Timer_SetEggBomb, EntIndexToEntRef(entity), TIMER_FLAG_NO_MAPCHANGE);
 }
 public void OnCleaverSpawned(int entity)
@@ -1398,11 +1389,11 @@ public void ManageMusic(char song[PLATFORM_MAX_PATH], float& time)
 	else if( currBoss ) {
 		switch( currBoss.iBossType ) {
 			case -1: {song = ""; time = -1.0;}
-			case CBS: {
+			case VSH2Boss_CBS: {
 				strcopy(song, sizeof(song), CBSTheme);
 				time = 140.0;
 			}
-			case HHHjr: {
+			case VSH2Boss_HHHjr: {
 				strcopy(song, sizeof(song), HHHTheme);
 				time = 90.0;
 			}
@@ -1441,9 +1432,9 @@ public void ManageRoundEndBossInfo(ArrayList bosses, bool bossWon)
 		if( bossWon ) {
 			switch( base.iBossType ) {
 				case -1: {}
-				case Vagineer:	ToCVagineer(base).PlayWinSound();
-				case Bunny:	ToCBunny(base).PlayWinSound();
-				case Hale:	ToCHale(base).PlayWinSound();
+				case VSH2Boss_Vagineer:	ToCVagineer(base).PlayWinSound();
+				case VSH2Boss_Bunny:	ToCBunny(base).PlayWinSound();
+				case VSH2Boss_Hale:	ToCHale(base).PlayWinSound();
 			}
 		}
 	}
@@ -1466,10 +1457,10 @@ public void ManageLastPlayer()
 	
 	switch( currBoss.iBossType ) {
 		case -1: {}
-		case Hale:	ToCHale(currBoss).LastPlayerSoundClip();
-		case Vagineer:	ToCVagineer(currBoss).LastPlayerSoundClip();
-		case CBS:	ToCChristian(currBoss).LastPlayerSoundClip();
-		case Bunny:	ToCBunny(currBoss).LastPlayerSoundClip();
+		case VSH2Boss_Hale:      ToCHale(currBoss).LastPlayerSoundClip();
+		case VSH2Boss_Vagineer:  ToCVagineer(currBoss).LastPlayerSoundClip();
+		case VSH2Boss_CBS:       ToCChristian(currBoss).LastPlayerSoundClip();
+		case VSH2Boss_Bunny:     ToCBunny(currBoss).LastPlayerSoundClip();
 	}
 }
 public void ManageBossCheckHealth(const BaseBoss base)
@@ -1513,7 +1504,7 @@ public void ManageBossCheckHealth(const BaseBoss base)
 			totalHealth += boss.iHealth;
 		}
 		PrintCenterTextAll(gameMessage);
-		CPrintToChatAll("{olive}[VSH 2] Boss Health Check{default} %s", gameMessage);
+		CPrintToChatAll("{olive}[VSH 2] {axis}Boss Health Check{default} %s", gameMessage);
 		LastBossTotalHealth = totalHealth;
 		gamemode.flHealthTime = currtime + ((gamemode.iHealthChecks < 3) ? 10.0 : 60.0);
 	} else {
@@ -1797,8 +1788,8 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		}
 		case 415: {	/// reserve shooter
 			if( TF2_GetPlayerClass(client)==TFClass_Soldier )
-				hItemOverride = PrepareItemHandle(hItemCast, _, _, "135 ; 0.7 ; 179; 1; 114; 1.0; 178; 0.6; 2; 1.1; 3; 0.66", true);
-			else hItemOverride = PrepareItemHandle(hItemCast, _, _, "179; 1; 114; 1.0; 178; 0.6; 2; 1.1; 3; 0.66", true);
+				hItemOverride = PrepareItemHandle(hItemCast, _, _, "135 ; 0.7 ; 179; 1.0; 2; 1.1");
+			else hItemOverride = PrepareItemHandle(hItemCast, _, _, "179; 1.0; 2; 1.1");
 		}
 		case 405, 608: {	/// Demo boots have falling stomp damage
 			hItemOverride = PrepareItemHandle(hItemCast, _, _, "259; 1; 252; 0.25");
@@ -1848,6 +1839,14 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		/// Hot Hand
 		case 1181: {
 			hItemOverride = PrepareItemHandle(hItemCast, _, _, "877 ; 2.0");
+		}
+		/// Short Circuit
+		case 528: {
+			hItemOverride = PrepareItemHandle(hItemCast, _, _, "2 ; 4.0; 299 ; 40.0");
+		}
+		/// Southern Hospitality
+		case 155: {
+			hItemOverride = PrepareItemHandle(hItemCast, _, _, "264 ; 1.5; 263 ; 1.55");
 		}
 	}
 	if( hItemOverride != null ) {
@@ -1899,7 +1898,7 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 	if( !strncmp(classname, "tf_weapon_minigun", 17, false) ) {
 		switch( iItemDefinitionIndex ) {
 			case 41: /// Natascha
-				hItemOverride = PrepareItemHandle(hItemCast, _, _, "76; 1.5", true);
+				hItemOverride = PrepareItemHandle(hItemCast, _, _, "", true);
 			default: hItemOverride = PrepareItemHandle(hItemCast, _, _, "233; 1.15");
 		}
 	}
@@ -2101,8 +2100,8 @@ public void ManageFighterThink(const BaseBoss fighter)
 	
 	/// Specific weapon crit list
 	switch( index ) {
-		/// Holiday Punch
-		case 656: {
+		/// Holiday Punch, Short Circuit
+		case 656, 528: {
 			addthecrit = true;
 			cond = TFCond_Buffed;
 		}

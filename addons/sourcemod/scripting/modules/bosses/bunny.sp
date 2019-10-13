@@ -291,7 +291,8 @@ public void AddBunnyToDownloads()
 
 public void AddBunnyToMenu(Menu& menu)
 {
-	menu.AddItem("4", "Easter Bunny Demoman");
+	char bossid[5]; IntToString(VSH2Boss_Bunny, bossid, sizeof(bossid));
+	menu.AddItem(bossid, "Easter Bunny Demoman");
 }
 
 stock void SpawnManyAmmoPacks(const int client, const char[] model, int skin=0, int num=14, float offsz = 30.0)

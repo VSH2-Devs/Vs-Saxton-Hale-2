@@ -25,7 +25,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.3.15"
+#define PLUGIN_VERSION       "2.3.16"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -389,10 +389,10 @@ public void OnPluginStart()
 		OnClientPutInServer(i);
 	}
 	
-	AddMultiTargetFilter("@boss", HaleTargetFilter, "the current Boss/Bosses", false);
-	AddMultiTargetFilter("@hale", HaleTargetFilter, "the current Boss/Bosses", false);
-	AddMultiTargetFilter("@minion", MinionTargetFilter, "the Minions", false);
-	AddMultiTargetFilter("@minions", MinionTargetFilter, "the Minions", false);
+	AddMultiTargetFilter("@boss", HaleTargetFilter, "all Bosses", false);
+	AddMultiTargetFilter("@hale", HaleTargetFilter, "all Bosses", false);
+	AddMultiTargetFilter("@minion", MinionTargetFilter, "all Minions", false);
+	AddMultiTargetFilter("@minions", MinionTargetFilter, "all Minions", false);
 	AddMultiTargetFilter("@!boss", HaleTargetFilter, "all non-Boss players", false);
 	AddMultiTargetFilter("@!hale", HaleTargetFilter, "all non-Boss players", false);
 	AddMultiTargetFilter("@!minion", MinionTargetFilter, "all non-Minions", false);
@@ -760,7 +760,7 @@ public Action Timer_PlayerThink(Handle hTimer)
 public Action CmdReloadCFG(int client, int args)
 {
 	ServerCommand("sm_rcon exec sourcemod/VSHv2.cfg");
-	CReplyToCommand(client, "**** {olive}Reloaded VSH 2 ConVar Config{default} ****");
+	CReplyToCommand(client, "{olive}[VSH 2]{default} **** Reloaded ConVar Config ****");
 	return Plugin_Handled;
 }
 
@@ -1103,13 +1103,36 @@ public void _MusicPlay()
 	}
 }
 
+
+int GetRandomBossType(int[] boss_filter, int filter_size=0)
+{
+	int bosses_size = MAXBOSS + 1;
+	int[] bosses = new int[bosses_size];
+	
+	int count;
+	for( int i; i<MAXBOSS; i++ ) {
+		bool filtered;
+		for( int n; n<filter_size; n++ ) {
+			if( boss_filter[n] >= bosses_size )
+				continue;
+			else if( boss_filter[n]==i ) {
+				filtered = true;
+				break;
+			}
+		}
+		if( !filtered )
+			bosses[count++] = i;
+	}
+	return bosses[GetRandomInt(0, count)];
+}
+
 public int RegisterBoss(const char modulename[MAX_BOSS_NAME_SIZE])
 {
 	if( !ValidateName(modulename) ) {
-		LogError("VSH2 :: Boss Registrar: **** Invalid Name For Plugin Registration ****");
+		LogError("VSH2 :: Boss Registrar: **** Invalid Name For Boss Module: '%s' ****", modulename);
 		return -1;
 	} else if( g_hBossesRegistered.FindString(modulename) != -1 ) {
-		LogError("VSH2 :: Boss Registrar: **** Plugin Already Registered ****");
+		LogError("VSH2 :: Boss Registrar: **** Plugin '%s' Already Registered ****", modulename);
 		return -1;
 	}
 	g_hBossesRegistered.PushString(modulename);
@@ -1125,6 +1148,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	
 	CreateNative("VSH2_Unhook", Native_Unhook);
 	CreateNative("VSH2_UnhookEx", Native_UnhookEx);
+	CreateNative("VSH2_GetRandomBossType", Native_GetRandomBossType);
 	
 	CreateNative("VSH2Player.VSH2Player", Native_VSH2Instance);
 	
@@ -1134,7 +1158,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2Player.GetProperty", Native_VSH2_getProperty);
 	CreateNative("VSH2Player.SetProperty", Native_VSH2_setProperty);
 	
-	// type safe versions of VSH2Player::GetProperty & VSH2Player::SetProperty.
+	/// type safe versions of VSH2Player::GetProperty & VSH2Player::SetProperty.
 	CreateNative("VSH2Player.GetPropInt", Native_VSH2_getIntProp);
 	CreateNative("VSH2Player.GetPropFloat", Native_VSH2_getFloatProp);
 	CreateNative("VSH2Player.GetPropAny", Native_VSH2_getProperty);
@@ -1320,6 +1344,14 @@ public int Native_UnhookEx(Handle plugin, int numParams)
 	if( g_hForwards[vsh2Hook] != null )
 		return g_hForwards[vsh2Hook].Remove(plugin, GetNativeFunction(2));
 	return 0;
+}
+
+public int Native_GetRandomBossType(Handle plugin, int numParams)
+{
+	int filter_size = GetNativeCell(2);
+	int[] filter = new int[filter_size];
+	GetNativeArray(1, filter, filter_size);
+	return GetRandomBossType(filter, filter_size);
 }
 
 

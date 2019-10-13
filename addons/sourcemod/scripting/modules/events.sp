@@ -296,7 +296,6 @@ public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 		if( !boss.bIsBoss )
 			continue;
 		
-		boss.iQueue = 0;
 		if( !IsPlayerAlive(i) ) {
 			if( GetClientTeam(i) != VSH2Team_Boss )
 				boss.ForceTeamChange(VSH2Team_Boss);
@@ -370,6 +369,7 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 		if( !boss.bIsBoss )
 			continue;
 		
+		boss.iQueue = 0;
 		bosses.Push(boss);
 		if( !IsPlayerAlive(i) )
 			TF2_RespawnPlayer(i);

@@ -192,7 +192,8 @@ public void AddPlagueDocToDownloads()
 
 public void AddPlagueToMenu(Menu& menu)
 {
-	menu.AddItem("6", "Plague Doctor");
+	//char bossid[5]; IntToString(VSH2Boss_PlagueDoc, bossid, sizeof(bossid));
+	//menu.AddItem(bossid, "Plague Doctor");
 }
 
 

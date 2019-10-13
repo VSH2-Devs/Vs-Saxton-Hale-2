@@ -444,7 +444,7 @@ methodmap VSHGameMode { /* < StringMap */
 			if( this.iSpecial > MAXBOSS )
 				this.iSpecial = MAXBOSS;
 		}
-		else this.iSpecial = GetRandomInt(Hale, MAXBOSS);
+		else this.iSpecial = GetRandomInt(VSH2Boss_Hale, MAXBOSS);
 	}
 	/// just use arena maps as vsh/ff2 maps
 	public bool IsVSHMap()

@@ -4,18 +4,16 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.3.15"
+			"Latest"	"2.3.16"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.15:"
-		"Notes"	"Removed useless plugin handle storing when registering boss modules."
-		"Notes"	"Renamed the boss module arraylist."
-		"Notes"	"Removed pointless functions for retrieving plugin handles from."
-		"Notes"	"Changed public plugin name information."
-		"Notes"	"Moved zeroing boss queue to end of round event instead of setting it when tallying scores and queue points."
-		"Notes"	"Removed 'iSubBossType' property."
-		"Notes"	"Added cvar to control the max limit for randomized multibosses."
-		"Notes"	"Added 10 second uber cap for Vagineer."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.16:"
+		"Notes"	"Added new native: 'GetRandomBossType' which has an optional boss filter."
+		"Notes"	"Moved Boss ID enum to vsh2.inc and renamed the enum Boss IDs to have 'VSH2Boss_' prefix."
+		"Notes"	"Replaced boss menu id's with a maintainable integer id to string mechanism."
+		"Notes"	"Moved Boss Queue resetting to the very start of the round when boss status is confirmed."
+		"Notes"	"Short Circuit changes: metal on successful zap, permanent minicrits, and 4x damage buff."
+		"Notes"	"Southern Hospitality changes: increased melee range."
 	}
 	
 	"Files"

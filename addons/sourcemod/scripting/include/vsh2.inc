@@ -21,6 +21,15 @@ enum { /** VSH2 Teams */
 	VSH2Team_Boss
 };
 
+enum /** VSH2 Default Bosses */ {
+	VSH2Boss_Hale,
+	VSH2Boss_Vagineer,
+	VSH2Boss_CBS,
+	VSH2Boss_HHHjr,
+	VSH2Boss_Bunny,
+	MaxDefaultVSH2Bosses,
+};
+
 
 enum { /** Voice Clip Flags */
 	VSH2_VOICE_BOSSENT = 1, /// use boss as entity to emit from.
@@ -415,7 +424,7 @@ native void VSH2_Unhook(const int callbacktype, VSH2HookCB callback);
 native bool VSH2_UnhookEx(const int callbacktype, VSH2HookCB callback);
 
 native int VSH2_GetMaxBosses();
-
+native int VSH2_GetRandomBossType(int[] boss_filter, int filter_size=0);
 
 
 native any VSH2GameMode_GetProperty(const char prop_name[64]);
@@ -558,6 +567,7 @@ public void __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2_Unhook");
 	MarkNativeAsOptional("VSH2_UnhookEx");
 	MarkNativeAsOptional("VSH2_GetMaxBosses");
+	MarkNativeAsOptional("VSH2_GetRandomBossType");
 	
 	MarkNativeAsOptional("VSH2GameMode_GetProperty");
 	MarkNativeAsOptional("VSH2GameMode_SetProperty");

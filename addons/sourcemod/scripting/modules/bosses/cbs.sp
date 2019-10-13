@@ -2,7 +2,7 @@
 #define CBSModel		"models/player/saxton_hale/cbs_v4.mdl"
 // #define CBSModelPrefix		"models/player/saxton_hale/cbs_v4"
 
-/// CBS voicelines
+/// Christian Brutal Sniper voicelines
 #define CBS0			"vo/sniper_specialweapon08.mp3"
 #define CBS1			"vo/taunts/sniper_taunts02.mp3"
 #define CBS2			"vo/sniper_award"
@@ -221,5 +221,6 @@ public void AddCBSToDownloads()
 
 public void AddCBSToMenu(Menu& menu)
 {
-	menu.AddItem("2", "Christian Brutal Sniper");
+	char bossid[5]; IntToString(VSH2Boss_CBS, bossid, sizeof(bossid));
+	menu.AddItem(bossid, "Christian Brutal Sniper");
 }

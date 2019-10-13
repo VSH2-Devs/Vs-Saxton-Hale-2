@@ -382,7 +382,8 @@ public void AddHaleToDownloads()
 
 public void AddHaleToMenu(Menu& menu)
 {
-	menu.AddItem("0", "Saxton Hale");
+	char bossid[5]; IntToString(VSH2Boss_Hale, bossid, sizeof(bossid));
+	menu.AddItem(bossid, "Saxton Hale");
 }
 
 public void EnableSG(const int iid)

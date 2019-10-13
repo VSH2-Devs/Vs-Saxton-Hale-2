@@ -241,7 +241,8 @@ public void AddHHHToDownloads()
 
 public void AddHHHToMenu(Menu& menu)
 {
-	menu.AddItem("3", "Horseless Headless Horsemann Jr.");
+	char bossid[5]; IntToString(VSH2Boss_HHHjr, bossid, sizeof(bossid));
+	menu.AddItem(bossid, "Horseless Headless Horsemann Jr.");
 }
 
 public void HHHTeleCollisionReset(const int userid)

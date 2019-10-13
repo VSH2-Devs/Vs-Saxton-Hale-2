@@ -222,5 +222,6 @@ public void AddVagToDownloads()
 
 public void AddVagToMenu(Menu& menu)
 {
-	menu.AddItem("1", "Vagineer");
+	char bossid[5]; IntToString(VSH2Boss_Vagineer, bossid, sizeof(bossid));
+	menu.AddItem(bossid, "Vagineer");
 }
