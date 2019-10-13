@@ -361,10 +361,11 @@ public void fwdOnBossHealthCheck(const VSH2Player player, bool bossBool, char me
 
 public void fwdOnControlPointCapped(char cappers[MAXPLAYERS+1], const int team)
 {
-	for( int i; i<MAXPLAYERS+1; i++ ) {
+	int cappers_len = strlen(cappers);
+	for( int i; i<cappers_len; i++ ) {
 		int client = cappers[i];
 		if( 0 < client <= MaxClients && IsClientInGame(client) )
-			PrintToConsole(client, "fwdOnControlPointCapped:: capper: %N", client);
+			PrintToConsole(client, "fwdOnControlPointCapped:: capper: %i %N", client, client);
 	}
 }
 

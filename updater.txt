@@ -4,12 +4,18 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.3.14"
+			"Latest"	"2.3.15"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.14:"
-		"Notes"	"Commented out timer code that opens up the control in the 2nd round while VSH2 round is going on."
-		"Notes"	"Added OnBossTakeDamage_OnTriggerHurt forward."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.15:"
+		"Notes"	"Removed useless plugin handle storing when registering boss modules."
+		"Notes"	"Renamed the boss module arraylist."
+		"Notes"	"Removed pointless functions for retrieving plugin handles from."
+		"Notes"	"Changed public plugin name information."
+		"Notes"	"Moved zeroing boss queue to end of round event instead of setting it when tallying scores and queue points."
+		"Notes"	"Removed 'iSubBossType' property."
+		"Notes"	"Added cvar to control the max limit for randomized multibosses."
+		"Notes"	"Added 10 second uber cap for Vagineer."
 	}
 	
 	"Files"

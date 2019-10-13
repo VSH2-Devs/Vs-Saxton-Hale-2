@@ -234,7 +234,7 @@ public void PlagueDoc_OnCallDownloads()
 public void PlagueDoc_OnBossMenu(Menu &menu)
 {
 	char tostr[10]; IntToString(g_iPlagueDocID, tostr, sizeof(tostr));
-	menu.AddItem(tostr, "Plague Doctor (Subplugin Boss)");
+	menu.AddItem(tostr, "Plague Doctor (Custom Boss)");
 }
 public void PlagueDoc_OnBossSelected(const VSH2Player player)
 {

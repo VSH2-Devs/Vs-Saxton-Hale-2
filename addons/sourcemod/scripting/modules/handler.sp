@@ -12,7 +12,7 @@ enum /* Bosses */ {
 	Bunny = 4,
 };
 
-#define MAXBOSS    Bunny + (g_hPluginsRegistered.Length)
+#define MAXBOSS    Bunny + (g_hBossesRegistered.Length)
 
 #include "modules/bosses.sp"
 
@@ -79,7 +79,7 @@ public void ManageDisconnect(const int client)
 						continue;
 					if( IsPlayerAlive(bosses[i].index) )
 						break;
-
+					
 					BaseBoss next = gamemode.FindNextBoss();
 					if( gamemode.hNextBoss ) {
 						next = gamemode.hNextBoss;
@@ -89,13 +89,12 @@ public void ManageDisconnect(const int client)
 						next.bIsMinion = true;	/// Dumb hack, prevents spawn hook from forcing them back to red
 						next.ForceTeamChange(VSH2Team_Boss);
 					}
-
+					
 					if( gamemode.iRoundState == StateRunning )
 						ForceTeamWin(VSH2Team_Red);
 					break;
 				}
-			}
-			else {	/// No bosses left
+			} else {	/// No bosses left
 				BaseBoss next = gamemode.FindNextBoss();
 				if( gamemode.hNextBoss ) {
 					next = gamemode.hNextBoss;
@@ -109,8 +108,7 @@ public void ManageDisconnect(const int client)
 				if( gamemode.iRoundState == StateRunning )
 					ForceTeamWin(VSH2Team_Red);
 			}
-		}
-		else if( gamemode.iRoundState == StateStarting ) {
+		} else if( gamemode.iRoundState == StateStarting ) {
 			BaseBoss replace = gamemode.FindNextBoss();
 			if( gamemode.hNextBoss ) {
 				replace = gamemode.hNextBoss;
@@ -145,8 +143,9 @@ public void ManageOnBossSelected(const BaseBoss base)
 		return;
 	
 	int playing = gamemode.iPlaying;
-	int extraBosses = playing / 12;
-	extraBosses = (extraBosses > 1) ? GetRandomInt(1, extraBosses) : extraBosses;
+	int extraBosses = GetRandomInt(1, playing / 12);
+	if( extraBosses > cvarVSH2[MaxRandomMultiBosses].IntValue )
+		extraBosses = cvarVSH2[MaxRandomMultiBosses].IntValue;
 	while( extraBosses-- > 0 )
 		gamemode.FindNextBoss().MakeBossAndSwitch(GetRandomInt(Hale, MAXBOSS), false);
 }
@@ -1060,7 +1059,8 @@ public void ManagePlayerAirblast(const BaseBoss airblaster, const BaseBoss airbl
 			airblasted.flRAGE += cvarVSH2[AirblastRage].FloatValue;
 		case Vagineer: {
 			if( TF2_IsPlayerInCondition(airblasted.index, TFCond_Ubercharged) ) {
-				SetConditionDuration(airblasted.index, TFCond_Ubercharged, GetConditionDuration(airblasted.index, TFCond_Ubercharged) + 2.0);
+				float dur = GetConditionDuration(airblasted.index, TFCond_Ubercharged);
+				SetConditionDuration(airblasted.index, TFCond_Ubercharged, dur + 2.0 < VAG_UBER_TIME ? dur + 2.0 : VAG_UBER_TIME);
 				//TF2_AddCondition(airblasted.index, TFCond_Ubercharged, 2.0);
 			}
 			else airblasted.flRAGE += cvarVSH2[AirblastRage].FloatValue;
@@ -1313,7 +1313,6 @@ public void ManageResetVariables(const BaseBoss base)
 	
 	base.bIsBoss = base.bSetOnSpawn = false;
 	base.iBossType = -1;
-	base.iSubBossType = -1;
 	base.iStabbed = 0;
 	base.iMarketted = 0;
 	base.flRAGE = 0.0;

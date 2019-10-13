@@ -25,7 +25,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.3.14"
+#define PLUGIN_VERSION       "2.3.15"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -38,7 +38,7 @@
 
 
 public Plugin myinfo = {
-	name            = "TF2Bosses Mod",
+	name            = "Vs Saxton Hale 2 Mod",
 	author          = "nergal/assyrian, props to Flamin' Sarge, Chdata, & Buzzkillington",
 	description     = "Allows Players to play as various bosses of TF2",
 	version         = PLUGIN_VERSION,
@@ -106,6 +106,7 @@ enum /** CvarName */ {
 	SniperClimbVelocity,
 	ShowBossHPLiving,
 	HHHTeleCooldown,
+	MaxRandomMultiBosses,
 	VersionNumber
 };
 
@@ -184,7 +185,7 @@ methodmap TF2Item < Handle {
 };
 
 
-ArrayList g_hPluginsRegistered;
+ArrayList g_hBossesRegistered;
 
 #include "modules/stocks.inc" /// include stocks first.
 #include "modules/handler.sp" /// Contains the game mode logic as well
@@ -344,6 +345,7 @@ public void OnPluginStart()
 	cvarVSH2[SniperClimbVelocity] = CreateConVar("vsh2_sniper_climb_velocity", "600.0", "in hammer units, how high of a velocity sniper melees will climb.", FCVAR_NONE, true, 0.0, false);
 	cvarVSH2[ShowBossHPLiving] = CreateConVar("vsh2_show_boss_hp_alive_players", "1", "How many players must be alive for total boss hp to show.", FCVAR_NONE, true, 1.0, true, 64.0);
 	cvarVSH2[HHHTeleCooldown] = CreateConVar("vsh2_hhh_tele_cooldown", "-1100.0", "Teleportation cooldown for HHH Jr. after teleporting. formula is '-seconds * 25' so -1100.0 is 44 seconds", FCVAR_NONE, true, -999999.0, true, 25.0);
+	cvarVSH2[MaxRandomMultiBosses] = CreateConVar("vsh2_random_multibosses_limit", "2", "The maximum limit for hain", FCVAR_NONE, true, 1.0, true, 30.0);
 	
 #if defined _steamtools_included
 	gamemode.bSteam = LibraryExists("SteamTools");
@@ -397,7 +399,7 @@ public void OnPluginStart()
 	AddMultiTargetFilter("@!minions", MinionTargetFilter, "all non-Minions", false);
 	
 	hPlayerFields[0] = new StringMap();   /// This will be freed when plugin is unloaded again
-	g_hPluginsRegistered = new ArrayList();
+	g_hBossesRegistered = new ArrayList(MAX_BOSS_NAME_SIZE);
 }
 
 public bool HaleTargetFilter(const char[] pattern, Handle clients)
@@ -589,7 +591,6 @@ public void OnClientPutInServer(int client)
 	boss.iHealth = 0;
 	boss.iMaxHealth = 0;
 	boss.iBossType = -1;
-	boss.iSubBossType = -1;
 	boss.iClimbs = 0;
 	boss.iStabbed = 0;
 	boss.iMarketted = 0;
@@ -970,7 +971,7 @@ public void CalcScores()
 		/// We don't want the Bosses getting free points for doing damage.
 		player = BaseBoss(i);
 		if( player.bIsBoss )
-			player.iQueue = 0;
+			continue;
 		else {
 			int queue_gain = cvarVSH2[QueueGained].IntValue;
 			int queue = (cvarVSH2[DamageQueue].BoolValue) ? queue_gain + (player.iDamage / cvarVSH2[DamageForQueue].IntValue) : queue_gain;
@@ -1102,60 +1103,23 @@ public void _MusicPlay()
 	}
 }
 
-/// searches in linear time or O(n) but it only searches when vsh plugin's loaded
-stock Handle FindPluginByName(const char name[64])
-{
-	char dictVal[64];
-	Handle thisPlugin;
-	StringMap pluginMap;
-	int arraylen = g_hPluginsRegistered.Length;
-	for( int i=0; i<arraylen; ++i ) {
-		pluginMap = g_hPluginsRegistered.Get(i);
-		if( pluginMap.GetString("PluginName", dictVal, 64) ) {
-			if( !strcmp(name, dictVal, false) ) {
-				pluginMap.GetValue("PluginHandle", thisPlugin);
-				return thisPlugin;
-			}
-		}
-	}
-	return null;
-}
-
-stock Handle GetPluginByIndex(const int index)
-{
-	Handle thisPlugin;
-	StringMap pluginMap = g_hPluginsRegistered.Get(index);
-	if( pluginMap.GetValue("PluginHandle", thisPlugin) )
-		return thisPlugin;
-	return null;
-}
-
-public int RegisterPlugin(const Handle pluginhndl, const char modulename[64])
+public int RegisterBoss(const char modulename[MAX_BOSS_NAME_SIZE])
 {
 	if( !ValidateName(modulename) ) {
-		LogError("VSH2 :: Register Plugin: **** Invalid Name For Plugin Registration ****");
+		LogError("VSH2 :: Boss Registrar: **** Invalid Name For Plugin Registration ****");
 		return -1;
-	} else if( FindPluginByName(modulename) != null ) {
-		LogError("VSH2 :: Register Plugin: **** Plugin Already Registered ****");
+	} else if( g_hBossesRegistered.FindString(modulename) != -1 ) {
+		LogError("VSH2 :: Boss Registrar: **** Plugin Already Registered ****");
 		return -1;
 	}
-	
-	/// create dictionary to hold necessary data about plugin
-	StringMap PluginMap = new StringMap();
-	PluginMap.SetValue("PluginHandle", pluginhndl);
-	PluginMap.SetString("PluginName", modulename);
-	
-	/// push to global vector
-	g_hPluginsRegistered.Push(PluginMap);
-	
-	/// Return the index of registered plugin!
+	g_hBossesRegistered.PushString(modulename);
 	return MAXBOSS;
 }
 
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-	CreateNative("VSH2_RegisterPlugin", Native_RegisterPlugin);
+	CreateNative("VSH2_RegisterPlugin", Native_RegisterBoss);
 	CreateNative("VSH2_Hook", Native_Hook);
 	CreateNative("VSH2_HookEx", Native_HookEx);
 	
@@ -1244,13 +1208,11 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	return APLRes_Success;
 }
 
-public int Native_RegisterPlugin(Handle plugin, int numParams)
+public int Native_RegisterBoss(Handle plugin, int numParams)
 {
-	char module_name[64]; GetNativeString(1, module_name, sizeof(module_name));
-	
+	char module_name[MAX_BOSS_NAME_SIZE]; GetNativeString(1, module_name, sizeof(module_name));
 	/// ALL PROPS TO COOKIES.NET AKA COOKIES.IO
-	int plugin_index = RegisterPlugin(plugin, module_name);
-	return plugin_index;
+	return RegisterBoss(module_name);
 }
 
 public int Native_VSH2Instance(Handle plugin, int numParams)

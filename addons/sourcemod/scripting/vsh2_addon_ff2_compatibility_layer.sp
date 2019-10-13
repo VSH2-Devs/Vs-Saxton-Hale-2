@@ -24,7 +24,6 @@ enum {
 
 Handle g_ff2_forwards[FF2OnMusic + 1];
 
-ArrayList g_subplugins;
 ConVar
 	vsh2_enabled,
 	vsh2_version
@@ -34,7 +33,6 @@ bool g_vsh2;
 
 public void OnAllPluginsLoaded() 
 {
-	g_subplugins = new ArrayList(MAX_SUBPLUGIN_NAME);
 	VSH2_Hook(OnMusic, FF2_OnMusic);
 	
 	/// FF2 has a set max lives limit, VSH2 imposes no such limit on lives.

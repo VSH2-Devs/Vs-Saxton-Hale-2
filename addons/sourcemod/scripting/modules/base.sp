@@ -605,15 +605,6 @@ methodmap BaseBoss < BaseFighter {
 			hPlayerFields[this.index].SetValue("iBossType", val);
 		}
 	}
-	property int iSubBossType {
-		public get() {
-			int i; hPlayerFields[this.index].GetValue("iSubBossType", i);
-			return i;
-		}
-		public set( const int val ) {
-			hPlayerFields[this.index].SetValue("iSubBossType", val);
-		}
-	}
 	property int iClimbs {
 		public get() {
 			int i; hPlayerFields[this.index].GetValue("iClimbs", i);

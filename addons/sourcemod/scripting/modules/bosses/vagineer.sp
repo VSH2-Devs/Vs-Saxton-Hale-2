@@ -22,7 +22,8 @@
 #define VagineerKSpreeNew	"saxton_hale/vagineer_responce_taunt_"		/// 1-5
 #define VagineerFail		"saxton_hale/vagineer_responce_fail_"		/// 1-2
 
-#define VAGRAGEDIST		533.333
+#define VAGRAGEDIST     533.333
+#define VAG_UBER_TIME   10.0
 
 
 methodmap CVagineer < BaseBoss {
@@ -127,7 +128,7 @@ methodmap CVagineer < BaseBoss {
 			TF2_RemoveCondition(this.index, TFCond_Taunting);
 			this.SetModel(); 
 		}
-		TF2_AddCondition(this.index, TFCond_Ubercharged, 10.0);
+		TF2_AddCondition(this.index, TFCond_Ubercharged, VAG_UBER_TIME);
 		this.DoGenericStun(VAGRAGEDIST);
 		if( GetRandomInt(0, 2) )
 			strcopy(snd, PLATFORM_MAX_PATH, VagineerRageSound);
