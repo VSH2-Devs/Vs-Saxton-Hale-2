@@ -412,6 +412,12 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				return Plugin_Changed;
 			}
 			
+			if (damagecustom == TF_CUSTOM_BOOTS_STOMP) {
+				if( Call_OnBossTakeDamage_OnMantreadsStomp(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed )
+					damage = 1024.0;
+				return Plugin_Changed;
+			}
+			
 			if( damagecustom == TF_CUSTOM_TELEFRAG ) {
 				if( Call_OnBossTakeDamage_OnTelefragged(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
 					damage = victim.iHealth+0.2;

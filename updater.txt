@@ -4,15 +4,12 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.3.17"
+			"Latest"	"2.3.18"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.17:"
-		"Notes"	"Removed damage bonus for miniguns when being healed by a medic."
-		"Notes"	"Moved Natascha item changes to the index specific weapon switch."
-		"Notes"	"Entirely removed extra health on all wrenches for engineers."
-		"Notes"	"Added missing old VSH weapon stats for the sniper weapons."
-		"Notes"	"Added more command aliases for noboss add on."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.18:"
+		"Notes"	"Added new forward + hook: 'OnBossTakeDamage_OnMantreadsStomp'."
+		"Notes"	"Added default mantreads stomp damage."
 	}
 	
 	"Files"

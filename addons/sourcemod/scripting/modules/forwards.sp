@@ -104,6 +104,7 @@ void InitializeForwards()
 	g_hForwards[OnBossCalcHealth] = new PrivateForward( CreateForward(ET_Event, Param_Cell, Param_CellByRef, Param_Cell, Param_Cell));
 	
 	g_hForwards[OnBossTakeDamage_OnTriggerHurt] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
+	g_hForwards[OnBossTakeDamage_OnMantreadsStomp] = new PrivateForward( CreateForward(ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell));
 }
 
 Action Call_OnCallDownloads()
@@ -902,6 +903,23 @@ Action Call_OnBossTakeDamage_OnTriggerHurt(const BaseBoss player, int& attacker,
 {
 	Action result;
 	g_hForwards[OnBossTakeDamage_OnTriggerHurt].Start();
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+
+Action Call_OnBossTakeDamage_OnMantreadsStomp(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result;
+	g_hForwards[OnBossTakeDamage_OnMantreadsStomp].Start();
 	Call_PushCell(player);
 	Call_PushCellRef(attacker);
 	Call_PushCellRef(inflictor);

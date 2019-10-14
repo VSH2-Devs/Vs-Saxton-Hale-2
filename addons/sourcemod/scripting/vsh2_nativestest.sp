@@ -218,6 +218,12 @@ public Action fwdOnBossTakeDamage_OnTriggerHurt(VSH2Player victim, int& attacker
 	PrintToConsole(victim.index, "fwdOnBossTakeDamage_OnTriggerHurt:: ==> victim name: %N", victim.index);
 	return Plugin_Continue;
 }
+public Action fwdOnBossTakeDamage_OnMantreadsStomp(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	PrintToConsole(attacker, "fwdOnBossTakeDamage_OnMantreadsStomp:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	PrintToConsole(victim.index, "fwdOnBossTakeDamage_OnMantreadsStomp:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
+	return Plugin_Continue;
+}
 
 
 public Action fwdOnBossDealDamage(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
@@ -630,4 +636,7 @@ public void LoadVSH2Hooks()
 		
 	if (!VSH2_HookEx(OnBossTakeDamage_OnTriggerHurt, fwdOnBossTakeDamage_OnTriggerHurt))
 		LogError("Error Hooking OnBossTakeDamage_OnTriggerHurt forward for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnBossTakeDamage_OnMantreadsStomp, fwdOnBossTakeDamage_OnMantreadsStomp))
+		LogError("Error Hooking OnBossTakeDamage_OnMantreadsStomp forward for VSH2 Test plugin.");
 }

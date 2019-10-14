@@ -25,7 +25,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.3.17"
+#define PLUGIN_VERSION       "2.3.18"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
