@@ -1,9 +1,9 @@
 public Plugin myinfo = {
-	name		= "VSH2 Noboss",
-	author	  = "Bottiger",
-	description = "Adds the command !noboss to reset queue points every round automatically",
-	version	 = "1.0",
-	url		 = "https://www.skial.com"
+	name         = "VSH2 Noboss",
+	author       = "Bottiger",
+	description  = "Adds the command !noboss to reset queue points every round automatically",
+	version      = "1.0",
+	url          = "https://www.skial.com"
 };
 
 #include <morecolors>
@@ -20,6 +20,11 @@ ConVar vsh2_enabled;
 public void OnPluginStart() {
 	g_noboss_cookie = RegClientCookie("hale_noboss", "Set queue points to 0 every round automatically", CookieAccess_Public);
 	RegConsoleCmd("sm_noboss", NoBossCmd);
+	RegConsoleCmd("sm_nohale", NoBossCmd);
+	RegConsoleCmd("sm_haletoggle", NoBossCmd);
+	RegConsoleCmd("sm_ff2toggle", NoBossCmd);
+	RegConsoleCmd("sm_bosstoggle", NoBossCmd);
+	RegConsoleCmd("sm_vshtoggle", NoBossCmd);
 }
 
 public void OnLibraryAdded(const char[] name) {

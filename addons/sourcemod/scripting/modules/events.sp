@@ -376,6 +376,7 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 		
 		int red_players = gamemode.iPlaying;
 		/// Automatically divides health based on boss count but this can be changed if necessary
+		
 		int max_health = CalcBossHealth(760.8, red_players, 1.0, 1.0341, 2046.0) / (bosscount);	/// In stocks.sp
 		if( max_health < 3000 && bosscount == 1 )
 			max_health = 3000;
@@ -389,13 +390,7 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 			continue;
 		
 		boss.iMaxHealth = max_health;
-#if defined _tf2attributes_included
-		int maxhp = GetEntProp(boss.index, Prop_Data, "m_iMaxHealth");
-		if( gamemode.bTF2Attribs ) {
-			TF2Attrib_RemoveAll(boss.index);
-			TF2Attrib_SetByDefIndex( boss.index, 26, float(boss.iMaxHealth-maxhp) );
-		}
-#endif
+		SetEntProp(boss.index, Prop_Data, "m_iMaxHealth", max_health);
 		if( GetClientTeam(boss.index) != VSH2Team_Boss )
 			boss.ForceTeamChange(VSH2Team_Boss);
 		gamemode.iTotalMaxHealth += boss.iMaxHealth;

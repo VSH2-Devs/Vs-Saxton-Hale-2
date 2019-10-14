@@ -1771,9 +1771,6 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case 225, 574: {	/// YER
 			hItemOverride = PrepareItemHandle(hItemCast, _, _, "155; 1; 160; 1", true);
 		}
-		case 232, 401: {	/// Bushwacka + Shahanshah
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "236; 1");
-		}
 		case 226: {	/// The Battalion's Backup
 			hItemOverride = PrepareItemHandle(hItemCast, _, _, "252; 0.25");
 		}
@@ -1848,6 +1845,10 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case 155: {
 			hItemOverride = PrepareItemHandle(hItemCast, _, _, "264 ; 1.5; 263 ; 1.55");
 		}
+		/// Natascha
+		case 41: {
+			hItemOverride = PrepareItemHandle(hItemCast, _, _, "", true);
+		}
 	}
 	if( hItemOverride != null ) {
 		Action act = Call_OnItemOverride(BaseBoss(client), classname, iItemDefinitionIndex, view_as< Handle >(hItemOverride));
@@ -1890,19 +1891,21 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		}
 		//hItemOverride = PrepareItemHandle(hItem, _, _, "114; 1.0");
 	}
-	if( !strncmp(classname, "tf_weapon_wrench", 16, false) || !strncmp(classname, "tf_weapon_robot_arm", 19, false) ) {
-		if( iItemDefinitionIndex == 142 )
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "26; 55");
-		else hItemOverride = PrepareItemHandle(hItemCast, _, _, "26; 25");
-	}
-	if( !strncmp(classname, "tf_weapon_minigun", 17, false) ) {
-		switch( iItemDefinitionIndex ) {
-			case 41: /// Natascha
-				hItemOverride = PrepareItemHandle(hItemCast, _, _, "", true);
-			default: hItemOverride = PrepareItemHandle(hItemCast, _, _, "233; 1.15");
-		}
-	}
+	
 	switch( iClass ) {
+		case TFClass_Sniper: {
+			if( StrEqual(classname, "tf_weapon_club", false) || StrEqual(classname, "saxxy", false) ) {
+				switch( iItemDefinitionIndex ) {
+					/// Shahanshah
+					case 401: {
+						hItemOverride = PrepareItemHandle(hItemCast, _, _, "236 ; 1 ; 224 ; 1.66 ; 225 ; 0.5");
+					}
+					default: {
+						hItemOverride = PrepareItemHandle(hItemCast, _, _, "236 ; 1"); /// Block healing while in use.
+					}
+				}
+			}
+		}
 		case TFClass_Medic: {
 			/// Medic mediguns
 			if( !StrContains(classname, "tf_weapon_medigun", false) ) {

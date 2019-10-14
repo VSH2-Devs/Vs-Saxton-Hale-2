@@ -4,16 +4,15 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.3.16"
+			"Latest"	"2.3.17"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.16:"
-		"Notes"	"Added new native: 'GetRandomBossType' which has an optional boss filter."
-		"Notes"	"Moved Boss ID enum to vsh2.inc and renamed the enum Boss IDs to have 'VSH2Boss_' prefix."
-		"Notes"	"Replaced boss menu id's with a maintainable integer id to string mechanism."
-		"Notes"	"Moved Boss Queue resetting to the very start of the round when boss status is confirmed."
-		"Notes"	"Short Circuit changes: metal on successful zap, permanent minicrits, and 4x damage buff."
-		"Notes"	"Southern Hospitality changes: increased melee range."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.17:"
+		"Notes"	"Removed damage bonus for miniguns when being healed by a medic."
+		"Notes"	"Moved Natascha item changes to the index specific weapon switch."
+		"Notes"	"Entirely removed extra health on all wrenches for engineers."
+		"Notes"	"Added missing old VSH weapon stats for the sniper weapons."
+		"Notes"	"Added more command aliases for noboss add on."
 	}
 	
 	"Files"
