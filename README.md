@@ -2,7 +2,7 @@
 
 #### Current STABLE Version: *2.0.5*
 [![Master Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=master)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
-#### Current DEVELOPMENT Version: *2.3.18*
+#### Current DEVELOPMENT Version: *2.4.0*
 [![Develop Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=develop)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
 ======
 VSH2 is rewrite of VSH1. VSH1 and FF2 both had a very bad code framework using shoddy, hacky coding. I could even go as far to say they probably had no framework at all and even no real structure to its code.
@@ -28,7 +28,7 @@ If you do require help in setting up the bosses or at least need some info on th
 * Compile with spcomp
 * VSH2 uses the same map configurations as FF2 and VSH1 and this is for compatibility reasons.
 * Dependencies: TF2Items, MoreColors
-* Optional Dependencies: TF2Attributes, SteamTools
+* Optional Dependencies: TF2Attributes (https://github.com/FlaminSarge/tf2attributes), SteamWorks (https://forums.alliedmods.net/showthread.php?t=229556)
 * Compile plugin into .smx and put in addons/sourcemod/plugins folder
 * Take a look at the [Wiki](https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki) to get started making your own boss!
 
@@ -46,4 +46,4 @@ If you do require help in setting up the bosses or at least need some info on th
 * properties, functions, & methods smaller than 20 lines of code should have the beginning `{` brace in K&R C style, for example: `ret func() {`
 * local variable names should be in snake_case.
 * property names must have a single-letter prefix of their type.
-* functions, methods, methodmaps, enums, enum values,  must be named in PascalCase. Pascal_Case is also acceptable.
+* functions, methods, methodmaps, enums, enum values,  must be named in PascalCase. Pascal_Case is also acceptable. enum values used as flags may be upper-case.

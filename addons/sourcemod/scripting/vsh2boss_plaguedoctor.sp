@@ -78,7 +78,8 @@ methodmap CPlague < VSH2Player {
 				continue;
 			minion = VSH2Player(i);
 			bool IsMinion = minion.GetPropAny("bIsMinion");
-			if( IsMinion ) {
+			/// PATCH: only boost OUR minions, nobody elses...
+			if( IsMinion && minion.hOwnerBoss == this ) {
 			#if defined _tf2attributes_included
 				bool tf2attribs_enabled = VSH2GameMode_GetPropAny("bTF2Attribs");
 				if( tf2attribs_enabled ) {
@@ -110,7 +111,7 @@ methodmap CPlague < VSH2Player {
 		/// PATCH: killing spy with teammate disguise kills both spy and the teammate he disguised as...
 		else if( TF2_IsPlayerInCondition(victim.index, TFCond_Disguised) )
 			TF2_RemovePlayerDisguise(victim.index); //event.SetInt("userid", victim.userid);
-		victim.SetPropInt("iOwnerBoss", this.userid);
+		victim.hOwnerBoss = this;
 		victim.ConvertToMinion(0.4);
 	}
 	public void Help() {
@@ -160,13 +161,14 @@ ConVar
 	g_vsh2_jarate_rage
 ;
 
-public void OnAllPluginsLoaded()
-{
-	g_vsh2_scout_rage_gen = FindConVar("vsh2_scout_rage_gen");
-	g_vsh2_airblast_rage = FindConVar("vsh2_airblast_rage");
-	g_vsh2_jarate_rage = FindConVar("vsh2_jarate_rage");
-	g_iPlagueDocID = VSH2_RegisterPlugin("plague_doctor");
-	LoadVSH2Hooks();
+public void OnLibraryAdded(const char[] name) {
+	if( StrEqual(name, "VSH2") ) {
+		g_vsh2_scout_rage_gen = FindConVar("vsh2_scout_rage_gen");
+		g_vsh2_airblast_rage = FindConVar("vsh2_airblast_rage");
+		g_vsh2_jarate_rage = FindConVar("vsh2_jarate_rage");
+		g_iPlagueDocID = VSH2_RegisterPlugin("plague_doctor");
+		LoadVSH2Hooks();
+	}
 }
 
 public void LoadVSH2Hooks()
@@ -249,54 +251,19 @@ public void PlagueDoc_OnBossThink(const VSH2Player boss)
 		return;
 	
 	CPlague player = ToCPlague(boss);
-	int buttons = GetClientButtons(client);
-	//float currtime = GetGameTime();
-	int flags = GetEntityFlags(client);
 	
-	//int maxhp = GetEntProp(client, Prop_Data, "m_iMaxHealth");
-	int health = player.GetPropInt("iHealth");
-	int maxhealth = player.GetPropInt("iMaxHealth");
-	float speed = 340.0 + 0.7 * (100-health*100/maxhealth);
-	SetEntPropFloat(client, Prop_Send, "m_flMaxspeed", speed);
-	
-	/// glowing code
-	float glowtime = player.GetPropFloat("flGlowtime");
-	if( player.GetPropFloat("flGlowtime") > 0.0 ) {
-		player.SetPropInt("bGlow", 1);
-		player.SetPropFloat("flGlowtime", glowtime - 0.1);
-	}
-	else if( glowtime <= 0.0 )
-		player.SetPropInt("bGlow", 0);
-	
-	/// superjump code
-	if( ((buttons & IN_DUCK) || (buttons & IN_ATTACK2)) && (player.flCharge >= 0.0) ) {
-		if( player.flCharge+2.5 < (25*1.0) )
-			player.flCharge += 2.5;
-		else player.flCharge = 25.0;
-	} else if( player.flCharge < 0.0 )
-		player.flCharge += 2.5;
-	else {
-		float EyeAngles[3]; GetClientEyeAngles(client, EyeAngles);
-		if( player.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
-			player.SuperJump(player.flCharge, -100.0);
-			player.PlayVoiceClip("vo/medic_yes01.mp3", VSH2_VOICE_ABILITY);
-		}
-		else player.flCharge = 0.0;
+	VSH2_SpeedThink(boss, 340.0);
+	VSH2_GlowThink(boss, 0.1);
+	if( VSH2_SuperJumpThink(boss, 2.5, 25.0) ) {
+		player.SuperJump(player.flCharge, -100.0);
+		player.PlayVoiceClip("vo/medic_yes01.mp3", VSH2_VOICE_ABILITY);
 	}
 	
 	if( OnlyScoutsLeft(VSH2Team_Red) )
 		player.flRAGE += g_vsh2_scout_rage_gen.FloatValue;
 	
-	/// weighdown code
-	if( flags & FL_ONGROUND )
-		player.flWeighDown = 0.0;
-	else player.flWeighDown += 0.1;
-	if( (buttons & IN_DUCK) && player.flWeighDown >= 3.0 ) {
-		float ang[3]; GetClientEyeAngles(client, ang);
-		if( ang[0] > 60.0 ) {
-			player.WeighDown(0.0);
-		}
-	}
+	VSH2_WeighDownThink(boss, 3.0, 1.0);
+	
 	/// hud code
 	SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
 	Handle hHudText = VSH2GameMode_GetHUDHandle();
@@ -350,16 +317,17 @@ public void PlagueDoc_OnPlayerKilled(const VSH2Player attacker, const VSH2Player
 	}
 	/// attacker is a plague doctor minion!
 	else if( attacker.GetPropInt("bIsMinion") ) {
-		VSH2Player owner = VSH2Player(attacker.GetPropInt("iOwnerBoss"), true);
+		VSH2Player owner = attacker.hOwnerBoss;
 		if( IsPlagueDoctor(owner) )
 			ToCPlague(owner).KilledPlayer(victim, event);
 	}
 	if( victim.GetPropInt("bIsMinion") ) {
-		/// Cap respawning minions by the amount of minions there are. If 10 minions, then respawn him/her in 10 seconds.
-		VSH2Player owner = VSH2Player(victim.GetPropInt("iOwnerBoss"), true);
+		/// Cap respawning minions by the amount of minions there are * 1.5.
+		/// If 10 minions, then respawn them in 15 seconds.
+		VSH2Player owner = victim.hOwnerBoss;
 		if( IsPlagueDoctor(owner) && IsPlayerAlive(owner.index) ) {
 			int minions = VSH2GameMode_CountMinions(false);
-			victim.ConvertToMinion(float(minions));
+			victim.ConvertToMinion(minions * 1.5);
 		}
 	}
 }
@@ -367,9 +335,9 @@ public void PlagueDoc_OnPlayerHurt(const VSH2Player attacker, const VSH2Player v
 {
 	int damage = event.GetInt("damageamount");
 	if( !victim.GetPropInt("bIsBoss") && victim.GetPropInt("bIsMinion") && !attacker.GetPropInt("bIsMinion") ) {
-		/** Have boss take damage if minions are hurt by players, this prevents bosses from hiding just because they gained minions
+		/** Have boss take damage if minions are hurt by players, this prevents bosses from hiding just because they gained minions.
 		 */
-		VSH2Player ownerBoss = VSH2Player(victim.GetPropInt("iOwnerBoss"), true);
+		VSH2Player ownerBoss = victim.hOwnerBoss;
 		if( IsPlagueDoctor(ownerBoss) ) {
 			ownerBoss.SetPropInt("iHealth", ownerBoss.GetPropInt("iHealth")-damage);
 			ownerBoss.GiveRage(damage);
@@ -390,6 +358,7 @@ public void PlagueDoc_OnBossMedicCall(const VSH2Player rager)
 {
 	if( !IsPlagueDoctor(rager) )
 		return;
+	
 	float rage = rager.GetPropFloat("flRAGE");
 	if( rage < 100.0 )
 		return;
@@ -408,7 +377,7 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 {
 	VSH2Player player = VSH2Player(client);
 	if( player.GetPropInt("bIsMinion") ) {
-		VSH2Player ownerBoss = VSH2Player(player.GetPropInt("iOwnerBoss"), true);
+		VSH2Player ownerBoss = player.hOwnerBoss;
 		if( IsPlagueDoctor(ownerBoss) )
 			player.ClimbWall(weapon, 400.0, 0.0, false);
 		

@@ -21,7 +21,7 @@ enum { /** VSH2 Teams */
 	VSH2Team_Boss
 };
 
-enum /** VSH2 Default Bosses */ {
+enum { /** VSH2 Default Bosses */
 	VSH2Boss_Hale,
 	VSH2Boss_Vagineer,
 	VSH2Boss_CBS,
@@ -124,13 +124,17 @@ methodmap VSH2Player {
 	property int iDamage
 	property int iAirDamage
 	property int iSongPick
+	property int iClimbs
+	
+	* use 'hOwnerBoss' instead of this.
 	property int iOwnerBoss
 	
 	** please use userid on this; convert to client index if you want but userid is safer **
+	* Use 'hUberTarget' property instead this
 	property int iUberTarget
 	
 	** use like a bool **
-	property int bGlow
+	property int bGlow -> will not set glowing like in internal VSH2.
 	
 	property bool bIsMinion
 	property bool bInJump
@@ -142,7 +146,6 @@ methodmap VSH2Player {
 	property int iHealth
 	property int iMaxHealth
 	property int iBossType
-	property int iClimbs
 	property int iStabbed
 	property int iMarketted
 	property int iDifficulty
@@ -153,6 +156,24 @@ methodmap VSH2Player {
 	property float flKillSpree
 	property float flWeighDown
 	*/
+	
+	property VSH2Player hOwnerBoss {
+		public get() {
+			return VSH2Player(this.GetPropInt("iOwnerBoss"), true);
+		}
+		public set(VSH2Player val) {
+			this.SetPropInt("iOwnerBoss", val.userid);
+		}
+	}
+	
+	property VSH2Player hUberTarget {
+		public get() {
+			return VSH2Player(this.GetPropInt("iUberTarget"), true);
+		}
+		public set(VSH2Player val) {
+			this.SetPropInt("iUberTarget", val.userid);
+		}
+	}
 	
 	public native void ConvertToMinion(const float spawntime);
 	public native int SpawnWeapon(char[] name, const int index, const int level, const int qual, char[] att);
@@ -171,8 +192,16 @@ methodmap VSH2Player {
 	public native void SetClipTable(const int wepslot, const int amount);
 	
 	public native int GetHealTarget();
+	public VSH2Player GetHealPatient() {
+		return VSH2Player(this.GetHealTarget());
+	}
+	
 	public native bool IsNearDispenser();
 	public native bool IsInRange(const int target, const float dist, bool pTrace=false);
+	public bool IsPlayerInRange(VSH2Player target, const float dist, bool pTrace=false) {
+		return this.IsInRange(target.index, dist, pTrace);
+	}
+	
 	public native void RemoveBack(int[] indices, const int len);
 	public native int FindBack(int[] indices, const int len);
 	public native int ShootRocket(bool bCrit=false, float vPosition[3], float vAngles[3], const float flSpeed, const float dmg, const char[] model, bool arc=false);
@@ -193,6 +222,65 @@ methodmap VSH2Player {
 	/** use the VSH2_VOICE_* flags above^^^. */
 	public native void PlayVoiceClip(const char[] voiceclip, const int flags);
 };
+
+
+/** Common Boss Think Mechanics
+ * Made these because of how common these boss mechanics are used within VSH and FF2.
+ * 
+ * SpeedThink -> health-based speed where the less health the boss has, the faster they move.
+ * GlowThink -> handles how long the boss will be visible through walls aka glowing.
+ * SuperJumpThink -> handles superjump charging
+ * WeighDownThink -> handles weighdown charging
+ */
+
+stock void VSH2_SpeedThink(VSH2Player boss, const float iota) {
+	float speed = iota + 0.7 * (100 - boss.GetPropInt("iHealth") * 100 / boss.GetPropInt("iMaxHealth"));
+	SetEntPropFloat(boss.index, Prop_Send, "m_flMaxspeed", speed);
+}
+
+stock void VSH2_GlowThink(VSH2Player boss, const float decrease) {
+	float glowtime = boss.GetPropFloat("flGlowtime");
+	if( glowtime > 0.0 ) {
+		SetEntProp(boss.index, Prop_Send, "m_bGlowEnabled", 1);
+		boss.SetPropFloat("flGlowtime", glowtime - decrease);
+	} else if( glowtime <= 0.0 )
+		SetEntProp(boss.index, Prop_Send, "m_bGlowEnabled", 0);
+}
+
+stock bool VSH2_SuperJumpThink(VSH2Player boss, const float charging, const float jumpcharge) {
+	int player = boss.index;
+	int buttons = GetClientButtons(player);
+	float charge = boss.GetPropFloat("flCharge");
+	if( ((buttons & IN_DUCK) || (buttons & IN_ATTACK2)) && (charge >= 0.0) ) {
+		if( charge + charging < jumpcharge )
+			boss.SetPropFloat("flCharge", charge + charging);
+		else boss.SetPropFloat("flCharge", jumpcharge);
+	} else if( charge < 0.0 )
+		boss.SetPropFloat("flCharge", charge + charging);
+	else {
+		float EyeAngles[3]; GetClientEyeAngles(player, EyeAngles);
+		if( charge > 1.0 && EyeAngles[0] < -5.0 ) {
+			return true;
+		}
+		else boss.SetPropFloat("flCharge", 0.0);
+	}
+	return false;
+}
+
+stock void VSH2_WeighDownThink(VSH2Player boss, const float weighdown_time, const float incr) {
+	int player = boss.index;
+	int buttons = GetClientButtons(player);
+	int flags = GetEntityFlags(player);
+	if( flags & FL_ONGROUND )
+		boss.SetPropFloat("flWeighDown", 0.0);
+	else boss.SetPropFloat("flWeighDown", boss.GetPropFloat("flWeighDown") + incr);
+	
+	if( (buttons & IN_DUCK) && boss.GetPropFloat("flWeighDown") >= weighdown_time ) {
+		float ang[3]; GetClientEyeAngles(player, ang);
+		if( ang[0] > 60.0 )
+			boss.WeighDown(0.0);
+	}
+}
 
 
 /**
@@ -275,11 +363,13 @@ enum { /// VSH2HookType
 	OnBossCalcHealth,
 	OnBossTakeDamage_OnTriggerHurt,
 	OnBossTakeDamage_OnMantreadsStomp,
-	OnRedPlayerThink
+	OnBossThinkPost,
+	OnRedPlayerThink,
+	MaxVSH2Forwards
 };
 
 /**
-	IF YOU'RE USING THE HOOKING SYSTEM FOR A CUSTOM BOSS, YOU HAVE TO REGISTER YOUR PLUGIN WITH VSH2 BECAUSE YOU NEED THE MODULE INDEX TRACKED
+	IF YOU'RE USING THE HOOKING SYSTEM FOR A CUSTOM BOSS, YOU HAVE TO REGISTER YOUR PLUGIN WITH VSH2 BECAUSE YOU NEED THE BOSS' INDEX TRACKED.
 */
 
 typeset VSH2HookCB {
@@ -299,6 +389,7 @@ typeset VSH2HookCB {
 		OnLastPlayer - Player is a random boss in this case.
 		OnBossSuperJump
 		OnBossWeighDown
+		OnBossThinkPost -> Action has no effect on this forward.
 	*/
 	function Action (const VSH2Player player);
 	function void (const VSH2Player player);
@@ -465,13 +556,8 @@ property int iTimeLeft
 property int iRoundCount
 property int iHealthChecks
 property int iCaptures
-
-** Only useable if SteamTools is enabled and used.
 property bool bSteam
-
-** Only useable if TF2Attributes is enabled and used.
 property bool bTF2Attribs
-
 property bool bPointReady
 property bool bMedieval
 property float flHealthTime
@@ -496,6 +582,72 @@ native void VSH2GameMode_GetBossType();
 native Handle VSH2GameMode_GetHUDHandle();
 
 native bool VSH2GameMode_IsVSHMap();
+
+
+/** VSH2 Misc. Useful stocks.
+ */
+stock void CheckDownload(const char[] dlpath)
+{
+	if( FileExists(dlpath, true) )
+		AddFileToDownloadsTable(dlpath);
+}
+
+stock void PrepareSound(const char[] sound_path)
+{
+	PrecacheSound(sound_path, true);
+	char s[PLATFORM_MAX_PATH];
+	Format(s, sizeof(s), "sound/%s", sound_path);
+	CheckDownload(s);
+}
+
+stock void DownloadSoundList(const char[][] file_list, int size)
+{
+	for( int i; i < size; i++ )
+		PrepareSound(file_list[i]);
+}
+
+stock void PrecacheSoundList(const char[][] file_list, int size)
+{
+	for( int i; i < size; i++ )
+		PrecacheSound(file_list[i], true);
+}
+
+/// For single custom materials, omit file extensions as it prepares VMT + VTF
+stock void PrepareMaterial(const char[] matpath)
+{
+	char s[PLATFORM_MAX_PATH];
+	Format(s, sizeof(s), "%s%s", matpath, ".vtf");
+	CheckDownload(s);
+	Format(s, sizeof(s), "%s%s", matpath, ".vmt");
+	CheckDownload(s);
+}
+
+stock void DownloadMaterialList(const char[][] file_list, int size)
+{
+	char s[PLATFORM_MAX_PATH];
+	for( int i; i < size; i++ ) {
+		strcopy(s, sizeof(s), file_list[i]);
+		CheckDownload(s);
+	}
+}
+/// For custom models, do NOT omit .MDL extension
+stock int PrepareModel(const char[] model_path, bool model_only = false)
+{
+	char extensions[][] = { ".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd", ".phy" };
+	char model_base[PLATFORM_MAX_PATH];
+	char path[PLATFORM_MAX_PATH];
+	
+	strcopy(model_base, sizeof(model_base), model_path);
+	SplitString(model_base, ".mdl", model_base, sizeof(model_base)); /// Kind of redundant, but eh.
+	if( !model_only ) {
+		for( int i; i < sizeof(extensions); i++) {
+			Format(path, PLATFORM_MAX_PATH, "%s%s", model_base, extensions[i]);
+			CheckDownload(path);
+		}
+	}
+	else CheckDownload(model_path);
+	return PrecacheModel(model_path, true);
+}
 
 
 public SharedPlugin __pl_vsh2 = {

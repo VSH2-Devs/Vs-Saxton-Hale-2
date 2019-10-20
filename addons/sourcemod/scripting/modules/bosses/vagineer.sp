@@ -23,7 +23,6 @@
 #define VagineerFail		"saxton_hale/vagineer_responce_fail_"		/// 1-2
 
 #define VAGRAGEDIST     533.333
-#define VAG_UBER_TIME   10.0
 
 
 methodmap CVagineer < BaseBoss {
@@ -42,50 +41,21 @@ methodmap CVagineer < BaseBoss {
 	{
 		if( !IsPlayerAlive(this.index) )
 			return;
-
-		int buttons = GetClientButtons(this.index);
-		int flags = GetEntityFlags(this.index);
 		
-		int health = this.iHealth;
-		float speed = HALESPEED + 0.7 * (100-health*100/this.iMaxHealth);
-		SetEntPropFloat(this.index, Prop_Send, "m_flMaxspeed", speed);
+		this.SpeedThink(HALESPEED);
+		this.GlowThink(0.1);
 		
-		if( this.flGlowtime > 0.0 ) {
-			this.bGlow = 1;
-			this.flGlowtime -= 0.1;
+		if( this.SuperJumpThink(2.5, HALE_JUMPCHARGE) ) {
+			this.SuperJump(this.flCharge, -100.0);
+			Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerJump, GetRandomInt(1, 2));
+			this.PlayVoiceClip(snd, VSH2_VOICE_ABILITY);
 		}
-		else if( this.flGlowtime <= 0.0 )
-			this.bGlow = 0;
 		
-		if( ((buttons & IN_DUCK) || (buttons & IN_ATTACK2)) && (this.flCharge >= 0.0) ) {
-			if( this.flCharge+2.5 < HALE_JUMPCHARGE )
-				this.flCharge += 2.5;
-			else this.flCharge = HALE_JUMPCHARGE;
-		}
-		else if( this.flCharge < 0.0 )
-			this.flCharge += 2.5;
-		else {
-			float EyeAngles[3]; GetClientEyeAngles(this.index, EyeAngles);
-			if( this.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
-				this.SuperJump(this.flCharge, -100.0);
-				Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerJump, GetRandomInt(1, 2));
-				this.PlayVoiceClip(snd, VSH2_VOICE_ABILITY);
-			}
-			else this.flCharge = 0.0;
-		}
 		if( OnlyScoutsLeft(VSH2Team_Red) )
 			this.flRAGE += cvarVSH2[ScoutRageGen].FloatValue;
 		
-		if( flags & FL_ONGROUND )
-			this.flWeighDown = 0.0;
-		else this.flWeighDown += 0.1;
+		this.WeighDownThink(HALE_WEIGHDOWN_TIME);
 		
-		if( (buttons & IN_DUCK) && this.flWeighDown >= HALE_WEIGHDOWN_TIME ) {
-			float ang[3]; GetClientEyeAngles(this.index, ang);
-			if( ang[0] > 60.0 ) {
-				this.WeighDown(0.0);
-			}
-		}
 		SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
 		float jmp = this.flCharge;
 		if( jmp > 0.0 )
@@ -128,7 +98,7 @@ methodmap CVagineer < BaseBoss {
 			TF2_RemoveCondition(this.index, TFCond_Taunting);
 			this.SetModel(); 
 		}
-		TF2_AddCondition(this.index, TFCond_Ubercharged, VAG_UBER_TIME);
+		TF2_AddCondition(this.index, TFCond_Ubercharged, cvarVSH2[VagineerUberTime].FloatValue);
 		this.DoGenericStun(VAGRAGEDIST);
 		if( GetRandomInt(0, 2) )
 			strcopy(snd, PLATFORM_MAX_PATH, VagineerRageSound);

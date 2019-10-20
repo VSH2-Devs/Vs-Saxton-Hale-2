@@ -28,24 +28,21 @@ Handle g_vsh_forwards[OnHaleNext + 1];
 ConVar vsh2_enabled;
 bool g_vsh2;
 
-public void OnAllPluginsLoaded() 
-{
-	VSH2_Hook(OnBossSuperJump, VSH_OnBossSuperJump);
-	VSH2_Hook(OnBossDoRageStun, VSH_OnBossDoRageStun);
-	VSH2_Hook(OnBossWeighDown, VSH_OnBossWeighDown);
-	VSH2_Hook(OnMusic, VSH_OnMusic);
-	VSH2_Hook(OnVariablesReset, VSH_OnNextHale);
-}
 
 public void OnLibraryAdded(const char[] name) {
-	if (StrEqual(name, "VSH2")) {
+	if( StrEqual(name, "VSH2") ) {
 		g_vsh2 = true;
 		vsh2_enabled = FindConVar("vsh2_enabled");
+		VSH2_Hook(OnBossSuperJump, VSH_OnBossSuperJump);
+		VSH2_Hook(OnBossDoRageStun, VSH_OnBossDoRageStun);
+		VSH2_Hook(OnBossWeighDown, VSH_OnBossWeighDown);
+		VSH2_Hook(OnMusic, VSH_OnMusic);
+		VSH2_Hook(OnVariablesReset, VSH_OnNextHale);
 	}
 }
 
 public void OnLibraryRemoved(const char[] name) {
-	if (StrEqual(name, "VSH2")) {
+	if( StrEqual(name, "VSH2") ) {
 		g_vsh2 = false;
 	}
 }

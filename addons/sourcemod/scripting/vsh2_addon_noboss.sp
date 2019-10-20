@@ -28,7 +28,7 @@ public void OnPluginStart() {
 }
 
 public void OnLibraryAdded(const char[] name) {
-	if (StrEqual(name, "VSH2")) {
+	if( StrEqual(name, "VSH2") ) {
 		g_vsh2 = true;
 		vsh2_enabled = FindConVar("vsh2_enabled");
 		VSH2_Hook(OnScoreTally, OnScore);
@@ -36,7 +36,7 @@ public void OnLibraryAdded(const char[] name) {
 }
 
 public void OnLibraryRemoved(const char[] name) {
-	if (StrEqual(name, "VSH2")) {
+	if( StrEqual(name, "VSH2") ) {
 		g_vsh2 = false;
 	}
 }

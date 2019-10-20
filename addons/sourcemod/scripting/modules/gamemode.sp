@@ -51,13 +51,7 @@ methodmap VSHGameMode { /* < StringMap */
 	}
 	property int iPlaying {
 		public get() {
-			int playing = 0;
-			for( int i=MaxClients; i; --i ) {
-				if( !IsClientInGame(i) || !IsPlayerAlive(i) || BaseBoss(i).bIsBoss )
-					continue;
-				++playing;
-			}
-			return playing;
+			return GetLivingPlayers(VSH2Team_Red);
 		}
 	}
 	property int iHealthBar {
@@ -136,7 +130,6 @@ methodmap VSHGameMode { /* < StringMap */
 		}
 	}
 	
-#if defined _steamtools_included
 	property bool bSteam {
 		public get() {
 			bool i; hGameModeFields.GetValue("bSteam", i);
@@ -146,8 +139,6 @@ methodmap VSHGameMode { /* < StringMap */
 			hGameModeFields.SetValue("bSteam", val);
 		}
 	}
-#endif
-#if defined _tf2attributes_included
 	property bool bTF2Attribs {
 		public get() {
 			bool i; hGameModeFields.GetValue("bTF2Attribs", i);
@@ -157,7 +148,6 @@ methodmap VSHGameMode { /* < StringMap */
 			hGameModeFields.SetValue("bTF2Attribs", val);
 		}
 	}
-#endif
 	property bool bPointReady {
 		public get() {
 			bool i; hGameModeFields.GetValue("bPointReady", i);

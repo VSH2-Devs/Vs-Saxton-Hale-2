@@ -130,14 +130,17 @@ public void ManageOnBossSelected(const BaseBoss base)
 		return;
 	
 	ManageBossHelp(base);
-	if( !cvarVSH2[AllowRandomMultiBosses].BoolValue || gamemode.iPlaying < 10 || GetRandomInt(0, 3) > 0 )
+	
+	/// random multibosses code.
+	int playing = gamemode.iPlaying;
+	if( !cvarVSH2[AllowRandomMultiBosses].BoolValue || playing < 10 || GetRandomInt(0, 3) > 0 )
 		return;
 	
-	int playing = gamemode.iPlaying;
-	int extraBosses = GetRandomInt(1, playing / 12);
-	if( extraBosses > cvarVSH2[MaxRandomMultiBosses].IntValue )
-		extraBosses = cvarVSH2[MaxRandomMultiBosses].IntValue;
-	while( extraBosses-- > 0 )
+	int extra_bosses = GetRandomInt(1, playing / 12);
+	if( extra_bosses > cvarVSH2[MaxRandomMultiBosses].IntValue )
+		extra_bosses = cvarVSH2[MaxRandomMultiBosses].IntValue;
+	
+	for( int i; i<extra_bosses; i++ )
 		gamemode.FindNextBoss().MakeBossAndSwitch(GetRandomInt(VSH2Boss_Hale, MAXBOSS), false);
 }
 
@@ -180,6 +183,8 @@ public void ManageBossThink(const BaseBoss base)
 		case VSH2Boss_HHHjr:		ToCHHHJr(base).Think();
 		case VSH2Boss_Bunny:		ToCBunny(base).Think();
 	}
+	
+	Call_OnBossThinkPost(base);
 }
 
 public void ManageBossModels(const BaseBoss base)
@@ -283,7 +288,7 @@ public void ManageMinionTransition(const BaseBoss base)
 			TF2_RemoveWearable(base.index, ent);
 	}
 	
-	BaseBoss master = BaseBoss(base.iOwnerBoss);
+	BaseBoss master = BaseBoss(base.iOwnerBoss, true);
 	Call_OnMinionInitialized(base, master);
 }
 
@@ -340,6 +345,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				return Plugin_Continue;
 			
 			victim.iHits++;
+			victim.flLastHit = GetGameTime();
 			char classname[64], inflictor_name[32];
 			if( IsValidEntity(inflictor) )
 				GetEntityClassname(inflictor, inflictor_name, sizeof(inflictor_name));
@@ -721,6 +727,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 		case -1: {}
 		default: {
 			victim.iHits++;
+			victim.flLastHit = GetGameTime();
 			if( damagetype & DMG_CRIT )
 				damagetype &= ~DMG_CRIT;
 			
@@ -1019,9 +1026,10 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 		int health = GetClientHealth(attacker.index);
 		int maxhp = GetEntProp(attacker.index, Prop_Data, "m_iMaxHealth");
 		int heavy_overheal = RoundFloat(FindConVar("tf_max_health_boost").FloatValue * maxhp);
+		
 		int health_from_dmg = ( health < maxhp ) ? (maxhp - health) % damage : (heavy_overheal - health) % damage;
 		SetEntityHealth(attacker.index, (!health_from_dmg) ?
-													((health + damage) >> view_as< int >((health > maxhp))) :
+													health + ((damage) >> view_as< int >((health > maxhp))) :
 													(health + health_from_dmg));
 	}
 	
@@ -1057,8 +1065,9 @@ public void ManagePlayerAirblast(const BaseBoss airblaster, const BaseBoss airbl
 		case VSH2Boss_Vagineer: {
 			if( TF2_IsPlayerInCondition(airblasted.index, TFCond_Ubercharged) ) {
 				float dur = GetConditionDuration(airblasted.index, TFCond_Ubercharged);
-				SetConditionDuration(airblasted.index, TFCond_Ubercharged, dur + 2.0 < VAG_UBER_TIME ? dur + 2.0 : VAG_UBER_TIME);
-				//TF2_AddCondition(airblasted.index, TFCond_Ubercharged, 2.0);
+				float max_dur = cvarVSH2[VagineerUberTime].FloatValue;
+				float increase = cvarVSH2[VagineerUberAirBlast].FloatValue;
+				SetConditionDuration(airblasted.index, TFCond_Ubercharged, dur + increase < max_dur ? dur + increase : max_dur);
 			}
 			else airblasted.flRAGE += cvarVSH2[AirblastRage].FloatValue;
 		}
@@ -1098,7 +1107,7 @@ public void TF2_OnConditionAdded(int client, TFCond condition)
 	BaseBoss player = BaseBoss(client);
 	if( !player.bIsBoss )
 		return;
-
+	
 	switch( condition ) {
 		case TFCond_Disguised, TFCond_Jarated, TFCond_MarkedForDeath:
 			TF2_RemoveCondition(client, condition);
@@ -1184,10 +1193,8 @@ public Action HookSound(int clients[64], int& numClients, char sample[PLATFORM_M
 					return Plugin_Continue;
 				if( StrContains(sample, "engineer_moveup", false) != -1 )
 					Format(sample, PLATFORM_MAX_PATH, "%s%i.wav", VagineerJump, GetRandomInt(1, 2));
-
 				else if( StrContains(sample, "engineer_no", false) != -1 || GetRandomInt(0, 9) > 6 )
 					strcopy(sample, PLATFORM_MAX_PATH, "vo/engineer_no01.mp3");
-
 				else strcopy(sample, PLATFORM_MAX_PATH, "vo/engineer_jeers02.mp3");
 				return Plugin_Changed;
 			}
@@ -1229,7 +1236,6 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 				if( base.iClimbs < cvarVSH2[HHHMaxClimbs].IntValue ) {
 					if( base.ClimbWall(weapon, cvarVSH2[HHHClimbVelocity].FloatValue, 0.0, false) ) {
 						base.flWeighDown = 0.0;
-						base.iClimbs++;
 					}
 				}
 			}
@@ -1248,9 +1254,6 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 	return Plugin_Continue;
 }
 
-/**
-IT SHOULD BE WORTH NOTING THAT ManageMessageIntro IS CALLED AFTER BOSS HEALTH CALCULATION, IT MAY OR MAY NOT BE A GOOD IDEA TO RESET BOSS HEALTH HERE IF NECESSARY. ESPECIALLY IF YOU HAVE A MULTIBOSS THAT REQUIRES UNEQUAL HEALTH DISTRIBUTION.
-*/
 public void ManageMessageIntro(ArrayList bosses)
 {
 	gameMessage[0] = '\0';
@@ -1333,6 +1336,7 @@ public void ManageResetVariables(const BaseBoss base)
 	base.iHealth = 0;
 	base.iMaxHealth = 0;
 	base.iShieldDmg = 0;
+	base.iClimbs = 0;
 }
 public void ManageEntityCreated(const int entity, const char[] classname)
 {
@@ -1396,12 +1400,23 @@ public void ManageMusic(char song[PLATFORM_MAX_PATH], float& time)
 		switch( currBoss.iBossType ) {
 			case -1: {song = ""; time = -1.0;}
 			case VSH2Boss_CBS: {
-				strcopy(song, sizeof(song), CBSTheme);
-				time = 140.0;
+				if( act != Plugin_Changed ) {
+					strcopy(song, sizeof(song), CBSTheme);
+					time = 140.0;
+				}
 			}
 			case VSH2Boss_HHHjr: {
-				strcopy(song, sizeof(song), HHHTheme);
-				time = 90.0;
+				if( act != Plugin_Changed ) {
+					strcopy(song, sizeof(song), HHHTheme);
+					time = 90.0;
+				}
+				
+			}
+			case VSH2Boss_Bunny, VSH2Boss_Hale, VSH2Boss_Vagineer: {
+				if( act != Plugin_Changed ) {
+					song = "";
+					time = GetGameTime() + 999999.0;
+				}
 			}
 		}
 	}
@@ -1523,7 +1538,7 @@ public void CheckAlivePlayers(const any nil)
 	if( gamemode.iRoundState != StateRunning )
 		return;
 	
-	int living = GetLivingPlayers(VSH2Team_Red);
+	int living = gamemode.iPlaying;
 	if( !living )
 		ForceTeamWin(VSH2Team_Boss);
 	
@@ -2043,7 +2058,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 	if( !(buttons & IN_SCORE) )
 		ShowSyncHudText(i, hHudText, HUDText);
 	
-	int living = GetLivingPlayers(VSH2Team_Red);
+	int living = gamemode.iPlaying;
 	if( living == 1 && !TF2_IsPlayerInCondition(i, TFCond_Cloaked) ) {
 		TF2_AddCondition(i, TFCond_CritOnWin, 0.2);
 		int primary = GetPlayerWeaponSlot(i, TFWeaponSlot_Primary);

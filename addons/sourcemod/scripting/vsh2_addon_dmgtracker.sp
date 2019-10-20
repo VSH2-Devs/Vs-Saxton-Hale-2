@@ -26,14 +26,15 @@ public Plugin myinfo = {
 
 Handle haledmg_cookie;
 
-public void OnAllPluginsLoaded()
-{
-	haledmg_cookie = RegClientCookie("vsh2_haledmg", "cookie to track boss damage settings", CookieAccess_Public);
-	RegConsoleCmd("haledmg", Command_damagetracker, "haledmg - Enable/disable the damage tracker.");
-	RegConsoleCmd("vsh2dmg", Command_damagetracker, "haledmg - Enable/disable the damage tracker.");
-	RegConsoleCmd("ff2dmg", Command_damagetracker, "haledmg - Enable/disable the damage tracker.");
-	CreateTimer(180.0, Timer_Advertise);
-	damageHUD = CreateHudSynchronizer();
+public void OnLibraryAdded(const char[] name) {
+	if( StrEqual(name, "VSH2") ) {
+		haledmg_cookie = RegClientCookie("vsh2_haledmg", "cookie to track boss damage settings", CookieAccess_Public);
+		RegConsoleCmd("haledmg", Command_damagetracker, "haledmg - Enable/disable the damage tracker.");
+		RegConsoleCmd("vsh2dmg", Command_damagetracker, "haledmg - Enable/disable the damage tracker.");
+		RegConsoleCmd("ff2dmg", Command_damagetracker, "haledmg - Enable/disable the damage tracker.");
+		CreateTimer(180.0, Timer_Advertise);
+		damageHUD = CreateHudSynchronizer();
+	}
 }
 
 public void OnMapStart()

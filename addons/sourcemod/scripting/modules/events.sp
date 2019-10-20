@@ -199,7 +199,7 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 	
 	/// We got players and a valid boss, set the gamestate to Starting
 	gamemode.iRoundState = StateStarting;
-	//SetPawnTimer(RoundStartPost, 9.1);	 /// in handler.sp
+	//SetPawnTimer(RoundStartPost, 9.1);    /// in handler.sp
 	SetPawnTimer(ManagePlayBossIntro, 3.5, boss);    /// in handler.sp
 	
 	int ent = -1;
@@ -208,7 +208,7 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 	ent = -1;
 	while( (ent = FindEntityByClassname(ent, "func_respawnroomvisualizer")) != -1 )
 		AcceptEntityInput(ent, "Disable");
-
+	
 	ent = -1;
 	while( (ent = FindEntityByClassname(ent, "obj_dispenser")) != -1 ) {
 		SetVariantInt(VSH2Team_Red);
@@ -216,7 +216,7 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 		AcceptEntityInput(ent, "skin");
 		SetEntProp(ent, Prop_Send, "m_nSkin", 0);
 	}
-
+	
 	ent = -1;
 	while( (ent = FindEntityByClassname(ent, "mapobj_cart_dispenser")) != -1 ) {
 		SetVariantInt(VSH2Team_Red);
@@ -231,13 +231,13 @@ public Action ObjectDeflected(Event event, const char[] name, bool dontBroadcast
 {
 	if( !cvarVSH2[Enabled].BoolValue )
 		return Plugin_Continue;
-
+	
 	BaseBoss airblaster = BaseBoss( event.GetInt("userid"), true );
 	BaseBoss airblasted = BaseBoss( event.GetInt("ownerid"), true );
 	int weaponid = GetEventInt(event, "weaponid");
 	if( weaponid )   /// number lower or higher than 0 is considered "true", learned that in C programming lol
 		return Plugin_Continue;
-
+	
 	ManagePlayerAirblast(airblaster, airblasted, event);
 	return Plugin_Continue;
 }
@@ -282,13 +282,12 @@ public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 			TF2Attrib_RemoveByDefIndex(i, 26);
 #endif
 	}
-	StopBackGroundMusic();	/// in handler.sp
-	
-	ShowPlayerScores();	/// In vsh2.sp
-	SetPawnTimer(CalcScores, 3.0);	/// In vsh2.sp
+	StopBackGroundMusic();         /// in handler.sp
+	ShowPlayerScores();            /// In vsh2.sp
+	SetPawnTimer(CalcScores, 3.0); /// In vsh2.sp
 	
 	ArrayList bosses = new ArrayList();
-	for( i=MaxClients; i; --i ) {	/// Loop again for bosses only
+	for( i=MaxClients; i; --i ) {    /// Loop again for bosses only
 		if( !IsValidClient(i) )
 			continue;
 		
@@ -381,7 +380,7 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 		if( max_health < 3000 && bosscount == 1 )
 			max_health = 3000;
 		
-		/// Putting in multiboss Handicap from complaints of fighting multiple bosses being too overpowered since teamwork itself is overpowered :).
+		/// Putting in multiboss Handicap from complaints of fighting multiple bosses being too overpowered since teamwork itself is overpowered :)
 		else if( max_health > 3000 && bosscount > 1 )
 			max_health -= cvarVSH2[MultiBossHandicap].IntValue;
 		
@@ -411,12 +410,11 @@ public Action PointCapture(Event event, const char[] name, bool dontBroadcast)
 		return Plugin_Continue;
 	
 	// int iCap = GetEventInt(event, "cp"); /// Doesn't seem to give the correct origin vectors
-	
 	int iCapTeam = event.GetInt("team");
 	gamemode.iCaptures++;
 	
 	if( gamemode.iCaptures >= cvarVSH2[MultiCapAmount].IntValue ||
-		(GetLivingPlayers(VSH2Team_Red) == 1 && iCapTeam == VSH2Team_Red) )
+		(gamemode.iPlaying == 1 && iCapTeam == VSH2Team_Red) )
 	{
 		ForceTeamWin(iCapTeam);
 		return Plugin_Continue;

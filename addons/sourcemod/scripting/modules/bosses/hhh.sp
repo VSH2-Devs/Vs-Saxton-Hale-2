@@ -33,18 +33,9 @@ methodmap CHHHJr < BaseBoss {
 		int buttons = GetClientButtons(this.index);
 		float currtime = GetGameTime();
 		int flags = GetEntityFlags(this.index);
-
-		//int maxhp = GetEntProp(this.index, Prop_Data, "m_iMaxHealth");
-		int health = this.iHealth;
-		float speed = HALESPEED + 0.7 * (100-health*100/this.iMaxHealth);
-		SetEntPropFloat(this.index, Prop_Send, "m_flMaxspeed", speed);
 		
-		if( this.flGlowtime > 0.0 ) {
-			this.bGlow = 1;
-			this.flGlowtime -= 0.1;
-		}
-		else if( this.flGlowtime <= 0.0 )
-			this.bGlow = 0;
+		this.SpeedThink(HALESPEED);
+		this.GlowThink(0.1);
 		
 		if( ((buttons & IN_DUCK) || (buttons & IN_ATTACK2)) && (this.flCharge >= 0.0) ) {
 			if( this.flCharge+2.5 < HALEHHH_TELEPORTCHARGE )
@@ -108,6 +99,7 @@ methodmap CHHHJr < BaseBoss {
 			}
 			else this.flCharge = 0.0;
 		}
+		
 		if( OnlyScoutsLeft(VSH2Team_Red) )
 			this.flRAGE += cvarVSH2[ScoutRageGen].FloatValue;
 		

@@ -169,7 +169,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 	property int iOwnerBoss {
 		public get() {
 			int i; hPlayerFields[this.index].GetValue("iOwnerBoss", i);
-			return GetClientOfUserId(i);
+			return i;
 		}
 		public set( const int val ) {
 			hPlayerFields[this.index].SetValue("iOwnerBoss", val);
@@ -201,6 +201,15 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		}
 		public set( const int val ) {
 			hPlayerFields[this.index].SetValue("iShieldDmg", val);
+		}
+	}
+	property int iClimbs {
+		public get() {
+			int i; hPlayerFields[this.index].GetValue("iClimbs", i);
+			return i;
+		}
+		public set( const int val ) {
+			hPlayerFields[this.index].SetValue("iClimbs", val);
 		}
 	}
 	
@@ -511,6 +520,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		fVelocity[2] = upwardvel;
 		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, fVelocity);
 		SDKHooks_TakeDamage(client, client, client, health, DMG_CLUB, 0); /// Inflictor is 0 to prevent Shiv self-bleed
+		this.iClimbs++;
 		
 		if( attackdelay )
 			RequestFrame(NoAttacking, EntIndexToEntRef(weapon));
@@ -603,15 +613,6 @@ methodmap BaseBoss < BaseFighter {
 		}
 		public set( const int val ) {
 			hPlayerFields[this.index].SetValue("iBossType", val);
-		}
-	}
-	property int iClimbs {
-		public get() {
-			int i; hPlayerFields[this.index].GetValue("iClimbs", i);
-			return i;
-		}
-		public set( const int val ) {
-			hPlayerFields[this.index].SetValue("iClimbs", val);
 		}
 	}
 	property int iStabbed {
@@ -881,6 +882,48 @@ methodmap BaseBoss < BaseFighter {
 			}
 		}
 	}
+	
+	public void SpeedThink(const float iota) {
+		float speed = iota + 0.7 * (100-this.iHealth*100/this.iMaxHealth);
+		SetEntPropFloat(this.index, Prop_Send, "m_flMaxspeed", speed);
+	}
+	public void GlowThink(const float decrease) {
+		if( this.flGlowtime > 0.0 ) {
+			this.bGlow = 1;
+			this.flGlowtime -= decrease;
+		} else if( this.flGlowtime <= 0.0 )
+			this.bGlow = 0;
+	}
+	public bool SuperJumpThink(const float charging, const float jumpcharge) {
+		int buttons = GetClientButtons(this.index);
+		if( ((buttons & IN_DUCK) || (buttons & IN_ATTACK2)) && (this.flCharge >= 0.0) ) {
+			if( this.flCharge+charging < jumpcharge )
+				this.flCharge += charging;
+			else this.flCharge = jumpcharge;
+		} else if( this.flCharge < 0.0 )
+			this.flCharge += charging;
+		else {
+			float EyeAngles[3]; GetClientEyeAngles(this.index, EyeAngles);
+			if( this.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
+				return true;
+			}
+			else this.flCharge = 0.0;
+		}
+		return false;
+	}
+	public void WeighDownThink(const float weighdown_time) {
+		int buttons = GetClientButtons(this.index);
+		int flags = GetEntityFlags(this.index);
+		if( flags & FL_ONGROUND )
+			this.flWeighDown = 0.0;
+		else this.flWeighDown += 0.1;
+		
+		if( (buttons & IN_DUCK) && this.flWeighDown >= weighdown_time ) {
+			float ang[3]; GetClientEyeAngles(this.index, ang);
+			if( ang[0] > 60.0 )
+				this.WeighDown(0.0);
+		}
+	}
 };
 
 
@@ -894,3 +937,4 @@ public void SetGravityNormal(const int userid)
 	if( IsClientValid(i) )
 		SetEntityGravity(i, 1.0);
 }
+

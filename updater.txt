@@ -4,12 +4,29 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.3.18"
+			"Latest"	"2.4.0"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.3.18:"
-		"Notes"	"Added new forward + hook: 'OnBossTakeDamage_OnMantreadsStomp'."
-		"Notes"	"Added default mantreads stomp damage."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.4.0:"
+		"Notes"	"Patched glitch where Plague Doctor boosts ALL minions, including ones that aren't his."
+		"Notes"	"Nerfed minion respawn time by 50%."
+		"Notes"	"Replaced 'OnAllPluginsLoaded' with 'OnLibraryAdded' checks in the official addons."
+		"Notes"	"Moved superjump, weighdown, and glow code into separate think functions except for HHH Jr."
+		"Notes"	"Added new cvars concerning Vagineer's uber time."
+		"Notes"	"Changed a bit of the music management code so that the built-in bosses that have no theme song will not let the music forward spam."
+		"Notes"	"Allowed being able to change the music themes for the default bosses."
+		"Notes"	"Added a 'MaxVSH2*' enum value to represent the maximum size of specific internal arrays."
+		"Notes"	"Added a few convenience properties and methods to the VSH2Player methodmap."
+		"Notes"	"Changed 'iOwnerBoss' property to be consistent with 'iUberTarget'."
+		"Notes"	"Replaced 'iPlaying' property implementation with 'GetLivingPlayers'."
+		"Notes"	"Nullified all preround damage to 0 in order to prevent killing the boss in the frames between the round starting and the boss getting their health and ending the round."
+		"Notes"	"Put 'flLastHit' to good use in OnTakeDamage."
+		"Notes"	"Replaced PrivateForward methodmap with SM's internal PrivateForward."
+		"Notes"	"Moved content and asset preparation stocks to vsh2.inc."
+		"Notes"	"Patched heavy health being lowered instead of boosting when multi-damaging 2+ bosses at once with shotgun."
+		"Notes"	"Moved 'iClimbs' property to 'BaseFighter' to use in 'ClimbWall' method."
+		"Notes"	"Removed ifdef for gamemode optional dependency checks."
+		"Notes"	"Providing updated steamtools.inc (Thx to JoinedSenses!)."
 	}
 	
 	"Files"
@@ -37,5 +54,6 @@
 		"Source"	"Path_SM/scripting/modules/bosses/vagineer.sp"
 		
 		"Source"	"Path_SM/scripting/include/vsh2.inc"
+		"Source"	"Path_SM/scripting/include/steamtools.inc"
 	}
 }

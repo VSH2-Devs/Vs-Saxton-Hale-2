@@ -5,11 +5,9 @@
 #pragma semicolon		1
 #pragma newdecls		required
 
-methodmap VSH2Derived < VSH2Player
-{
-	public VSH2Derived (const int x, bool userid=false)
-	{
-		return view_as< VSH2Derived >( VSH2Player(x, userid) );
+methodmap VSH2Derived < VSH2Player {
+	public VSH2Derived(const int x, bool userid=false) {
+		return view_as< VSH2Derived >(VSH2Player(x, userid));
 	}
 	
 	property int iNewProperty {
@@ -30,13 +28,13 @@ public Plugin myinfo = {
 	url = "http://www.sourcemod.net/"
 };
 
-/** YOU NEED TO USE OnAllPluginsLoaded() TO REGISTER PLUGINS BECAUSE WE NEED TO MAKE SURE THE VSH2 PLUGIN LOADS FIRST */
-//int ThisPluginIndex;
-public void OnAllPluginsLoaded()
-{
-	//VSH2_RegisterPlugin("test_plugin_boss");
-	RegConsoleCmd("sm_testvsh2natives", CommandInfo, "clever command explanation heer.");
-	LoadVSH2Hooks();
+
+public void OnLibraryAdded(const char[] name) {
+	if( StrEqual(name, "VSH2") ) {
+		//VSH2_RegisterPlugin("test_plugin_boss");
+		RegConsoleCmd("sm_testvsh2natives", CommandInfo, "clever command explanation heer.");
+		LoadVSH2Hooks();
+	}
 }
 
 public Action CommandInfo(int client, int args)
@@ -89,6 +87,12 @@ public Action fwdOnBossThink(const VSH2Player player)
 {
 	player.SetPropInt("iHealth", player.GetPropInt("iHealth") + 1);
 }
+
+public Action fwdOnBossThinkPost(const VSH2Player player)
+{
+	player.SetPropFloat("flRAGE", player.GetPropFloat("flRAGE") + 1.0);
+}
+
 public Action fwdOnBossModelTimer(const VSH2Player player)
 {
 	player.SetPropFloat("flRAGE", player.GetPropFloat("flRAGE") + 1.0);
@@ -639,4 +643,7 @@ public void LoadVSH2Hooks()
 		
 	if (!VSH2_HookEx(OnBossTakeDamage_OnMantreadsStomp, fwdOnBossTakeDamage_OnMantreadsStomp))
 		LogError("Error Hooking OnBossTakeDamage_OnMantreadsStomp forward for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnBossThinkPost, fwdOnBossThinkPost))
+		LogError("Error Hooking OnBossThinkPost forward for VSH2 Test plugin.");
 }

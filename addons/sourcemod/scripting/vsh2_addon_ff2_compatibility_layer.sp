@@ -31,27 +31,25 @@ ConVar
 bool g_vsh2;
 
 
-public void OnAllPluginsLoaded() 
-{
-	VSH2_Hook(OnMusic, FF2_OnMusic);
-	
-	/// FF2 has a set max lives limit, VSH2 imposes no such limit on lives.
-	/// Create iMaxLives property for FF2 to use exclusively.
-	for( int i=MaxClients; i; i-- )
-		if( 0 < i <= MaxClients && IsClientInGame(i) )
-			VSH2Player(i).SetPropInt("iMaxLives", 0);
-}
 
 public void OnLibraryAdded(const char[] name) {
-	if (StrEqual(name, "VSH2")) {
+	if( StrEqual(name, "VSH2") ) {
 		g_vsh2 = true;
 		vsh2_enabled = FindConVar("vsh2_enabled");
 		vsh2_version = FindConVar("vsh2_version");
+		
+		VSH2_Hook(OnMusic, FF2_OnMusic);
+		
+		/// FF2 has a set max lives limit, VSH2 imposes no such limit on lives.
+		/// Create iMaxLives property for FF2 to use exclusively.
+		for( int i=MaxClients; i; i-- )
+			if( 0 < i <= MaxClients && IsClientInGame(i) )
+				VSH2Player(i).SetPropInt("iMaxLives", 0);
 	}
 }
 
 public void OnLibraryRemoved(const char[] name) {
-	if (StrEqual(name, "VSH2")) {
+	if( StrEqual(name, "VSH2") ) {
 		g_vsh2 = false;
 	}
 }
@@ -178,8 +176,7 @@ public int Native_FF2_GetBossHealth(Handle plugin, int numParams)
 	else if( boss==0 ) {
 		VSH2Player[] players = new VSH2Player[MaxClients];
 		int amount_of_bosses = VSH2GameMode_GetBosses(players, false);
-		if( amount_of_bosses > 0 )
-			return players[0].GetPropInt("iHealth");
+		return( amount_of_bosses > 0 ) ? players[boss].GetPropInt("iHealth") : 0;
 	}
 	VSH2Player player = VSH2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.GetPropInt("iHealth") : 0;
@@ -196,8 +193,7 @@ public int Native_FF2_SetBossHealth(Handle plugin, int numParams)
 	if( boss==0 ) {
 		VSH2Player[] players = new VSH2Player[MaxClients];
 		int amount_of_bosses = VSH2GameMode_GetBosses(players, false);
-		if( amount_of_bosses > 0 )
-			return players[0].SetPropInt("iHealth", new_health);
+		return( amount_of_bosses > 0 ) ? players[boss].SetPropInt("iHealth", new_health) : 0;
 	}
 	VSH2Player player = VSH2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.SetPropInt("iHealth", new_health) : 0;

@@ -25,7 +25,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.3.18"
+#define PLUGIN_VERSION       "2.4.0"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -107,11 +107,14 @@ enum /** CvarName */ {
 	ShowBossHPLiving,
 	HHHTeleCooldown,
 	MaxRandomMultiBosses,
-	VersionNumber
+	VagineerUberTime,
+	VagineerUberAirBlast,
+	VersionNumber,
+	MaxVSH2ConVars
 };
 
-/// Don't change this. Simply place any new CVARs above VersionNumber in the enum.
-ConVar cvarVSH2[VersionNumber+1];
+/// Don't change this. Simply place any new CVARs above MaxVSH2ConVars in the enum.
+ConVar cvarVSH2[MaxVSH2ConVars];
 
 Handle
 	hHudText,
@@ -121,19 +124,6 @@ Handle
 	BossCookie,
 	MusicCookie
 ;
-/*
-enum struct VSH2Objs {
-	Handle
-		HudText,
-		TimeLeftHUD,
-		PointCookies,
-		BossCookies,
-		MusicCookies
-	;
-};
-
-VSH2Objs g_vsh2_handles;
-*/
 
 methodmap TF2Item < Handle {
 	public TF2Item(int iFlags) {
@@ -345,14 +335,13 @@ public void OnPluginStart()
 	cvarVSH2[SniperClimbVelocity] = CreateConVar("vsh2_sniper_climb_velocity", "600.0", "in hammer units, how high of a velocity sniper melees will climb.", FCVAR_NONE, true, 0.0, false);
 	cvarVSH2[ShowBossHPLiving] = CreateConVar("vsh2_show_boss_hp_alive_players", "1", "How many players must be alive for total boss hp to show.", FCVAR_NONE, true, 1.0, true, 64.0);
 	cvarVSH2[HHHTeleCooldown] = CreateConVar("vsh2_hhh_tele_cooldown", "-1100.0", "Teleportation cooldown for HHH Jr. after teleporting. formula is '-seconds * 25' so -1100.0 is 44 seconds", FCVAR_NONE, true, -999999.0, true, 25.0);
-	cvarVSH2[MaxRandomMultiBosses] = CreateConVar("vsh2_random_multibosses_limit", "2", "The maximum limit for hain", FCVAR_NONE, true, 1.0, true, 30.0);
+	cvarVSH2[MaxRandomMultiBosses] = CreateConVar("vsh2_random_multibosses_limit", "2", "The maximum limit of random multibosses", FCVAR_NONE, true, 1.0, true, 30.0);
+	cvarVSH2[VagineerUberTime] = CreateConVar("vsh2_vagineer_uber_time", "10.0", "The maximum length of the Vagineer boss' uber.", FCVAR_NONE, true, 1.0, false);
+	cvarVSH2[VagineerUberAirBlast] = CreateConVar("vsh2_vagineer_uber_time_airblast", "2.0", "extra time given to vagineer's uber when airblasted.", FCVAR_NONE, true, 1.0, false);
 	
-#if defined _steamtools_included
 	gamemode.bSteam = LibraryExists("SteamTools");
-#endif
-#if defined _tf2attributes_included
 	gamemode.bTF2Attribs = LibraryExists("tf2attributes");
-#endif
+	
 	AutoExecConfig(true, "VSHv2");
 	HookEvent("player_death", PlayerDeath, EventHookMode_Pre);
 	HookEvent("player_hurt", PlayerHurt, EventHookMode_Pre);
@@ -474,14 +463,10 @@ public Action BlockSuicide(int client, const char[] command, int argc)
 
 public void OnLibraryAdded(const char[] name)
 {
-#if defined _steamtools_included
 	if( !strcmp(name, "SteamTools", false) )
 		gamemode.bSteam = true;
-#endif
-#if defined _tf2attributes_included
 	if( !strcmp(name, "tf2attributes", false) )
 		gamemode.bTF2Attribs = true;
-#endif
 #if defined _updater_included
 	if( !strcmp(name, "updater") )
 		Updater_AddPlugin(UPDATE_URL);
@@ -489,15 +474,12 @@ public void OnLibraryAdded(const char[] name)
 }
 public void OnLibraryRemoved(const char[] name)
 {
-#if defined _steamtools_included
 	if( !strcmp(name, "SteamTools", false) )
 		gamemode.bSteam = false;
-#endif
-#if defined _tf2attributes_included
 	if( !strcmp(name, "tf2attributes", false) )
 		gamemode.bTF2Attribs = false;
-#endif
 }
+
 /// UPDATER Stuff
 public void OnAllPluginsLoaded()
 {
@@ -744,7 +726,7 @@ public Action Timer_PlayerThink(Handle hTimer)
 		}
 		else ManageFighterThink(player);
 		
-		if( GetLivingPlayers(VSH2Team_Red) <= cvarVSH2[ShowBossHPLiving].IntValue ) {
+		if( gamemode.iPlaying <= cvarVSH2[ShowBossHPLiving].IntValue ) {
 			SetHudTextParams(-1.0, 0.20, 0.11, 255, 255, 255, 255);
 			ShowSyncHudText(i, healthHUD, "Total Boss Health: %i", gamemode.GetTotalBossHealth());
 		}
@@ -796,6 +778,10 @@ public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& dam
 {
 	if( !cvarVSH2[Enabled].BoolValue || !IsClientValid(victim) )
 		return Plugin_Continue;
+	else if( gamemode.iRoundState == StateStarting ) {
+		damage = 0.0;
+		return Plugin_Changed;
+	}
 	
 	BaseBoss BossVictim = BaseBoss(victim);
 	if( BossVictim.bIsBoss ) /// in handler.sp
@@ -1078,15 +1064,14 @@ public void _MusicPlay()
 	if( gamemode.flMusicTime > currtime )
 		return;
 	
-	char sound[PLATFORM_MAX_PATH];
+	char bg_music[PLATFORM_MAX_PATH];
 	float time = -1.0;
-	ManageMusic(sound, time);	/// in handler.sp
+	ManageMusic(bg_music, time);    /// in handler.sp
 	
 	BaseBoss boss;
 	float vol = cvarVSH2[MusicVolume].FloatValue;
-	if( sound[0] != '\0' ) {
-		strcopy(BackgroundSong, PLATFORM_MAX_PATH, sound);
-		//Format(sound, PLATFORM_MAX_PATH, "#%s", sound);
+	if( bg_music[0] != '\0' ) {
+		strcopy(BackgroundSong, PLATFORM_MAX_PATH, bg_music);
 		for( int i=MaxClients; i; --i ) {
 			if( !IsClientValid(i) )
 				continue;
@@ -1094,8 +1079,7 @@ public void _MusicPlay()
 			boss = BaseBoss(i);
 			if( boss.bNoMusic )
 				continue;
-			EmitSoundToClient(i, sound, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-			//ClientCommand(i, "playgamesound \"%s\"", sound);
+			EmitSoundToClient(i, bg_music, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
 		}
 	}
 	if( time != -1.0 ) {
@@ -1224,6 +1208,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 #if defined _steamtools_included
 	MarkNativeAsOptional("Steam_SetGameDescription");
 #endif
+	
 #if defined _tf2attributes_included
 	MarkNativeAsOptional("TF2Attrib_SetByDefIndex");
 	MarkNativeAsOptional("TF2Attrib_RemoveByDefIndex");
@@ -1320,7 +1305,7 @@ public int Native_Hook(Handle plugin, int numParams)
 	int vsh2Hook = GetNativeCell(1);
 	Function Func = GetNativeFunction(2);
 	if( g_hForwards[vsh2Hook] != null )
-		g_hForwards[vsh2Hook].Add(plugin, Func);
+		g_hForwards[vsh2Hook].AddFunction(plugin, Func);
 }
 
 public int Native_HookEx(Handle plugin, int numParams)
@@ -1328,7 +1313,7 @@ public int Native_HookEx(Handle plugin, int numParams)
 	int vsh2Hook = GetNativeCell(1);
 	Function Func = GetNativeFunction(2);
 	if( g_hForwards[vsh2Hook] != null )
-		return g_hForwards[vsh2Hook].Add(plugin, Func);
+		return g_hForwards[vsh2Hook].AddFunction(plugin, Func);
 	return 0;
 }
 
@@ -1336,13 +1321,13 @@ public int Native_Unhook(Handle plugin, int numParams)
 {
 	int vsh2Hook = GetNativeCell(1);
 	if( g_hForwards[vsh2Hook] != null )
-		g_hForwards[vsh2Hook].Remove(plugin, GetNativeFunction(2));
+		g_hForwards[vsh2Hook].RemoveFunction(plugin, GetNativeFunction(2));
 }
 public int Native_UnhookEx(Handle plugin, int numParams)
 {
 	int vsh2Hook = GetNativeCell(1);
 	if( g_hForwards[vsh2Hook] != null )
-		return g_hForwards[vsh2Hook].Remove(plugin, GetNativeFunction(2));
+		return g_hForwards[vsh2Hook].RemoveFunction(plugin, GetNativeFunction(2));
 	return 0;
 }
 
