@@ -91,7 +91,7 @@ methodmap CHHHJr < BaseBoss {
 					EmitSoundToClient(target, "misc/halloween/spell_teleport.wav");
 					PrintCenterText(target, "You've been teleported!");
 					
-					this.flCharge = cvarVSH2[HHHTeleCooldown].FloatValue;
+					this.flCharge = g_vsh2_data.m_hCvars[HHHTeleCooldown].FloatValue;
 				}
 				if( this.bSuperCharge )
 					this.bSuperCharge = false;
@@ -100,7 +100,7 @@ methodmap CHHHJr < BaseBoss {
 		}
 		
 		if( OnlyScoutsLeft(VSH2Team_Red) )
-			this.flRAGE += cvarVSH2[ScoutRageGen].FloatValue;
+			this.flRAGE += g_vsh2_data.m_hCvars[ScoutRageGen].FloatValue;
 		
 		if( flags & FL_ONGROUND ) {
 			this.flWeighDown = 0.0;
@@ -119,10 +119,10 @@ methodmap CHHHJr < BaseBoss {
 		if( jmp > 0.0 )
 			jmp *= 2.0;
 		
-		int max_climbs = cvarVSH2[HHHMaxClimbs].IntValue;
+		int max_climbs = g_vsh2_data.m_hCvars[HHHMaxClimbs].IntValue;
 		if( this.flRAGE >= 100.0 )
-			ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i / %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.iClimbs, max_climbs);
-		else ShowSyncHudText(this.index, hHudText, "Teleport: %i | Climbs: %i / %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.iClimbs, max_climbs, this.flRAGE);
+			ShowSyncHudText(this.index, g_vsh2_data.m_hHudText, "Teleport: %i | Climbs: %i / %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.iClimbs, max_climbs);
+		else ShowSyncHudText(this.index, g_vsh2_data.m_hHudText, "Teleport: %i | Climbs: %i / %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.iClimbs, max_climbs, this.flRAGE);
 	}
 	public void SetModel() {
 		SetVariantString(HHHModel);
@@ -145,7 +145,7 @@ methodmap CHHHJr < BaseBoss {
 		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.1; 259; 1.0; 252; 0.6; 551; 1");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_sword", 266, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
-		this.flCharge = cvarVSH2[HHHTeleCooldown].FloatValue * 0.9091;
+		this.flCharge = g_vsh2_data.m_hCvars[HHHTeleCooldown].FloatValue * 0.9091;
 	}
 	public void RageAbility()
 	{

@@ -386,7 +386,7 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 	return Plugin_Continue;
 }
 
-public void PlagueDoc_OnRoundEndInfo(const VSH2Player player, bool bossBool, char message[512])
+public void PlagueDoc_OnRoundEndInfo(const VSH2Player player, bool bossBool, char message[MAXMESSAGE])
 {
 	if( !IsPlagueDoctor(player) )
 		return;

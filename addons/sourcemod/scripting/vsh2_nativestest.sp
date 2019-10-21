@@ -325,7 +325,7 @@ public void fwdOnBossJarated(const VSH2Player victim, const VSH2Player attacker)
 	PrintToConsole(victim.index, "fwdOnBossJarated:: ==> attacker name: %N | victim name: %N", attacker.index, victim.index);
 }
 
-public void fwdOnMessageIntro(const VSH2Player boss, char message[512])
+public void fwdOnMessageIntro(const VSH2Player boss, char message[MAXMESSAGE])
 {
 	PrintToConsole(boss.index, "fwdOnMessageIntro:: %N", boss.index);
 }
@@ -353,7 +353,7 @@ public void fwdOnMusic(char song[PLATFORM_MAX_PATH], float &time, const VSH2Play
 {
 	PrintToConsole(player.index, "fwdOnMusic:: ==> Called");
 }
-public void fwdOnRoundEndInfo(const VSH2Player player, bool bossBool, char message[512])
+public void fwdOnRoundEndInfo(const VSH2Player player, bool bossBool, char message[MAXMESSAGE])
 {
 	PrintToConsole(player.index, "fwdOnRoundEndInfo:: %N", player.index);
 }
@@ -364,7 +364,7 @@ public void fwdOnLastPlayer(const VSH2Player boss)
 			PrintToConsole(i, "fwdOnLastPlayer:: ==> Called");
 }
 
-public void fwdOnBossHealthCheck(const VSH2Player player, bool bossBool, char message[512])
+public void fwdOnBossHealthCheck(const VSH2Player player, bool bossBool, char message[MAXMESSAGE])
 {
 	PrintToConsole(player.index, "fwdOnBossHealthCheck:: %N", player.index);
 }

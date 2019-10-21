@@ -2,8 +2,7 @@
 	ALL NON-BOSS AND NON-MINION RELATED CODE IS AT THE BOTTOM. HAVE FUN CODING!
 */
 
-#define MAXMESSAGE 128
-#define MAXBOSS    (MaxDefaultVSH2Bosses - 1) + (g_hBossesRegistered.Length)
+#define MAXBOSS    (MaxDefaultVSH2Bosses - 1) + (g_vsh2_data.m_hBossesRegistered.Length)
 
 #include "modules/bosses.sp"
 
@@ -133,12 +132,12 @@ public void ManageOnBossSelected(const BaseBoss base)
 	
 	/// random multibosses code.
 	int playing = gamemode.iPlaying;
-	if( !cvarVSH2[AllowRandomMultiBosses].BoolValue || playing < 10 || GetRandomInt(0, 3) > 0 )
+	if( !g_vsh2_data.m_hCvars[AllowRandomMultiBosses].BoolValue || playing < 10 || GetRandomInt(0, 3) > 0 )
 		return;
 	
 	int extra_bosses = GetRandomInt(1, playing / 12);
-	if( extra_bosses > cvarVSH2[MaxRandomMultiBosses].IntValue )
-		extra_bosses = cvarVSH2[MaxRandomMultiBosses].IntValue;
+	if( extra_bosses > g_vsh2_data.m_hCvars[MaxRandomMultiBosses].IntValue )
+		extra_bosses = g_vsh2_data.m_hCvars[MaxRandomMultiBosses].IntValue;
 	
 	for( int i; i<extra_bosses; i++ )
 		gamemode.FindNextBoss().MakeBossAndSwitch(GetRandomInt(VSH2Boss_Hale, MAXBOSS), false);
@@ -436,7 +435,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				return Plugin_Changed;
 			}
 			
-			if( cvarVSH2[Anchoring].BoolValue ) {
+			if( g_vsh2_data.m_hCvars[Anchoring].BoolValue ) {
 				int iFlags = GetEntityFlags(victim.index);
 #if defined _tf2attributes_included
 				if( gamemode.bTF2Attribs ) {
@@ -490,7 +489,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				}
 				
 				if( wepindex == 230 )
-					victim.flRAGE -= (damage * cvarVSH2[SydneySleeperRageRemove].FloatValue);
+					victim.flRAGE -= (damage * g_vsh2_data.m_hCvars[SydneySleeperRageRemove].FloatValue);
 				
 				if( !(damagetype & DMG_CRIT) ) {
 					bool ministatus = (TF2_IsPlayerInCondition(attacker, TFCond_CritCola) || TF2_IsPlayerInCondition(attacker, TFCond_Buffed) || TF2_IsPlayerInCondition(attacker, TFCond_CritHype));
@@ -585,7 +584,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				}
 				/// Fan O War
 				case 355: {
-					victim.flRAGE -= cvarVSH2[FanoWarRage].FloatValue;
+					victim.flRAGE -= g_vsh2_data.m_hCvars[FanoWarRage].FloatValue;
 					if( Call_OnBossTakeDamage_OnHitFanOWar(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) == Plugin_Changed )
 						return Plugin_Changed;
 				}
@@ -599,7 +598,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				/// Chdata's Market Gardener backstab
 				case 416: {
 					if( BaseBoss(attacker).bInJump ) {
-						damage = ( Pow(float(victim.iMaxHealth), (0.74074))/*512.0*/ - (victim.iMarketted/128*float(victim.iMaxHealth)) )/3.0;
+						damage = ( Pow(float(victim.iMaxHealth), (0.74074)) - (victim.iMarketted/128*float(victim.iMaxHealth)) )/3.0;
 						
 						damage *= gamemode.CountBosses(true);
 						
@@ -693,7 +692,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				}
 				/// Tickle Hoovy Fists.
 				case 656: {
-					SetPawnTimer(_StopTickle, cvarVSH2[StopTickleTime].FloatValue, victim.userid);
+					SetPawnTimer(_StopTickle, g_vsh2_data.m_hCvars[StopTickleTime].FloatValue, victim.userid);
 					if( TF2_IsPlayerInCondition(attacker, TFCond_Dazed) )
 						TF2_RemoveCondition(attacker, TFCond_Dazed);
 					
@@ -707,7 +706,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				TR_TraceRayFilter(damagePosition, ray_angle, MASK_PLAYERSOLID_BRUSHONLY, RayType_Infinite, TraceRayIgnoreEnts);
 				if( TR_DidHit() ) {
 					float end_pos[3]; TR_GetEndPosition(end_pos);
-					if( GetVectorDistance(damagePosition, end_pos) >= cvarVSH2[AirShotDist].FloatValue )
+					if( GetVectorDistance(damagePosition, end_pos) >= g_vsh2_data.m_hCvars[AirShotDist].FloatValue )
 						if( Call_OnBossAirShotProj(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) )
 							return Plugin_Changed;
 				}
@@ -775,7 +774,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 					Entire team is pretty much screwed if all the medics just die.
 				*/
 				if( Call_OnBossDealDamage_OnHitMedic(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
-					if( cvarVSH2[MedicUberShield].BoolValue && GetMediCharge(medigun) >= 0.90 ) {
+					if( g_vsh2_data.m_hCvars[MedicUberShield].BoolValue && GetMediCharge(medigun) >= 0.90 ) {
 						SetMediCharge(medigun, 0.1);
 						ScaleVector(damageForce, 9.0);
 						damage *= 0.1;
@@ -796,7 +795,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 							if( damagetype & DMG_CRIT )
 								damagetype &= ~DMG_CRIT;
 							if( damagetype & DMG_CLUB )
-								damage = cvarVSH2[DeadRingerDamage].FloatValue / FindConVar("tf_feign_death_damage_scale").FloatValue;
+								damage = g_vsh2_data.m_hCvars[DeadRingerDamage].FloatValue / FindConVar("tf_feign_death_damage_scale").FloatValue;
 							return Plugin_Changed;
 						}
 						return Plugin_Changed;
@@ -805,7 +804,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 							if( damagetype & DMG_CRIT )
 								damagetype &= ~DMG_CRIT;
 							if( damagetype & DMG_CLUB )
-								damage = cvarVSH2[CloakDamage].FloatValue / FindConVar("tf_stealth_damage_reduction").FloatValue;
+								damage = g_vsh2_data.m_hCvars[CloakDamage].FloatValue / FindConVar("tf_stealth_damage_reduction").FloatValue;
 							return Plugin_Changed;
 						}
 						return Plugin_Changed;
@@ -869,12 +868,12 @@ public Action ManageOnGoombaStomp(int attacker, int client, float& damageMultipl
 			/// Default behaviour for Goomba Stompoing the Boss
 			default: {
 				/// Prevent goomba stomp for mantreads/demo boots if being able to is disabled.
-				if (IsValidEntity(FindPlayerBack(attacker, { 444, 405, 608 }, 3)) && !cvarVSH2[CanMantreadsGoomba].BoolValue)
+				if (IsValidEntity(FindPlayerBack(attacker, { 444, 405, 608 }, 3)) && !g_vsh2_data.m_hCvars[CanMantreadsGoomba].BoolValue)
 					return Plugin_Handled;
 				
-				damageAdd = float(cvarVSH2[GoombaDamageAdd].IntValue);
-				damageMultiplier = cvarVSH2[GoombaLifeMultiplier].FloatValue;
-				JumpPower = cvarVSH2[GoombaReboundPower].FloatValue;
+				damageAdd = float(g_vsh2_data.m_hCvars[GoombaDamageAdd].IntValue);
+				damageMultiplier = g_vsh2_data.m_hCvars[GoombaLifeMultiplier].FloatValue;
+				JumpPower = g_vsh2_data.m_hCvars[GoombaReboundPower].FloatValue;
 				
 				//PrintToChatAll("%N Just Goomba stomped %N(The Boss)!", attacker, client);
 				CPrintToChatAllEx(attacker, "{olive}>> {teamcolor}%N {default}just goomba stomped {unique}%N{default}!", attacker, client);
@@ -893,7 +892,7 @@ public Action ManageOnGoombaStomp(int attacker, int client, float& damageMultipl
 			/// Default behaviour for the Boss Goomba Stomping other players.
 			default: {
 				/// Block the Boss from Goomba Stomping if disabled.
-				if( !cvarVSH2[CanBossGoomba].BoolValue )
+				if( !g_vsh2_data.m_hCvars[CanBossGoomba].BoolValue )
 					return Plugin_Handled;
 				/// If the demo had a shield to break
 				if( RemoveDemoShield(client) || RemoveRazorBack(client) ) {
@@ -978,7 +977,7 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 		&& GetPlayerWeaponSlot(attacker.index, TFWeaponSlot_Secondary) <= 0
 		&& TF2_GetPlayerClass(attacker.index) == TFClass_DemoMan )
 	{
-		int iReqDmg = cvarVSH2[ShieldRegenDmgReq].IntValue;
+		int iReqDmg = g_vsh2_data.m_hCvars[ShieldRegenDmgReq].IntValue;
 		if( iReqDmg>0 ) {
 			attacker.iShieldDmg += damage;
 			if( attacker.iShieldDmg >= iReqDmg ) {
@@ -1017,7 +1016,7 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 	if( GetIndexOfWeaponSlot(attacker.index, TFWeaponSlot_Primary) == 1104 ) {
 		if( weapon == TF_WEAPON_ROCKETLAUNCHER )
 			attacker.iAirDamage += damage;
-		int div = cvarVSH2[AirStrikeDamage].IntValue;
+		int div = g_vsh2_data.m_hCvars[AirStrikeDamage].IntValue;
 		SetEntProp(attacker.index, Prop_Send, "m_iDecapitations", attacker.iAirDamage/div);
 	}
 	
@@ -1061,15 +1060,15 @@ public void ManagePlayerAirblast(const BaseBoss airblaster, const BaseBoss airbl
 	switch( airblasted.iBossType ) {
 		case -1: {}
 		case VSH2Boss_Hale, VSH2Boss_CBS, VSH2Boss_HHHjr, VSH2Boss_Bunny:
-			airblasted.flRAGE += cvarVSH2[AirblastRage].FloatValue;
+			airblasted.flRAGE += g_vsh2_data.m_hCvars[AirblastRage].FloatValue;
 		case VSH2Boss_Vagineer: {
 			if( TF2_IsPlayerInCondition(airblasted.index, TFCond_Ubercharged) ) {
 				float dur = GetConditionDuration(airblasted.index, TFCond_Ubercharged);
-				float max_dur = cvarVSH2[VagineerUberTime].FloatValue;
-				float increase = cvarVSH2[VagineerUberAirBlast].FloatValue;
+				float max_dur = g_vsh2_data.m_hCvars[VagineerUberTime].FloatValue;
+				float increase = g_vsh2_data.m_hCvars[VagineerUberAirBlast].FloatValue;
 				SetConditionDuration(airblasted.index, TFCond_Ubercharged, dur + increase < max_dur ? dur + increase : max_dur);
 			}
-			else airblasted.flRAGE += cvarVSH2[AirblastRage].FloatValue;
+			else airblasted.flRAGE += g_vsh2_data.m_hCvars[AirblastRage].FloatValue;
 		}
 	}
 }
@@ -1080,7 +1079,7 @@ public Action ManageTraceHit(const BaseBoss victim, const BaseBoss attacker, int
 }
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
-	if( !cvarVSH2[Enabled].BoolValue || !IsPlayerAlive(client) )
+	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue || !IsPlayerAlive(client) )
 		return Plugin_Continue;
 
 	BaseBoss base = BaseBoss(client);
@@ -1168,12 +1167,12 @@ public void ManagePlayerJarated(const BaseBoss attacker, const BaseBoss victim)
 	switch( victim.iBossType ) {
 		case -1: {}
 		case VSH2Boss_Hale, VSH2Boss_Vagineer, VSH2Boss_CBS, VSH2Boss_HHHjr, VSH2Boss_Bunny:
-			victim.flRAGE -= cvarVSH2[JarateRage].FloatValue;
+			victim.flRAGE -= g_vsh2_data.m_hCvars[JarateRage].FloatValue;
 	}
 }
 public Action HookSound(int clients[64], int& numClients, char sample[PLATFORM_MAX_PATH], int& entity, int& channel, float& volume, int& level, int& pitch, int& flags)
 {
-	if( !cvarVSH2[Enabled].BoolValue || !IsValidClient(entity) )
+	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue || !IsValidClient(entity) )
 		return Plugin_Continue;
 	
 	BaseBoss base = BaseBoss(entity);
@@ -1225,7 +1224,7 @@ public Action HookSound(int clients[64], int& numClients, char sample[PLATFORM_M
 
 public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname, bool& result)
 {
-	if( !cvarVSH2[Enabled].BoolValue )
+	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue )
 		return Plugin_Continue;
 	
 	BaseBoss base = BaseBoss(client);
@@ -1233,8 +1232,8 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 		switch( base.iBossType ) {
 			case -1: {}
 			case VSH2Boss_HHHjr: {
-				if( base.iClimbs < cvarVSH2[HHHMaxClimbs].IntValue ) {
-					if( base.ClimbWall(weapon, cvarVSH2[HHHClimbVelocity].FloatValue, 0.0, false) ) {
+				if( base.iClimbs < g_vsh2_data.m_hCvars[HHHMaxClimbs].IntValue ) {
+					if( base.ClimbWall(weapon, g_vsh2_data.m_hCvars[HHHClimbVelocity].FloatValue, 0.0, false) ) {
 						base.flWeighDown = 0.0;
 					}
 				}
@@ -1249,7 +1248,7 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 	}
 	if( !base.bIsBoss && !base.bIsMinion ) {
 		if( TF2_GetPlayerClass(base.index) == TFClass_Sniper && IsWeaponSlotActive(base.index, TFWeaponSlot_Melee) )
-			base.ClimbWall(weapon, cvarVSH2[SniperClimbVelocity].FloatValue, 15.0, true);
+			base.ClimbWall(weapon, g_vsh2_data.m_hCvars[SniperClimbVelocity].FloatValue, 15.0, true);
 	}
 	return Plugin_Continue;
 }
@@ -1332,7 +1331,7 @@ public void ManageResetVariables(const BaseBoss base)
 	base.flLastHit = 0.0;
 	base.iState = -1;
 	base.iHits = 0;
-	base.iLives = ((gamemode.bMedieval || cvarVSH2[ForceLives].BoolValue) ? cvarVSH2[MedievalLives].IntValue : 0);
+	base.iLives = ((gamemode.bMedieval || g_vsh2_data.m_hCvars[ForceLives].BoolValue) ? g_vsh2_data.m_hCvars[MedievalLives].IntValue : 0);
 	base.iHealth = 0;
 	base.iMaxHealth = 0;
 	base.iShieldDmg = 0;
@@ -1343,7 +1342,7 @@ public void ManageEntityCreated(const int entity, const char[] classname)
 	if( StrContains(classname, "rune") != -1 )	/// Special request
 		CreateTimer( 0.1, RemoveEnt, EntIndexToEntRef(entity) );
 	/// Remove dropped weapons to avoid bad things
-	else if( !cvarVSH2[DroppedWeapons].BoolValue && StrEqual(classname, "tf_dropped_weapon") ) {
+	else if( !g_vsh2_data.m_hCvars[DroppedWeapons].BoolValue && StrEqual(classname, "tf_dropped_weapon") ) {
 		AcceptEntityInput(entity, "kill");
 		return;
 	} else if( !strcmp(classname, "tf_projectile_cleaver", false) ) {
@@ -1423,11 +1422,11 @@ public void ManageMusic(char song[PLATFORM_MAX_PATH], float& time)
 }
 public void StopBackGroundMusic()
 {
-	if( BackgroundSong[0] != '\0' ) {
+	if( g_vsh2_data.m_strBackgroundSong[0] != '\0' ) {
 		for( int i=MaxClients; i; --i ) {
 			if( !IsClientValid(i) )
 				continue;
-			StopSound(i, SNDCHAN_AUTO, BackgroundSong);
+			StopSound(i, SNDCHAN_AUTO, g_vsh2_data.m_strBackgroundSong);
 		}
 	}
 }
@@ -1546,7 +1545,7 @@ public void CheckAlivePlayers(const any nil)
 	
 	if( living == 1 && gamemode.CountBosses(true) > 0 && gamemode.iTimeLeft <= 0 ) {
 		ManageLastPlayer();	/// in handler.sp
-		gamemode.iTimeLeft = cvarVSH2[LastPlayerTime].IntValue;
+		gamemode.iTimeLeft = g_vsh2_data.m_hCvars[LastPlayerTime].IntValue;
 		
 		/// maybe some day :/ ...
 		/*
@@ -1556,14 +1555,14 @@ public void CheckAlivePlayers(const any nil)
 			round_timer = CreateEntityByName("team_round_timer");
 		
 		if( round_timer > MaxClients && IsValidEntity(round_timer) ) {
-			SetVariantInt(cvarVSH2[LastPlayerTime].IntValue);
+			SetVariantInt(g_vsh2_data.m_hCvars[LastPlayerTime].IntValue);
 			//DispatchKeyValue(round_timer, "targetname", TIMER_NAME);
 			//DispatchKeyValue(round_timer, "setup_length", setupLength);
 			//DispatchKeyValue(round_timer, "setup_length", "30");
 			DispatchKeyValue(round_timer, "reset_time", "1");
 			DispatchKeyValue(round_timer, "auto_countdown", "1");
 			char time[5];
-			IntToString(cvarVSH2[LastPlayerTime].IntValue, time, sizeof(time));
+			IntToString(g_vsh2_data.m_hCvars[LastPlayerTime].IntValue, time, sizeof(time));
 			DispatchKeyValue(round_timer, "timer_length", time);
 			DispatchSpawn(round_timer);
 		}
@@ -1571,8 +1570,8 @@ public void CheckAlivePlayers(const any nil)
 		CreateTimer(1.0, Timer_DrawGame, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	}
 	
-	int Alive = cvarVSH2[AliveToEnable].IntValue;
-	if( !cvarVSH2[PointType].BoolValue && living <= Alive && !gamemode.bPointReady ) {
+	int Alive = g_vsh2_data.m_hCvars[AliveToEnable].IntValue;
+	if( !g_vsh2_data.m_hCvars[PointType].BoolValue && living <= Alive && !gamemode.bPointReady ) {
 		PrintHintTextToAll("%i players are left; control point enabled!", living);
 		if( living == Alive )
 			EmitSoundToAll("vo/announcer_am_capenabled02.mp3");
@@ -1729,7 +1728,7 @@ public void PrepPlayers(const BaseBoss player)
 			}
 			case 357: SetPawnTimer(_NoHonorBound, 1.0, player.userid);
 			case 589: {	/// eureka effect
-				if( !cvarVSH2[BlockEureka].BoolValue ) {
+				if( !g_vsh2_data.m_hCvars[BlockEureka].BoolValue ) {
 					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
 					weapon = player.SpawnWeapon("tf_weapon_wrench", 7, 1, 0, "");
 				}
@@ -1748,7 +1747,7 @@ public void PrepPlayers(const BaseBoss player)
 			//int mediquality = GetItemQuality(weapon);
 			//if( mediquality != 10 ) {
 			//	TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-			//	if( cvarVSH2[PermOverheal].BoolValue )
+			//	if( g_vsh2_data.m_hCvars[PermOverheal].BoolValue )
 			//		weapon = player.SpawnWeapon("tf_weapon_medigun", 35, 5, 10, "14; 0.0; 18; 0.0; 10; 1.25; 178; 0.75");
 			//	else weapon = player.SpawnWeapon("tf_weapon_medigun", 35, 5, 10, "18; 0.0; 10; 1.25; 178; 0.75");
 			/// 200; 1 for area of effect healing, 178; 0.75 Faster switch-to, 14; 0.0 perm overheal, 11; 1.25 Higher overheal
@@ -1758,120 +1757,120 @@ public void PrepPlayers(const BaseBoss player)
 		}
 	}
 #if defined _tf2attributes_included
-	if( gamemode.bTF2Attribs && cvarVSH2[HealthRegenForPlayers].BoolValue )
-		TF2Attrib_SetByDefIndex(client, 57, GetClientHealth(client)/50.0+cvarVSH2[HealthRegenAmount].FloatValue);
+	if( gamemode.bTF2Attribs && g_vsh2_data.m_hCvars[HealthRegenForPlayers].BoolValue )
+		TF2Attrib_SetByDefIndex(client, 57, GetClientHealth(client)/50.0+g_vsh2_data.m_hCvars[HealthRegenAmount].FloatValue);
 #endif
 }
 
 public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDefinitionIndex, Handle &hItem)
 {
-	if( !cvarVSH2[Enabled].BoolValue )
+	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue )
 		return Plugin_Continue;
 	
 	TF2Item hItemOverride = null;
 	TF2Item hItemCast = view_as< TF2Item >(hItem);
 	switch( iItemDefinitionIndex ) {
 		case 59: {	/// dead ringer
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "35; 2.0");
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "35; 2.0");
 		}
 		case 1103: {	/// Backscatter
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "179; 1.0");
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "179; 1.0");
 		}
 		case 40, 1146: {	/// backburner
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "165; 1.0");
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "165; 1.0");
 		}
 		case 220: {	/// shortstop
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "525; 1; 526; 1.2; 533; 1.4; 534; 1.4; 328; 1; 241; 1.5; 78; 1.389; 97; 0.75", true);
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "525; 1; 526; 1.2; 533; 1.4; 534; 1.4; 328; 1; 241; 1.5; 78; 1.389; 97; 0.75", true);
 		}
 		case 349: {	/// sun on a stick
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "134; 13; 208; 1");
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "134; 13; 208; 1");
 		}
 		case 648: {	/// wrap assassin
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "279; 3.0");
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "279; 3.0");
 		}
 		case 224:{	/// Letranger
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "166; 15; 1; 0.8", true);
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "166; 15; 1; 0.8", true);
 		}
 		case 225, 574: {	/// YER
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "155; 1; 160; 1", true);
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "155; 1; 160; 1", true);
 		}
 		case 226: {	/// The Battalion's Backup
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "252; 0.25");
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "252; 0.25");
 		}
 		case 305, 1079: {	/// Medic Xbow
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "17; 0.15; 2; 1.45"); //; 266; 1.0");
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "17; 0.15; 2; 1.45"); //; 266; 1.0");
 		}
 		case 56, 1005, 1092: {	/// Huntsman
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "2 ; 1.5 ; 76; 2.0");
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "2 ; 1.5 ; 76; 2.0");
 		}
 		case 43, 239, 1084, 1100: {	/// GRU
-			hItemOverride = PrepareItemHandle(hItemCast, _, iItemDefinitionIndex, "107; 1.5; 1; 0.5; 128; 1; 206; 2.0; 772; 1.5", true);
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, iItemDefinitionIndex, "107; 1.5; 1; 0.5; 128; 1; 206; 2.0; 772; 1.5", true);
 		}
 		case 415: {	/// reserve shooter
 			if( TF2_GetPlayerClass(client)==TFClass_Soldier )
-				hItemOverride = PrepareItemHandle(hItemCast, _, _, "135 ; 0.7 ; 179; 1.0; 2; 1.1");
-			else hItemOverride = PrepareItemHandle(hItemCast, _, _, "179; 1.0; 2; 1.1");
+				hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "135 ; 0.7 ; 179; 1.0; 2; 1.1");
+			else hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "179; 1.0; 2; 1.1");
 		}
 		case 405, 608: {	/// Demo boots have falling stomp damage
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "259; 1; 252; 0.25");
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "259; 1; 252; 0.25");
 		}
 		case 36, 412: {	/// Blutsauger and Overdose
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "17; 0.01");
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "17; 0.01");
 		}
 		case 772: {	/// Baby Face's Blaster
-			//hItemOverride = PrepareItemHandle(hItemCast, _, _, "106; 0.3; 4; 1.33; 45; 0.6; 114; 1.0", true);
+			//hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "106; 0.3; 4; 1.33; 45; 0.6; 114; 1.0", true);
 			/// 36 ; 1.25 -> less accuracy.
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "418 ; 1; 49 ; 1; 3 ; 0.66; 532 ; 1; 793 ; 1", true);
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "418 ; 1; 49 ; 1; 3 ; 0.66; 532 ; 1; 793 ; 1", true);
 		}
 		//case 133: {	/// Gunboats; make gunboats attractive compared to the mantreads by having it reduce more rj dmg
-		//	hItemOverride = PrepareItemHandle(hItemCast, _, _, "135; 0.2", true);
+		//	hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "135; 0.2", true);
 		//}
 		//case 444: {    /// Mantreads
-		//	hItemOverride = PrepareItemHandle(hItemCast, _, _, " 275 ; 1");
+		//	hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, " 275 ; 1");
 		//}
 		/// Enforcer
 		case 460: {
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "2; 1.2");
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "2; 1.2");
 		}
 		/// Righteous Bison
 		//case 442: {
-		//	hItemOverride = PrepareItemHandle(hItemCast, _, _, "275; 1.0");
+		//	hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "275; 1.0");
 		//}
 		/// Darwin's Danger Shield
 		case 231: {
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "26; 35.0");
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "26; 35.0");
 		}
 		/// boston basher & 3rune blade
 		//case 325, 452: {
-		//	hItemOverride = PrepareItemHandle(hItemCast, _, _, "204 ; 0 ; 149 ; 5", true);
+		//	hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "204 ; 0 ; 149 ; 5", true);
 		//}
 		/// gas passer
 		case 1180: {
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "875 ; 1.0");
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "875 ; 1.0");
 		}
 		/// thermal thruster
 		case 1179: {
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "872 ; 1.0");
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "872 ; 1.0");
 		}
 		/// Axtinguisher, Postal Pummeler, & Festive Axtinguisher
 		case 38, 457, 1000: {
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "795 ; 1.20");
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "795 ; 1.20");
 		}
 		/// Hot Hand
 		case 1181: {
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "877 ; 2.0");
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "877 ; 2.0");
 		}
 		/// Short Circuit
 		case 528: {
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "2 ; 4.0; 299 ; 40.0");
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "2 ; 4.0; 299 ; 40.0");
 		}
 		/// Southern Hospitality
 		case 155: {
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "264 ; 1.5; 263 ; 1.55");
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "264 ; 1.5; 263 ; 1.55");
 		}
 		/// Natascha
 		case 41: {
-			hItemOverride = PrepareItemHandle(hItemCast, _, _, "", true);
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "", true);
 		}
 	}
 	if( hItemOverride != null ) {
@@ -1886,34 +1885,34 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 	if( !strncmp(classname, "tf_weapon_rocketlauncher", 24, false) || !strncmp(classname, "tf_weapon_particle_cannon", 25, false) ) {
 		switch( iItemDefinitionIndex ) {
 			/// Direct Hit
-			case 127: hItemOverride = PrepareItemHandle(hItemCast, _, _, "114; 1.0; 179; 1.0");
+			case 127: hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "114; 1.0; 179; 1.0");
 			
 			/// Liberty Launcher.
-			case 414: hItemOverride = PrepareItemHandle(hItemCast, _, _, "114; 1.0; 99; 1.25");
+			case 414: hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "114; 1.0; 99; 1.25");
 			
 			/// Air Strike.
-			case 1104: hItemOverride = PrepareItemHandle(hItemCast, _, _, "76; 1.25; 114; 1.0");
-			//case 730: hItemOverride = PrepareItemHandle(hItemCast, _, _, "394; 0.2; 241; 1.3; 3; 0.75; 411; 5; 6; 0.1; 642; 1; 413; 1", true);
-			default: hItemOverride = PrepareItemHandle(hItemCast, _, _, "114; 1.0");
+			case 1104: hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "76; 1.25; 114; 1.0");
+			//case 730: hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "394; 0.2; 241; 1.3; 3; 0.75; 411; 5; 6; 0.1; 642; 1; 413; 1", true);
+			default: hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "114; 1.0");
 		}
 	}
 	if( !strncmp(classname, "tf_weapon_grenadelauncher", 25, false) /*|| !strncmp(classname, "tf_weapon_cannon", 16, false)*/ ) {
 		switch( iItemDefinitionIndex ) {
 			/// loch n load
-			case 308: hItemOverride = PrepareItemHandle(hItemCast, _, _, "114; 1.0; 208; 1.0");
-			default: hItemOverride = PrepareItemHandle(hItemCast, _, _, "114; 1.0; 128; 1; 135; 0.5");
+			case 308: hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "114; 1.0; 208; 1.0");
+			default: hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "114; 1.0; 128; 1; 135; 0.5");
 		}
 	}
 	if( !strncmp(classname, "tf_weapon_sword", 15, false) ) {
-		hItemOverride = PrepareItemHandle(hItemCast, _, _, "178; 0.8");
+		hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "178; 0.8");
 	}
 	if( !StrContains(classname, "tf_weapon_shotgun", false) || !strncmp(classname, "tf_weapon_sentry_revenge", 24, false) ) {
 		switch( iClass ) {
 			case TFClass_Soldier:
-				hItemOverride = PrepareItemHandle(hItemCast, _, _, "135; 0.6; 114; 1.0");
-			default: hItemOverride = PrepareItemHandle(hItemCast, _, _, "114; 1.0");
+				hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "135; 0.6; 114; 1.0");
+			default: hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "114; 1.0");
 		}
-		//hItemOverride = PrepareItemHandle(hItem, _, _, "114; 1.0");
+		//hItemOverride = TF2Item_PrepareItemHandle(hItem, _, _, "114; 1.0");
 	}
 	
 	switch( iClass ) {
@@ -1922,10 +1921,10 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 				switch( iItemDefinitionIndex ) {
 					/// Shahanshah
 					case 401: {
-						hItemOverride = PrepareItemHandle(hItemCast, _, _, "236 ; 1 ; 224 ; 1.66 ; 225 ; 0.5");
+						hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "236 ; 1 ; 224 ; 1.66 ; 225 ; 0.5");
 					}
 					default: {
-						hItemOverride = PrepareItemHandle(hItemCast, _, _, "236 ; 1"); /// Block healing while in use.
+						hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "236 ; 1"); /// Block healing while in use.
 					}
 				}
 			}
@@ -1933,16 +1932,16 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case TFClass_Medic: {
 			/// Medic mediguns
 			if( !StrContains(classname, "tf_weapon_medigun", false) ) {
-				if( cvarVSH2[PermOverheal].BoolValue ) {
+				if( g_vsh2_data.m_hCvars[PermOverheal].BoolValue ) {
 					/// Kritzkrieg
 					if( iItemDefinitionIndex==35 )
-						hItemOverride = PrepareItemHandle(hItemCast, _, _, "14; 0.0; 10 ; 2.26 ; 178 ; 0.75 ; 18 ; 0");
+						hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "14; 0.0; 10 ; 2.26 ; 178 ; 0.75 ; 18 ; 0");
 					/// Other Mediguns
-					else hItemOverride = PrepareItemHandle(hItemCast, _, _, "14; 0.0; 10 ; 1.81 ; 178 ; 0.75 ; 18 ; 0", true);
+					else hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "14; 0.0; 10 ; 1.81 ; 178 ; 0.75 ; 18 ; 0", true);
 				} else {
 					if( iItemDefinitionIndex==35 )
-						hItemOverride = PrepareItemHandle(hItemCast, _, _, "10 ; 2.26 ; 178 ; 0.75 ; 18 ; 0");
-					else hItemOverride = PrepareItemHandle(hItemCast, _, _, "10 ; 1.81 ; 178 ; 0.75 ; 18 ; 0", true);
+						hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "10 ; 2.26 ; 178 ; 0.75 ; 18 ; 0");
+					else hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "10 ; 1.81 ; 178 ; 0.75 ; 18 ; 0", true);
 				}
 			}
 		}
@@ -1980,15 +1979,15 @@ public void ManageFighterThink(const BaseBoss fighter)
 			if( !(buttons & IN_SCORE) )
 				Format(HUDText, 300, "Damage: %d", fighter.iDamage);
 		}
-		ShowSyncHudText(i, hHudText, HUDText);
+		ShowSyncHudText(i, g_vsh2_data.m_hHudText, HUDText);
 		return;
 	}
 	
 	if( !(buttons & IN_SCORE) ) {
-		if( gamemode.bMedieval || cvarVSH2[ForceLives].BoolValue )
+		if( gamemode.bMedieval || g_vsh2_data.m_hCvars[ForceLives].BoolValue )
 			Format(HUDText, 300, "Damage: %d | Lives: %d", fighter.iDamage, fighter.iLives);
 		else Format(HUDText, 300, "Damage: %d", fighter.iDamage);
-		ShowSyncHudText(i, hHudText, HUDText);
+		ShowSyncHudText(i, g_vsh2_data.m_hHudText, HUDText);
 	}
 	
 	if( HasEntProp(i, Prop_Send, "m_iKillStreak") ) {
@@ -2059,7 +2058,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 		}
 	}
 	if( !(buttons & IN_SCORE) )
-		ShowSyncHudText(i, hHudText, HUDText);
+		ShowSyncHudText(i, g_vsh2_data.m_hHudText, HUDText);
 	
 	int living = gamemode.iPlaying;
 	if( living == 1 && !TF2_IsPlayerInCondition(i, TFCond_Cloaked) ) {
@@ -2140,11 +2139,11 @@ public void ManageFighterThink(const BaseBoss fighter)
 	
 	if( TFClass == TFClass_DemoMan && !IsValidEntity(GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary)) ) {
 		float flShieldMeter = GetEntPropFloat(i, Prop_Send, "m_flChargeMeter");
-		if( cvarVSH2[DemoShieldCrits].IntValue >= 1 ) {
+		if( g_vsh2_data.m_hCvars[DemoShieldCrits].IntValue >= 1 ) {
 			addthecrit = true;
-			if( cvarVSH2[DemoShieldCrits].IntValue == 1 || (cvarVSH2[DemoShieldCrits].IntValue == 3 && flShieldMeter < 100.0) )
+			if( g_vsh2_data.m_hCvars[DemoShieldCrits].IntValue == 1 || (g_vsh2_data.m_hCvars[DemoShieldCrits].IntValue == 3 && flShieldMeter < 100.0) )
 				cond = TFCond_Buffed;
-			if( cvarVSH2[DemoShieldCrits].IntValue == 3 && (flShieldMeter < 35.0 || !GetEntProp(i, Prop_Send, "m_bShieldEquipped")) )
+			if( g_vsh2_data.m_hCvars[DemoShieldCrits].IntValue == 3 && (flShieldMeter < 35.0 || !GetEntProp(i, Prop_Send, "m_bShieldEquipped")) )
 				addthecrit = false;
 		}
 	}

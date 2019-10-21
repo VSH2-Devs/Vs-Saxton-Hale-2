@@ -621,8 +621,8 @@ stock void SpawnRandomAmmo()
 	int iEnt = MaxClients+1;
 	float vPos[3], vAng[3];
 	int spawned;
-	int maxlim = cvarVSH2[AmmoKitLimitMax].IntValue;
-	int minlim = cvarVSH2[AmmoKitLimitMin].IntValue;
+	int maxlim = g_vsh2_data.m_hCvars[AmmoKitLimitMax].IntValue;
+	int minlim = g_vsh2_data.m_hCvars[AmmoKitLimitMin].IntValue;
 	while( (iEnt = FindEntityByClassname(iEnt, "info_player_teamspawn")) != -1 ) {
 		if( minlim )
 			if( spawned >= minlim )
@@ -637,7 +637,7 @@ stock void SpawnRandomAmmo()
 		int ammo = CreateEntityByName("item_ammopack_small");
 		TeleportEntity(ammo, vPos, vAng, NULL_VECTOR);
 		DispatchSpawn(ammo);
-		SetEntProp(ammo, Prop_Send, "m_iTeamNum", cvarVSH2[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+		SetEntProp(ammo, Prop_Send, "m_iTeamNum", g_vsh2_data.m_hCvars[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 		++spawned;
 	}
 }
@@ -646,8 +646,8 @@ stock void SpawnRandomHealth()
 	int iEnt = MaxClients+1;
 	float vPos[3], vAng[3];
 	int spawned;
-	int maxlim = cvarVSH2[HealthKitLimitMax].IntValue;
-	int minlim = cvarVSH2[HealthKitLimitMin].IntValue;
+	int maxlim = g_vsh2_data.m_hCvars[HealthKitLimitMax].IntValue;
+	int minlim = g_vsh2_data.m_hCvars[HealthKitLimitMin].IntValue;
 	while( (iEnt = FindEntityByClassname(iEnt, "info_player_teamspawn")) != -1 ) {
 		if( minlim )
 			if( spawned >= minlim )
@@ -661,7 +661,7 @@ stock void SpawnRandomHealth()
 		int healthkit = CreateEntityByName("item_healthkit_small");
 		TeleportEntity(healthkit, vPos, vAng, NULL_VECTOR);
 		DispatchSpawn(healthkit);
-		SetEntProp(healthkit, Prop_Send, "m_iTeamNum", cvarVSH2[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+		SetEntProp(healthkit, Prop_Send, "m_iTeamNum", g_vsh2_data.m_hCvars[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 		++spawned;
 	}
 }
@@ -894,69 +894,6 @@ stock int GetMaxAmmo(const int client, const int slot)
 	}
 	return 0;
 }
-stock TF2Item PrepareItemHandle(TF2Item hItem, char[] name = "", int index = -1, const char[] att = "", bool dontpreserve = false)
-{
-	static TF2Item hWeapon = null;
-	int addattribs = 0;
-	char weaponAttribsArray[32][32];
-	int attribCount = ExplodeString(att, "; ", weaponAttribsArray, 32, 32);
-	
-	int flags = OVERRIDE_ATTRIBUTES;
-	if (!dontpreserve)
-		flags |= PRESERVE_ATTRIBUTES;
-	
-	if( !hWeapon )
-		hWeapon = new TF2Item(flags);
-	else hWeapon.iFlags = flags;
-	
-	if (hItem != null) {
-		addattribs = hItem.iNumAttribs;
-		if (addattribs) {
-			for (int i=0; i < 2*addattribs; i+=2) {
-				bool dontAdd = false;
-				int attribIndex = hItem.GetAttribID(i);
-				for (int z=0; z < attribCount+i; z += 2) {
-					if (StringToInt(weaponAttribsArray[z]) == attribIndex)
-					{
-						dontAdd = true;
-						break;
-					}
-				}
-				if (!dontAdd) {
-					IntToString(attribIndex, weaponAttribsArray[i+attribCount], 32);
-					FloatToString(hItem.GetAttribValue(i), weaponAttribsArray[i+1+attribCount], 32);
-				}
-			}
-			attribCount += 2*addattribs;
-		}
-		delete hItem;
-	}
-	
-	if (name[0] != '\0') {
-		flags |= OVERRIDE_CLASSNAME;
-		hWeapon.SetClassname(name);
-	}
-	if (index != -1) {
-		flags |= OVERRIDE_ITEM_DEF;
-		hWeapon.iItemIndex = index;
-	}
-	if (attribCount > 1) {
-		hWeapon.iNumAttribs = (attribCount/2);
-		int i2 = 0;
-		for (int i=0; i<attribCount && i<32; i += 2)
-		{
-			int attrib = StringToInt(weaponAttribsArray[i]);
-			if( !attrib )
-				continue;
-			
-			hWeapon.SetAttribute(i2, StringToInt(weaponAttribsArray[i]), StringToFloat(weaponAttribsArray[i+1]));
-			i2++;
-		}
-	}
-	else hWeapon.iNumAttribs = 0;
-	hWeapon.iFlags = flags;
-	return hWeapon;
-}
 stock bool IsWeaponSlotActive(const int client, const int slot)
 {
 	return GetPlayerWeaponSlot(client, slot) == GetActiveWep(client);
@@ -1074,7 +1011,7 @@ stock int GetClip(const int client, const int slot)
 
 stock void SkipBossPanelNotify(const int client/*, bool newchoice = true*/)
 {
-	if (!cvarVSH2[Enabled].BoolValue || !IsValidClient(client) || IsFakeClient(client) || IsVoteInProgress())
+	if (!g_vsh2_data.m_hCvars[Enabled].BoolValue || !IsValidClient(client) || IsFakeClient(client) || IsVoteInProgress())
 		return;
 	
 	Panel panel = new Panel();

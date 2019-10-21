@@ -4,15 +4,15 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.4.1"
+			"Latest"	"2.5.0"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.4.1:"
-		"Notes"	"Using new assets helper funcs for Plague Doctor."
-		"Notes"	"Removed global sound string and replaced it with local path strings."
-		"Notes"	"Removed global message string."
-		"Notes"	"Moved 'MAXMESSAGE' define to handler.sp."
-		"Notes"	"Added 'GetMaxHealth' sdk hook for setting boss max hp."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.5.0:"
+		"Notes"	"Moved 'MAXMESSAGE' define to vsh2.inc."
+		"Notes"	"Replaced hardcoded 512 with 'MAXMESSAGE' define."
+		"Notes"	"Reduced 'MAXMESSAGE' to 128."
+		"Notes"	"Wrapped (almost) all global variables into a single enum struct instance."
+		"Notes"	"Created tf2items_stocks.inc to wrap the TF2Items methodmap so boss devs can utilize it."
 	}
 	
 	"Files"

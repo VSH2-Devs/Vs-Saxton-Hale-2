@@ -4,6 +4,7 @@
 #define _vsh2_included
 
 
+#define MAXMESSAGE            128
 #define MAX_BOSS_NAME_SIZE    64
 
 enum { /** VSH2 Round States */
@@ -459,15 +460,15 @@ typeset VSH2HookCB {
 	function void (const VSH2Player victim, const VSH2Player attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup);
 	
 	/// OnMessageIntro
-	function Action (const VSH2Player player, char message[512]);
-	function void (const VSH2Player player, char message[512]);
+	function Action (const VSH2Player player, char message[MAXMESSAGE]);
+	function void (const VSH2Player player, char message[MAXMESSAGE]);
 	
 	/**
 		OnBossHealthCheck - bossBool determines if command user was the boss
 		OnRoundEndInfo - bossBool determines if boss won the round
 	*/
-	function Action (const VSH2Player player, bool bossBool, char message[512]);
-	function void (const VSH2Player player, bool bossBool, char message[512]);
+	function Action (const VSH2Player player, bool bossBool, char message[MAXMESSAGE]);
+	function void (const VSH2Player player, bool bossBool, char message[MAXMESSAGE]);
 	
 	/// OnMusic
 	function Action (char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player);

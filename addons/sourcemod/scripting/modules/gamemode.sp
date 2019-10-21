@@ -24,30 +24,27 @@ public int AllowedDifficulties[] = {
 };
 */
 
-public char BackgroundSong[PLATFORM_MAX_PATH];
-StringMap hGameModeFields;
-
 /** all game mode oriented code should be handled HERE ONLY */
 methodmap VSHGameMode { /* < StringMap */
 	public VSHGameMode() {
-		hGameModeFields = new StringMap();
+		g_vsh2_data.m_hGameModeFields = new StringMap();
 	}
 	property int iRoundState {
 		public get() {
-			int i; hGameModeFields.GetValue("iRoundState", i);
+			int i; g_vsh2_data.m_hGameModeFields.GetValue("iRoundState", i);
 			return i;
 		}
 		public set(const int val) {
-			hGameModeFields.SetValue("iRoundState", val);
+			g_vsh2_data.m_hGameModeFields.SetValue("iRoundState", val);
 		}
 	}
 	property int iSpecial {
 		public get() {
-			int i; hGameModeFields.GetValue("iSpecial", i);
+			int i; g_vsh2_data.m_hGameModeFields.GetValue("iSpecial", i);
 			return i;
 		}
 		public set(const int val) {
-			hGameModeFields.SetValue("iSpecial", val);
+			g_vsh2_data.m_hGameModeFields.SetValue("iSpecial", val);
 		}
 	}
 	property int iPlaying {
@@ -57,11 +54,11 @@ methodmap VSHGameMode { /* < StringMap */
 	}
 	property int iHealthBar {
 		public get() {
-			int i; hGameModeFields.GetValue("iHealthBar", i);
+			int i; g_vsh2_data.m_hGameModeFields.GetValue("iHealthBar", i);
 			return i;
 		}
 		public set(const int val) {
-			hGameModeFields.SetValue("iHealthBar", val);
+			g_vsh2_data.m_hGameModeFields.SetValue("iHealthBar", val);
 		}
 	}
 	property int iHealthBarState {
@@ -87,133 +84,133 @@ methodmap VSHGameMode { /* < StringMap */
 	}
 	property int iTotalMaxHealth {
 		public get() {
-			int i; hGameModeFields.GetValue("iTotalMaxHealth", i);
+			int i; g_vsh2_data.m_hGameModeFields.GetValue("iTotalMaxHealth", i);
 			return i;
 		}
 		public set(const int val) {
-			hGameModeFields.SetValue("iTotalMaxHealth", val);
+			g_vsh2_data.m_hGameModeFields.SetValue("iTotalMaxHealth", val);
 		}
 	}
 	property int iTimeLeft {
 		public get() {
-			int i; hGameModeFields.GetValue("iTimeLeft", i);
+			int i; g_vsh2_data.m_hGameModeFields.GetValue("iTimeLeft", i);
 			return i;
 		}
 		public set(const int val) {
-			hGameModeFields.SetValue("iTimeLeft", val);
+			g_vsh2_data.m_hGameModeFields.SetValue("iTimeLeft", val);
 		}
 	}
 	property int iRoundCount {
 		public get() {
-			int i; hGameModeFields.GetValue("iRoundCount", i);
+			int i; g_vsh2_data.m_hGameModeFields.GetValue("iRoundCount", i);
 			return i;
 		}
 		public set(const int val) {
-			hGameModeFields.SetValue("iRoundCount", val);
+			g_vsh2_data.m_hGameModeFields.SetValue("iRoundCount", val);
 		}
 	}
 	property int iHealthChecks {
 		public get() {
-			int i; hGameModeFields.GetValue("iHealthChecks", i);
+			int i; g_vsh2_data.m_hGameModeFields.GetValue("iHealthChecks", i);
 			return i;
 		}
 		public set(const int val) {
-			hGameModeFields.SetValue("iHealthChecks", val);
+			g_vsh2_data.m_hGameModeFields.SetValue("iHealthChecks", val);
 		}
 	}
 	property int iCaptures {
 		public get() {
-			int i; hGameModeFields.GetValue("iCaptures", i);
+			int i; g_vsh2_data.m_hGameModeFields.GetValue("iCaptures", i);
 			return i;
 		}
 		public set(const int val) {
-			hGameModeFields.SetValue("iCaptures", val);
+			g_vsh2_data.m_hGameModeFields.SetValue("iCaptures", val);
 		}
 	}
 	
 	property bool bSteam {
 		public get() {
-			bool i; hGameModeFields.GetValue("bSteam", i);
+			bool i; g_vsh2_data.m_hGameModeFields.GetValue("bSteam", i);
 			return i;
 		}
 		public set(const bool val) {
-			hGameModeFields.SetValue("bSteam", val);
+			g_vsh2_data.m_hGameModeFields.SetValue("bSteam", val);
 		}
 	}
 	property bool bTF2Attribs {
 		public get() {
-			bool i; hGameModeFields.GetValue("bTF2Attribs", i);
+			bool i; g_vsh2_data.m_hGameModeFields.GetValue("bTF2Attribs", i);
 			return i;
 		}
 		public set(const bool val) {
-			hGameModeFields.SetValue("bTF2Attribs", val);
+			g_vsh2_data.m_hGameModeFields.SetValue("bTF2Attribs", val);
 		}
 	}
 	property bool bPointReady {
 		public get() {
-			bool i; hGameModeFields.GetValue("bPointReady", i);
+			bool i; g_vsh2_data.m_hGameModeFields.GetValue("bPointReady", i);
 			return i;
 		}
 		public set(const bool val) {
-			hGameModeFields.SetValue("bPointReady", val);
+			g_vsh2_data.m_hGameModeFields.SetValue("bPointReady", val);
 		}
 	}
 	property bool bMedieval {
 		public get() {
-			bool i; hGameModeFields.GetValue("bMedieval", i);
+			bool i; g_vsh2_data.m_hGameModeFields.GetValue("bMedieval", i);
 			return i;
 		}
 		public set(const bool val) {
-			hGameModeFields.SetValue("bMedieval", val);
+			g_vsh2_data.m_hGameModeFields.SetValue("bMedieval", val);
 		}
 	}
 	property bool bDoors {
 		public get() {
-			bool i; hGameModeFields.GetValue("bDoors", i);
+			bool i; g_vsh2_data.m_hGameModeFields.GetValue("bDoors", i);
 			return i;
 		}
 		public set(const bool val) {
-			hGameModeFields.SetValue("bDoors", val);
+			g_vsh2_data.m_hGameModeFields.SetValue("bDoors", val);
 		}
 	}
 	property bool bTeleToSpawn {
 		public get() {
-			bool i; hGameModeFields.GetValue("bTeleToSpawn", i);
+			bool i; g_vsh2_data.m_hGameModeFields.GetValue("bTeleToSpawn", i);
 			return i;
 		}
 		public set(const bool val) {
-			hGameModeFields.SetValue("bTeleToSpawn", val);
+			g_vsh2_data.m_hGameModeFields.SetValue("bTeleToSpawn", val);
 		}
 	}
 	
 	property float flHealthTime {
 		public get() {
-			float i; hGameModeFields.GetValue("flHealthTime", i);
+			float i; g_vsh2_data.m_hGameModeFields.GetValue("flHealthTime", i);
 			return i;
 		}
 		public set(const float val) {
-			hGameModeFields.SetValue("flHealthTime", val);
+			g_vsh2_data.m_hGameModeFields.SetValue("flHealthTime", val);
 		}
 	}
 	property float flMusicTime {
 		public get() {
-			float i; hGameModeFields.GetValue("flMusicTime", i);
+			float i; g_vsh2_data.m_hGameModeFields.GetValue("flMusicTime", i);
 			return i;
 		}
 		public set(const float val) {
-			hGameModeFields.SetValue("flMusicTime", val);
+			g_vsh2_data.m_hGameModeFields.SetValue("flMusicTime", val);
 		}
 	}
 	
 	property BaseBoss hNextBoss {
 		public get() {
-			BaseBoss i; hGameModeFields.GetValue("hNextBoss", i);
+			BaseBoss i; g_vsh2_data.m_hGameModeFields.GetValue("hNextBoss", i);
 			if( !i || !i.index )
 				return view_as< BaseBoss >(0);
 			return i;
 		}
 		public set(const BaseBoss val) {
-			hGameModeFields.SetValue("hNextBoss", val);
+			g_vsh2_data.m_hGameModeFields.SetValue("hNextBoss", val);
 		}
 	}
 	
@@ -268,7 +265,7 @@ methodmap VSHGameMode { /* < StringMap */
 	}
 	public void CheckArena(const bool type) {
 		if( type )
-			SetArenaCapEnableTime( float(45+cvarVSH2[PointDelay].IntValue*(this.iPlaying-1)) );
+			SetArenaCapEnableTime( float(45+g_vsh2_data.m_hCvars[PointDelay].IntValue*(this.iPlaying-1)) );
 		else {
 			SetArenaCapEnableTime(0.0);
 			SetControlPoint(false);
@@ -373,7 +370,7 @@ methodmap VSHGameMode { /* < StringMap */
 		ent = -1;
 		count = 0;
 		while( (ent = FindEntityByClassname(ent, "item_healthkit_small")) != -1 ) {
-			SetEntProp(ent, Prop_Send, "m_iTeamNum", cvarVSH2[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+			SetEntProp(ent, Prop_Send, "m_iTeamNum", g_vsh2_data.m_hCvars[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 			count++;
 			if( !foundHealth )
 				foundHealth = (count > 4); //true;
@@ -381,7 +378,7 @@ methodmap VSHGameMode { /* < StringMap */
 		ent = -1;
 		count = 0;
 		while( (ent = FindEntityByClassname(ent, "item_healthkit_medium")) != -1 ) {
-			SetEntProp(ent, Prop_Send, "m_iTeamNum", cvarVSH2[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+			SetEntProp(ent, Prop_Send, "m_iTeamNum", g_vsh2_data.m_hCvars[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 			count++;
 			if (!foundHealth)
 				foundHealth = (count > 2);//true;
@@ -389,7 +386,7 @@ methodmap VSHGameMode { /* < StringMap */
 		ent = -1;
 		count = 0;
 		while( (ent = FindEntityByClassname(ent, "item_healthkit_full")) != -1 ) {
-			SetEntProp(ent, Prop_Send, "m_iTeamNum", cvarVSH2[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+			SetEntProp(ent, Prop_Send, "m_iTeamNum", g_vsh2_data.m_hCvars[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 			count++;
 			if( !foundHealth )
 				foundHealth = (count > 2); //true;
