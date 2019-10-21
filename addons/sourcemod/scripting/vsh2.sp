@@ -25,7 +25,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.4.0"
+#define PLUGIN_VERSION       "2.4.1"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -540,6 +540,7 @@ public void OnConfigsExecuted()
 public void OnClientPutInServer(int client)
 {
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
+	SDKHook(client, SDKHook_GetMaxHealth, GetMaxHealth);
 	SDKHook(client, SDKHook_TraceAttack, TraceAttack);
 	SDKHook(client, SDKHook_Touch, OnTouch);
 	SDKHook(client, SDKHook_PreThinkPost, OnPreThinkPost);
@@ -802,6 +803,19 @@ public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& dam
 	BaseBoss BossAttacker = BaseBoss(attacker);
 	if( BossAttacker.bIsBoss ) /// in handler.sp
 		return ManageOnBossDealDamage(BossVictim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
+	return Plugin_Continue;
+}
+
+public Action GetMaxHealth(int entity, int &maxhealth)
+{
+	if( !IsClientValid(entity) )
+		return Plugin_Continue;
+	
+	BaseBoss player = BaseBoss(entity);
+	if( player.bIsBoss && player.iMaxHealth ) {
+		maxhealth = player.iMaxHealth;
+		return Plugin_Changed;
+	}
 	return Plugin_Continue;
 }
 
@@ -1079,7 +1093,7 @@ public void _MusicPlay()
 			boss = BaseBoss(i);
 			if( boss.bNoMusic )
 				continue;
-			EmitSoundToClient(i, bg_music, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+			EmitSoundToClient(i, BackgroundSong, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
 		}
 	}
 	if( time != -1.0 ) {

@@ -1,16 +1,5 @@
 int Munitions[PLYR][2][2];    /// first index obviously player, slot, ammo-0, clip-1
 
-/// Gonna leave these here so we can reduce stack memory for calling boss specific Download function calls
-public char snd[PLATFORM_MAX_PATH]; /// How is this even used?
-
-/// Moved to stocks.inc
-// public char extensions[][] = { ".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd", ".phy" };
-// public char extensionsb[2][5] = { ".vtf", ".vmt" };
-
-#define MAXMESSAGE    512
-public char gameMessage[MAXMESSAGE];    /// Just incase...
-public char BackgroundSong[PLATFORM_MAX_PATH];
-
 
 /**
 When making new properties, remember to base it off this StringMap AND do NOT forget to initialize it in OnClientPutInServer()

@@ -1,5 +1,4 @@
 #define HHHModel			"models/player/saxton_hale/hhh_jr_mk3.mdl"
-// #define HHHModelPrefix			"models/player/saxton_hale/hhh_jr_mk3"
 
 /// HHH voicelines
 #define HHHLaught			"vo/halloween_boss/knight_laugh"
@@ -7,7 +6,6 @@
 #define HHHRage2			"vo/halloween_boss/knight_alert.mp3"
 #define HHHAttack			"vo/halloween_boss/knight_attack"
 #define HHHPain				"vo/halloween_boss/knight_pain"
-
 
 #define HHHTheme			"ui/holiday/gamestartup_halloween.mp3"
 
@@ -21,8 +19,9 @@ methodmap CHHHJr < BaseBoss {
 	}
 	
 	public void PlaySpawnClip() {
-		strcopy(snd, PLATFORM_MAX_PATH, "ui/halloween_boss_summoned_fx.wav");
-		this.PlayVoiceClip(snd, VSH2_VOICE_INTRO);
+		char start_snd[PLATFORM_MAX_PATH];
+		strcopy(start_snd, PLATFORM_MAX_PATH, "ui/halloween_boss_summoned_fx.wav");
+		this.PlayVoiceClip(start_snd, VSH2_VOICE_INTRO);
 	}
 	
 	public void Think()
@@ -133,8 +132,9 @@ methodmap CHHHJr < BaseBoss {
 	}
 	
 	public void Death() {
-		Format(snd, PLATFORM_MAX_PATH, "vo/halloween_boss/knight_death0%d.mp3", GetRandomInt(1, 2));
-		this.PlayVoiceClip(snd, VSH2_VOICE_LOSE);
+		char ded_snd[PLATFORM_MAX_PATH];
+		Format(ded_snd, PLATFORM_MAX_PATH, "vo/halloween_boss/knight_death0%d.mp3", GetRandomInt(1, 2));
+		this.PlayVoiceClip(ded_snd, VSH2_VOICE_LOSE);
 	}
 	
 	public void Equip() {
@@ -157,16 +157,15 @@ methodmap CHHHJr < BaseBoss {
 			this.SetModel();
 		}
 		this.DoGenericStun(HALERAGEDIST);
-		
-		strcopy(snd, PLATFORM_MAX_PATH, HHHRage2);
-		this.PlayVoiceClip(snd, VSH2_VOICE_RAGE);
+		this.PlayVoiceClip(HHHRage2, VSH2_VOICE_RAGE);
 	}
 	
 	public void KilledPlayer(const BaseBoss victim, Event event) {
 		int living = GetLivingPlayers(VSH2Team_Red);
 		if( victim.index != this.index ) {
-			Format(snd, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHAttack, GetRandomInt(1, 4));
-			this.PlayVoiceClip(snd, VSH2_VOICE_SPREE);
+			char kill_snd[PLATFORM_MAX_PATH];
+			Format(kill_snd, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHAttack, GetRandomInt(1, 4));
+			this.PlayVoiceClip(kill_snd, VSH2_VOICE_SPREE);
 		}
 		float curtime = GetGameTime();
 		if( curtime <= this.flKillSpree )
@@ -174,16 +173,18 @@ methodmap CHHHJr < BaseBoss {
 		else this.iKills = 0;
 		
 		if( this.iKills == 3 && living != 1 ) {
-			Format(snd, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHLaught, GetRandomInt(1, 4));
-			this.PlayVoiceClip(snd, VSH2_VOICE_SPREE);
+			char spree_snd[PLATFORM_MAX_PATH];
+			Format(spree_snd, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHLaught, GetRandomInt(1, 4));
+			this.PlayVoiceClip(spree_snd, VSH2_VOICE_SPREE);
 			this.iKills = 0;
 		}
 		else this.flKillSpree = curtime+5;
 	}
 	
 	public void Stabbed() {
-		Format(snd, PLATFORM_MAX_PATH, "vo/halloween_boss/knight_pain0%d.mp3", GetRandomInt(1, 3));
-		this.PlayVoiceClip(snd, VSH2_VOICE_STABBED);
+		char stab_snd[PLATFORM_MAX_PATH];
+		Format(stab_snd, PLATFORM_MAX_PATH, "vo/halloween_boss/knight_pain0%d.mp3", GetRandomInt(1, 3));
+		this.PlayVoiceClip(stab_snd, VSH2_VOICE_STABBED);
 	}
 	
 	public void Help()
@@ -206,11 +207,9 @@ public CHHHJr ToCHHHJr (const BaseBoss guy)
 
 public void AddHHHToDownloads()
 {
-	char s[PLATFORM_MAX_PATH];
-	int i;
-	
 	PrepareModel(HHHModel);
-	for( i=1; i <= 4; i++ ) {
+	for( int i=1; i <= 4; i++ ) {
+		char s[PLATFORM_MAX_PATH];
 		Format(s, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHLaught, i);
 		PrecacheSound(s, true);
 		Format(s, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHAttack, i);

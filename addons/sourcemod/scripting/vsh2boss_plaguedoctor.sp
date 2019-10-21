@@ -11,10 +11,7 @@
 #define REQUIRE_PLUGIN
 
 #define PlagueModel			"models/player/medic.mdl"
-// #define PlagueModelPrefix		"models/player/medic"
 #define ZombieModel			"models/player/scout.mdl"
-// #define ZombieModelPrefix		"models/player/scout"
-
 
 /// voicelines
 #define PlagueIntro			"vo/medic_specialcompleted10.mp3"
@@ -229,9 +226,11 @@ public void PlagueDoc_OnCallDownloads()
 {
 	PrecacheModel(PlagueModel, true);
 	PrecacheModel(ZombieModel, true);
-	PrecacheSound(PlagueIntro, true);
-	PrecacheSound(PlagueRage1, true);
-	PrecacheSound(PlagueRage2, true);
+	
+	char sounds_list[][] = {
+		PlagueIntro, PlagueRage1, PlagueRage2
+	};
+	PrecacheSoundList(sounds_list, sizeof(sounds_list));
 }
 public void PlagueDoc_OnBossMenu(Menu &menu)
 {

@@ -107,10 +107,11 @@ methodmap CHale < BaseBoss {
 	}
 	
 	public void PlaySpawnClip() {
+		char start_snd[PLATFORM_MAX_PATH];
 		if( !GetRandomInt(0, 1) )
-			Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleRoundStart, GetRandomInt(1, 5));
-		else Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleStart132, GetRandomInt(1, 5));
-		this.PlayVoiceClip(snd, VSH2_VOICE_INTRO);
+			Format(start_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleRoundStart, GetRandomInt(1, 5));
+		else Format(start_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleStart132, GetRandomInt(1, 5));
+		this.PlayVoiceClip(start_snd, VSH2_VOICE_INTRO);
 	}
 	
 	public void Think()
@@ -123,8 +124,9 @@ methodmap CHale < BaseBoss {
 		
 		if( this.SuperJumpThink(2.5, HALE_JUMPCHARGE) ) {
 			this.SuperJump(this.flCharge, -100.0);
-			Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", GetRandomInt(0, 1) ? HaleJump : HaleJump132, GetRandomInt(1, 2));
-			this.PlayVoiceClip(snd, VSH2_VOICE_ABILITY);
+			char jump_snd[PLATFORM_MAX_PATH];
+			Format(jump_snd, PLATFORM_MAX_PATH, "%s%i.wav", GetRandomInt(0, 1) ? HaleJump : HaleJump132, GetRandomInt(1, 2));
+			this.PlayVoiceClip(jump_snd, VSH2_VOICE_ABILITY);
 		}
 		
 		if( OnlyScoutsLeft(VSH2Team_Red) )
@@ -148,8 +150,9 @@ methodmap CHale < BaseBoss {
 	}
 	
 	public void Death() {
-		Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleFail, GetRandomInt(1, 3));
-		this.PlayVoiceClip(snd, VSH2_VOICE_LOSE);
+		char ded_snd[PLATFORM_MAX_PATH];
+		Format(ded_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleFail, GetRandomInt(1, 3));
+		this.PlayVoiceClip(ded_snd, VSH2_VOICE_LOSE);
 	}
 	
 	public void Equip() {
@@ -169,45 +172,43 @@ methodmap CHale < BaseBoss {
 			this.SetModel(); /// should reset Hale's animation
 		}
 		this.DoGenericStun(HALERAGEDIST);
-		Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleRageSound, GetRandomInt(1, 4));
-		this.PlayVoiceClip(snd, VSH2_VOICE_RAGE);
+		char rage_snd[PLATFORM_MAX_PATH];
+		Format(rage_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleRageSound, GetRandomInt(1, 4));
+		this.PlayVoiceClip(rage_snd, VSH2_VOICE_RAGE);
 	}
 	public void KilledPlayer(const BaseBoss victim, Event event)
 	{
 		event.SetString("weapon", "fists");
 		if( !GetRandomInt(0, 2) ) {
-			snd[0] = '\0';	/// Empty string in case soldier is killed
+			char kill_snd[PLATFORM_MAX_PATH];
 			TFClassType playerclass = TF2_GetPlayerClass(victim.index);
 			switch( playerclass ) {
-				case TFClass_Scout:	strcopy(snd, PLATFORM_MAX_PATH, HaleKillScout132);
-				case TFClass_Pyro:	strcopy(snd, PLATFORM_MAX_PATH, HaleKillPyro132);
-				case TFClass_DemoMan:	strcopy(snd, PLATFORM_MAX_PATH, HaleKillDemo132);
-				case TFClass_Heavy:	strcopy(snd, PLATFORM_MAX_PATH, HaleKillHeavy132);
-				case TFClass_Medic:	strcopy(snd, PLATFORM_MAX_PATH, HaleKillMedic);
-				case TFClass_Sniper: {
-					if( GetRandomInt(0, 1) )
-						strcopy(snd, PLATFORM_MAX_PATH, HaleKillSniper1);
-					else strcopy(snd, PLATFORM_MAX_PATH, HaleKillSniper2);
-				}
+				case TFClass_Scout: strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillScout132);
+				case TFClass_Pyro: strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillPyro132);
+				case TFClass_DemoMan: strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillDemo132);
+				case TFClass_Heavy: strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillHeavy132);
+				case TFClass_Medic: strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillMedic);
+				case TFClass_Sniper: strcopy(kill_snd, PLATFORM_MAX_PATH, GetRandomInt(0, 1) ? HaleKillSniper1 : HaleKillSniper2);
+				
 				case TFClass_Spy: {
 					int see = GetRandomInt(0, 2);
 					if( see )
-						strcopy(snd, PLATFORM_MAX_PATH, HaleKillSpy1);
+						strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillSpy1);
 					else if( see == 1 )
-						strcopy(snd, PLATFORM_MAX_PATH, HaleKillSpy2);
-					else strcopy(snd, PLATFORM_MAX_PATH, HaleKillSpy132);
+						strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillSpy2);
+					else strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillSpy132);
 				}
 				case TFClass_Engineer: {
 					int see = GetRandomInt(0, 3);
 					if( !see )
-						strcopy(snd, PLATFORM_MAX_PATH, HaleKillEngie1);
+						strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillEngie1);
 					else if( see == 1 )
-						strcopy(snd, PLATFORM_MAX_PATH, HaleKillEngie2);
-					else Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillEngie132, GetRandomInt(1, 2));
+						strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillEngie2);
+					else Format(kill_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillEngie132, GetRandomInt(1, 2));
 				}
 			}
-			if( snd[0] != '\0' )
-				this.PlayVoiceClip(snd, VSH2_VOICE_SPREE);
+			if( kill_snd[0] != '\0' )
+				this.PlayVoiceClip(kill_snd, VSH2_VOICE_SPREE);
 		}
 		
 		float curtime = GetGameTime();
@@ -216,22 +217,24 @@ methodmap CHale < BaseBoss {
 		else this.iKills = 0;
 		
 		if( this.iKills == 3 && GetLivingPlayers(VSH2Team_Red) != 1 ) {
+			char spree_snd[PLATFORM_MAX_PATH];
 			int randsound = GetRandomInt(0, 7);
 			if( !randsound || randsound == 1 )
-				strcopy(snd, PLATFORM_MAX_PATH, HaleKSpree);
+				strcopy(spree_snd, PLATFORM_MAX_PATH, HaleKSpree);
 			else if( randsound < 5 && randsound > 1 )
-				Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKSpreeNew, GetRandomInt(1, 5));
-			else Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillKSpree132, GetRandomInt(1, 2));
+				Format(spree_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKSpreeNew, GetRandomInt(1, 5));
+			else Format(spree_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillKSpree132, GetRandomInt(1, 2));
 			
-			this.PlayVoiceClip(snd, VSH2_VOICE_SPREE);
+			this.PlayVoiceClip(spree_snd, VSH2_VOICE_SPREE);
 			this.iKills = 0;
 		}
 		else this.flKillSpree = curtime+5;
 	}
 	
 	public void Stabbed() {
-		Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleStubbed132, GetRandomInt(1, 4));
-		this.PlayVoiceClip(snd, VSH2_VOICE_STABBED);
+		char stab_snd[PLATFORM_MAX_PATH];
+		Format(stab_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleStubbed132, GetRandomInt(1, 4));
+		this.PlayVoiceClip(stab_snd, VSH2_VOICE_STABBED);
 	}
 	public void Help() {
 		if( IsVoteInProgress() )
@@ -244,19 +247,18 @@ methodmap CHale < BaseBoss {
 		delete panel;
 	}
 	public void LastPlayerSoundClip() {
+		char lastguy_snd[PLATFORM_MAX_PATH];
 		switch( GetRandomInt(0, 5) ) {
-			case 0: strcopy(snd, PLATFORM_MAX_PATH, HaleComicArmsFallSound);
-			case 1: Format(snd, PLATFORM_MAX_PATH, "%s0%i.wav", HaleLastB, GetRandomInt(1, 4));
-			case 2: strcopy(snd, PLATFORM_MAX_PATH, HaleKillLast132);
-			default: Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleLastMan, GetRandomInt(1, 5));
+			case 0: strcopy(lastguy_snd, PLATFORM_MAX_PATH, HaleComicArmsFallSound);
+			case 1: Format(lastguy_snd, PLATFORM_MAX_PATH, "%s0%i.wav", HaleLastB, GetRandomInt(1, 4));
+			case 2: strcopy(lastguy_snd, PLATFORM_MAX_PATH, HaleKillLast132);
+			default: Format(lastguy_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleLastMan, GetRandomInt(1, 5));
 		}
-		this.PlayVoiceClip(snd, VSH2_VOICE_LASTGUY);
+		this.PlayVoiceClip(lastguy_snd, VSH2_VOICE_LASTGUY);
 	}
 	public void KillToy() {
-		if( !GetRandomInt(0, 3) ) {
-			strcopy(snd, PLATFORM_MAX_PATH, HaleSappinMahSentry132);
-			this.PlayVoiceClip(snd, VSH2_VOICE_SPREE);
-		}
+		if( !GetRandomInt(0, 3) )
+			this.PlayVoiceClip(HaleSappinMahSentry132, VSH2_VOICE_SPREE);
 	}
 	public void PlayWinSound() {
 		char victory[PLATFORM_MAX_PATH];
@@ -277,14 +279,13 @@ public void AddHaleToDownloads()
 	
 	PrepareModel(HaleModel);
 	DownloadMaterialList(HaleMatsV2, sizeof(HaleMatsV2));
-	
 	PrepareSound(HaleComicArmsFallSound);
 	PrepareSound(HaleKSpree);
 	for( i=1; i <= 4; i++ ) {
 		Format(s, PLATFORM_MAX_PATH, "%s0%i.wav", HaleLastB, i);
 		PrecacheSound(s, true);
 	}
-
+	
 	PrepareSound(HaleKillMedic);
 	PrepareSound(HaleKillSniper1);
 	PrepareSound(HaleKillSniper2);

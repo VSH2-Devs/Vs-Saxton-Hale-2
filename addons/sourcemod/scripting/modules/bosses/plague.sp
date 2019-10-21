@@ -1,7 +1,5 @@
 #define PlagueModel			"models/player/medic.mdl"
-// #define PlagueModelPrefix		"models/player/medic"
 #define ZombieModel			"models/player/scout.mdl"
-// #define ZombieModelPrefix		"models/player/scout"
 
 
 /// voicelines
@@ -16,8 +14,9 @@ methodmap CPlague < BaseBoss {
 	}
 	
 	public void PlaySpawnClip() {
-		strcopy(snd, PLATFORM_MAX_PATH, PlagueIntro);
-		this.PlayVoiceClip(snd, VSH2_VOICE_INTRO);
+		char start_snd[PLATFORM_MAX_PATH];
+		strcopy(start_snd, PLATFORM_MAX_PATH, PlagueIntro);
+		this.PlayVoiceClip(start_snd, VSH2_VOICE_INTRO);
 	}
 	
 	public void Think() {
@@ -51,8 +50,7 @@ methodmap CPlague < BaseBoss {
 			float EyeAngles[3]; GetClientEyeAngles(this.index, EyeAngles);
 			if( this.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
 				this.SuperJump(this.flCharge, -100.0);
-				strcopy(snd, PLATFORM_MAX_PATH, "vo/medic_yes01.mp3");
-				this.PlayVoiceClip(snd, VSH2_VOICE_ABILITY);
+				this.PlayVoiceClip("vo/medic_yes01.mp3", VSH2_VOICE_ABILITY);
 			}
 			else this.flCharge = 0.0;
 		}

@@ -31,10 +31,11 @@ methodmap CVagineer < BaseBoss {
 	}
 	
 	public void PlaySpawnClip() {
+		char start_snd[PLATFORM_MAX_PATH];
 		if( !GetRandomInt(0, 1) )
-			strcopy(snd, PLATFORM_MAX_PATH, VagineerStart);
-		else strcopy(snd, PLATFORM_MAX_PATH, VagineerRoundStart);
-		this.PlayVoiceClip(snd, VSH2_VOICE_INTRO);
+			strcopy(start_snd, PLATFORM_MAX_PATH, VagineerStart);
+		else strcopy(start_snd, PLATFORM_MAX_PATH, VagineerRoundStart);
+		this.PlayVoiceClip(start_snd, VSH2_VOICE_INTRO);
 	}
 	
 	public void Think()
@@ -47,8 +48,10 @@ methodmap CVagineer < BaseBoss {
 		
 		if( this.SuperJumpThink(2.5, HALE_JUMPCHARGE) ) {
 			this.SuperJump(this.flCharge, -100.0);
-			Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerJump, GetRandomInt(1, 2));
-			this.PlayVoiceClip(snd, VSH2_VOICE_ABILITY);
+			
+			char gottam_snd[PLATFORM_MAX_PATH];
+			Format(gottam_snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerJump, GetRandomInt(1, 2));
+			this.PlayVoiceClip(gottam_snd, VSH2_VOICE_ABILITY);
 		}
 		
 		if( OnlyScoutsLeft(VSH2Team_Red) )
@@ -77,8 +80,9 @@ methodmap CVagineer < BaseBoss {
 	}
 	
 	public void Death() {
-		Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerFail, GetRandomInt(1, 2));
-		this.PlayVoiceClip(snd, VSH2_VOICE_LOSE);
+		char ded_snd[PLATFORM_MAX_PATH];
+		Format(ded_snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerFail, GetRandomInt(1, 2));
+		this.PlayVoiceClip(ded_snd, VSH2_VOICE_LOSE);
 	}
 	
 	public void Equip() {
@@ -100,15 +104,17 @@ methodmap CVagineer < BaseBoss {
 		}
 		TF2_AddCondition(this.index, TFCond_Ubercharged, cvarVSH2[VagineerUberTime].FloatValue);
 		this.DoGenericStun(VAGRAGEDIST);
+		char rage_snd[PLATFORM_MAX_PATH];
 		if( GetRandomInt(0, 2) )
-			strcopy(snd, PLATFORM_MAX_PATH, VagineerRageSound);
-		else Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerRageSound2, GetRandomInt(1, 2));
-		this.PlayVoiceClip(snd, VSH2_VOICE_RAGE);
+			strcopy(rage_snd, PLATFORM_MAX_PATH, VagineerRageSound);
+		else Format(rage_snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerRageSound2, GetRandomInt(1, 2));
+		this.PlayVoiceClip(rage_snd, VSH2_VOICE_RAGE);
 	}
 	
 	public void KilledPlayer(const BaseBoss victim, Event event) {
-		strcopy(snd, PLATFORM_MAX_PATH, VagineerHit);
-		this.PlayVoiceClip(snd, VSH2_VOICE_SPREE);
+		char wrench_hit_snd[PLATFORM_MAX_PATH];
+		strcopy(wrench_hit_snd, PLATFORM_MAX_PATH, VagineerHit);
+		this.PlayVoiceClip(wrench_hit_snd, VSH2_VOICE_SPREE);
 		
 		float curtime = GetGameTime();
 		if( curtime <= this.flKillSpree )
@@ -116,12 +122,13 @@ methodmap CVagineer < BaseBoss {
 		else this.iKills = 0;
 		
 		if( this.iKills == 3 && GetLivingPlayers(VSH2Team_Red) != 1 ) {
+			char spree_snd[PLATFORM_MAX_PATH];
 			switch( GetRandomInt(0, 4) ) {
-				case 1, 3: strcopy(snd, PLATFORM_MAX_PATH, VagineerKSpree);
-				case 2: strcopy(snd, PLATFORM_MAX_PATH, VagineerKSpree2);
-				default: Format(snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerKSpreeNew, GetRandomInt(1, 5));
+				case 1, 3: strcopy(spree_snd, PLATFORM_MAX_PATH, VagineerKSpree);
+				case 2: strcopy(spree_snd, PLATFORM_MAX_PATH, VagineerKSpree2);
+				default: Format(spree_snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerKSpreeNew, GetRandomInt(1, 5));
 			}
-			this.PlayVoiceClip(snd, VSH2_VOICE_SPREE);
+			this.PlayVoiceClip(spree_snd, VSH2_VOICE_SPREE);
 			this.iKills = 0;
 		}
 		else this.flKillSpree = curtime+5;
@@ -142,8 +149,9 @@ methodmap CVagineer < BaseBoss {
 		delete panel;
 	}
 	public void LastPlayerSoundClip() {
-		strcopy(snd, PLATFORM_MAX_PATH, VagineerLastA);
-		this.PlayVoiceClip(snd, VSH2_VOICE_LASTGUY);
+		char lastguy_snd[PLATFORM_MAX_PATH];
+		strcopy(lastguy_snd, PLATFORM_MAX_PATH, VagineerLastA);
+		this.PlayVoiceClip(lastguy_snd, VSH2_VOICE_LASTGUY);
 	}
 	public void PlayWinSound() {
 		char victory[PLATFORM_MAX_PATH];

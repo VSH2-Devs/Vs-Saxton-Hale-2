@@ -116,8 +116,9 @@ methodmap CBunny < BaseBoss {
 	}
 	
 	public void PlaySpawnClip() {
-		strcopy(snd, PLATFORM_MAX_PATH, BunnyStart[GetRandomInt(0, sizeof(BunnyStart)-1)]);
-		this.PlayVoiceClip(snd, VSH2_VOICE_INTRO);
+		char spawn_snd[PLATFORM_MAX_PATH];
+		strcopy(spawn_snd, PLATFORM_MAX_PATH, BunnyStart[GetRandomInt(0, sizeof(BunnyStart)-1)]);
+		this.PlayVoiceClip(spawn_snd, VSH2_VOICE_INTRO);
 	}
 	
 	public void Think()
@@ -130,8 +131,9 @@ methodmap CBunny < BaseBoss {
 		
 		if( this.SuperJumpThink(2.5, HALE_JUMPCHARGE) ) {
 			this.SuperJump(this.flCharge, -100.0);
-			strcopy(snd, PLATFORM_MAX_PATH, BunnyJump[GetRandomInt(0, sizeof(BunnyJump)-1)]);
-			this.PlayVoiceClip(snd, VSH2_VOICE_ABILITY);
+			char jump_snd[PLATFORM_MAX_PATH];
+			strcopy(jump_snd, PLATFORM_MAX_PATH, BunnyJump[GetRandomInt(0, sizeof(BunnyJump)-1)]);
+			this.PlayVoiceClip(jump_snd, VSH2_VOICE_ABILITY);
 		}
 		
 		if( OnlyScoutsLeft(VSH2Team_Red) )
@@ -155,8 +157,9 @@ methodmap CBunny < BaseBoss {
 	}
 	
 	public void Death() {
-		strcopy(snd, PLATFORM_MAX_PATH, BunnyFail[GetRandomInt(0, sizeof(BunnyFail)-1)]);
-		this.PlayVoiceClip(snd, VSH2_VOICE_LOSE);
+		char death_snd[PLATFORM_MAX_PATH];
+		strcopy(death_snd, PLATFORM_MAX_PATH, BunnyFail[GetRandomInt(0, sizeof(BunnyFail)-1)]);
+		this.PlayVoiceClip(death_snd, VSH2_VOICE_LOSE);
 		SpawnManyAmmoPacks(this.index, EggModel, 1);
 	}
 	
@@ -184,14 +187,16 @@ methodmap CBunny < BaseBoss {
 		SetWeaponAmmo(weapon, 0);
 		
 		this.DoGenericStun(VAGRAGEDIST);
-		strcopy(snd, PLATFORM_MAX_PATH, BunnyRage[GetRandomInt(1, sizeof(BunnyRage)-1)]);
-		this.PlayVoiceClip(snd, VSH2_VOICE_RAGE);
+		char rage_snd[PLATFORM_MAX_PATH];
+		strcopy(rage_snd, PLATFORM_MAX_PATH, BunnyRage[GetRandomInt(1, sizeof(BunnyRage)-1)]);
+		this.PlayVoiceClip(rage_snd, VSH2_VOICE_RAGE);
 	}
 	
 	public void KilledPlayer(const BaseBoss victim, Event event) {
 		if( GetRandomInt(0, 3) ) {
-			strcopy(snd, PLATFORM_MAX_PATH, BunnyKill[GetRandomInt(0, sizeof(BunnyKill)-1)]);
-			this.PlayVoiceClip(snd, VSH2_VOICE_SPREE);
+			char kill_snd[PLATFORM_MAX_PATH];
+			strcopy(kill_snd, PLATFORM_MAX_PATH, BunnyKill[GetRandomInt(0, sizeof(BunnyKill)-1)]);
+			this.PlayVoiceClip(kill_snd, VSH2_VOICE_SPREE);
 		}
 		SpawnManyAmmoPacks(victim.index, EggModel, 1);
 		float curtime = GetGameTime();
@@ -200,16 +205,18 @@ methodmap CBunny < BaseBoss {
 		else this.iKills = 0;
 		
 		if( this.iKills == 3 && GetLivingPlayers(VSH2Team_Red) != 1 ) {
-			strcopy(snd, PLATFORM_MAX_PATH, BunnySpree[GetRandomInt(0, sizeof(BunnySpree)-1)]);
-			this.PlayVoiceClip(snd, VSH2_VOICE_SPREE);
+			char spree_snd[PLATFORM_MAX_PATH];
+			strcopy(spree_snd, PLATFORM_MAX_PATH, BunnySpree[GetRandomInt(0, sizeof(BunnySpree)-1)]);
+			this.PlayVoiceClip(spree_snd, VSH2_VOICE_SPREE);
 			this.iKills = 0;
 		}
 		else this.flKillSpree = curtime+5;
 	}
 	
 	public void Stabbed() {
-		strcopy(snd, PLATFORM_MAX_PATH, BunnyPain[GetRandomInt(0, sizeof(BunnyPain)-1)]);
-		this.PlayVoiceClip(snd, VSH2_VOICE_STABBED);
+		char stab_snd[PLATFORM_MAX_PATH];
+		strcopy(stab_snd, PLATFORM_MAX_PATH, BunnyPain[GetRandomInt(0, sizeof(BunnyPain)-1)]);
+		this.PlayVoiceClip(stab_snd, VSH2_VOICE_STABBED);
 	}
 	
 	public void Help() {
@@ -223,8 +230,9 @@ methodmap CBunny < BaseBoss {
 		delete panel;
 	}
 	public void LastPlayerSoundClip() {
-		strcopy(snd, PLATFORM_MAX_PATH, BunnyLast[GetRandomInt(0, sizeof(BunnyLast)-1)]);
-		this.PlayVoiceClip(snd, VSH2_VOICE_LASTGUY);
+		char lastguy_snd[PLATFORM_MAX_PATH];
+		strcopy(lastguy_snd, PLATFORM_MAX_PATH, BunnyLast[GetRandomInt(0, sizeof(BunnyLast)-1)]);
+		this.PlayVoiceClip(lastguy_snd, VSH2_VOICE_LASTGUY);
 	}
 	public void PlayWinSound() {
 		char victory[PLATFORM_MAX_PATH];
@@ -240,8 +248,6 @@ public CBunny ToCBunny (const BaseBoss guy)
 
 public void AddBunnyToDownloads()
 {
-	// char s[PLATFORM_MAX_PATH];
-	// int i;
 	PrepareModel(BunnyModel);
 	PrepareModel(EggModel);
 	

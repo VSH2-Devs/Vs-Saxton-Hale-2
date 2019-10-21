@@ -24,6 +24,7 @@ public int AllowedDifficulties[] = {
 };
 */
 
+public char BackgroundSong[PLATFORM_MAX_PATH];
 StringMap hGameModeFields;
 
 /** all game mode oriented code should be handled HERE ONLY */

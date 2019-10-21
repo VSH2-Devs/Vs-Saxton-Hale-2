@@ -23,8 +23,7 @@ methodmap CChristian < BaseBoss {
 	}
 	
 	public void PlaySpawnClip() {
-		strcopy(snd, PLATFORM_MAX_PATH, CBS0);
-		this.PlayVoiceClip(snd, VSH2_VOICE_INTRO);
+		this.PlayVoiceClip(CBS0, VSH2_VOICE_INTRO);
 	}
 	
 	public void Think()
@@ -37,8 +36,7 @@ methodmap CChristian < BaseBoss {
 		
 		if( this.SuperJumpThink(2.5, HALE_JUMPCHARGE) ) {
 			this.SuperJump(this.flCharge, -100.0);
-			strcopy(snd, PLATFORM_MAX_PATH, CBSJump1);
-			this.PlayVoiceClip(snd, VSH2_VOICE_ABILITY);
+			this.PlayVoiceClip(CBSJump1, VSH2_VOICE_ABILITY);
 		}
 		
 		if( OnlyScoutsLeft(VSH2Team_Red) )
@@ -62,6 +60,7 @@ methodmap CChristian < BaseBoss {
 	}
 	
 	public void Death() {
+		// char ded_snd[PLATFORM_MAX_PATH];
 		//EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
 	}
 	
@@ -82,11 +81,7 @@ methodmap CChristian < BaseBoss {
 			this.SetModel();
 		}
 		this.DoGenericStun(CBSRAGEDIST);
-
-		if( GetRandomInt(0, 1) )
-			Format(snd, PLATFORM_MAX_PATH, "%s", CBS1);
-		else Format(snd, PLATFORM_MAX_PATH, "%s", CBS3);
-		this.PlayVoiceClip(snd, VSH2_VOICE_RAGE);
+		this.PlayVoiceClip(GetRandomInt(0, 1) ? CBS1 : CBS3, VSH2_VOICE_RAGE);
 		
 		TF2_RemoveWeaponSlot(this.index, TFWeaponSlot_Primary);
 		int bow = this.SpawnWeapon("tf_weapon_compound_bow", 1005, 100, 5, "2; 2.1; 6; 0.5; 37; 0.0; 280; 19; 551; 1");
@@ -102,8 +97,7 @@ methodmap CChristian < BaseBoss {
 		if( !GetRandomInt(0, 3) && living != 1 ) {
 			switch( TF2_GetPlayerClass(victim.index) ) {
 				case TFClass_Spy: {
-					strcopy(snd, PLATFORM_MAX_PATH, "vo/sniper_dominationspy04.mp3");
-					this.PlayVoiceClip(snd, VSH2_VOICE_SPREE);
+					this.PlayVoiceClip("vo/sniper_dominationspy04.mp3", VSH2_VOICE_SPREE);
 				}
 			}
 		}
@@ -130,12 +124,13 @@ methodmap CChristian < BaseBoss {
 		else this.iKills = 0;
 		
 		if( this.iKills == 3 && living != 1 ) {
+			char spree_snd[PLATFORM_MAX_PATH];
 			if( !GetRandomInt(0, 3) )
-				Format(snd, PLATFORM_MAX_PATH, CBS0);
+				Format(spree_snd, PLATFORM_MAX_PATH, CBS0);
 			else if( !GetRandomInt(0, 3) )
-				Format(snd, PLATFORM_MAX_PATH, CBS1);
-			else Format(snd, PLATFORM_MAX_PATH, "%s%02i.mp3", CBS2, GetRandomInt(1, 9));
-			this.PlayVoiceClip(snd, VSH2_VOICE_SPREE);
+				Format(spree_snd, PLATFORM_MAX_PATH, CBS1);
+			else Format(spree_snd, PLATFORM_MAX_PATH, "%s%02i.mp3", CBS2, GetRandomInt(1, 9));
+			this.PlayVoiceClip(spree_snd, VSH2_VOICE_SPREE);
 			this.iKills = 0;
 		}
 		else this.flKillSpree = curtime+5;
@@ -151,10 +146,11 @@ methodmap CChristian < BaseBoss {
 		delete panel;
 	}
 	public void LastPlayerSoundClip() {
+		char lastguy_snd[PLATFORM_MAX_PATH];
 		if( !GetRandomInt(0, 2) )
-			Format(snd, PLATFORM_MAX_PATH, "%s", CBS0);
-		else Format(snd, PLATFORM_MAX_PATH, "%s%i.mp3", CBS4, GetRandomInt(1, 25));
-		this.PlayVoiceClip(snd, VSH2_VOICE_LASTGUY);
+			Format(lastguy_snd, PLATFORM_MAX_PATH, "%s", CBS0);
+		else Format(lastguy_snd, PLATFORM_MAX_PATH, "%s%i.mp3", CBS4, GetRandomInt(1, 25));
+		this.PlayVoiceClip(lastguy_snd, VSH2_VOICE_LASTGUY);
 	}
 };
 
@@ -165,9 +161,6 @@ public CChristian ToCChristian (const BaseBoss guy)
 
 public void AddCBSToDownloads()
 {
-	char s[PLATFORM_MAX_PATH];
-	int i;
-	
 	PrepareModel(CBSModel);
 	PrepareMaterial("materials/models/player/saxton_hale/sniper_red");
 	PrepareMaterial("materials/models/player/saxton_hale/sniper_lens");
@@ -180,7 +173,8 @@ public void AddCBSToDownloads()
 	PrecacheSound(CBSJump1, true);
 	PrepareSound(CBSTheme);
 	
-	for( i=1; i <= 25; i++ ) {
+	for( int i=1; i <= 25; i++ ) {
+		char s[PLATFORM_MAX_PATH];
 		if( i <= 9 ) {
 			Format(s, PLATFORM_MAX_PATH, "%s%i.mp3", CBS2, i);
 			PrecacheSound(s, true);

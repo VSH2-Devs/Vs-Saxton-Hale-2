@@ -2,7 +2,7 @@
 	ALL NON-BOSS AND NON-MINION RELATED CODE IS AT THE BOTTOM. HAVE FUN CODING!
 */
 
-
+#define MAXMESSAGE 128
 #define MAXBOSS    (MaxDefaultVSH2Bosses - 1) + (g_hBossesRegistered.Length)
 
 #include "modules/bosses.sp"
@@ -1256,7 +1256,7 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 
 public void ManageMessageIntro(ArrayList bosses)
 {
-	gameMessage[0] = '\0';
+	char intro_msg[MAXMESSAGE];
 	if( gamemode.bDoors ) {
 		int ent = -1;
 		while( (ent = FindEntityByClassname(ent, "func_door")) != -1 ) {
@@ -1275,16 +1275,16 @@ public void ManageMessageIntro(ArrayList bosses)
 		
 		char name[MAX_BOSS_NAME_SIZE];
 		base.GetName(name);
-		Action act = Call_OnMessageIntro(base, gameMessage);
+		Action act = Call_OnMessageIntro(base, intro_msg);
 		if( act > Plugin_Changed )
 			continue;
 		
-		Format(gameMessage, MAXMESSAGE, "%s\n%N has become %s with %i Health", gameMessage, base.index, name, base.iHealth);
+		Format(intro_msg, MAXMESSAGE, "%s\n%N has become %s with %i Health", intro_msg, base.index, name, base.iHealth);
 	}
 	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
 	for( i=MaxClients; i; --i ) {
 		if( IsValidClient(i) )
-			ShowHudText(i, -1, "%s", gameMessage);
+			ShowHudText(i, -1, "%s", intro_msg);
 	}
 	gamemode.iRoundState = StateRunning;
 	delete bosses;
@@ -1434,7 +1434,7 @@ public void StopBackGroundMusic()
 
 public void ManageRoundEndBossInfo(ArrayList bosses, bool bossWon)
 {
-	gameMessage[0] = '\0';
+	char round_end_msg[MAXMESSAGE];
 	int i=0;
 	BaseBoss base;
 	int len = bosses.Length;
@@ -1445,10 +1445,10 @@ public void ManageRoundEndBossInfo(ArrayList bosses, bool bossWon)
 		
 		char name[MAX_BOSS_NAME_SIZE];
 		base.GetName(name);
-		Action act = Call_OnRoundEndInfo(base, bossWon, gameMessage);
+		Action act = Call_OnRoundEndInfo(base, bossWon, round_end_msg);
 		if( act > Plugin_Changed )
 			continue;
-		Format(gameMessage, MAXMESSAGE, "%s\n%s (%N) had %i (of %i) health left.", gameMessage, name, base.index, base.iHealth, base.iMaxHealth);
+		Format(round_end_msg, MAXMESSAGE, "%s\n%s (%N) had %i (of %i) health left.", round_end_msg, name, base.index, base.iHealth, base.iMaxHealth);
 		
 		if( bossWon ) {
 			switch( base.iBossType ) {
@@ -1459,12 +1459,12 @@ public void ManageRoundEndBossInfo(ArrayList bosses, bool bossWon)
 			}
 		}
 	}
-	if( gameMessage[0] != '\0' ) {
-		CPrintToChatAll("{olive}[VSH 2] End of Round{default} %s", gameMessage);
+	if( round_end_msg[0] != '\0' ) {
+		CPrintToChatAll("{olive}[VSH 2] End of Round{default} %s", round_end_msg);
 		SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
 		for( i=MaxClients; i; --i ) {
 			if( IsValidClient(i) && !(GetClientButtons(i) & IN_SCORE) )
-				ShowHudText(i, -1, "%s", gameMessage);
+				ShowHudText(i, -1, "%s", round_end_msg);
 		}
 	}
 	delete bosses;
@@ -1491,7 +1491,8 @@ public void ManageBossCheckHealth(const BaseBoss base)
 	
 	/// If a boss reveals their own health, only show that one boss' health.
 	if( base.bIsBoss && IsPlayerAlive(base.index) ) {
-		Action act = Call_OnBossHealthCheck(base, true, gameMessage);
+		char health_check[MAXMESSAGE];
+		Action act = Call_OnBossHealthCheck(base, true, health_check);
 		if( act > Plugin_Changed )
 			return;
 		
@@ -1506,7 +1507,8 @@ public void ManageBossCheckHealth(const BaseBoss base)
 		gamemode.iHealthChecks++;
 		BaseBoss boss;
 		int totalHealth;
-		gameMessage[0] = '\0';
+		char health_check[MAXMESSAGE];
+		
 		for( int i=MaxClients; i; --i ) {
 			/// exclude dead bosses for health check
 			if( !IsValidClient(i) || !IsPlayerAlive(i) )
@@ -1515,17 +1517,17 @@ public void ManageBossCheckHealth(const BaseBoss base)
 			if( !boss.bIsBoss )
 				continue;
 			
-			Action act = Call_OnBossHealthCheck(boss, false, gameMessage);
+			Action act = Call_OnBossHealthCheck(boss, false, health_check);
 			if( act > Plugin_Changed )
 				continue;
 			
 			char name[MAX_BOSS_NAME_SIZE];
 			boss.GetName(name);
-			Format(gameMessage, MAXMESSAGE, "%s\n%s's current health is: %i of %i", gameMessage, name, boss.iHealth, boss.iMaxHealth);
+			Format(health_check, MAXMESSAGE, "%s\n%s's current health is: %i of %i", health_check, name, boss.iHealth, boss.iMaxHealth);
 			totalHealth += boss.iHealth;
 		}
-		PrintCenterTextAll(gameMessage);
-		CPrintToChatAll("{olive}[VSH 2] {axis}Boss Health Check{default} %s", gameMessage);
+		PrintCenterTextAll(health_check);
+		CPrintToChatAll("{olive}[VSH 2] {axis}Boss Health Check{default} %s", health_check);
 		LastBossTotalHealth = totalHealth;
 		gamemode.flHealthTime = currtime + ((gamemode.iHealthChecks < 3) ? 10.0 : 60.0);
 	} else {
@@ -1575,8 +1577,9 @@ public void CheckAlivePlayers(const any nil)
 		if( living == Alive )
 			EmitSoundToAll("vo/announcer_am_capenabled02.mp3");
 		else if( living < Alive ) {
-			Format(snd, PLATFORM_MAX_PATH, "vo/announcer_am_capincite0%i.mp3", GetRandomInt(0, 1) ? 1 : 3);
-			EmitSoundToAll(snd);
+			char cap_incite_snd[PLATFORM_MAX_PATH];
+			Format(cap_incite_snd, sizeof(cap_incite_snd), "vo/announcer_am_capincite0%i.mp3", GetRandomInt(0, 1) ? 1 : 3);
+			EmitSoundToAll(cap_incite_snd);
 		}
 		SetControlPoint(true);
 		gamemode.bPointReady = true;

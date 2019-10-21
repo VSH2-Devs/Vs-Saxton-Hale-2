@@ -389,7 +389,6 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 			continue;
 		
 		boss.iMaxHealth = max_health;
-		SetEntProp(boss.index, Prop_Data, "m_iMaxHealth", max_health);
 		if( GetClientTeam(boss.index) != VSH2Team_Boss )
 			boss.ForceTeamChange(VSH2Team_Boss);
 		gamemode.iTotalMaxHealth += boss.iMaxHealth;
