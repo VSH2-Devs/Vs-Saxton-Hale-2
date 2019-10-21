@@ -11,7 +11,7 @@ public Plugin myinfo = {
 	name           = "VSH2 to VSH Compatibility layer.",
 	author         = "Nergal/Assyrianic",
 	description    = "Implements Old VSH forwards & natives using VSH2's API",
-	version        = "1.0",
+	version        = "1.1",
 	url            = "https://github.com/VSH2-Devs/Vs-Saxton-Hale-2"
 };
 
@@ -21,10 +21,11 @@ enum {
 	OnHaleRage,
 	OnHaleWeighdown,
 	OnVSHMusic,
-	OnHaleNext
+	OnHaleNext,
+	MaxVSHForwards
 };
 
-Handle g_vsh_forwards[OnHaleNext + 1];
+Handle g_vsh_forwards[MaxVSHForwards];
 ConVar vsh2_enabled;
 bool g_vsh2;
 

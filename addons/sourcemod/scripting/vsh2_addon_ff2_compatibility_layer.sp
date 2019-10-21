@@ -19,10 +19,11 @@ public Plugin myinfo = {
 #define MAX_SUBPLUGIN_NAME    64
 
 enum {
-	FF2OnMusic
+	FF2OnMusic,
+	MaxFF2Forwards
 };
 
-Handle g_ff2_forwards[FF2OnMusic + 1];
+Handle g_ff2_forwards[MaxFF2Forwards];
 
 ConVar
 	vsh2_enabled,

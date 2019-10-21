@@ -2,7 +2,7 @@ public Plugin myinfo = {
 	name         = "VSH2 Noboss",
 	author       = "Bottiger",
 	description  = "Adds the command !noboss to reset queue points every round automatically",
-	version      = "1.0",
+	version      = "1.1",
 	url          = "https://www.skial.com"
 };
 
@@ -14,11 +14,11 @@ public Plugin myinfo = {
 #define REQUIRE_PLUGIN
 
 bool g_vsh2;
-Handle g_noboss_cookie;
+Cookie g_noboss_cookie;
 ConVar vsh2_enabled;
 
 public void OnPluginStart() {
-	g_noboss_cookie = RegClientCookie("hale_noboss", "Set queue points to 0 every round automatically", CookieAccess_Public);
+	g_noboss_cookie = new Cookie("hale_noboss", "Set queue points to 0 every round automatically", CookieAccess_Public);
 	RegConsoleCmd("sm_noboss", NoBossCmd);
 	RegConsoleCmd("sm_nohale", NoBossCmd);
 	RegConsoleCmd("sm_haletoggle", NoBossCmd);
@@ -59,14 +59,14 @@ public Action NoBossCmd(int client, int args) {
 	}
 	
 	char setting[2];
-	GetClientCookie(client, g_noboss_cookie, setting, sizeof(setting));
+	g_noboss_cookie.Get(client, setting, sizeof(setting));
 	if(setting[0] == '1') {
 		CPrintToChat(client, "{olive}[VSH 2]{default} Queue point gain enabled.");
-		SetClientCookie(client, g_noboss_cookie, "0");
+		g_noboss_cookie.Set(client, "0");
 	} else {
 		CPrintToChat(client, "{olive}[VSH 2]{default} Queue points will be set to 0 at the end of each round.");
 		SetQueuePoints(client, 0);
-		SetClientCookie(client, g_noboss_cookie, "1");
+		g_noboss_cookie.Set(client, "1");
 	}
 	return Plugin_Handled;
 }
