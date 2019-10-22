@@ -536,7 +536,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 	{
 		if( IsVoteInProgress() )
 			return;
-		char helpstr[MAXMESSAGE];
+		char helpstr[MAX_PANEL_MSG];
 		switch( TF2_GetPlayerClass(this.index) ) {
 			case TFClass_Scout: Format(helpstr, sizeof(helpstr), "Scout:\nCrit-a-Cola: grants criticals instead of minicrits.\nFan O' War: removes 5%% rage on hit.\nPistols get minicrits.\nCandycane: drops health pack on hit.\nMedics healing you get a speed-buff.\nSun-on-a-Stick: ignites Boss on fire.\nBackscatter: crits whenever it minicrits.");
 			case TFClass_Soldier: Format(helpstr, sizeof(helpstr), "Soldier:\nBattalion's Backup: nerfs Boss damage.\nHalf-Zatoichi: heals 35HP on hit + can overheal to +25. Honorbound is removed on hit.\nShotguns: minicrit Boss in midair + lower rocketjump damage.\nDirect Hit: crits when it minicrits.\nReserve Shooter: faster weapon switch + damage buff.\nGunboats: blocks 60%% of rocket jump dmg & less fall damage.\nMantreads: higher jump height + less fall damage.\nRocket Jumper: replaced with Rocket Launcher.");

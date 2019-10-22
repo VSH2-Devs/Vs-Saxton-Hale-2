@@ -10,13 +10,14 @@
 #tryinclude <tf2attributes>
 #define REQUIRE_PLUGIN
 
-#define PlagueModel			"models/player/medic.mdl"
-#define ZombieModel			"models/player/scout.mdl"
+#define PlagueModel    "models/player/medic.mdl"
+#define ZombieModel    "models/player/scout.mdl"
 
 /// voicelines
-#define PlagueIntro			"vo/medic_specialcompleted10.mp3"
-#define PlagueRage1			"vo/medic_specialcompleted05.mp3"
-#define PlagueRage2			"vo/medic_specialcompleted06.mp3"
+#define PlagueIntro    "vo/medic_specialcompleted10.mp3"
+#define PlagueRage1    "vo/medic_specialcompleted05.mp3"
+#define PlagueRage2    "vo/medic_specialcompleted06.mp3"
+
 
 methodmap CPlague < VSH2Player {
 	public CPlague(const int ind, bool uid=false) {

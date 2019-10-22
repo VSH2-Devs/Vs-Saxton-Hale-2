@@ -5,6 +5,7 @@
 
 
 #define MAXMESSAGE            128
+#define MAX_PANEL_MSG         512
 #define MAX_BOSS_NAME_SIZE    64
 
 enum { /** VSH2 Round States */
