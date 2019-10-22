@@ -556,6 +556,36 @@ methodmap VSHGameMode { /* < StringMap */
 		}
 		return count;
 	}
+	public int GetFighters(BaseBoss[] redarray, const bool balive) {
+		int count;
+		BaseBoss red;
+		for( int i=MaxClients; i; --i ) {
+			if( !IsClientInGame(i) )
+				continue;
+			else if( balive && !IsPlayerAlive(i) )
+				continue;
+			
+			red = BaseBoss(i);
+			if( !red.bIsBoss && !red.bIsMinion )
+				redarray[count++] = red;
+		}
+		return count;
+	}
+	public int GetMinions(BaseBoss[] marray, const bool balive) {
+		int count;
+		BaseBoss minion;
+		for( int i=MaxClients; i; --i ) {
+			if( !IsClientInGame(i) )
+				continue;
+			else if( balive && !IsPlayerAlive(i) )
+				continue;
+			
+			minion = BaseBoss(i);
+			if( minion.bIsMinion )
+				marray[count++] = minion;
+		}
+		return count;
+	}
 };
 
 public Action SetSmallAmmoPack(Handle timer, DataPack pack) {

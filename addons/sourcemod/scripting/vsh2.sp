@@ -25,7 +25,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.5.1"
+#define PLUGIN_VERSION       "2.5.2"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -837,7 +837,7 @@ public void OnEntityCreated(int entity, const char[] classname)
 	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue )
 		return;
 	else if( !strncmp(classname, "tf_weapon_", 10, false) && IsValidEntity(entity) )
-		CreateTimer( 0.2, OnWeaponSpawned, EntIndexToEntRef(entity) );
+		CreateTimer(0.5, OnWeaponSpawned, EntIndexToEntRef(entity));
 	
 	ManageEntityCreated(entity, classname);
 }
@@ -1182,6 +1182,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2GameMode_GetHUDHandle", Native_VSH2GameMode_GetHUDHandle);
 	CreateNative("VSH2GameMode_GetBosses", Native_VSH2GameMode_GetBosses);
 	CreateNative("VSH2GameMode_IsVSHMap", Native_VSH2GameMode_IsVSHMap);
+	CreateNative("VSH2GameMode_GetFighters", Native_VSH2GameMode_GetFighters);
+	CreateNative("VSH2GameMode_GetMinions", Native_VSH2GameMode_GetMinions);
 	
 	CreateNative("VSH2_GetMaxBosses", Native_VSH2_GetMaxBosses);
 #if defined _steamtools_included
@@ -1640,4 +1642,22 @@ public int Native_VSH2GameMode_IsVSHMap(Handle plugin, int numParams)
 public int Native_VSH2_GetMaxBosses(Handle plugin, int numParams)
 {
 	return MAXBOSS;
+}
+
+public int Native_VSH2GameMode_GetFighters(Handle plugin, int numParams)
+{
+	BaseBoss[] reds = new BaseBoss[MaxClients];
+	bool balive = GetNativeCell(2);
+	int numreds = gamemode.GetFighters(reds, balive);
+	SetNativeArray(1, reds, MaxClients);
+	return numreds;
+}
+
+public int Native_VSH2GameMode_GetMinions(Handle plugin, int numParams)
+{
+	BaseBoss[] minions = new BaseBoss[MaxClients];
+	bool balive = GetNativeCell(2);
+	int numminions = gamemode.GetMinions(minions, balive);
+	SetNativeArray(1, minions, MaxClients);
+	return numminions;
 }

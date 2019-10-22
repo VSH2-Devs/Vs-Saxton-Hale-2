@@ -76,6 +76,7 @@ void InitializeForwards()
 	g_vsh2_data.m_hForwards[OnBossTakeDamage_OnTriggerHurt] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 	g_vsh2_data.m_hForwards[OnBossTakeDamage_OnMantreadsStomp] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 	g_vsh2_data.m_hForwards[OnBossThinkPost] = new PrivateForward( ET_Hook, Param_Cell );
+	g_vsh2_data.m_hForwards[OnBossEquippedPost] = new PrivateForward( ET_Hook, Param_Cell );
 }
 
 Action Call_OnCallDownloads()
@@ -904,11 +905,19 @@ Action Call_OnBossTakeDamage_OnMantreadsStomp(const BaseBoss player, int& attack
 	return result;
 }
 
-
 Action Call_OnBossThinkPost(const BaseBoss player)
 {
 	Action act;
 	Call_StartForward(g_vsh2_data.m_hForwards[OnBossThinkPost]);
+	Call_PushCell(player);
+	Call_Finish(act);
+	return act;
+}
+
+Action Call_OnBossEquippedPost(const BaseBoss player)
+{
+	Action act;
+	Call_StartForward(g_vsh2_data.m_hForwards[OnBossEquippedPost]);
 	Call_PushCell(player);
 	Call_Finish(act);
 	return act;

@@ -107,6 +107,11 @@ public void fwdOnBossEquipped(const VSH2Player player)
 {
 	PrintToConsole(player.index, "fwdOnBossEquipped:: %N", player.index);
 }
+
+public void fwdOnBossEquippedPost(const VSH2Player player)
+{
+	PrintToConsole(player.index, "OnBossEquippedPost:: %N", player.index);
+}
 public void fwdOnBossInitialized(const VSH2Player player)
 {
 	PrintToConsole(player.index, "fwdOnBossInitialized:: %N", player.index);
@@ -346,8 +351,8 @@ public void fwdOnUberDeployed(const VSH2Player victim, const VSH2Player attacker
 }
 public void fwdOnUberLoop(const VSH2Player victim, const VSH2Player attacker)
 {
-	PrintToConsole(attacker.index, "fwdOnUberLoop:: ==> Medic name: %N | Target name: %N", attacker.index, victim.index);
-	PrintToConsole(victim.index, "fwdOnUberLoop:: ==> Medic name: %N | Target name: %N", attacker.index, victim.index);
+	PrintToConsole(attacker.index, "fwdOnUberLoop:: ==> Medic name: %N | Target name: %N", victim.index, attacker.index);
+	PrintToConsole(victim.index, "fwdOnUberLoop:: ==> Medic name: %N | Target name: %N", victim.index, attacker.index);
 }
 public void fwdOnMusic(char song[PLATFORM_MAX_PATH], float &time, const VSH2Player player)
 {
@@ -646,4 +651,7 @@ public void LoadVSH2Hooks()
 		
 	if (!VSH2_HookEx(OnBossThinkPost, fwdOnBossThinkPost))
 		LogError("Error Hooking OnBossThinkPost forward for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnBossEquippedPost, fwdOnBossEquippedPost))
+		LogError("Error Hooking OnBossEquippedPost forward for VSH2 Test plugin.");
 }

@@ -367,6 +367,7 @@ enum { /// VSH2HookType
 	OnBossTakeDamage_OnMantreadsStomp,
 	OnBossThinkPost,
 	OnRedPlayerThink,
+	OnBossEquippedPost,
 	MaxVSH2Forwards
 };
 
@@ -381,6 +382,7 @@ typeset VSH2HookCB {
 		OnBossModelTimer
 		OnBossDeath
 		OnBossEquipped
+		OnBossEquippedPost
 		OnBossInitialized
 		OnBossPlayIntro
 		OnBossMedicCall
@@ -575,7 +577,9 @@ native int VSH2GameMode_CountMinions(const bool IsAlive);
 native int VSH2GameMode_CountBosses(const bool IsAlive);
 native int VSH2GameMode_GetTotalBossHealth();
 native int VSH2GameMode_GetTotalRedPlayers();
-native int VSH2GameMode_GetBosses(VSH2Player[] bosses, bool balive);
+native int VSH2GameMode_GetBosses(VSH2Player[] bosses, bool balive=true);
+native int VSH2GameMode_GetFighters(VSH2Player[] redplayers, bool balive=true);
+native int VSH2GameMode_GetMinions(VSH2Player[] minions, bool balive=true);
 
 native void VSH2GameMode_SearchForItemPacks();
 native void VSH2GameMode_UpdateBossHealth();
@@ -740,5 +744,7 @@ public void __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2GameMode_GetHUDHandle");
 	MarkNativeAsOptional("VSH2GameMode_GetBosses");
 	MarkNativeAsOptional("VSH2GameMode_IsVSHMap");
+	MarkNativeAsOptional("VSH2GameMode_GetFighters");
+	MarkNativeAsOptional("VSH2GameMode_GetMinions");
 }
 #endif

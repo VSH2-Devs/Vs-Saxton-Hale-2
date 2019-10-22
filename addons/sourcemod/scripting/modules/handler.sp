@@ -233,6 +233,7 @@ public void ManageBossEquipment(const BaseBoss base)
 		case VSH2Boss_HHHjr:		ToCHHHJr(base).Equip();
 		case VSH2Boss_Bunny:		ToCBunny(base).Equip();
 	}
+	Call_OnBossEquippedPost(base);
 }
 
 /** whatever stuff needs initializing should be done here */
@@ -1397,7 +1398,7 @@ public void ManageMusic(char song[PLATFORM_MAX_PATH], float& time)
 		return;
 	else if( currBoss ) {
 		switch( currBoss.iBossType ) {
-			case -1: {song = ""; time = -1.0;}
+			case -1: {song = "\0"; time = -1.0;}
 			case VSH2Boss_CBS: {
 				if( act != Plugin_Changed ) {
 					strcopy(song, sizeof(song), CBSTheme);
@@ -1413,7 +1414,7 @@ public void ManageMusic(char song[PLATFORM_MAX_PATH], float& time)
 			}
 			case VSH2Boss_Bunny, VSH2Boss_Hale, VSH2Boss_Vagineer: {
 				if( act != Plugin_Changed ) {
-					song = "";
+					song = "\0";
 					time = GetGameTime() + 999999.0;
 				}
 			}
@@ -1757,8 +1758,10 @@ public void PrepPlayers(const BaseBoss player)
 		}
 	}
 #if defined _tf2attributes_included
-	if( gamemode.bTF2Attribs && g_vsh2_data.m_hCvars[HealthRegenForPlayers].BoolValue )
-		TF2Attrib_SetByDefIndex(client, 57, GetClientHealth(client)/50.0+g_vsh2_data.m_hCvars[HealthRegenAmount].FloatValue);
+	if( gamemode.bTF2Attribs && g_vsh2_data.m_hCvars[HealthRegenForPlayers].BoolValue ) {
+		int max_health = GetEntProp(client, Prop_Data, "m_iMaxHealth");
+		TF2Attrib_SetByDefIndex(client, 57, max_health / 50.0 + g_vsh2_data.m_hCvars[HealthRegenAmount].FloatValue);
+	}
 #endif
 }
 

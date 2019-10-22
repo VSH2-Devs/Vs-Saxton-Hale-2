@@ -4,11 +4,14 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.5.1"
+			"Latest"	"2.5.2"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.5.1:"
-		"Notes"	"Added 'MAX_PANEL_MSG' define to vsh2.inc."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.5.2:"
+		"Notes"	"Added new natives: 'GetFighters' which is the red player version of 'GetBosses' as well as 'GetMinions'."
+		"Notes"	"Made 'VSH2GameMode_GetFighters', 'VSH2GameMode_GetBosses', and 'VSH2GameMode_GetMinions' have a true default value for checking for living players."
+		"Notes"	"Patched built-in health regen giving health regen based on current health rather than max health."
+		"Notes"	"Added 'OnBossEquippedPost' forward."
 	}
 	
 	"Files"
@@ -37,5 +40,6 @@
 		
 		"Source"	"Path_SM/scripting/include/vsh2.inc"
 		"Source"	"Path_SM/scripting/include/steamtools.inc"
+		"Source"	"Path_SM/scripting/include/tf2items_stocks.inc"
 	}
 }

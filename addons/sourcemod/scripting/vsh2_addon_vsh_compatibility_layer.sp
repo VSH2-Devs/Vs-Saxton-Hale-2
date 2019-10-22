@@ -144,7 +144,7 @@ public int Native_IsEnabled(Handle plugin, int numParams)
 public int Native_GetHale(Handle plugin, int numParams)
 {
 	VSH2Player[] boss = new VSH2Player[MaxClients];
-	if( VSH2GameMode_GetBosses(boss, true) > 0 )
+	if( VSH2GameMode_GetBosses(boss) > 0 )
 		return boss[0].userid;
 	else return 0;
 }
@@ -157,7 +157,7 @@ public int Native_GetTeam(Handle plugin, int numParams)
 public int Native_GetSpecial(Handle plugin, int numParams)
 {
 	VSH2Player[] boss = new VSH2Player[MaxClients];
-	if( VSH2GameMode_GetBosses(boss, true) > 0 )
+	if( VSH2GameMode_GetBosses(boss) > 0 )
 		return boss[0].GetPropInt("iBossType");
 	else return 0;
 }
@@ -165,7 +165,7 @@ public int Native_GetSpecial(Handle plugin, int numParams)
 public int Native_GetHealth(Handle plugin, int numParams)
 {
 	VSH2Player[] boss = new VSH2Player[MaxClients];
-	if( VSH2GameMode_GetBosses(boss, true) > 0 )
+	if( VSH2GameMode_GetBosses(boss) > 0 )
 		return boss[0].GetPropInt("iHealth");
 	else return 0;
 }
@@ -173,7 +173,7 @@ public int Native_GetHealth(Handle plugin, int numParams)
 public int Native_GetHealthMax(Handle plugin, int numParams)
 {
 	VSH2Player[] boss = new VSH2Player[MaxClients];
-	if( VSH2GameMode_GetBosses(boss, true) > 0 )
+	if( VSH2GameMode_GetBosses(boss) > 0 )
 		return boss[0].GetPropInt("iMaxHealth");
 	else return 0;
 }
