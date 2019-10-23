@@ -43,7 +43,7 @@ public void OnLibraryRemoved(const char[] name) {
 
 public Action OnScore(const VSH2Player player, int& points_earned, int& queue_earned) {
 	char setting[2];
-	GetClientCookie(player.index, g_noboss_cookie, setting, sizeof(setting));
+	g_noboss_cookie.Get(player.index, setting, sizeof(setting));
 	if(setting[0] == '1') {
 		CPrintToChat(player.index, "{olive}[VSH 2]{default} Queue Points set to 0. Type /noboss to toggle.");
 		queue_earned = 0;

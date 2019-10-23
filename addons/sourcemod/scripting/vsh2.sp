@@ -357,7 +357,7 @@ public void OnPluginStart()
 	g_vsh2_data.m_hBossesRegistered = new ArrayList(MAX_BOSS_NAME_SIZE);
 }
 
-public bool HaleTargetFilter(const char[] pattern, Handle clients)
+public bool HaleTargetFilter(const char[] pattern, ArrayList clients)
 {
 	bool non = StrContains(pattern, "!", false) != -1;
 	for( int i=MaxClients; i; i-- ) {
@@ -372,7 +372,7 @@ public bool HaleTargetFilter(const char[] pattern, Handle clients)
 	}
 	return true;
 }
-public bool MinionTargetFilter(const char[] pattern, Handle clients)
+public bool MinionTargetFilter(const char[] pattern, ArrayList clients)
 {
 	bool non = StrContains(pattern, "!", false) != -1;
 	for( int i=MaxClients; i; i-- ) {

@@ -25,7 +25,7 @@ enum {
 	MaxVSHForwards
 };
 
-Handle g_vsh_forwards[MaxVSHForwards];
+GlobalForward g_vsh_forwards[MaxVSHForwards];
 ConVar vsh2_enabled;
 bool g_vsh2;
 
@@ -120,11 +120,11 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH_GetClientDamage", Native_GetDamage);
 	CreateNative("VSH_GetRoundState", Native_GetRoundState);
 	
-	g_vsh_forwards[OnHaleJump] = CreateGlobalForward("VSH_OnDoJump", ET_Hook, Param_CellByRef);
-	g_vsh_forwards[OnHaleRage] = CreateGlobalForward("VSH_OnDoRage", ET_Hook, Param_FloatByRef);
-	g_vsh_forwards[OnHaleWeighdown] = CreateGlobalForward("VSH_OnDoWeighdown", ET_Hook);
-	g_vsh_forwards[OnVSHMusic] = CreateGlobalForward("VSH_OnMusic", ET_Hook, Param_String, Param_FloatByRef);
-	g_vsh_forwards[OnHaleNext] = CreateGlobalForward("VSH_OnHaleNext", ET_Hook, Param_Cell);
+	g_vsh_forwards[OnHaleJump] = new GlobalForward("VSH_OnDoJump", ET_Hook, Param_CellByRef);
+	g_vsh_forwards[OnHaleRage] = new GlobalForward("VSH_OnDoRage", ET_Hook, Param_FloatByRef);
+	g_vsh_forwards[OnHaleWeighdown] = new GlobalForward("VSH_OnDoWeighdown", ET_Hook);
+	g_vsh_forwards[OnVSHMusic] = new GlobalForward("VSH_OnMusic", ET_Hook, Param_String, Param_FloatByRef);
+	g_vsh_forwards[OnHaleNext] = new GlobalForward("VSH_OnHaleNext", ET_Hook, Param_Cell);
 	
 	RegPluginLibrary("saxtonhale");
 	return APLRes_Success;

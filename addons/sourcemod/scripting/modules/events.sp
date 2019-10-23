@@ -234,7 +234,7 @@ public Action ObjectDeflected(Event event, const char[] name, bool dontBroadcast
 	
 	BaseBoss airblaster = BaseBoss( event.GetInt("userid"), true );
 	BaseBoss airblasted = BaseBoss( event.GetInt("ownerid"), true );
-	int weaponid = GetEventInt(event, "weaponid");
+	int weaponid = event.GetInt("weaponid");
 	if( weaponid )   /// number lower or higher than 0 is considered "true", learned that in C programming lol
 		return Plugin_Continue;
 	
@@ -408,7 +408,7 @@ public Action PointCapture(Event event, const char[] name, bool dontBroadcast)
 	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue || gamemode.iRoundState != StateRunning || !g_vsh2_data.m_hCvars[MultiCapture].BoolValue )
 		return Plugin_Continue;
 	
-	// int iCap = GetEventInt(event, "cp"); /// Doesn't seem to give the correct origin vectors
+	// int iCap = event.GetInt("cp"); /// Doesn't seem to give the correct origin vectors
 	int iCapTeam = event.GetInt("team");
 	gamemode.iCaptures++;
 	
