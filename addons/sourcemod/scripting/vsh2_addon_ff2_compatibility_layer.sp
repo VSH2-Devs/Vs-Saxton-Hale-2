@@ -43,7 +43,7 @@ public void OnLibraryAdded(const char[] name) {
 		
 		/// FF2 has a set max lives limit, VSH2 imposes no such limit on lives.
 		/// Create iMaxLives property for FF2 to use exclusively.
-		for( int i=MaxClients; i; i-- )
+		for( int i=MaxClients; i; --i )
 			if( 0 < i <= MaxClients && IsClientInGame(i) )
 				VSH2Player(i).SetPropInt("iMaxLives", 0);
 	}
