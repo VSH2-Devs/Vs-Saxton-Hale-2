@@ -360,7 +360,7 @@ public void OnPluginStart()
 public bool HaleTargetFilter(const char[] pattern, Handle clients)
 {
 	bool non = StrContains(pattern, "!", false) != -1;
-	for( int i=MaxClients; i; i-- ) {
+	for( int i=MaxClients; i; --i ) {
 		if( IsClientValid(i) && FindValueInArray(clients, i) == -1 ) {
 			if( g_vsh2_data.m_hCvars[Enabled].BoolValue && BaseBoss(i).bIsBoss ) {
 				if( !non )
@@ -375,7 +375,7 @@ public bool HaleTargetFilter(const char[] pattern, Handle clients)
 public bool MinionTargetFilter(const char[] pattern, Handle clients)
 {
 	bool non = StrContains(pattern, "!", false) != -1;
-	for( int i=MaxClients; i; i-- ) {
+	for( int i=MaxClients; i; --i ) {
 		if( IsClientValid(i) && FindValueInArray(clients, i) == -1 ) {
 			if( g_vsh2_data.m_hCvars[Enabled].BoolValue && BaseBoss(i).bIsMinion ) {
 				if( !non )
