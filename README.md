@@ -28,7 +28,7 @@ If you do require help in setting up the bosses or at least need some info on th
 * Compile with spcomp
 * VSH2 uses the same map configurations as FF2 and VSH1 and this is for compatibility reasons.
 * Dependencies: TF2Items, MoreColors
-* Optional Dependencies: TF2Attributes (https://github.com/FlaminSarge/tf2attributes), SteamWorks (https://forums.alliedmods.net/showthread.php?t=229556)
+* Optional Dependencies: TF2Attributes (https://github.com/FlaminSarge/tf2attributes), SteamTools
 * Compile plugin into .smx and put in addons/sourcemod/plugins folder
 * Take a look at the [Wiki](https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki) to get started making your own boss!
 
