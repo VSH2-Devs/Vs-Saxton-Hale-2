@@ -1,4 +1,4 @@
-# VS Saxton Hale 2 (VSH2)
+![VSH2 Logo by Nergal/Assyrianic](https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/efc8ece3-f4a3-4477-8ebb-cb9595fb9e58/ddiv9m4-cbc4d719-c2fd-4890-b62a-17be7f01210f.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2VmYzhlY2UzLWY0YTMtNDQ3Ny04ZWJiLWNiOTU5NWZiOWU1OFwvZGRpdjltNC1jYmM0ZDcxOS1jMmZkLTQ4OTAtYjYyYS0xN2JlN2YwMTIxMGYucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.JjuSnfGa4fwWanCRmVmvkaI5GV9u5PYReeJ9ll1AIBQ)
 
 #### Current STABLE Version: *2.0.5*
 [![Master Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=master)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
@@ -28,7 +28,7 @@ If you do require help in setting up the bosses or at least need some info on th
 * Compile with spcomp
 * VSH2 uses the same map configurations as FF2 and VSH1 and this is for compatibility reasons.
 * Dependencies: TF2Items, MoreColors
-* Optional Dependencies: TF2Attributes (https://github.com/FlaminSarge/tf2attributes), SteamTools
+* Optional Dependencies: TF2Attributes (https://github.com/FlaminSarge/tf2attributes), SteamTools (https://forums.alliedmods.net/showthread.php?t=170630)
 * Compile plugin into .smx and put in addons/sourcemod/plugins folder
 * Take a look at the [Wiki](https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki) to get started making your own boss!
 
