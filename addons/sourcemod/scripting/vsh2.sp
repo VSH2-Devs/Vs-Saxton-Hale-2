@@ -357,32 +357,32 @@ public void OnPluginStart()
 	g_vsh2_data.m_hBossesRegistered = new ArrayList(MAX_BOSS_NAME_SIZE);
 }
 
-public bool HaleTargetFilter(const char[] pattern, Handle clients)
+public bool HaleTargetFilter(const char[] pattern, ArrayList clients)
 {
 	bool non = StrContains(pattern, "!", false) != -1;
 	for( int i=MaxClients; i; i-- ) {
-		if( IsClientValid(i) && FindValueInArray(clients, i) == -1 ) {
+		if( IsClientValid(i) && clients.FindValue(i) == -1 ) {
 			if( g_vsh2_data.m_hCvars[Enabled].BoolValue && BaseBoss(i).bIsBoss ) {
 				if( !non )
-					PushArrayCell(clients, i);
+					clients.Push(i);
 			}
 			else if( non )
-				PushArrayCell(clients, i);
+				clients.Push(i);
 		}
 	}
 	return true;
 }
-public bool MinionTargetFilter(const char[] pattern, Handle clients)
+public bool MinionTargetFilter(const char[] pattern, ArrayList clients)
 {
 	bool non = StrContains(pattern, "!", false) != -1;
 	for( int i=MaxClients; i; i-- ) {
-		if( IsClientValid(i) && FindValueInArray(clients, i) == -1 ) {
+		if( IsClientValid(i) && clients.FindValue(i) == -1 ) {
 			if( g_vsh2_data.m_hCvars[Enabled].BoolValue && BaseBoss(i).bIsMinion ) {
 				if( !non )
-					PushArrayCell(clients, i);
+					clients.Push(i);
 			}
 			else if( non )
-				PushArrayCell(clients, i);
+				clients.Push(i);
 		}
 	}
 	return true;

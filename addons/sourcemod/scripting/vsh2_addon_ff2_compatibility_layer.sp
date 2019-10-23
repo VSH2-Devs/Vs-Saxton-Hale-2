@@ -23,7 +23,7 @@ enum {
 	MaxFF2Forwards
 };
 
-Handle g_ff2_forwards[MaxFF2Forwards];
+GlobalForward g_ff2_forwards[MaxFF2Forwards];
 
 ConVar
 	vsh2_enabled,
@@ -76,7 +76,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("FF2_IsFF2Enabled", Native_FF2_IsFF2Enabled);
 	CreateNative("FF2_GetFF2Version", Native_FF2_GetFF2Version);
 	
-	g_ff2_forwards[FF2OnMusic] = CreateGlobalForward("FF2_OnMusic", ET_Hook, Param_String, Param_FloatByRef);
+	g_ff2_forwards[FF2OnMusic] = new GlobalForward("FF2_OnMusic", ET_Hook, Param_String, Param_FloatByRef);
 	
 	RegPluginLibrary("freak_fortress_2");
 	return APLRes_Success;
