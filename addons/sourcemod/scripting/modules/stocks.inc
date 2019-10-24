@@ -621,8 +621,8 @@ stock void SpawnRandomAmmo()
 	int iEnt = MaxClients+1;
 	float vPos[3], vAng[3];
 	int spawned;
-	int maxlim = g_vsh2_data.m_hCvars[AmmoKitLimitMax].IntValue;
-	int minlim = g_vsh2_data.m_hCvars[AmmoKitLimitMin].IntValue;
+	int maxlim = g_vsh2.m_hCvars[AmmoKitLimitMax].IntValue;
+	int minlim = g_vsh2.m_hCvars[AmmoKitLimitMin].IntValue;
 	while( (iEnt = FindEntityByClassname(iEnt, "info_player_teamspawn")) != -1 ) {
 		if( minlim )
 			if( spawned >= minlim )
@@ -637,7 +637,7 @@ stock void SpawnRandomAmmo()
 		int ammo = CreateEntityByName("item_ammopack_small");
 		TeleportEntity(ammo, vPos, vAng, NULL_VECTOR);
 		DispatchSpawn(ammo);
-		SetEntProp(ammo, Prop_Send, "m_iTeamNum", g_vsh2_data.m_hCvars[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+		SetEntProp(ammo, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 		++spawned;
 	}
 }
@@ -646,8 +646,8 @@ stock void SpawnRandomHealth()
 	int iEnt = MaxClients+1;
 	float vPos[3], vAng[3];
 	int spawned;
-	int maxlim = g_vsh2_data.m_hCvars[HealthKitLimitMax].IntValue;
-	int minlim = g_vsh2_data.m_hCvars[HealthKitLimitMin].IntValue;
+	int maxlim = g_vsh2.m_hCvars[HealthKitLimitMax].IntValue;
+	int minlim = g_vsh2.m_hCvars[HealthKitLimitMin].IntValue;
 	while( (iEnt = FindEntityByClassname(iEnt, "info_player_teamspawn")) != -1 ) {
 		if( minlim )
 			if( spawned >= minlim )
@@ -661,7 +661,7 @@ stock void SpawnRandomHealth()
 		int healthkit = CreateEntityByName("item_healthkit_small");
 		TeleportEntity(healthkit, vPos, vAng, NULL_VECTOR);
 		DispatchSpawn(healthkit);
-		SetEntProp(healthkit, Prop_Send, "m_iTeamNum", g_vsh2_data.m_hCvars[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+		SetEntProp(healthkit, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 		++spawned;
 	}
 }
@@ -1011,7 +1011,7 @@ stock int GetClip(const int client, const int slot)
 
 stock void SkipBossPanelNotify(const int client/*, bool newchoice = true*/)
 {
-	if (!g_vsh2_data.m_hCvars[Enabled].BoolValue || !IsValidClient(client) || IsFakeClient(client) || IsVoteInProgress())
+	if (!g_vsh2.m_hCvars[Enabled].BoolValue || !IsValidClient(client) || IsFakeClient(client) || IsVoteInProgress())
 		return;
 	
 	Panel panel = new Panel();

@@ -339,7 +339,7 @@ public void PlagueDoc_OnPlayerHurt(const VSH2Player attacker, const VSH2Player v
 		 */
 		VSH2Player ownerBoss = victim.hOwnerBoss;
 		if( IsPlagueDoctor(ownerBoss) ) {
-			ownerBoss.SetPropInt("iHealth", ownerBoss.GetPropInt("iHealth")-damage);
+			ownerBoss.SetPropInt("iHealth", GetClientHealth(ownerBoss.index)-damage);
 			ownerBoss.GiveRage(damage);
 		}
 		return;

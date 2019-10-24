@@ -177,10 +177,10 @@ public int Native_FF2_GetBossHealth(Handle plugin, int numParams)
 	else if( boss==0 ) {
 		VSH2Player[] players = new VSH2Player[MaxClients];
 		int amount_of_bosses = VSH2GameMode_GetBosses(players, false);
-		return( amount_of_bosses > 0 ) ? players[boss].GetPropInt("iHealth") : 0;
+		return( amount_of_bosses > 0 ) ? GetClientHealth(players[boss].index) : 0;
 	}
 	VSH2Player player = VSH2Player(boss);
-	return( player && player.GetPropAny("bIsBoss") ) ? player.GetPropInt("iHealth") : 0;
+	return( player && player.GetPropAny("bIsBoss") ) ? GetClientHealth(player.index) : 0;
 }
 
 /** void FF2_SetBossHealth(int boss, int health); */

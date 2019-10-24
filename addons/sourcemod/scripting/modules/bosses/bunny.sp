@@ -137,7 +137,7 @@ methodmap CBunny < BaseBoss {
 		}
 		
 		if( OnlyScoutsLeft(VSH2Team_Red) )
-			this.flRAGE += g_vsh2_data.m_hCvars[ScoutRageGen].FloatValue;
+			this.flRAGE += g_vsh2.m_hCvars[ScoutRageGen].FloatValue;
 		
 		this.WeighDownThink(HALE_WEIGHDOWN_TIME);
 		
@@ -146,8 +146,8 @@ methodmap CBunny < BaseBoss {
 		if( jmp > 0.0 )
 			jmp *= 4.0;
 		if( this.flRAGE >= 100.0 )
-			ShowSyncHudText(this.index, g_vsh2_data.m_hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp));
-		else ShowSyncHudText(this.index, g_vsh2_data.m_hHudText, "Jump: %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.flRAGE);
+			ShowSyncHudText(this.index, g_vsh2.m_hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp));
+		else ShowSyncHudText(this.index, g_vsh2.m_hHudText, "Jump: %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.flRAGE);
 	}
 	public void SetModel() {
 		SetVariantString(BunnyModel);

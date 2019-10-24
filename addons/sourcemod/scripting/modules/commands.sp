@@ -1,6 +1,6 @@
 public Action QueuePanelCmd(int client, int args)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue )
 		return Plugin_Continue;
 	else if( !client ) {
 		CReplyToCommand(client, "{olive}[VSH 2]{default} You can only use this command ingame.");
@@ -12,7 +12,7 @@ public Action QueuePanelCmd(int client, int args)
 
 public Action ResetQueue(int client, int args)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue )
 		return Plugin_Continue;
 	else if( !client ) {
 		CReplyToCommand(client, "{olive}[VSH 2]{default} You can only use this command ingame.");
@@ -152,7 +152,7 @@ public int SkipHalePanelH(Menu menu, MenuAction action, int client, int param2)
 
 public Action SetNextSpecial(int client, int args)
 {
-	if( g_vsh2_data.m_hCvars[Enabled].BoolValue ) {
+	if( g_vsh2.m_hCvars[Enabled].BoolValue ) {
 		Menu bossmenu = new Menu(MenuHandler_PickBossSpecial);
 		bossmenu.SetTitle("Set Next Boss Type Menu: ");
 		bossmenu.AddItem("-1", "None (Random Boss)");
@@ -177,7 +177,7 @@ public int MenuHandler_PickBossSpecial(Menu menu, MenuAction action, int client,
 
 public Action ChangeHealthBarColor(int client, int args)
 {
-	if( g_vsh2_data.m_hCvars[Enabled].BoolValue ) {
+	if( g_vsh2.m_hCvars[Enabled].BoolValue ) {
 		char number[4]; GetCmdArg( 1, number, sizeof(number) );
 		int type = StringToInt(number);
 		gamemode.iHealthBarState = type;
@@ -188,7 +188,7 @@ public Action ChangeHealthBarColor(int client, int args)
 
 public Action Command_GetHPCmd(int client, int args)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue )
 		return Plugin_Continue;
 	else if( gamemode.iRoundState != StateRunning )
 		return Plugin_Handled;
@@ -199,7 +199,7 @@ public Action Command_GetHPCmd(int client, int args)
 }
 public Action CommandBossSelect(int client, int args)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue )
 		return Plugin_Continue;
 	else if( args < 1 ) {
 		CReplyToCommand(client, "{olive}[VSH 2]{default} Usage: boss_select <target>");
@@ -221,7 +221,7 @@ public Action CommandBossSelect(int client, int args)
 }
 public Action SetBossMenu(int client, int args)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue )
 		return Plugin_Continue;
 	
 	Menu bossmenu = new Menu(MenuHandler_PickBosses);
@@ -245,14 +245,14 @@ public int MenuHandler_PickBosses(Menu menu, MenuAction action, int client, int 
 
 public Action MusicTogglePanelCmd(int client, int args)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue )
 		return Plugin_Continue;
 	MusicTogglePanel(client);
 	return Plugin_Handled;
 }
 public void MusicTogglePanel(const int client)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue || !IsValidClient(client) )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue || !IsValidClient(client) )
 		return;
 	Panel panel = new Panel();
 	panel.SetTitle("Turn the VS Saxton Hale 2 Music...");
@@ -279,7 +279,7 @@ public int MusicTogglePanelH(Menu menu, MenuAction action, int param1, int param
 
 public Action ForceBossRealtime(int client, int args)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue )
 		return Plugin_Continue;
 	
 	if( !client ) {
@@ -332,7 +332,7 @@ public Action ForceBossRealtime(int client, int args)
 
 public Action CommandAddPoints(int client, int args)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue )
 		return Plugin_Continue;
 	
 	if( args < 2 ) {
@@ -373,7 +373,7 @@ public Action CommandAddPoints(int client, int args)
 
 public Action CommandSetPoints(int client, int args)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue )
 		return Plugin_Continue;
 	
 	if( args < 2 ) {
@@ -406,7 +406,7 @@ public Action CommandSetPoints(int client, int args)
 
 public Action HelpPanelCmd(int client, int args)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue )
 		return Plugin_Continue;
 	else if( !client ) {
 		CReplyToCommand(client, "{olive}[VSH 2]{default} You can only use this command ingame.");
@@ -416,12 +416,12 @@ public Action HelpPanelCmd(int client, int args)
 	//Format(strHelp, MAXMESSAGE, "Welcome to VS Saxton Hale Mode Version 2!\nOne or more players is selected each round to become a Boss.\nEveryone else must kill them!");
 	Panel panel = new Panel();
 	panel.SetTitle("What do you want, sir?");
-	panel.DrawItem("Show Boss health (/halehp)");
-	panel.DrawItem("Show help about the Mode (/halehelp)");
+	panel.DrawItem("Show Boss health. (/halehp)");
+	panel.DrawItem("Show help about my class.");
 	panel.DrawItem("Who is the next Boss? (/halenext)");
-	panel.DrawItem("Reset Queue Points? (/resetq)");
-	panel.DrawItem("Set My Boss (/setboss)");
-	panel.DrawItem("Toggle Music (/halemusic)");
+	panel.DrawItem("Reset my Queue Points. (/resetq)");
+	panel.DrawItem("Set My Preferred Boss. (/setboss)");
+	panel.DrawItem("Turn Off/On the Background Music. (/halemusic)");
 	panel.Send(client, HelpPanelH, 9001);
 	delete panel;
 	return Plugin_Handled;
@@ -448,13 +448,13 @@ public int HelpPanelH(Menu menu, MenuAction action, int param1, int param2)
 			case 4: TurnToZeroPanel(param1);
 			case 5: SetBossMenu(param1, -1);
 			case 6: MusicTogglePanelCmd(param1, -1);
-			default: return;
 		}
 	}
 }
+
 public Action MenuDoClassRush(int client, int args)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue )
 		return Plugin_Continue;
 	else if( !client ) {
 		CReplyToCommand(client, "{olive}[VSH 2]{default} You can only use this command ingame.");

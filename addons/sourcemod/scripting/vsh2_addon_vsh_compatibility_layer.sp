@@ -166,7 +166,7 @@ public int Native_GetHealth(Handle plugin, int numParams)
 {
 	VSH2Player[] boss = new VSH2Player[MaxClients];
 	if( VSH2GameMode_GetBosses(boss) > 0 )
-		return boss[0].GetPropInt("iHealth");
+		return GetClientHealth(boss[0].index);
 	else return 0;
 }
 

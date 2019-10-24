@@ -85,7 +85,7 @@ public void fwdOnTouchBuilding(const VSH2Player attacker, const int building)
 
 public Action fwdOnBossThink(const VSH2Player player)
 {
-	player.SetPropInt("iHealth", player.GetPropInt("iHealth") + 1);
+	player.iHealth += 1;
 }
 
 public Action fwdOnBossThinkPost(const VSH2Player player)
@@ -399,7 +399,7 @@ public Action fwdOnScoreTally(const VSH2Player player, int& points_earned, int& 
 	PrintToChatAll("fwdOnScoreTally:: %N: points - %i, queue - %i", player.index, points_earned, queue_earned);
 }
 
-public Action fwdOnItemOverride(const VSH2Player player, const char[] classname, int itemdef, Handle& item)
+public Action fwdOnItemOverride(const VSH2Player player, const char[] classname, int itemdef, TF2Item& item)
 {
 	PrintToChat(player.index, "%s - %i", classname, itemdef);
 	return Plugin_Continue;

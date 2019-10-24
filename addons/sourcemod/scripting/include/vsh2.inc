@@ -3,8 +3,10 @@
 #endif
 #define _vsh2_included
 
+#include <tf2items_stocks>
 
-#define MAXMESSAGE            128
+
+#define MAXMESSAGE            512
 #define MAX_PANEL_MSG         512
 #define MAX_BOSS_NAME_SIZE    64
 
@@ -159,6 +161,15 @@ methodmap VSH2Player {
 	property float flWeighDown
 	*/
 	
+	property int iHealth {
+		public get() {
+			return GetClientHealth(this.index);
+		}
+		public set(int val) {
+			SetEntityHealth(this.index, val);
+		}
+	}
+	
 	property VSH2Player hOwnerBoss {
 		public get() {
 			return VSH2Player(this.GetPropInt("iOwnerBoss"), true);
@@ -236,7 +247,7 @@ methodmap VSH2Player {
  */
 
 stock void VSH2_SpeedThink(VSH2Player boss, const float iota) {
-	float speed = iota + 0.7 * (100 - boss.GetPropInt("iHealth") * 100 / boss.GetPropInt("iMaxHealth"));
+	float speed = iota + 0.7 * (100 - boss.iHealth * 100 / boss.GetPropInt("iMaxHealth"));
 	SetEntPropFloat(boss.index, Prop_Send, "m_flMaxspeed", speed);
 }
 
@@ -382,7 +393,7 @@ typeset VSH2HookCB {
 		OnBossModelTimer
 		OnBossDeath
 		OnBossEquipped
-		OnBossEquippedPost
+		OnBossEquippedPost -> Action has no effect on this forward.
 		OnBossInitialized
 		OnBossPlayIntro
 		OnBossMedicCall
@@ -485,7 +496,7 @@ typeset VSH2HookCB {
 	function Action ();
 	function void ();
 	
-	/// OnBossPickUpItem
+	/// OnBossPickUpItem -> player may or may not actually be a boss in this forward.
 	function Action (const VSH2Player player, const char item[64]);
 	function void (const VSH2Player player, const char item[64]);
 	
@@ -499,6 +510,8 @@ typeset VSH2HookCB {
 	/// OnItemOverride
 	function Action (const VSH2Player player, const char[] classname, int itemdef, Handle& item);
 	function void (const VSH2Player player, const char[] classname, int itemdef, Handle& item);
+	function Action (const VSH2Player player, const char[] classname, int itemdef, TF2Item& item);
+	function void (const VSH2Player player, const char[] classname, int itemdef, TF2Item& item);
 	
 	/// OnBossDoRageStun
 	function Action (const VSH2Player player, float& distance);

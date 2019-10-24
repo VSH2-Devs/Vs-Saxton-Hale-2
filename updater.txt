@@ -4,14 +4,15 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.5.2"
+			"Latest"	"2.5.3"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.5.2:"
-		"Notes"	"Added new natives: 'GetFighters' which is the red player version of 'GetBosses' as well as 'GetMinions'."
-		"Notes"	"Made 'VSH2GameMode_GetFighters', 'VSH2GameMode_GetBosses', and 'VSH2GameMode_GetMinions' have a true default value for checking for living players."
-		"Notes"	"Patched built-in health regen giving health regen based on current health rather than max health."
-		"Notes"	"Added 'OnBossEquippedPost' forward."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.5.3:"
+		"Notes"	"Added 'TF2Item' methodmap handle version for 'OnItemOverride'."
+		"Notes"	"Increased 'MAXMESSAGE' define from 128 to 512."
+		"Notes"	"Deprecated old Health system and added fixes to maintain compatibility."
+		"Notes"	"Added 'iHealth' property to the VSH2Player methodmap, using 'GetPropInt("iHealth")' still works for backward compatibility but is no longer necessary as using 'GetClientHealth' works as well."
+		"Notes"	"Used 'any' type for natives that didn't return an int."
 	}
 	
 	"Files"

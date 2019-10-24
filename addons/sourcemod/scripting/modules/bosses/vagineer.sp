@@ -55,7 +55,7 @@ methodmap CVagineer < BaseBoss {
 		}
 		
 		if( OnlyScoutsLeft(VSH2Team_Red) )
-			this.flRAGE += g_vsh2_data.m_hCvars[ScoutRageGen].FloatValue;
+			this.flRAGE += g_vsh2.m_hCvars[ScoutRageGen].FloatValue;
 		
 		this.WeighDownThink(HALE_WEIGHDOWN_TIME);
 		
@@ -64,8 +64,8 @@ methodmap CVagineer < BaseBoss {
 		if( jmp > 0.0 )
 			jmp *= 4.0;
 		if( this.flRAGE >= 100.0 )
-			ShowSyncHudText(this.index, g_vsh2_data.m_hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp));
-		else ShowSyncHudText(this.index, g_vsh2_data.m_hHudText, "Jump: %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.flRAGE);
+			ShowSyncHudText(this.index, g_vsh2.m_hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp));
+		else ShowSyncHudText(this.index, g_vsh2.m_hHudText, "Jump: %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.flRAGE);
 		
 		if( TF2_IsPlayerInCondition(this.index, TFCond_Ubercharged) )
 			SetEntProp(this.index, Prop_Data, "m_takedamage", 0);
@@ -102,7 +102,7 @@ methodmap CVagineer < BaseBoss {
 			TF2_RemoveCondition(this.index, TFCond_Taunting);
 			this.SetModel(); 
 		}
-		TF2_AddCondition(this.index, TFCond_Ubercharged, g_vsh2_data.m_hCvars[VagineerUberTime].FloatValue);
+		TF2_AddCondition(this.index, TFCond_Ubercharged, g_vsh2.m_hCvars[VagineerUberTime].FloatValue);
 		this.DoGenericStun(VAGRAGEDIST);
 		char rage_snd[PLATFORM_MAX_PATH];
 		if( GetRandomInt(0, 2) )

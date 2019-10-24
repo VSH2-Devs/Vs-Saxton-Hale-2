@@ -2,7 +2,6 @@
 #include <sdktools>
 #include <clientprefs>
 #include <tf2_stocks>
-#include <tf2items_stocks>
 #include <sdkhooks>
 #include <morecolors>
 #include <vsh2>
@@ -25,7 +24,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.5.2"
+#define PLUGIN_VERSION       "2.5.3"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -141,7 +140,7 @@ enum struct VSH2Globals {
 	StringMap m_hPlayerFields[PLYR];
 }
 
-VSH2Globals g_vsh2_data;
+VSH2Globals g_vsh2;
 
 #include "modules/stocks.inc" /// include stocks first.
 #include "modules/handler.sp" /// Contains the game mode logic as well
@@ -237,73 +236,73 @@ public void OnPluginStart()
 	AddCommandListener(CheckLateSpawn, "joinclass");
 	AddCommandListener(CheckLateSpawn, "join_class");
 	
-	g_vsh2_data.m_hHudText = CreateHudSynchronizer();
-	g_vsh2_data.m_hTimeleftHUD = CreateHudSynchronizer();
-	g_vsh2_data.m_hHealthHUD = CreateHudSynchronizer();
+	g_vsh2.m_hHudText = CreateHudSynchronizer();
+	g_vsh2.m_hTimeleftHUD = CreateHudSynchronizer();
+	g_vsh2.m_hHealthHUD = CreateHudSynchronizer();
 	
-	g_vsh2_data.m_hCvars[Enabled] = CreateConVar("vsh2_enabled", "1", "Enable VSH 2 plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[VersionNumber] = CreateConVar("vsh2_version", PLUGIN_VERSION, "VSH 2 Plugin Version. (DO NOT CHANGE)", FCVAR_NOTIFY);
-	g_vsh2_data.m_hCvars[PointType] = CreateConVar("vsh2_point_type", "0", "Select condition to enable point (0 - alive players, 1 - time)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[PointDelay] = CreateConVar("vsh2_point_delay", "6", "Addition (for each player) delay before point's activation.", FCVAR_NOTIFY, true, 0.0, false);
-	g_vsh2_data.m_hCvars[AliveToEnable] = CreateConVar("vsh2_point_alive", "5", "Enable control points when there are X people left alive.", FCVAR_NOTIFY, true, 1.0, true, 32.0);
-	g_vsh2_data.m_hCvars[FirstRound] = CreateConVar("vsh2_firstround", "0", "If 1, allows the first round to start with VSH2 enabled.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[DamagePoints] = CreateConVar("vsh2_damage_points", "600", "Amount of damage needed to gain 1 point on the scoreboard.", FCVAR_NOTIFY, true, 1.0, false);
-	g_vsh2_data.m_hCvars[DamageQueue] = CreateConVar("vsh2_damage_queue", "1", "Allow damage to influence increase of queue points.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[QueueGained] = CreateConVar("vsh2_queue_gain", "10", "How many queue points to give at the end of each round.", FCVAR_NOTIFY, true, 0.0, false);
-	g_vsh2_data.m_hCvars[EnableMusic] = CreateConVar("vsh2_enable_music", "1", "Enables boss background music.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[MusicVolume] = CreateConVar("vsh2_music_volume", "0.5", "How loud the background music should be, if enabled.", FCVAR_NOTIFY, true, 0.0, true, 5.0);
-	g_vsh2_data.m_hCvars[HealthPercentForLastGuy] = CreateConVar("vsh2_health_percentage_last_guy", "51", "If the health bar is lower than x out of 255, the last player timer will stop.", FCVAR_NOTIFY, true, 0.0, true, 255.0);
-	g_vsh2_data.m_hCvars[HealthRegenForPlayers] = CreateConVar("vsh2_health_regen", "0", "Allow non-boss and non-minion players to have passive health regen.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[HealthRegenAmount] = CreateConVar("vsh2_health_regen_amount", "1.0", "If health regen is enabled, how much health regen per second should players get?", FCVAR_NOTIFY, true, 0.0, false);
-	g_vsh2_data.m_hCvars[MedigunReset] = CreateConVar("vsh2_medigun_reset_amount", "0.31", "How much Uber percentage should Mediguns, after Uber, reset to?", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[StopTickleTime] = CreateConVar("vsh2_stop_tickle_time", "1.0", "How long in seconds the tickle effect from the Holiday Punch lasts before being removed.", FCVAR_NOTIFY, true, 0.01, false);
-	g_vsh2_data.m_hCvars[AirStrikeDamage] = CreateConVar("vsh2_airstrike_damage", "200", "How much damage needed for the Airstrike to gain +1 clipsize.", FCVAR_NOTIFY, true, 0.0, false);
-	g_vsh2_data.m_hCvars[AirblastRage] = CreateConVar("vsh2_airblast_rage", "8.0", "How much Rage should airblast give/remove? (negative number to remove rage)", FCVAR_NOTIFY, true, 0.0, true, 100.0);
-	g_vsh2_data.m_hCvars[JarateRage] = CreateConVar("vsh2_jarate_rage", "8.0", "How much rage should Jarate give/remove? (negative number to add rage)", FCVAR_NOTIFY, true, 0.0, true, 100.0);
-	g_vsh2_data.m_hCvars[FanoWarRage] = CreateConVar("vsh2_fanowar_rage", "5.0", "How much rage should the Fan o' War give/remove? (negative number to add rage)", FCVAR_NOTIFY, true, 0.0, true, 100.0);
-	g_vsh2_data.m_hCvars[LastPlayerTime] = CreateConVar("vsh2_lastplayer_time", "180", "How many seconds to give the last player to fight the Boss(es) before a stalemate.", FCVAR_NOTIFY, true, 0.0, false);
-	g_vsh2_data.m_hCvars[EngieBuildings] = CreateConVar("vsh2_killbuilding_engiedeath", "1", "If 0, no building dies when engie dies. If 1, only sentry dies. If 2, all buildings die.", FCVAR_NOTIFY, true, 0.0, true, 2.0);
-	g_vsh2_data.m_hCvars[MedievalLives] = CreateConVar("vsh2_medievalmode_lives", "3", "Amount of lives red players are entitled during Medieval Mode.", FCVAR_NOTIFY, true, 0.0, true, 99.0);
-	g_vsh2_data.m_hCvars[MedievalRespawnTime] = CreateConVar("vsh2_medievalmode_respawntime", "5.0", "How long it takes for players to respawn after dying in medieval mode (if they have live left).", FCVAR_NOTIFY, true, 1.0, true, 999.0);
-	g_vsh2_data.m_hCvars[PermOverheal] = CreateConVar("vsh2_permanent_overheal", "0", "If enabled, Mediguns give permanent overheal.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[MultiCapture] = CreateConVar("vsh2_multiple_cp_captures", "1", "If enabled, allow control points to be captured more than once instead of ending the round instantly.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[MultiCapAmount] = CreateConVar("vsh2_multiple_cp_capture_amount", "3", "If vsh2_allow_multiple_cp_captures is enabled, how many times must a team capture a Control Point to win.", FCVAR_NOTIFY, true, 1.0, true, 999.0);
-	g_vsh2_data.m_hCvars[DemoShieldCrits] = CreateConVar("vsh2_demoman_shield_crits", "2", "Sets Demoman Shield crit behaviour. 0 - No crits, 1 - Mini-crits, 2 - Crits, 3 - Scale with Charge Meter (Losing the Shield results in no more (mini)crits.)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
-	g_vsh2_data.m_hCvars[CanBossGoomba] = CreateConVar("vsh2_goomba_can_boss_stomp", "1", "Can the Boss Goomba Stomp other players? (Requires Goomba Stomp plugin). NOTE: All the CVARs in VSH2 controlling Goomba damage, lifemultiplier and rebound power are for NON-BOSS PLAYERS STOMPING THE BOSS. If you enable this CVAR, use the Goomba Stomp plugin config file to control the Boss' Goomba Variables. Not recommended to enable this unless you've coded your own Goomba Stomp behaviour.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[CanMantreadsGoomba] = CreateConVar("vsh2_goomba_can_mantreads_stomp", "0", "Can Soldiers/Demomen Goomba Stomp the Boss while using the Mantreads/Booties? (Requires Goomba Stomp plugin). NOTE: Enabling this may cause 'double' Stomps (Goomba Stomp and Mantreads stomp together).", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[GoombaDamageAdd] = CreateConVar("vsh2_goomba_damage_add", "450.0", "How much damage to add to a Goomba Stomp on the Boss. (Requires Goomba Stomp plugin).", FCVAR_NOTIFY, true, 0.0, false);
-	g_vsh2_data.m_hCvars[GoombaLifeMultiplier] = CreateConVar("vsh2_goomba_boss_life_multiplier", "0.025", "What percentage of the Boss' CURRENT HP to deal as damage on a Goomba Stomp. (Requires Goomba Stomp plugin).", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[GoombaReboundPower] = CreateConVar("vsh2_rebound_power", "300.0", "How much upwards velocity (in Hammer Units) should players recieve upon Goomba Stomping the Boss? (Requires Goomba Stomp plugin).", FCVAR_NOTIFY, true, 0.0, false);
-	g_vsh2_data.m_hCvars[MultiBossHandicap] = CreateConVar("vsh2_multiboss_handicap", "500", "How much Health is removed on every individual boss in a multiboss round at the start of said round. 0 disables it.", FCVAR_NONE, true, 0.0, true, 99999.0);
-	g_vsh2_data.m_hCvars[DroppedWeapons] = CreateConVar("vsh2_allow_dropped_weapons", "0", "Enables/Disables dropped weapons. Recommended to keep this disabled to avoid players having weapons they shouldn't.", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[BlockEureka] = CreateConVar("vsh2_allow_eureka_effect", "0", "Enables/Disables the Eureka Effect for Engineers", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[ForceLives] = CreateConVar("vsh2_force_player_lives", "0", "Forces the gamemode to apply Medieval Mode lives on players, whether or not medieval mode is enabled", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[Anchoring] = CreateConVar("vsh2_allow_boss_anchor", "1", "When enabled, reduces all knockback bosses experience when crouching.", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[BlockRageSuicide] = CreateConVar("vsh2_block_raged_suicide", "1", "when enabled, stops raged players from suiciding.", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[HealthKitLimitMax] = CreateConVar("vsh2_spawn_health_kit_limit_max", "6", "max amount of health kits that can be produced in RED spawn. 0 for unlimited amount", FCVAR_NONE, true, 0.0, true, 50.0);
-	g_vsh2_data.m_hCvars[HealthKitLimitMin] = CreateConVar("vsh2_spawn_health_kit_limit_min", "4", "minimum amount of health kits that can be produced in RED spawn. 0 for no minimum limit", FCVAR_NONE, true, 0.0, true, 50.0);
-	g_vsh2_data.m_hCvars[AmmoKitLimitMax] = CreateConVar("vsh2_spawn_ammo_kit_limit_max", "6", "max amount of ammo kits that can be produced in RED spawn. 0 for unlimited amount", FCVAR_NONE, true, 0.0, true, 50.0);
-	g_vsh2_data.m_hCvars[AmmoKitLimitMin] = CreateConVar("vsh2_spawn_ammo_kit_limit_min", "4", "minimum amount of ammo kits that can be produced in RED spawn. 0 for no minimum limit", FCVAR_NONE, true, 0.0, true, 50.0);
-	g_vsh2_data.m_hCvars[ShieldRegenDmgReq] = CreateConVar("vsh2_shield_regen_damage", "2000", "damage required for demoknights to regenerate their shield, put 0 to disable.", FCVAR_NONE, true, 0.0, true, 99999.0);
-	g_vsh2_data.m_hCvars[AllowRandomMultiBosses] = CreateConVar("vsh2_allow_random_multibosses", "1", "allows VSH2 to make random combinations of various bosses.", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[HHHMaxClimbs] = CreateConVar("vsh2_hhhjr_max_climbs", "10", "maximum amount of climbs HHH Jr. can do.", FCVAR_NONE, true, 0.0, false);
-	g_vsh2_data.m_hCvars[HealthCheckInitialDelay] = CreateConVar("vsh2_initial_healthcheck_delay", "30.0", "Initial health check delay when the round starts so as to prevent wasting 10-second health checks.", FCVAR_NONE, true, 0.0, true, 999.0);
-	g_vsh2_data.m_hCvars[ScoutRageGen] = CreateConVar("vsh2_scout_rage_gen", "0.2", "rate of how much rage a boss generates when there are only scouts left.", FCVAR_NONE, true, 0.0, true, 99.0);
-	g_vsh2_data.m_hCvars[SydneySleeperRageRemove] = CreateConVar("vsh2_sydney_sleeper_rage_remove", "0.01", "how much rage (multiplied with damage) the Sydney Sleeper sniper rifle will remove from a boss' rage meter.", FCVAR_NONE, true, 0.0, true, 99.0);
-	g_vsh2_data.m_hCvars[DamageForQueue] = CreateConVar("vsh2_damage_for_queue", "1000", "if 'vsh2_damage_queue' is enabled, how much queue to give per amount of damage done.", FCVAR_NONE, true, 0.0, false);
-	g_vsh2_data.m_hCvars[DeadRingerDamage] = CreateConVar("vsh2_dead_ringer_damage", "90.0", "damage, divided by 0.25, that dead ringer spies will take from boss melee hits.", FCVAR_NONE, true, 0.0, false);
-	g_vsh2_data.m_hCvars[CloakDamage] = CreateConVar("vsh2_cloak_damage", "70.0", "damage, divided by 0.8, that dead ringer spies will take from boss melee hits.", FCVAR_NONE, true, 0.0, false);
-	g_vsh2_data.m_hCvars[AllowLateSpawn] = CreateConVar("vsh2_allow_late_spawning", "0", "allows if unassigned spectators can respawn during an active round.", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[SuicidePercent] = CreateConVar("vsh2_boss_suicide_percent", "0.3", "Allow the boss to suicide if their health percentage goes at or below this amount (0.3 == 30%).", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[AirShotDist] = CreateConVar("vsh2_airshot_dist", "80.0", "distance (from the air to the ground) to count as a skilled airshot.", FCVAR_NONE, true, 10.0, false);
-	g_vsh2_data.m_hCvars[MedicUberShield] = CreateConVar("vsh2_use_uber_as_shield", "0", "If a medic has nearly full uber (90%+), use the uber as a shield to prevent the medic from getting killed.", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_vsh2_data.m_hCvars[HHHClimbVelocity] = CreateConVar("vsh2_hhh_climb_velocity", "600.0", "in hammer units, how high of a velocity HHH Jr. will climb.", FCVAR_NONE, true, 0.0, true, 9999.0);
-	g_vsh2_data.m_hCvars[SniperClimbVelocity] = CreateConVar("vsh2_sniper_climb_velocity", "600.0", "in hammer units, how high of a velocity sniper melees will climb.", FCVAR_NONE, true, 0.0, false);
-	g_vsh2_data.m_hCvars[ShowBossHPLiving] = CreateConVar("vsh2_show_boss_hp_alive_players", "1", "How many players must be alive for total boss hp to show.", FCVAR_NONE, true, 1.0, true, 64.0);
-	g_vsh2_data.m_hCvars[HHHTeleCooldown] = CreateConVar("vsh2_hhh_tele_cooldown", "-1100.0", "Teleportation cooldown for HHH Jr. after teleporting. formula is '-seconds * 25' so -1100.0 is 44 seconds", FCVAR_NONE, true, -999999.0, true, 25.0);
-	g_vsh2_data.m_hCvars[MaxRandomMultiBosses] = CreateConVar("vsh2_random_multibosses_limit", "2", "The maximum limit of random multibosses", FCVAR_NONE, true, 1.0, true, 30.0);
-	g_vsh2_data.m_hCvars[VagineerUberTime] = CreateConVar("vsh2_vagineer_uber_time", "10.0", "The maximum length of the Vagineer boss' uber.", FCVAR_NONE, true, 1.0, false);
-	g_vsh2_data.m_hCvars[VagineerUberAirBlast] = CreateConVar("vsh2_vagineer_uber_time_airblast", "2.0", "extra time given to vagineer's uber when airblasted.", FCVAR_NONE, true, 1.0, false);
+	g_vsh2.m_hCvars[Enabled] = CreateConVar("vsh2_enabled", "1", "Enable VSH 2 plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[VersionNumber] = CreateConVar("vsh2_version", PLUGIN_VERSION, "VSH 2 Plugin Version. (DO NOT CHANGE)", FCVAR_NOTIFY);
+	g_vsh2.m_hCvars[PointType] = CreateConVar("vsh2_point_type", "0", "Select condition to enable point (0 - alive players, 1 - time)", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[PointDelay] = CreateConVar("vsh2_point_delay", "6", "Addition (for each player) delay before point's activation.", FCVAR_NOTIFY, true, 0.0, false);
+	g_vsh2.m_hCvars[AliveToEnable] = CreateConVar("vsh2_point_alive", "5", "Enable control points when there are X people left alive.", FCVAR_NOTIFY, true, 1.0, true, 32.0);
+	g_vsh2.m_hCvars[FirstRound] = CreateConVar("vsh2_firstround", "0", "If 1, allows the first round to start with VSH2 enabled.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[DamagePoints] = CreateConVar("vsh2_damage_points", "600", "Amount of damage needed to gain 1 point on the scoreboard.", FCVAR_NOTIFY, true, 1.0, false);
+	g_vsh2.m_hCvars[DamageQueue] = CreateConVar("vsh2_damage_queue", "1", "Allow damage to influence increase of queue points.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[QueueGained] = CreateConVar("vsh2_queue_gain", "10", "How many queue points to give at the end of each round.", FCVAR_NOTIFY, true, 0.0, false);
+	g_vsh2.m_hCvars[EnableMusic] = CreateConVar("vsh2_enable_music", "1", "Enables boss background music.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[MusicVolume] = CreateConVar("vsh2_music_volume", "0.5", "How loud the background music should be, if enabled.", FCVAR_NOTIFY, true, 0.0, true, 5.0);
+	g_vsh2.m_hCvars[HealthPercentForLastGuy] = CreateConVar("vsh2_health_percentage_last_guy", "51", "If the health bar is lower than x out of 255, the last player timer will stop.", FCVAR_NOTIFY, true, 0.0, true, 255.0);
+	g_vsh2.m_hCvars[HealthRegenForPlayers] = CreateConVar("vsh2_health_regen", "0", "Allow non-boss and non-minion players to have passive health regen.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[HealthRegenAmount] = CreateConVar("vsh2_health_regen_amount", "1.0", "If health regen is enabled, how much health regen per second should players get?", FCVAR_NOTIFY, true, 0.0, false);
+	g_vsh2.m_hCvars[MedigunReset] = CreateConVar("vsh2_medigun_reset_amount", "0.31", "How much Uber percentage should Mediguns, after Uber, reset to?", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[StopTickleTime] = CreateConVar("vsh2_stop_tickle_time", "1.0", "How long in seconds the tickle effect from the Holiday Punch lasts before being removed.", FCVAR_NOTIFY, true, 0.01, false);
+	g_vsh2.m_hCvars[AirStrikeDamage] = CreateConVar("vsh2_airstrike_damage", "200", "How much damage needed for the Airstrike to gain +1 clipsize.", FCVAR_NOTIFY, true, 0.0, false);
+	g_vsh2.m_hCvars[AirblastRage] = CreateConVar("vsh2_airblast_rage", "8.0", "How much Rage should airblast give/remove? (negative number to remove rage)", FCVAR_NOTIFY, true, 0.0, true, 100.0);
+	g_vsh2.m_hCvars[JarateRage] = CreateConVar("vsh2_jarate_rage", "8.0", "How much rage should Jarate give/remove? (negative number to add rage)", FCVAR_NOTIFY, true, 0.0, true, 100.0);
+	g_vsh2.m_hCvars[FanoWarRage] = CreateConVar("vsh2_fanowar_rage", "5.0", "How much rage should the Fan o' War give/remove? (negative number to add rage)", FCVAR_NOTIFY, true, 0.0, true, 100.0);
+	g_vsh2.m_hCvars[LastPlayerTime] = CreateConVar("vsh2_lastplayer_time", "180", "How many seconds to give the last player to fight the Boss(es) before a stalemate.", FCVAR_NOTIFY, true, 0.0, false);
+	g_vsh2.m_hCvars[EngieBuildings] = CreateConVar("vsh2_killbuilding_engiedeath", "1", "If 0, no building dies when engie dies. If 1, only sentry dies. If 2, all buildings die.", FCVAR_NOTIFY, true, 0.0, true, 2.0);
+	g_vsh2.m_hCvars[MedievalLives] = CreateConVar("vsh2_medievalmode_lives", "3", "Amount of lives red players are entitled during Medieval Mode.", FCVAR_NOTIFY, true, 0.0, true, 99.0);
+	g_vsh2.m_hCvars[MedievalRespawnTime] = CreateConVar("vsh2_medievalmode_respawntime", "5.0", "How long it takes for players to respawn after dying in medieval mode (if they have live left).", FCVAR_NOTIFY, true, 1.0, true, 999.0);
+	g_vsh2.m_hCvars[PermOverheal] = CreateConVar("vsh2_permanent_overheal", "0", "If enabled, Mediguns give permanent overheal.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[MultiCapture] = CreateConVar("vsh2_multiple_cp_captures", "1", "If enabled, allow control points to be captured more than once instead of ending the round instantly.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[MultiCapAmount] = CreateConVar("vsh2_multiple_cp_capture_amount", "3", "If vsh2_allow_multiple_cp_captures is enabled, how many times must a team capture a Control Point to win.", FCVAR_NOTIFY, true, 1.0, true, 999.0);
+	g_vsh2.m_hCvars[DemoShieldCrits] = CreateConVar("vsh2_demoman_shield_crits", "2", "Sets Demoman Shield crit behaviour. 0 - No crits, 1 - Mini-crits, 2 - Crits, 3 - Scale with Charge Meter (Losing the Shield results in no more (mini)crits.)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
+	g_vsh2.m_hCvars[CanBossGoomba] = CreateConVar("vsh2_goomba_can_boss_stomp", "1", "Can the Boss Goomba Stomp other players? (Requires Goomba Stomp plugin). NOTE: All the CVARs in VSH2 controlling Goomba damage, lifemultiplier and rebound power are for NON-BOSS PLAYERS STOMPING THE BOSS. If you enable this CVAR, use the Goomba Stomp plugin config file to control the Boss' Goomba Variables. Not recommended to enable this unless you've coded your own Goomba Stomp behaviour.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[CanMantreadsGoomba] = CreateConVar("vsh2_goomba_can_mantreads_stomp", "0", "Can Soldiers/Demomen Goomba Stomp the Boss while using the Mantreads/Booties? (Requires Goomba Stomp plugin). NOTE: Enabling this may cause 'double' Stomps (Goomba Stomp and Mantreads stomp together).", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[GoombaDamageAdd] = CreateConVar("vsh2_goomba_damage_add", "450.0", "How much damage to add to a Goomba Stomp on the Boss. (Requires Goomba Stomp plugin).", FCVAR_NOTIFY, true, 0.0, false);
+	g_vsh2.m_hCvars[GoombaLifeMultiplier] = CreateConVar("vsh2_goomba_boss_life_multiplier", "0.025", "What percentage of the Boss' CURRENT HP to deal as damage on a Goomba Stomp. (Requires Goomba Stomp plugin).", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[GoombaReboundPower] = CreateConVar("vsh2_rebound_power", "300.0", "How much upwards velocity (in Hammer Units) should players recieve upon Goomba Stomping the Boss? (Requires Goomba Stomp plugin).", FCVAR_NOTIFY, true, 0.0, false);
+	g_vsh2.m_hCvars[MultiBossHandicap] = CreateConVar("vsh2_multiboss_handicap", "500", "How much Health is removed on every individual boss in a multiboss round at the start of said round. 0 disables it.", FCVAR_NONE, true, 0.0, true, 99999.0);
+	g_vsh2.m_hCvars[DroppedWeapons] = CreateConVar("vsh2_allow_dropped_weapons", "0", "Enables/Disables dropped weapons. Recommended to keep this disabled to avoid players having weapons they shouldn't.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[BlockEureka] = CreateConVar("vsh2_allow_eureka_effect", "0", "Enables/Disables the Eureka Effect for Engineers", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[ForceLives] = CreateConVar("vsh2_force_player_lives", "0", "Forces the gamemode to apply Medieval Mode lives on players, whether or not medieval mode is enabled", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[Anchoring] = CreateConVar("vsh2_allow_boss_anchor", "1", "When enabled, reduces all knockback bosses experience when crouching.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[BlockRageSuicide] = CreateConVar("vsh2_block_raged_suicide", "1", "when enabled, stops raged players from suiciding.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[HealthKitLimitMax] = CreateConVar("vsh2_spawn_health_kit_limit_max", "6", "max amount of health kits that can be produced in RED spawn. 0 for unlimited amount", FCVAR_NONE, true, 0.0, true, 50.0);
+	g_vsh2.m_hCvars[HealthKitLimitMin] = CreateConVar("vsh2_spawn_health_kit_limit_min", "4", "minimum amount of health kits that can be produced in RED spawn. 0 for no minimum limit", FCVAR_NONE, true, 0.0, true, 50.0);
+	g_vsh2.m_hCvars[AmmoKitLimitMax] = CreateConVar("vsh2_spawn_ammo_kit_limit_max", "6", "max amount of ammo kits that can be produced in RED spawn. 0 for unlimited amount", FCVAR_NONE, true, 0.0, true, 50.0);
+	g_vsh2.m_hCvars[AmmoKitLimitMin] = CreateConVar("vsh2_spawn_ammo_kit_limit_min", "4", "minimum amount of ammo kits that can be produced in RED spawn. 0 for no minimum limit", FCVAR_NONE, true, 0.0, true, 50.0);
+	g_vsh2.m_hCvars[ShieldRegenDmgReq] = CreateConVar("vsh2_shield_regen_damage", "2000", "damage required for demoknights to regenerate their shield, put 0 to disable.", FCVAR_NONE, true, 0.0, true, 99999.0);
+	g_vsh2.m_hCvars[AllowRandomMultiBosses] = CreateConVar("vsh2_allow_random_multibosses", "1", "allows VSH2 to make random combinations of various bosses.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[HHHMaxClimbs] = CreateConVar("vsh2_hhhjr_max_climbs", "10", "maximum amount of climbs HHH Jr. can do.", FCVAR_NONE, true, 0.0, false);
+	g_vsh2.m_hCvars[HealthCheckInitialDelay] = CreateConVar("vsh2_initial_healthcheck_delay", "30.0", "Initial health check delay when the round starts so as to prevent wasting 10-second health checks.", FCVAR_NONE, true, 0.0, true, 999.0);
+	g_vsh2.m_hCvars[ScoutRageGen] = CreateConVar("vsh2_scout_rage_gen", "0.2", "rate of how much rage a boss generates when there are only scouts left.", FCVAR_NONE, true, 0.0, true, 99.0);
+	g_vsh2.m_hCvars[SydneySleeperRageRemove] = CreateConVar("vsh2_sydney_sleeper_rage_remove", "0.01", "how much rage (multiplied with damage) the Sydney Sleeper sniper rifle will remove from a boss' rage meter.", FCVAR_NONE, true, 0.0, true, 99.0);
+	g_vsh2.m_hCvars[DamageForQueue] = CreateConVar("vsh2_damage_for_queue", "1000", "if 'vsh2_damage_queue' is enabled, how much queue to give per amount of damage done.", FCVAR_NONE, true, 0.0, false);
+	g_vsh2.m_hCvars[DeadRingerDamage] = CreateConVar("vsh2_dead_ringer_damage", "90.0", "damage, divided by 0.25, that dead ringer spies will take from boss melee hits.", FCVAR_NONE, true, 0.0, false);
+	g_vsh2.m_hCvars[CloakDamage] = CreateConVar("vsh2_cloak_damage", "70.0", "damage, divided by 0.8, that dead ringer spies will take from boss melee hits.", FCVAR_NONE, true, 0.0, false);
+	g_vsh2.m_hCvars[AllowLateSpawn] = CreateConVar("vsh2_allow_late_spawning", "0", "allows if unassigned spectators can respawn during an active round.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[SuicidePercent] = CreateConVar("vsh2_boss_suicide_percent", "0.3", "Allow the boss to suicide if their health percentage goes at or below this amount (0.3 == 30%).", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[AirShotDist] = CreateConVar("vsh2_airshot_dist", "80.0", "distance (from the air to the ground) to count as a skilled airshot.", FCVAR_NONE, true, 10.0, false);
+	g_vsh2.m_hCvars[MedicUberShield] = CreateConVar("vsh2_use_uber_as_shield", "0", "If a medic has nearly full uber (90%+), use the uber as a shield to prevent the medic from getting killed.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars[HHHClimbVelocity] = CreateConVar("vsh2_hhh_climb_velocity", "600.0", "in hammer units, how high of a velocity HHH Jr. will climb.", FCVAR_NONE, true, 0.0, true, 9999.0);
+	g_vsh2.m_hCvars[SniperClimbVelocity] = CreateConVar("vsh2_sniper_climb_velocity", "600.0", "in hammer units, how high of a velocity sniper melees will climb.", FCVAR_NONE, true, 0.0, false);
+	g_vsh2.m_hCvars[ShowBossHPLiving] = CreateConVar("vsh2_show_boss_hp_alive_players", "1", "How many players must be alive for total boss hp to show.", FCVAR_NONE, true, 1.0, true, 64.0);
+	g_vsh2.m_hCvars[HHHTeleCooldown] = CreateConVar("vsh2_hhh_tele_cooldown", "-1100.0", "Teleportation cooldown for HHH Jr. after teleporting. formula is '-seconds * 25' so -1100.0 is 44 seconds", FCVAR_NONE, true, -999999.0, true, 25.0);
+	g_vsh2.m_hCvars[MaxRandomMultiBosses] = CreateConVar("vsh2_random_multibosses_limit", "2", "The maximum limit of random multibosses", FCVAR_NONE, true, 1.0, true, 30.0);
+	g_vsh2.m_hCvars[VagineerUberTime] = CreateConVar("vsh2_vagineer_uber_time", "10.0", "The maximum length of the Vagineer boss' uber.", FCVAR_NONE, true, 1.0, false);
+	g_vsh2.m_hCvars[VagineerUberAirBlast] = CreateConVar("vsh2_vagineer_uber_time_airblast", "2.0", "extra time given to vagineer's uber when airblasted.", FCVAR_NONE, true, 1.0, false);
 	
 	gamemode.bSteam = LibraryExists("SteamTools");
 	gamemode.bTF2Attribs = LibraryExists("tf2attributes");
@@ -331,9 +330,9 @@ public void OnPluginStart()
 	AddCommandListener(cdVoiceMenu, "voicemenu");
 	AddNormalSoundHook(HookSound);
 	
-	g_vsh2_data.m_hPointCookie = new Cookie("vsh2_queuepoints", "Amount of VSH2 Queue points a player has.", CookieAccess_Protected);
-	g_vsh2_data.m_hBossCookie = new Cookie("vsh2_presetbosses", "Preset bosses for VSH2 players.", CookieAccess_Protected);
-	g_vsh2_data.m_hMusicCookie = new Cookie("vsh2_music_settings", "HaleMusic setting.", CookieAccess_Public);
+	g_vsh2.m_hPointCookie = new Cookie("vsh2_queuepoints", "Amount of VSH2 Queue points a player has.", CookieAccess_Protected);
+	g_vsh2.m_hBossCookie = new Cookie("vsh2_presetbosses", "Preset bosses for VSH2 players.", CookieAccess_Protected);
+	g_vsh2.m_hMusicCookie = new Cookie("vsh2_music_settings", "HaleMusic setting.", CookieAccess_Public);
 	
 	/// in handler.sp
 	ManageDownloads();
@@ -353,8 +352,8 @@ public void OnPluginStart()
 	AddMultiTargetFilter("@!minion", MinionTargetFilter, "all non-Minions", false);
 	AddMultiTargetFilter("@!minions", MinionTargetFilter, "all non-Minions", false);
 	
-	g_vsh2_data.m_hPlayerFields[0] = new StringMap();   /// This will be freed when plugin is unloaded again
-	g_vsh2_data.m_hBossesRegistered = new ArrayList(MAX_BOSS_NAME_SIZE);
+	g_vsh2.m_hPlayerFields[0] = new StringMap();   /// This will be freed when plugin is unloaded again
+	g_vsh2.m_hBossesRegistered = new ArrayList(MAX_BOSS_NAME_SIZE);
 }
 
 public bool HaleTargetFilter(const char[] pattern, ArrayList clients)
@@ -362,7 +361,7 @@ public bool HaleTargetFilter(const char[] pattern, ArrayList clients)
 	bool non = StrContains(pattern, "!", false) != -1;
 	for( int i=MaxClients; i; i-- ) {
 		if( IsClientValid(i) && clients.FindValue(i) == -1 ) {
-			if( g_vsh2_data.m_hCvars[Enabled].BoolValue && BaseBoss(i).bIsBoss ) {
+			if( g_vsh2.m_hCvars[Enabled].BoolValue && BaseBoss(i).bIsBoss ) {
 				if( !non )
 					clients.Push(i);
 			}
@@ -377,11 +376,10 @@ public bool MinionTargetFilter(const char[] pattern, ArrayList clients)
 	bool non = StrContains(pattern, "!", false) != -1;
 	for( int i=MaxClients; i; i-- ) {
 		if( IsClientValid(i) && clients.FindValue(i) == -1 ) {
-			if( g_vsh2_data.m_hCvars[Enabled].BoolValue && BaseBoss(i).bIsMinion ) {
+			if( g_vsh2.m_hCvars[Enabled].BoolValue && BaseBoss(i).bIsMinion ) {
 				if( !non )
 					clients.Push(i);
-			}
-			else if( non )
+			} else if( non )
 				clients.Push(i);
 		}
 	}
@@ -390,11 +388,11 @@ public bool MinionTargetFilter(const char[] pattern, ArrayList clients)
 
 public Action CheckLateSpawn(int client, const char[] command, int argc)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue || gamemode.iRoundState != StateRunning )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue || gamemode.iRoundState != StateRunning )
 		return Plugin_Continue;
 	
 	/// deal with late spawners, force them to spectator.
-	if( !g_vsh2_data.m_hCvars[AllowLateSpawn].BoolValue && GetClientTeam(client) > VSH2Team_Spectator && TF2_GetPlayerClass(client)==TFClass_Unknown ) {
+	if( !g_vsh2.m_hCvars[AllowLateSpawn].BoolValue && GetClientTeam(client) > VSH2Team_Spectator && TF2_GetPlayerClass(client)==TFClass_Unknown ) {
 		char str_tfclass[20]; GetCmdArg(1, str_tfclass, sizeof(str_tfclass));
 		TFClassType classtype = TF2_GetClass(str_tfclass);
 		CPrintToChat(client, "{olive}[VSH 2]{default} Late Spawn Blocked");
@@ -406,18 +404,18 @@ public Action CheckLateSpawn(int client, const char[] command, int argc)
 
 public Action BlockSuicide(int client, const char[] command, int argc)
 {
-	if( g_vsh2_data.m_hCvars[Enabled].BoolValue && gamemode.iRoundState == StateRunning ) {
+	if( g_vsh2.m_hCvars[Enabled].BoolValue && gamemode.iRoundState == StateRunning ) {
 		BaseBoss player = BaseBoss(client);
 		if( player.bIsBoss ) {
 			/// Allow bosses to suicide if their total health is under a certain percentage.
 			float flhp_percent = float(player.iHealth) / float(player.iMaxHealth);
-			if( flhp_percent > g_vsh2_data.m_hCvars[SuicidePercent].FloatValue ) {
+			if( flhp_percent > g_vsh2.m_hCvars[SuicidePercent].FloatValue ) {
 				CPrintToChat(client, "{olive}[VSH 2]{default} You cannot suicide yet as a boss. Please Use '!resetq' instead.");
 				return Plugin_Handled;
 			}
 		} else {
 			/// stop rage-stunned players from suiciding.
-			if( g_vsh2_data.m_hCvars[BlockRageSuicide].BoolValue ) {
+			if( g_vsh2.m_hCvars[BlockRageSuicide].BoolValue ) {
 				int stunflags = GetEntProp(client, Prop_Send, "m_iStunFlags");
 				if( stunflags & (TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT) )
 					return Plugin_Handled;
@@ -470,10 +468,10 @@ public void OnConfigsExecuted()
 {
 	/// Config checker taken from VSH1
 	static char szOldVersion[PATH];
-	g_vsh2_data.m_hCvars[VersionNumber].GetString(szOldVersion, sizeof(szOldVersion));
+	g_vsh2.m_hCvars[VersionNumber].GetString(szOldVersion, sizeof(szOldVersion));
 	if( !StrEqual(szOldVersion, PLUGIN_VERSION) )
 		LogMessage("[VSH2] Warning: your config is outdated. Back up your tf/cfg/sourcemod/VSHv2.cfg file and delete it, and this plugin will generate a new one that you can then modify to your original values.");
-	g_vsh2_data.m_hCvars[VersionNumber].SetString(PLUGIN_VERSION, false, true);
+	g_vsh2.m_hCvars[VersionNumber].SetString(PLUGIN_VERSION, false, true);
 	
 	if( gamemode.IsVSHMap() ) {
 		g_oldcvar_vals.tf_arena_use_queue = FindConVar("tf_arena_use_queue").IntValue;
@@ -485,8 +483,8 @@ public void OnConfigsExecuted()
 		FindConVar("tf_arena_use_queue").IntValue = 0;
 		FindConVar("mp_teams_unbalance_limit").IntValue = 0;
 		FindConVar("mp_forceautoteam").IntValue = 0;
-		FindConVar("mp_teams_unbalance_limit").IntValue =  g_vsh2_data.m_hCvars[FirstRound].BoolValue ? 0 : 1;
-		FindConVar("mp_forceautoteam").IntValue = g_vsh2_data.m_hCvars[FirstRound].BoolValue ? 0 : 1;
+		FindConVar("mp_teams_unbalance_limit").IntValue =  g_vsh2.m_hCvars[FirstRound].BoolValue ? 0 : 1;
+		FindConVar("mp_forceautoteam").IntValue = g_vsh2.m_hCvars[FirstRound].BoolValue ? 0 : 1;
 		FindConVar("tf_arena_first_blood").IntValue =  0;
 		FindConVar("mp_forcecamera").IntValue =  0;
 		FindConVar("tf_scout_hype_pep_max").FloatValue =  100.0;
@@ -510,15 +508,15 @@ public void OnClientPutInServer(int client)
 	SDKHook(client, SDKHook_Touch, OnTouch);
 	SDKHook(client, SDKHook_PreThinkPost, OnPreThinkPost);
 	
-	if( g_vsh2_data.m_hPlayerFields[client] != null )
-		delete g_vsh2_data.m_hPlayerFields[client];
+	if( g_vsh2.m_hPlayerFields[client] != null )
+		delete g_vsh2.m_hPlayerFields[client];
 	
-	g_vsh2_data.m_hPlayerFields[client] = new StringMap();
+	g_vsh2.m_hPlayerFields[client] = new StringMap();
 	BaseBoss boss = BaseBoss(client);
 	
 	/// BaseFighter properties
-	g_vsh2_data.m_hPlayerFields[client].SetValue("iQueue", 0);
-	g_vsh2_data.m_hPlayerFields[client].SetValue("iPresetType", -1);
+	g_vsh2.m_hPlayerFields[client].SetValue("iQueue", 0);
+	g_vsh2.m_hPlayerFields[client].SetValue("iPresetType", -1);
 	boss.iKills = 0;
 	boss.iHits = 0;
 	boss.iLives = 0;
@@ -536,7 +534,7 @@ public void OnClientPutInServer(int client)
 	boss.iShieldDmg = 0;
 	
 	/// BaseBoss properties
-	boss.iHealth = 0;
+	//boss.iHealth = 0;
 	boss.iMaxHealth = 0;
 	boss.iBossType = -1;
 	boss.iClimbs = 0;
@@ -573,7 +571,6 @@ public Action OnTouch(int client, int other)
 	if( 0 < other <= MaxClients ) {
 		BaseBoss player = BaseBoss(client);
 		BaseBoss victim = BaseBoss(other);
-		
 		if( player.bIsBoss && !victim.bIsBoss )
 			return ManageOnTouchPlayer(player, victim); /// in handler.sp
 	} else if( other > MaxClients ) {
@@ -643,8 +640,8 @@ public void _BossDeath(const any userid)
 	int client = GetClientOfUserId(userid);
 	if( IsValidClient(client, false) ) {
 		BaseBoss player = BaseBoss(client);
-		if( player.iHealth <= 0 )
-			player.iHealth = 0; /// ded, not big soup rice!
+		//if( player.iHealth <= 0 )
+		//	player.iHealth = 0; /// ded, not big soup rice!
 		
 		ManageBossDeath(player); /// in handler.sp
 	}
@@ -668,7 +665,7 @@ public Action MakeModelTimer(Handle hTimer)
 /// the main 'mechanics' of bosses
 public Action Timer_PlayerThink(Handle hTimer)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue || gamemode.iRoundState != StateRunning )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue || gamemode.iRoundState != StateRunning )
 		return Plugin_Continue;
 	
 	gamemode.UpdateBossHealth();
@@ -684,17 +681,17 @@ public Action Timer_PlayerThink(Handle hTimer)
 		/** If player is a boss, force Boss think on them; if not boss or on blue team, force fighter think! */
 		if( player.bIsBoss ) {
 			ManageBossThink(player);    /// in handler.sp
-			SetEntityHealth(i, player.iHealth);
+			//SetEntityHealth(i, player.iHealth);
 			
 			/// BUG PATCH: Bosses are not being 100% dead when the iHealth is at 0...
-			if( player.iHealth <= 0 )
-				SDKHooks_TakeDamage(player.index, 0, 0, 100.0, DMG_DIRECT, _, _, _); //ForcePlayerSuicide(i);
+			//if( player.iHealth <= 0 )
+			//	SDKHooks_TakeDamage(player.index, 0, 0, 100.0, DMG_DIRECT, _, _, _); //ForcePlayerSuicide(i);
 		}
 		else ManageFighterThink(player);
 		
-		if( gamemode.iPlaying <= g_vsh2_data.m_hCvars[ShowBossHPLiving].IntValue ) {
+		if( gamemode.iPlaying <= g_vsh2.m_hCvars[ShowBossHPLiving].IntValue ) {
 			SetHudTextParams(-1.0, 0.20, 0.11, 255, 255, 255, 255);
-			ShowSyncHudText(i, g_vsh2_data.m_hHealthHUD, "Total Boss Health: %i", gamemode.GetTotalBossHealth());
+			ShowSyncHudText(i, g_vsh2.m_hHealthHUD, "Total Boss Health: %i", gamemode.GetTotalBossHealth());
 		}
 	}
 	
@@ -714,7 +711,7 @@ public Action CmdReloadCFG(int client, int args)
 
 public void OnPreThinkPost(int client)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue || IsClientObserver(client) || !IsPlayerAlive(client) )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue || IsClientObserver(client) || !IsPlayerAlive(client) )
 		return;
 	
 	//BaseBoss player = BaseBoss(client);
@@ -731,7 +728,7 @@ public void OnPreThinkPost(int client)
 
 public Action TraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &ammotype, int hitbox, int hitgroup)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue )
 		return Plugin_Continue;
 	else if( IsClientValid(attacker) && IsClientValid(victim) ) {
 		BaseBoss player = BaseBoss(victim);
@@ -742,7 +739,7 @@ public Action TraceAttack(int victim, int &attacker, int &inflictor, float &dama
 }
 public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue || !IsClientValid(victim) )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue || !IsClientValid(victim) )
 		return Plugin_Continue;
 	else if( gamemode.iRoundState == StateStarting ) {
 		damage = 0.0;
@@ -787,7 +784,7 @@ public Action GetMaxHealth(int entity, int &maxhealth)
 #if defined _goomba_included_
 public Action OnStomp(int attacker, int victim, float& damageMultiplier, float& damageAdd, float& JumpPower)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue ) {
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue ) {
 		return Plugin_Continue;
 	}
 	return ManageOnGoombaStomp(attacker, victim, damageMultiplier, damageAdd, JumpPower);
@@ -804,7 +801,7 @@ public Action RemoveEnt(Handle timer, any entid)
 
 public Action cdVoiceMenu(int client, const char[] command, int argc)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue )
 		return Plugin_Continue;
 	if( argc < 2 || !IsPlayerAlive(client) )
 		return Plugin_Handled;
@@ -822,7 +819,7 @@ public Action cdVoiceMenu(int client, const char[] command, int argc)
 
 public Action DoTaunt(int client, const char[] command, int argc)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue )
 		return Plugin_Continue;
 	
 	BaseBoss boss = BaseBoss(client);
@@ -834,7 +831,7 @@ public Action DoTaunt(int client, const char[] command, int argc)
 
 public void OnEntityCreated(int entity, const char[] classname)
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue )
 		return;
 	else if( !strncmp(classname, "tf_weapon_", 10, false) && IsValidEntity(entity) )
 		CreateTimer(0.5, OnWeaponSpawned, EntIndexToEntRef(entity));
@@ -938,9 +935,9 @@ public void CalcScores()
 		if( player.bIsBoss )
 			continue;
 		else {
-			int queue_gain = g_vsh2_data.m_hCvars[QueueGained].IntValue;
-			int queue = (g_vsh2_data.m_hCvars[DamageQueue].BoolValue) ? queue_gain + (player.iDamage / g_vsh2_data.m_hCvars[DamageForQueue].IntValue) : queue_gain;
-			int points = player.iDamage / g_vsh2_data.m_hCvars[DamagePoints].IntValue;
+			int queue_gain = g_vsh2.m_hCvars[QueueGained].IntValue;
+			int queue = (g_vsh2.m_hCvars[DamageQueue].BoolValue) ? queue_gain + (player.iDamage / g_vsh2.m_hCvars[DamageForQueue].IntValue) : queue_gain;
+			int points = player.iDamage / g_vsh2.m_hCvars[DamagePoints].IntValue;
 			
 			Action act = Call_OnScoreTally(player, points, queue);
 			if( act > Plugin_Changed )
@@ -960,7 +957,7 @@ public void CalcScores()
 
 public Action Timer_DrawGame(Handle timer)
 {
-	if( gamemode.iHealthBarPercent < g_vsh2_data.m_hCvars[HealthPercentForLastGuy].IntValue || gamemode.iRoundState != StateRunning || gamemode.iTimeLeft < 0 )
+	if( gamemode.iHealthBarPercent < g_vsh2.m_hCvars[HealthPercentForLastGuy].IntValue || gamemode.iRoundState != StateRunning || gamemode.iTimeLeft < 0 )
 		return Plugin_Stop;
 	
 	int time = gamemode.iTimeLeft;
@@ -979,7 +976,7 @@ public Action Timer_DrawGame(Handle timer)
 	for( int i=MaxClients; i; --i ) {
 		if( !IsValidClient(i) )
 			continue;
-		ShowSyncHudText(i, g_vsh2_data.m_hTimeleftHUD, strTime);
+		ShowSyncHudText(i, g_vsh2.m_hTimeleftHUD, strTime);
 	}
 	switch( time ) {
 		case 60: EmitSoundToAll("vo/announcer_ends_60sec.mp3");
@@ -1004,7 +1001,7 @@ public void _ResetMediCharge(const int entid)
 {
 	int medigun = EntRefToEntIndex(entid); 
 	if( medigun > MaxClients && IsValidEntity(medigun) )
-		SetMediCharge(medigun, GetMediCharge(medigun) + g_vsh2_data.m_hCvars[MedigunReset].FloatValue);
+		SetMediCharge(medigun, GetMediCharge(medigun) + g_vsh2.m_hCvars[MedigunReset].FloatValue);
 }
 
 public Action Timer_UberLoop(Handle timer, any medigunid)
@@ -1036,7 +1033,7 @@ public Action Timer_UberLoop(Handle timer, any medigunid)
 }
 public void _MusicPlay()
 {
-	if( !g_vsh2_data.m_hCvars[Enabled].BoolValue || !g_vsh2_data.m_hCvars[EnableMusic].BoolValue || gamemode.iRoundState != StateRunning )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue || !g_vsh2.m_hCvars[EnableMusic].BoolValue || gamemode.iRoundState != StateRunning )
 		return;
 	
 	float currtime = GetGameTime();
@@ -1048,9 +1045,9 @@ public void _MusicPlay()
 	ManageMusic(bg_music, time);    /// in handler.sp
 	
 	BaseBoss boss;
-	float vol = g_vsh2_data.m_hCvars[MusicVolume].FloatValue;
+	float vol = g_vsh2.m_hCvars[MusicVolume].FloatValue;
 	if( bg_music[0] != '\0' ) {
-		strcopy(g_vsh2_data.m_strBackgroundSong, PLATFORM_MAX_PATH, bg_music);
+		strcopy(g_vsh2.m_strBackgroundSong, PLATFORM_MAX_PATH, bg_music);
 		for( int i=MaxClients; i; --i ) {
 			if( !IsClientValid(i) )
 				continue;
@@ -1058,7 +1055,7 @@ public void _MusicPlay()
 			boss = BaseBoss(i);
 			if( boss.bNoMusic )
 				continue;
-			EmitSoundToClient(i, g_vsh2_data.m_strBackgroundSong, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+			EmitSoundToClient(i, g_vsh2.m_strBackgroundSong, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
 		}
 	}
 	if( time != -1.0 ) {
@@ -1094,11 +1091,11 @@ public int RegisterBoss(const char modulename[MAX_BOSS_NAME_SIZE])
 	if( !ValidateName(modulename) ) {
 		LogError("VSH2 :: Boss Registrar: **** Invalid Name For Boss Module: '%s' ****", modulename);
 		return -1;
-	} else if( g_vsh2_data.m_hBossesRegistered.FindString(modulename) != -1 ) {
+	} else if( g_vsh2.m_hBossesRegistered.FindString(modulename) != -1 ) {
 		LogError("VSH2 :: Boss Registrar: **** Plugin '%s' Already Registered ****", modulename);
 		return -1;
 	}
-	g_vsh2_data.m_hBossesRegistered.PushString(modulename);
+	g_vsh2.m_hBossesRegistered.PushString(modulename);
 	return MAXBOSS;
 }
 
@@ -1205,10 +1202,10 @@ public int Native_RegisterBoss(Handle plugin, int numParams)
 	return RegisterBoss(module_name);
 }
 
-public int Native_VSH2Instance(Handle plugin, int numParams)
+public any Native_VSH2Instance(Handle plugin, int numParams)
 {
 	BaseBoss player = BaseBoss(GetNativeCell(1), GetNativeCell(2));
-	return view_as< int >(player);
+	return player;
 }
 
 public int Native_VSH2GetUserid(Handle plugin, int numParams)
@@ -1226,8 +1223,11 @@ public int Native_VSH2_getProperty(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
 	char prop_name[64]; GetNativeString(2, prop_name, 64);
+	if( StrEqual(prop_name, "iHealth") ) {
+		return player.iHealth;
+	}
 	any item;
-	if( g_vsh2_data.m_hPlayerFields[player.index].GetValue(prop_name, item) )
+	if( g_vsh2.m_hPlayerFields[player.index].GetValue(prop_name, item) )
 		return item;
 	return 0;
 }
@@ -1236,15 +1236,21 @@ public int Native_VSH2_setProperty(Handle plugin, int numParams)
 	BaseBoss player = GetNativeCell(1);
 	char prop_name[64]; GetNativeString(2, prop_name, 64);
 	any item = GetNativeCell(3);
-	g_vsh2_data.m_hPlayerFields[player.index].SetValue(prop_name, item);
+	if( StrEqual(prop_name, "iHealth") ) {
+		player.iHealth = view_as< int >(item);
+	}
+	else g_vsh2.m_hPlayerFields[player.index].SetValue(prop_name, item);
 }
 
 public int Native_VSH2_getIntProp(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
 	char prop_name[64]; GetNativeString(2, prop_name, 64);
+	if( StrEqual(prop_name, "iHealth") ) {
+		return player.iHealth;
+	}
 	int item;
-	if( g_vsh2_data.m_hPlayerFields[player.index].GetValue(prop_name, item) )
+	if( g_vsh2.m_hPlayerFields[player.index].GetValue(prop_name, item) )
 		return item;
 	return 0;
 }
@@ -1253,16 +1259,20 @@ public int Native_VSH2_setIntProp(Handle plugin, int numParams)
 	BaseBoss player = GetNativeCell(1);
 	char prop_name[64]; GetNativeString(2, prop_name, 64);
 	int item = GetNativeCell(3);
-	return g_vsh2_data.m_hPlayerFields[player.index].SetValue(prop_name, item);
+	if( StrEqual(prop_name, "iHealth") ) {
+		player.iHealth = item;
+		return true;
+	}
+	return g_vsh2.m_hPlayerFields[player.index].SetValue(prop_name, item);
 }
 
-public int Native_VSH2_getFloatProp(Handle plugin, int numParams)
+public any Native_VSH2_getFloatProp(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
 	char prop_name[64]; GetNativeString(2, prop_name, 64);
 	float item;
-	if( g_vsh2_data.m_hPlayerFields[player.index].GetValue(prop_name, item) )
-		return view_as< int >(item);
+	if( g_vsh2.m_hPlayerFields[player.index].GetValue(prop_name, item) )
+		return item;
 	return 0;
 }
 public int Native_VSH2_setFloatProp(Handle plugin, int numParams)
@@ -1270,7 +1280,7 @@ public int Native_VSH2_setFloatProp(Handle plugin, int numParams)
 	BaseBoss player = GetNativeCell(1);
 	char prop_name[64]; GetNativeString(2, prop_name, 64);
 	float item = GetNativeCell(3);
-	return g_vsh2_data.m_hPlayerFields[player.index].SetValue(prop_name, item);
+	return g_vsh2.m_hPlayerFields[player.index].SetValue(prop_name, item);
 }
 
 public int Native_VSH2_setProp(Handle plugin, int numParams)
@@ -1278,37 +1288,41 @@ public int Native_VSH2_setProp(Handle plugin, int numParams)
 	BaseBoss player = GetNativeCell(1);
 	char prop_name[64]; GetNativeString(2, prop_name, 64);
 	any item = GetNativeCell(3);
-	return g_vsh2_data.m_hPlayerFields[player.index].SetValue(prop_name, item);
+	if( StrEqual(prop_name, "iHealth") ) {
+		SetEntityHealth(player.index, view_as< int >(item));
+		return true;
+	}
+	return g_vsh2.m_hPlayerFields[player.index].SetValue(prop_name, item);
 }
 
 public int Native_Hook(Handle plugin, int numParams)
 {
 	int vsh2Hook = GetNativeCell(1);
 	Function Func = GetNativeFunction(2);
-	if( g_vsh2_data.m_hForwards[vsh2Hook] != null )
-		g_vsh2_data.m_hForwards[vsh2Hook].AddFunction(plugin, Func);
+	if( g_vsh2.m_hForwards[vsh2Hook] != null )
+		g_vsh2.m_hForwards[vsh2Hook].AddFunction(plugin, Func);
 }
 
 public int Native_HookEx(Handle plugin, int numParams)
 {
 	int vsh2Hook = GetNativeCell(1);
 	Function Func = GetNativeFunction(2);
-	if( g_vsh2_data.m_hForwards[vsh2Hook] != null )
-		return g_vsh2_data.m_hForwards[vsh2Hook].AddFunction(plugin, Func);
+	if( g_vsh2.m_hForwards[vsh2Hook] != null )
+		return g_vsh2.m_hForwards[vsh2Hook].AddFunction(plugin, Func);
 	return 0;
 }
 
 public int Native_Unhook(Handle plugin, int numParams)
 {
 	int vsh2Hook = GetNativeCell(1);
-	if( g_vsh2_data.m_hForwards[vsh2Hook] != null )
-		g_vsh2_data.m_hForwards[vsh2Hook].RemoveFunction(plugin, GetNativeFunction(2));
+	if( g_vsh2.m_hForwards[vsh2Hook] != null )
+		g_vsh2.m_hForwards[vsh2Hook].RemoveFunction(plugin, GetNativeFunction(2));
 }
 public int Native_UnhookEx(Handle plugin, int numParams)
 {
 	int vsh2Hook = GetNativeCell(1);
-	if( g_vsh2_data.m_hForwards[vsh2Hook] != null )
-		return g_vsh2_data.m_hForwards[vsh2Hook].RemoveFunction(plugin, GetNativeFunction(2));
+	if( g_vsh2.m_hForwards[vsh2Hook] != null )
+		return g_vsh2.m_hForwards[vsh2Hook].RemoveFunction(plugin, GetNativeFunction(2));
 	return 0;
 }
 
@@ -1324,7 +1338,7 @@ public int Native_GetRandomBossType(Handle plugin, int numParams)
 public int Native_VSH2_ConvertToMinion(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
-	float spawntime = view_as< float >( GetNativeCell(2) );
+	float spawntime = GetNativeCell(2);
 	player.ConvertToMinion(spawntime);
 }
 public int Native_VSH2_SpawnWep(Handle plugin, int numParams)
@@ -1386,14 +1400,14 @@ public int Native_VSH2_ForceTeamChange(Handle plugin, int numParams)
 	player.ForceTeamChange(team);
 }
 
-public int Native_VSH2_ClimbWall(Handle plugin, int numParams)
+public any Native_VSH2_ClimbWall(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
 	int wep = GetNativeCell(2);
-	float spawntime = view_as< float >( GetNativeCell(3) );
-	float healthdmg = view_as< float >( GetNativeCell(4) );
+	float spawntime = GetNativeCell(3);
+	float healthdmg = GetNativeCell(4);
 	bool attackdelay = GetNativeCell(5);
-	return view_as< int >(player.ClimbWall(wep, spawntime, healthdmg, attackdelay));
+	return player.ClimbWall(wep, spawntime, healthdmg, attackdelay);
 }
 
 public int Native_VSH2_HelpPanelClass(Handle plugin, int numParams)
@@ -1440,18 +1454,18 @@ public int Native_VSH2_IsNearDispenser(Handle plugin, int numParams)
 	return player.IsNearDispenser();
 }
 
-public int Native_VSH2_IsInRange(Handle plugin, int numParams)
+public any Native_VSH2_IsInRange(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
 	float distance = GetNativeCell(3);
-	return view_as< int >(player.IsInRange(GetNativeCell(2), distance, GetNativeCell(4)));
+	return player.IsInRange(GetNativeCell(2), distance, GetNativeCell(4));
 }
 
 public int Native_VSH2_RemoveBack(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
 	int length = GetNativeCell(3);
-	any[] data = new any[length];
+	int[] data = new int[length];
 	GetNativeArray(2, data, length);
 	player.RemoveBack(data, length);
 }
@@ -1460,7 +1474,7 @@ public int Native_VSH2_FindBack(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
 	int length = GetNativeCell(3);
-	any[] data = new any[length];
+	int[] data = new int[length];
 	GetNativeArray(2, data, length);
 	return player.FindBack(data, length);
 }
@@ -1475,7 +1489,6 @@ public int Native_VSH2_ShootRocket(Handle plugin, int numParams)
 	float dmg = GetNativeCell(6);
 	char modelname[PLATFORM_MAX_PATH]; GetNativeString(7, modelname, PLATFORM_MAX_PATH);
 	bool arc = GetNativeCell(8);
-	
 	return player.ShootRocket(crit, vpos, vang, speed, dmg, modelname, arc);
 }
 
@@ -1514,21 +1527,21 @@ public int Native_VSH2_RemoveAllItems(Handle plugin, int numParams)
 	player.RemoveAllItems();
 }
 
-public int Native_VSH2_GetName(Handle plugin, int numParams)
+public any Native_VSH2_GetName(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
 	char name[MAX_BOSS_NAME_SIZE];
 	bool res = player.GetName(name);
 	SetNativeString(2, name, sizeof(name), true);
-	return view_as< int >(res);
+	return res;
 }
 
-public int Native_VSH2_SetName(Handle plugin, int numParams)
+public any Native_VSH2_SetName(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
 	char name[MAX_BOSS_NAME_SIZE];
 	GetNativeString(2, name, sizeof(name));
-	return view_as< int >(player.SetName(name));
+	return player.SetName(name);
 }
 
 public int Native_VSH2_SuperJump(Handle plugin, int numParams)
@@ -1562,7 +1575,7 @@ public int Native_VSH2GameMode_GetProperty(Handle plugin, int numParams)
 {
 	char prop_name[64]; GetNativeString(1, prop_name, sizeof(prop_name));
 	any item;
-	if( g_vsh2_data.m_hGameModeFields.GetValue(prop_name, item) ) {
+	if( g_vsh2.m_hGameModeFields.GetValue(prop_name, item) ) {
 		return item;
 	}
 	return 0;
@@ -1571,22 +1584,22 @@ public int Native_VSH2GameMode_SetProperty(Handle plugin, int numParams)
 {
 	char prop_name[64]; GetNativeString(1, prop_name, sizeof(prop_name));
 	any item = GetNativeCell(2);
-	g_vsh2_data.m_hGameModeFields.SetValue(prop_name, item);
+	g_vsh2.m_hGameModeFields.SetValue(prop_name, item);
 }
-public int Native_VSH2GameMode_GetRandomBoss(Handle plugin, int numParams)
+public any Native_VSH2GameMode_GetRandomBoss(Handle plugin, int numParams)
 {
 	bool alive = GetNativeCell(1);
-	return view_as< int >(gamemode.GetRandomBoss(alive));
+	return gamemode.GetRandomBoss(alive);
 }
-public int Native_VSH2GameMode_GetBossByType(Handle plugin, int numParams)
+public any Native_VSH2GameMode_GetBossByType(Handle plugin, int numParams)
 {
 	bool alive = GetNativeCell(1);
 	int bossid = GetNativeCell(2);
-	return view_as< int >(gamemode.GetBossByType(alive, bossid));
+	return gamemode.GetBossByType(alive, bossid);
 }
-public int Native_VSH2GameMode_FindNextBoss(Handle plugin, int numParams)
+public any Native_VSH2GameMode_FindNextBoss(Handle plugin, int numParams)
 {
-	return view_as< int >(gamemode.FindNextBoss());
+	return gamemode.FindNextBoss();
 }
 public int Native_VSH2GameMode_CountMinions(Handle plugin, int numParams)
 {
@@ -1620,9 +1633,9 @@ public int Native_VSH2GameMode_GetTotalRedPlayers(Handle plugin, int numParams)
 	return gamemode.iPlaying;
 }
 
-public int Native_VSH2GameMode_GetHUDHandle(Handle plugin, int numParams)
+public any Native_VSH2GameMode_GetHUDHandle(Handle plugin, int numParams)
 {
-	return view_as< int >(g_vsh2_data.m_hHudText);
+	return g_vsh2.m_hHudText;
 }
 
 public int Native_VSH2GameMode_GetBosses(Handle plugin, int numParams)

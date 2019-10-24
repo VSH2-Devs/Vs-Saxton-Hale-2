@@ -59,13 +59,13 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 				return 0;
 			/// If the coookies aren't cached yet, use array
 			else if( !AreClientCookiesCached(player) || IsFakeClient(player) ) {
-				int i; g_vsh2_data.m_hPlayerFields[player].GetValue("iQueue", i);
+				int i; g_vsh2.m_hPlayerFields[player].GetValue("iQueue", i);
 				return i;
 			}
 			char strPoints[10];	/// HOW WILL OUR QUEUE SURPASS OVER 9 DIGITS?
-			g_vsh2_data.m_hPointCookie.Get(player, strPoints, sizeof(strPoints));
+			g_vsh2.m_hPointCookie.Get(player, strPoints, sizeof(strPoints));
 			int points = StringToInt(strPoints);
-			g_vsh2_data.m_hPlayerFields[player].SetValue("iQueue", points);
+			g_vsh2.m_hPlayerFields[player].SetValue("iQueue", points);
 			return points;
 		}
 		public set( const int val ) {
@@ -73,13 +73,13 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			if( !player )
 				return;
 			else if( !AreClientCookiesCached(player) || IsFakeClient(player) ) {
-				g_vsh2_data.m_hPlayerFields[player].SetValue("iQueue", val);
+				g_vsh2.m_hPlayerFields[player].SetValue("iQueue", val);
 				return;
 			}
-			g_vsh2_data.m_hPlayerFields[player].SetValue("iQueue", val);
+			g_vsh2.m_hPlayerFields[player].SetValue("iQueue", val);
 			char strPoints[10];
 			IntToString(val, strPoints, sizeof(strPoints));
-			g_vsh2_data.m_hPointCookie.Set(player, strPoints);
+			g_vsh2.m_hPointCookie.Set(player, strPoints);
 		}
 	}
 	property int iPresetType {    /// if cookies aren't cached, oh well!
@@ -88,13 +88,13 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			if( !player )
 				return -1;
 			if( !AreClientCookiesCached(player) ) {
-				int i; g_vsh2_data.m_hPlayerFields[player].GetValue("iPresetType", i);
+				int i; g_vsh2.m_hPlayerFields[player].GetValue("iPresetType", i);
 				return i;
 			}
 			char setboss[6];
-			g_vsh2_data.m_hBossCookie.Get(player, setboss, sizeof(setboss));
+			g_vsh2.m_hBossCookie.Get(player, setboss, sizeof(setboss));
 			int bossType = StringToInt(setboss);
-			g_vsh2_data.m_hPlayerFields[player].SetValue("iPresetType", bossType);
+			g_vsh2.m_hPlayerFields[player].SetValue("iPresetType", bossType);
 			return bossType;
 		}
 		public set( const int val ) {
@@ -102,141 +102,141 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			if( !player )
 				return;
 			else if( !AreClientCookiesCached(player) ) {
-				g_vsh2_data.m_hPlayerFields[player].SetValue("iPresetType", val);
+				g_vsh2.m_hPlayerFields[player].SetValue("iPresetType", val);
 				return;
 			}
-			g_vsh2_data.m_hPlayerFields[player].SetValue("iPresetType", val);
+			g_vsh2.m_hPlayerFields[player].SetValue("iPresetType", val);
 			char setboss[6];
 			IntToString(val, setboss, sizeof(setboss));
-			g_vsh2_data.m_hBossCookie.Set(player, setboss);
+			g_vsh2.m_hBossCookie.Set(player, setboss);
 		}
 	}
 	property int iKills {
 		public get() {
-			int i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("iKills", i);
+			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("iKills", i);
 			return i;
 		}
 		public set( const int val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("iKills", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("iKills", val);
 		}
 	}
 	property int iHits {
 		public get() {
-			int i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("iHits", i);
+			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("iHits", i);
 			return i;
 		}
 		public set( const int val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("iHits", ( val>=0 ) ? val : 0);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("iHits", ( val>=0 ) ? val : 0);
 		}
 	}
 	property int iLives {
 		public get() {
-			int i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("iLives", i);
+			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("iLives", i);
 			return i;
 		}
 		public set( const int val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("iLives", ( val>=0 ) ? val : 0);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("iLives", ( val>=0 ) ? val : 0);
 		}
 	}
 	property int iState {
 		public get() {
-			int i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("iState", i);
+			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("iState", i);
 			return i;
 		}
 		public set( const int val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("iState", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("iState", val);
 		}
 	}
 	property int iDamage {
 		public get() {
-			int i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("iDamage", i);
+			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("iDamage", i);
 			return i;
 		}
 		public set( const int val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("iDamage", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("iDamage", val);
 		}
 	}
 	property int iAirDamage {
 		public get() {
-			int i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("iAirDamage", i);
+			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("iAirDamage", i);
 			return i;
 		}
 		public set( const int val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("iAirDamage", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("iAirDamage", val);
 		}
 	}
 	property int iSongPick {
 		public get() {
-			int i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("iSongPick", i);
+			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("iSongPick", i);
 			return i;
 		}
 		public set( const int val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("iSongPick", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("iSongPick", val);
 		}
 	}
 	property int iOwnerBoss {
 		public get() {
-			int i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("iOwnerBoss", i);
+			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("iOwnerBoss", i);
 			return i;
 		}
 		public set( const int val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("iOwnerBoss", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("iOwnerBoss", val);
 		}
 	}
 	property int iUberTarget {    /** please use userid on this; convert to client index if you want but userid is safer */
 		public get() {
-			int i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("iUberTarget", i);
+			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("iUberTarget", i);
 			return i;
 		}
 		public set( const int val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("iUberTarget", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("iUberTarget", val);
 		}
 	}
 	property int bGlow {
 		public get() {
-			int i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("bGlow", i);
+			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("bGlow", i);
 			return i;
 		}
 		public set( const int val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("bGlow", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("bGlow", val);
 			SetEntProp(this.index, Prop_Send, "m_bGlowEnabled", val);
 		}
 	}
 	property int iShieldDmg {
 		public get() {
-			int i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("iShieldDmg", i);
+			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("iShieldDmg", i);
 			return i;
 		}
 		public set( const int val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("iShieldDmg", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("iShieldDmg", val);
 		}
 	}
 	property int iClimbs {
 		public get() {
-			int i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("iClimbs", i);
+			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("iClimbs", i);
 			return i;
 		}
 		public set( const int val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("iClimbs", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("iClimbs", val);
 		}
 	}
 	
 	property bool bIsMinion {
 		public get() {
-			bool i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("bIsMinion", i);
+			bool i; g_vsh2.m_hPlayerFields[this.index].GetValue("bIsMinion", i);
 			return i;
 		}
 		public set( const bool val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("bIsMinion", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("bIsMinion", val);
 		}
 	}
 	property bool bInJump {
 		public get() {
-			bool i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("bInJump", i);
+			bool i; g_vsh2.m_hPlayerFields[this.index].GetValue("bInJump", i);
 			return i;
 		}
 		public set( const bool val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("bInJump", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("bInJump", val);
 		}
 	}
 	property bool bNoMusic {
@@ -244,7 +244,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			if( !AreClientCookiesCached(this.index) )
 				return false;
 			char musical[6];
-			g_vsh2_data.m_hMusicCookie.Get(this.index, musical, sizeof(musical));
+			g_vsh2.m_hMusicCookie.Get(this.index, musical, sizeof(musical));
 			return( StringToInt(musical) == 1 );
 		}
 		public set( const bool val ) {
@@ -252,37 +252,37 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 				return;
 			char musical[6];
 			IntToString(( val ) ? 1 : 0, musical, sizeof(musical));
-			g_vsh2_data.m_hMusicCookie.Set(this.index, musical);
+			g_vsh2.m_hMusicCookie.Set(this.index, musical);
 		}
 	}
 
 	property float flGlowtime {
 		public get() {
-			float i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("flGlowtime", i);
+			float i; g_vsh2.m_hPlayerFields[this.index].GetValue("flGlowtime", i);
 			if( i<0.0 )
 				i = 0.0;
 			return i;
 		}
 		public set( const float val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("flGlowtime", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("flGlowtime", val);
 		}
 	}
 	property float flLastHit {
 		public get() {
-			float i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("flLastHit", i);
+			float i; g_vsh2.m_hPlayerFields[this.index].GetValue("flLastHit", i);
 			return i;
 		}
 		public set( const float val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("flLastHit", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("flLastHit", val);
 		}
 	}
 	property float flLastShot {
 		public get() {
-			float i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("flLastShot", i);
+			float i; g_vsh2.m_hPlayerFields[this.index].GetValue("flLastShot", i);
 			return i;
 		}
 		public set( const float val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("flLastShot", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("flLastShot", val);
 		}
 	}
 	
@@ -418,7 +418,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 				continue;
 			
 			/// if the client is a boss, allow them to use ANY valid spawn!
-			bool is_boss; g_vsh2_data.m_hPlayerFields[this.index].GetValue("bIsBoss", is_boss);
+			bool is_boss; g_vsh2.m_hPlayerFields[this.index].GetValue("bIsBoss", is_boss);
 			if( team <= 1 || is_boss )
 				hArray.Push(spawn);
 			else {
@@ -593,119 +593,123 @@ methodmap BaseBoss < BaseFighter {
 	
 	property int iHealth {
 		public get() {
-			int i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("iHealth", i);
+			/*
+			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("iHealth", i);
 			if( i<0 )
 				i = 0;
 			return i;
+			*/
+			return GetClientHealth(this.index);
 		}
 		public set( const int val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("iHealth", val);
+			//g_vsh2.m_hPlayerFields[this.index].SetValue("iHealth", val);
+			SetEntityHealth(this.index, val);
 		}
 	}
 	property int iMaxHealth {
 		public get() {
-			int i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("iMaxHealth", i);
+			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("iMaxHealth", i);
 			return i;
 		}
 		public set( const int val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("iMaxHealth", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("iMaxHealth", val);
 		}
 	}
 	property int iBossType {
 		public get() {
-			int i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("iBossType", i);
+			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("iBossType", i);
 			return i;
 		}
 		public set( const int val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("iBossType", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("iBossType", val);
 		}
 	}
 	property int iStabbed {
 		public get() {
-			int i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("iStabbed", i);
+			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("iStabbed", i);
 			return i;
 		}
 		public set( const int val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("iStabbed", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("iStabbed", val);
 		}
 	}
 	property int iMarketted {
 		public get() {
-			int i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("iMarketted", i);
+			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("iMarketted", i);
 			return i;
 		}
 		public set( const int val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("iMarketted", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("iMarketted", val);
 		}
 	}
 	property int iDifficulty {
 		public get() {
-			int i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("iDifficulty", i);
+			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("iDifficulty", i);
 			return i;
 		}
 		public set( const int val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("iDifficulty", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("iDifficulty", val);
 		}
 	}
 	
 	property bool bIsBoss {
 		public get() {
-			bool i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("bIsBoss", i);
+			bool i; g_vsh2.m_hPlayerFields[this.index].GetValue("bIsBoss", i);
 			return i;
 		}
 		public set( const bool val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("bIsBoss", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("bIsBoss", val);
 		}
 	}
 	property bool bSetOnSpawn {
 		public get() {
-			bool i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("bSetOnSpawn", i);
+			bool i; g_vsh2.m_hPlayerFields[this.index].GetValue("bSetOnSpawn", i);
 			return i;
 		}
 		public set( const bool val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("bSetOnSpawn", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("bSetOnSpawn", val);
 		}
 	}
 	property bool bUsedUltimate {
 		public get() {
-			bool i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("bUsedUltimate", i);
+			bool i; g_vsh2.m_hPlayerFields[this.index].GetValue("bUsedUltimate", i);
 			return i;
 		}
 		public set( const bool val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("bUsedUltimate", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("bUsedUltimate", val);
 		}
 	}
 	property bool bSuperCharge {
 		public get() {
-			bool i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("bSuperCharge", i);
+			bool i; g_vsh2.m_hPlayerFields[this.index].GetValue("bSuperCharge", i);
 			return i;
 		}
 		public set( const bool val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("bSuperCharge", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("bSuperCharge", val);
 		}
 	}
 	
 	property float flSpeed {
 		public get() {
-			float i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("flSpeed", i);
+			float i; g_vsh2.m_hPlayerFields[this.index].GetValue("flSpeed", i);
 			return i;
 		}
 		public set( const float val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("flSpeed", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("flSpeed", val);
 		}
 	}
 	property float flCharge {
 		public get() {
-			float i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("flCharge", i);
+			float i; g_vsh2.m_hPlayerFields[this.index].GetValue("flCharge", i);
 			return i;
 		}
 		public set( const float val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("flCharge", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("flCharge", val);
 		}
 	}
 	property float flRAGE {
 		public get() { /** Rage should never exceed or "inceed" 0.0 and 100.0 */
-			float i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("flRAGE", i);
+			float i; g_vsh2.m_hPlayerFields[this.index].GetValue("flRAGE", i);
 			if( i > 100.0 )
 				i = 100.0;
 			else if( i < 0.0 )
@@ -713,25 +717,25 @@ methodmap BaseBoss < BaseFighter {
 			return i;
 		}
 		public set( const float val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("flRAGE", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("flRAGE", val);
 		}
 	}
 	property float flKillSpree {
 		public get() {
-			float i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("flKillSpree", i);
+			float i; g_vsh2.m_hPlayerFields[this.index].GetValue("flKillSpree", i);
 			return i;
 		}
 		public set( const float val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("flKillSpree", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("flKillSpree", val);
 		}
 	}
 	property float flWeighDown {
 		public get() {
-			float i; g_vsh2_data.m_hPlayerFields[this.index].GetValue("flWeighDown", i);
+			float i; g_vsh2.m_hPlayerFields[this.index].GetValue("flWeighDown", i);
 			return i;
 		}
 		public set( const float val ) {
-			g_vsh2_data.m_hPlayerFields[this.index].SetValue("flWeighDown", val);
+			g_vsh2.m_hPlayerFields[this.index].SetValue("flWeighDown", val);
 		}
 	}
 	
@@ -829,10 +833,10 @@ methodmap BaseBoss < BaseFighter {
 	}
 	
 	public bool GetName(char buffer[MAX_BOSS_NAME_SIZE]) {
-		return g_vsh2_data.m_hPlayerFields[this.index].GetString("strName", buffer, sizeof(buffer));
+		return g_vsh2.m_hPlayerFields[this.index].GetString("strName", buffer, sizeof(buffer));
 	}
 	public bool SetName(const char name[MAX_BOSS_NAME_SIZE]) {
-		return g_vsh2_data.m_hPlayerFields[this.index].SetString("strName", name);
+		return g_vsh2.m_hPlayerFields[this.index].SetString("strName", name);
 	}
 	
 	public void SuperJump(const float power, const float reset) {
