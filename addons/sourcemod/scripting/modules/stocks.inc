@@ -1264,3 +1264,7 @@ stock int GetRandomClient(bool balive=true, int team=0)
 	}
 	return !count ? -1 : players[GetRandomInt(0, count-1)];
 }
+stock int GetThrower(const int ent)
+{
+	return IsValidEntity(ent) ? GetEntPropEnt(ent, Prop_Send, "m_hThrower") : -1;
+}

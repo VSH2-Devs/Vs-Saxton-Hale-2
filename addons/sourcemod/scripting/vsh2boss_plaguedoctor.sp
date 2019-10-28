@@ -262,17 +262,15 @@ public void PlagueDoc_OnBossThink(const VSH2Player boss)
 	if( OnlyScoutsLeft(VSH2Team_Red) )
 		player.flRAGE += g_vsh2_scout_rage_gen.FloatValue;
 	
-	VSH2_WeighDownThink(boss, 3.0, 1.0);
+	VSH2_WeighDownThink(boss, 3.0, 0.1);
 	
 	/// hud code
 	SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
 	Handle hHudText = VSH2GameMode_GetHUDHandle();
 	float jmp = player.flCharge;
-	if( jmp > 0.0 )
-		jmp *= 4.0;
 	if( player.flRAGE >= 100.0 )
-		ShowSyncHudText(client, hHudText, "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", player.GetPropInt("bSuperCharge") ? 1000 : RoundFloat(jmp));
-	else ShowSyncHudText(client, hHudText, "Jump: %i | Rage: %0.1f", player.GetPropInt("bSuperCharge") ? 1000 : RoundFloat(jmp), player.flRAGE);
+		ShowSyncHudText(client, hHudText, "Jump: %i%% | Rage: FULL - Call Medic (default: E) to activate", player.GetPropInt("bSuperCharge") ? 1000 : RoundFloat(jmp) * 4);
+	else ShowSyncHudText(client, hHudText, "Jump: %i%% | Rage: %0.1f", player.GetPropInt("bSuperCharge") ? 1000 : RoundFloat(jmp) * 4, player.flRAGE);
 }
 public void PlagueDoc_OnBossModelTimer(const VSH2Player player)
 {
@@ -339,8 +337,9 @@ public void PlagueDoc_OnPlayerHurt(const VSH2Player attacker, const VSH2Player v
 		 */
 		VSH2Player ownerBoss = victim.hOwnerBoss;
 		if( IsPlagueDoctor(ownerBoss) ) {
-			ownerBoss.SetPropInt("iHealth", GetClientHealth(ownerBoss.index)-damage);
-			ownerBoss.GiveRage(damage);
+			//ownerBoss.SetPropInt("iHealth", GetClientHealth(ownerBoss.index)-damage);
+			SDKHooks_TakeDamage(ownerBoss.index, attacker.index, attacker.index, damage+0.0, DMG_DIRECT, 0);
+			//ownerBoss.GiveRage(damage);
 		}
 		return;
 	}

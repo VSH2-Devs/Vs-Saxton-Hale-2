@@ -746,7 +746,10 @@ methodmap BaseBoss < BaseFighter {
 	}
 	
 	public void GiveRage(const int damage) {
-		float rage_amount = damage / SquareRoot(this.iHealth+0.0) * 1.76;
+		/// Patch Oct 26, 2019.
+		/// Killing boss throws negative value exception for sqrt.
+		float health = ( (this.iHealth <= 0) ? 1 : this.iHealth ) + 0.0;
+		float rage_amount = damage / SquareRoot(health) * 1.76;
 		Action act = Call_OnBossGiveRage(this, damage, rage_amount);
 		if( act > Plugin_Changed )
 			return;

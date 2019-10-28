@@ -239,6 +239,10 @@ public void ManageBossEquipment(const BaseBoss base)
 /** whatever stuff needs initializing should be done here */
 public void ManageBossTransition(const BaseBoss base)
 {
+#if defined _tf2attributes_included
+	if( gamemode.bTF2Attribs )
+		TF2Attrib_RemoveAll(base.index);
+#endif
 	switch( base.iBossType ) {
 		case -1: {}
 		case VSH2Boss_Hale:
@@ -819,7 +823,8 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 				if( GetOwner(ent) == client
 					&& !TF2_IsPlayerInCondition(client, TFCond_Ubercharged)
 					&& !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable")
-					&& weapon == GetPlayerWeaponSlot(attacker, 2) )
+					&& (weapon == GetPlayerWeaponSlot(attacker, 2)
+					|| damage >= GetClientHealth(client)+0.0) )
 				{
 					if( Call_OnBossDealDamage_OnHitShield(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
 						/// Patch: Nov 14, 2017 - removing post-bonk slowdown.
@@ -837,8 +842,8 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 				if( GetOwner(ent) == client
 					&& !TF2_IsPlayerInCondition(client, TFCond_Ubercharged)
 					&& !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable")
-					&& weapon == GetPlayerWeaponSlot(attacker, 2)
-					&& damage >= GetClientHealth(client)+0.0 )
+					&& (weapon == GetPlayerWeaponSlot(attacker, 2)
+					|| damage >= GetClientHealth(client)+0.0) )
 				{
 					if( Call_OnBossDealDamage_OnHitShield(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
 						/// Patch: Nov 14, 2017 - removing post-bonk slowdown.
@@ -1360,10 +1365,13 @@ public void OnEggBombSpawned(int entity)
 }
 public void OnCleaverSpawned(int entity)
 {
-	char kunai_model[] = "models/weapons/c_models/c_shogun_kunai/c_shogun_kunai.mdl";
-	PrecacheModel(kunai_model, true);
-	SetEntityModel(entity, kunai_model);
-	SetEntityGravity(entity, 10.0);
+	int client = GetThrower(entity);
+	if( IsClientValid(client) && TF2_GetPlayerClass(client)==TFClass_Spy ) {
+		char kunai_model[] = "models/weapons/c_models/c_shogun_kunai/c_shogun_kunai.mdl";
+		PrecacheModel(kunai_model, true);
+		SetEntityModel(entity, kunai_model);
+		SetEntityGravity(entity, 10.0);
+	}
 }
 
 public void ManageUberDeploy(const BaseBoss medic, const BaseBoss patient)
@@ -1396,27 +1404,21 @@ public void ManageMusic(char song[PLATFORM_MAX_PATH], float& time)
 	Action act = Call_OnMusic(song, time, currBoss);
 	if( act > Plugin_Changed )
 		return;
-	else if( currBoss ) {
+	
+	if( currBoss && song[0]=='\0' ) {
 		switch( currBoss.iBossType ) {
 			case -1: {song = "\0"; time = -1.0;}
 			case VSH2Boss_CBS: {
-				if( act != Plugin_Changed ) {
-					strcopy(song, sizeof(song), CBSTheme);
-					time = 140.0;
-				}
+				strcopy(song, sizeof(song), CBSTheme);
+				time = 140.0;
 			}
 			case VSH2Boss_HHHjr: {
-				if( act != Plugin_Changed ) {
-					strcopy(song, sizeof(song), HHHTheme);
-					time = 90.0;
-				}
-				
+				strcopy(song, sizeof(song), HHHTheme);
+				time = 90.0;
 			}
 			case VSH2Boss_Bunny, VSH2Boss_Hale, VSH2Boss_Vagineer: {
-				if( act != Plugin_Changed ) {
-					song = "\0";
-					time = -1.0;
-				}
+				song = "\0";
+				time = -1.0;
 			}
 		}
 	}
@@ -2188,5 +2190,6 @@ public void ManageFighterThink(const BaseBoss fighter)
 /// too many temp funcs just to call as a timer. No wonder sourcepawn needs lambda funcs...
 public void _RespawnPlayer(const int userid)
 {
-	TF2_RespawnPlayer( GetClientOfUserId(userid) );
+	if( gamemode.iRoundState == StateRunning )
+		TF2_RespawnPlayer(GetClientOfUserId(userid));
 }

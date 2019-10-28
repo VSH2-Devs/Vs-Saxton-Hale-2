@@ -313,7 +313,7 @@ public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 }
 public void OnHookedEvent(Event event, const char[] name, bool dontBroadcast)
 {
-	BaseBoss(event.GetInt("userid"), true).bInJump = StrEqual(name, "rocket_jump", false);
+	BaseBoss(event.GetInt("userid"), true).bInJump = StrEqual(name, "rocket_jump", false) || StrEqual(name, "sticky_jump", false);
 }
 public Action ItemPickedUp(Event event, const char[] name, bool dontBroadcast)
 {
@@ -333,7 +333,7 @@ public Action UberDeployed(Event event, const char[] name, bool dontBroadcast)
 	
 	BaseBoss medic = BaseBoss(event.GetInt("userid"), true);
 	BaseBoss patient = BaseBoss(event.GetInt("targetid"), true);
-	ManageUberDeploy(medic, patient);	/// In handler.sp
+	ManageUberDeploy(medic, patient);    /// In handler.sp
 	return Plugin_Continue;
 }
 public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast)

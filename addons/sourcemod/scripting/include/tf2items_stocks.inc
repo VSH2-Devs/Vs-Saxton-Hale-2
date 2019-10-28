@@ -69,20 +69,19 @@ stock TF2Item TF2Item_PrepareItemHandle(TF2Item hItem, char[] name = "", int ind
 		hWeapon = new TF2Item(flags);
 	else hWeapon.iFlags = flags;
 	
-	if (hItem != null) {
+	if( hItem != null ) {
 		addattribs = hItem.iNumAttribs;
-		if (addattribs) {
-			for (int i=0; i < 2*addattribs; i+=2) {
+		if( addattribs ) {
+			for( int i; i < 2 * addattribs; i += 2 ) {
 				bool dontAdd = false;
 				int attribIndex = hItem.GetAttribID(i);
-				for (int z=0; z < attribCount+i; z += 2) {
-					if (StringToInt(weaponAttribsArray[z]) == attribIndex)
-					{
+				for( int z; z < attribCount+i; z += 2 ) {
+					if( StringToInt(weaponAttribsArray[z]) == attribIndex ) {
 						dontAdd = true;
 						break;
 					}
 				}
-				if (!dontAdd) {
+				if( !dontAdd ) {
 					IntToString(attribIndex, weaponAttribsArray[i+attribCount], 32);
 					FloatToString(hItem.GetAttribValue(i), weaponAttribsArray[i+1+attribCount], 32);
 				}
@@ -92,19 +91,18 @@ stock TF2Item TF2Item_PrepareItemHandle(TF2Item hItem, char[] name = "", int ind
 		delete hItem;
 	}
 	
-	if (name[0] != '\0') {
+	if( name[0] != '\0' ) {
 		flags |= OVERRIDE_CLASSNAME;
 		hWeapon.SetClassname(name);
 	}
-	if (index != -1) {
+	if( index != -1 ) {
 		flags |= OVERRIDE_ITEM_DEF;
 		hWeapon.iItemIndex = index;
 	}
-	if (attribCount > 1) {
+	if( attribCount > 1 ) {
 		hWeapon.iNumAttribs = (attribCount/2);
 		int i2 = 0;
-		for (int i=0; i<attribCount && i<32; i += 2)
-		{
+		for( int i; i<attribCount && i<32; i += 2 ) {
 			int attrib = StringToInt(weaponAttribsArray[i]);
 			if( !attrib )
 				continue;

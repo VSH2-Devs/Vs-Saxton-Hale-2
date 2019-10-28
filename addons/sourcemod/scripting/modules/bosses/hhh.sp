@@ -116,13 +116,10 @@ methodmap CHHHJr < BaseBoss {
 		}
 		SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
 		float jmp = this.flCharge;
-		if( jmp > 0.0 )
-			jmp *= 2.0;
-		
 		int max_climbs = g_vsh2.m_hCvars[HHHMaxClimbs].IntValue;
 		if( this.flRAGE >= 100.0 )
-			ShowSyncHudText(this.index, g_vsh2.m_hHudText, "Teleport: %i | Climbs: %i / %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.iClimbs, max_climbs);
-		else ShowSyncHudText(this.index, g_vsh2.m_hHudText, "Teleport: %i | Climbs: %i / %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.iClimbs, max_climbs, this.flRAGE);
+			ShowSyncHudText(this.index, g_vsh2.m_hHudText, "Teleport: %i%% | Climbs: %i / %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 2, this.iClimbs, max_climbs);
+		else ShowSyncHudText(this.index, g_vsh2.m_hHudText, "Teleport: %i%% | Climbs: %i / %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 2, this.iClimbs, max_climbs, this.flRAGE);
 	}
 	public void SetModel() {
 		SetVariantString(HHHModel);

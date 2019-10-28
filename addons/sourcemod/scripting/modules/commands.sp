@@ -300,7 +300,7 @@ public Action ForceBossRealtime(int client, int args)
 	if( bosstype > MAXBOSS )
 		bosstype = MAXBOSS;
 	else if( bosstype < 0 )
-		bosstype = 0;
+		bosstype = GetRandomInt(VSH2Boss_Hale, MAXBOSS);
 	
 	char target_name[MAX_TARGET_LENGTH];
 	int target_list[MAXPLAYERS], target_count;

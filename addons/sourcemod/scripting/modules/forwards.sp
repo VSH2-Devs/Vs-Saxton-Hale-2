@@ -94,12 +94,12 @@ Action Call_OnBossSelected(const BaseBoss player)
 	Call_Finish(act);
 	return act;
 }
-Action Call_OnTouchPlayer(const BaseBoss player, const BaseBoss otherguy)
+Action Call_OnTouchPlayer(const BaseBoss boss, const BaseBoss otherguy)
 {
 	Action act;
 	Call_StartForward(g_vsh2.m_hForwards[OnTouchPlayer]);
+	Call_PushCell(boss);
 	Call_PushCell(otherguy);
-	Call_PushCell(player);
 	Call_Finish(act);
 	return act;
 }
@@ -334,7 +334,7 @@ Action Call_OnMusic(char song[PLATFORM_MAX_PATH], float& time, const BaseBoss pl
 {
 	Action act;
 	Call_StartForward(g_vsh2.m_hForwards[OnMusic]);
-	Call_PushStringEx(song, PLATFORM_MAX_PATH, 0, SM_PARAM_COPYBACK);
+	Call_PushStringEx(song, PLATFORM_MAX_PATH, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 	Call_PushFloatRef(time);
 	Call_PushCell(player);
 	Call_Finish(act);

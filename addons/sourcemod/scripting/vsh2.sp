@@ -24,7 +24,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.5.3"
+#define PLUGIN_VERSION       "2.5.5"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -351,6 +351,7 @@ public void OnPluginStart()
 	AddMultiTargetFilter("@!hale", HaleTargetFilter, "all non-Boss players", false);
 	AddMultiTargetFilter("@!minion", MinionTargetFilter, "all non-Minions", false);
 	AddMultiTargetFilter("@!minions", MinionTargetFilter, "all non-Minions", false);
+	AddMultiTargetFilter("@nextboss", NextHaleTargetFilter, "The Next Boss", false);
 	
 	g_vsh2.m_hPlayerFields[0] = new StringMap();   /// This will be freed when plugin is unloaded again
 	g_vsh2.m_hBossesRegistered = new ArrayList(MAX_BOSS_NAME_SIZE);
@@ -364,8 +365,7 @@ public bool HaleTargetFilter(const char[] pattern, ArrayList clients)
 			if( g_vsh2.m_hCvars[Enabled].BoolValue && BaseBoss(i).bIsBoss ) {
 				if( !non )
 					clients.Push(i);
-			}
-			else if( non )
+			} else if( non )
 				clients.Push(i);
 		}
 	}
@@ -377,6 +377,20 @@ public bool MinionTargetFilter(const char[] pattern, ArrayList clients)
 	for( int i=MaxClients; i; i-- ) {
 		if( IsClientValid(i) && clients.FindValue(i) == -1 ) {
 			if( g_vsh2.m_hCvars[Enabled].BoolValue && BaseBoss(i).bIsMinion ) {
+				if( !non )
+					clients.Push(i);
+			} else if( non )
+				clients.Push(i);
+		}
+	}
+	return true;
+}
+public bool NextHaleTargetFilter(const char[] pattern, ArrayList clients)
+{
+	bool non = StrContains(pattern, "!", false) != -1;
+	for( int i=MaxClients; i; i-- ) {
+		if( IsClientValid(i) && clients.FindValue(i) == -1 ) {
+			if( g_vsh2.m_hCvars[Enabled].BoolValue && BaseBoss(i)==gamemode.FindNextBoss() ) {
 				if( !non )
 					clients.Push(i);
 			} else if( non )
@@ -569,10 +583,10 @@ public void ConnectionMessage(const int userid)
 public Action OnTouch(int client, int other)
 {
 	if( 0 < other <= MaxClients ) {
-		BaseBoss player = BaseBoss(client);
+		BaseBoss boss = BaseBoss(client);
 		BaseBoss victim = BaseBoss(other);
-		if( player.bIsBoss && !victim.bIsBoss )
-			return ManageOnTouchPlayer(player, victim); /// in handler.sp
+		if( boss.bIsBoss && !victim.bIsBoss )
+			return ManageOnTouchPlayer(boss, victim); /// in handler.sp
 	} else if( other > MaxClients ) {
 		BaseBoss player = BaseBoss(client);
 		if( IsValidEntity(other) && player.bIsBoss ) {
