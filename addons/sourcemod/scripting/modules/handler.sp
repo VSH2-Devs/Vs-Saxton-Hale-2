@@ -1353,8 +1353,15 @@ public void ManageEntityCreated(const int entity, const char[] classname)
 		return;
 	} else if( !strcmp(classname, "tf_projectile_cleaver", false) ) {
 		SDKHook(entity, SDKHook_SpawnPost, OnCleaverSpawned);
-	} else if( gamemode.iRoundState == StateRunning && !strcmp(classname, "tf_projectile_pipe", false) )
-		SDKHook(entity, SDKHook_SpawnPost, OnEggBombSpawned);
+	} else if( gamemode.iRoundState == StateRunning ) {
+		if( !strcmp(classname, "tf_projectile_pipe", false) )
+			SDKHook(entity, SDKHook_SpawnPost, OnEggBombSpawned);
+		else if( !strcmp(classname, "item_healthkit_medium", false) ) {
+			int team = GetEntProp(entity, Prop_Send, "m_iTeamNum");
+			if( team != VSH2Team_Red )
+				SetEntProp(entity, Prop_Send, "m_iTeamNum", VSH2Team_Red, 4);
+		}
+	}
 }
 public void OnEggBombSpawned(int entity)
 {

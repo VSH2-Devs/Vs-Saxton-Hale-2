@@ -4,19 +4,11 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.5.5"
+			"Latest"	"2.5.6"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.5.5:"
-		"Notes"	"Patched exception where killing boss gives negative health for sqrt value."
-		"Notes"	"Added new player filter: '@nextboss'."
-		"Notes"	"Patched Scout cleavers becoming kunais."
-		"Notes"	"Fixed mistake where 'OnTouchPlayer' gave incorrect params."
-		"Notes"	"Patched lives system respawning players even after the round has ended."
-		"Notes"	"Improved 'hale_force' command so that using '-1' will use a random boss id."
-		"Notes"	"Patch boss music string getting corrupted."
-		"Notes"	"DemoShields and Razorback are now removed by boss melee attacks OR by a fatal hit."
-		"Notes"	"Fixed glitch with plague doctor's health going negative instead of killing the boss."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.5.6:"
+		"Notes"	"Patched sandvich healing bosses."
 	}
 	
 	"Files"
