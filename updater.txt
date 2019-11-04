@@ -4,11 +4,22 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.5.6"
+			"Latest"	"2.5.7"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.5.6:"
-		"Notes"	"Patched sandvich healing bosses."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.5.7:"
+		"Notes"	"Patched some bosses erroneously getting over 100% jump charge."
+		"Notes"	"'iDifficulty' property now resets to 0 instead of -1."
+		"Notes"	"Added 'StunPlayers' and 'StunBuildings' to have separate stun natives."
+		"Notes"	"Moving 'iDifficulty' reset to when boss player's turn is over instead at beginning of round."
+		"Notes"	"Moved 'Format' code for boss message intro to prior the OnMessageIntro hook call."
+		"Notes"	"Corrected Engineer help panel info."
+		"Notes"	"Replaced client check for boss message intro so all clients can see the message."
+		"Notes"	"Patched Airshot hook being fired when the boss is in water."
+		"Notes"	"Toggling background music to off will now immediately stop music."
+		"Notes"	"Further patched Heavy's healing the boss using lunchbox items."
+		"Notes"	"Added new convenience method for the VSH2Player methodmap: 'GetPlayersInRange'."
+		"Notes"	"Pushing new VSH2 Boss module template."
 	}
 	
 	"Files"
@@ -19,6 +30,7 @@
 		"Source"	"Path_SM/scripting/vsh2_addon_dmgtracker.sp"
 		"Source"	"Path_SM/scripting/vsh2boss_plaguedoctor.sp"
 		"Source"	"Path_SM/scripting/vsh2_addon_noboss.sp"
+		"Source"	"Path_SM/scripting/vsh2boss_template.sp"
 		
 		"Source"	"Path_SM/scripting/modules/base.sp"
 		"Source"	"Path_SM/scripting/modules/bosses.sp"

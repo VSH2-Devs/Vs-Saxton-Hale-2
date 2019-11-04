@@ -136,8 +136,6 @@ methodmap CHale < BaseBoss {
 		
 		SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
 		float jmp = this.flCharge;
-		if( jmp > 0.0 )
-			jmp *= 4.0;
 		if( this.flRAGE >= 100.0 )
 			ShowSyncHudText(this.index, g_vsh2.m_hHudText, "Jump: %i%% | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 4);
 		else ShowSyncHudText(this.index, g_vsh2.m_hHudText, "Jump: %i%% | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 4, this.flRAGE);

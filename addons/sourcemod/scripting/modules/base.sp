@@ -529,7 +529,6 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		
 		if( attackdelay )
 			RequestFrame(NoAttacking, EntIndexToEntRef(weapon));
-			//SetPawnTimer(NoAttacking, 0.1, EntIndexToEntRef(weapon));
 		return true;
 	}
 	public void HelpPanelClass()
@@ -543,7 +542,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			case TFClass_Pyro: Format(helpstr, sizeof(helpstr), "Pyro:\nFlare Gun: replaced by the Mega Detonator.\nAirblasting Bosses builds Rage and lengthens the Vagineer's uber.\nThird Degree: gains uber for healers on hit.\nBackburner: Chargeable airblast.\nMannmelter: crits do extra damage.\nAxtinguisher & Reskins: extra dmg on burning players.\nGas Passer: explodes on ignition.\nThermal Thruster: let's you fly mid-air.");
 			case TFClass_DemoMan: Format(helpstr, sizeof(helpstr), "Demoman:\nShields block at least one hit from Boss melees.\nUsing shields grants crits on all weapons.\nEyelander/reskins gain heads on hit.\nHalf-Zatoichi: heals 35HP on hit and can overheal to +25. Honorbound is removed on hit.\nPersian Persuader: gives 2x reserve ammo.\nBoots do stomp damage.\nLoch-n-Load: afterburn on hit.\nGrenade Launchers reduces explosive jumping if the weapon is active.\nStickyJumper replaced with Sticky Launcher.\nDecapitator taunt gives 4 heads if Successful.");
 			case TFClass_Heavy: Format(helpstr, sizeof(helpstr), "Heavy:\nthe KGB & Fists of Steel are replaced with the\nGloves of Running, and Fists, respectively.\nThe Gloves of Running are fast but cause you to take more damage.\nThe Holiday Punch will remove any stun on you if you hit a Boss while stunned.\nMiniguns get +15% damage boost when being healed by a medic.\nShotguns give damage back as some health.\n");
-			case TFClass_Engineer: Format(helpstr, sizeof(helpstr), "Engineer:\nWrenches give an extra +25HP.\nGunslinger: +55HP\nFrontier Justice: gains crits only while your sentry is targetting Bosses.\nTelefrags kill Bosses in one shot.\nShort Circuit: ammo on hit and does 4x more zap damage.\nSouthern Hospitality: larger melee range.");
+			case TFClass_Engineer: Format(helpstr, sizeof(helpstr), "Engineer:\nFrontier Justice: gains crits only while your sentry is targetting Bosses.\nTelefrags kill Bosses in one shot.\nShort Circuit: ammo on hit and does 4x more zap damage.\nSouthern Hospitality: larger melee range.");
 			case TFClass_Medic: Format(helpstr, sizeof(helpstr), "Medic:\nCharge: Kritz+Uber. Charge starts at 40percent.\nCharge lasts for 150 percent after activation.\nSyringe Guns: on hit: +5 to Uber.\nCrossbow: 100 percent crits, +150%% damage, +15 uber on hit.\nBlutsauger + Overdose are Unlocked + give 1%% Uber on hit.");
 			case TFClass_Sniper: Format(helpstr, sizeof(helpstr), "Sniper:\nJarate removes small pct of Boss Rage.\nBack-equipped weapons are replaced with SMG.\nSniper Rifles causes Certain Bosses to glow. Glow time scales with charge.\nAll Sniper melees climb walls, but has slower rate of fire.\nHuntsman carries 2x more ammo.\nBazaar Bargain gains heads on headshot.\nRazorback blocks one fatal hit.");
 			case TFClass_Spy: Format(helpstr, sizeof(helpstr), "Spy:\nBackstab does about 10+ percent of a Boss' max HP.\nCloaknDagger replaced with normal inviswatch.\nAll revolvers minicrit.\nYour Eternal Reward backstabs will disguise you.\nKunai backstabs will get you a health bonus.\nSappers are replaced with a rechargeable throwing kunai.\nDiamondback gets 2 crits on backstab.\nBig Earner gives full Cloak on backstab.\nAmbassador headshots do extra damage.");
@@ -814,6 +813,56 @@ methodmap BaseBoss < BaseFighter {
 			}
 		}
 	}
+	
+	public void StunPlayers(float rage_dist, float stun_time=5.0)
+	{
+		float pos[3], pos2[3];
+		GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
+		for( int i=MaxClients; i; --i ) {
+			if( !IsValidClient(i) || !IsPlayerAlive(i) || i == this.index || GetClientTeam(i) == GetClientTeam(this.index) )
+				continue;
+			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
+			float distance = GetVectorDistance(pos, pos2);
+			if( !TF2_IsPlayerInCondition(i, TFCond_Ubercharged) && distance < rage_dist ) {
+				CreateTimer(stun_time, RemoveEnt, EntIndexToEntRef(AttachParticle(i, "yikes_fx", 75.0)));
+				TF2_StunPlayer(i, stun_time, _, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, this.index);
+			}
+		}
+	}
+	
+	public void StunBuildings(float rage_dist, float sentry_stun_time=8.0)
+	{
+		float pos[3], pos2[3];
+		GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
+		int i = -1;
+		while( (i = FindEntityByClassname(i, "obj_sentrygun")) != -1 ) {
+			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
+			if( GetVectorDistance(pos, pos2) < rage_dist ) {
+				SetEntProp(i, Prop_Send, "m_bDisabled", 1);
+				AttachParticle(i, "yikes_fx", 75.0);
+				SetVariantInt(1);
+				AcceptEntityInput(i, "RemoveHealth");
+				SetPawnTimer(EnableSG, sentry_stun_time, EntIndexToEntRef(i));
+			}
+		}
+		i = -1;
+		while( (i = FindEntityByClassname(i, "obj_dispenser")) != -1 ) {
+			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
+			if( GetVectorDistance(pos, pos2) < rage_dist ) {
+				SetVariantInt(1);
+				AcceptEntityInput(i, "RemoveHealth");
+			}
+		}
+		i = -1;
+		while( (i = FindEntityByClassname(i, "obj_teleporter")) != -1 ) {
+			GetEntPropVector(i, Prop_Send, "m_vecOrigin", pos2);
+			if( GetVectorDistance(pos, pos2) < rage_dist ) {
+				SetVariantInt(1);
+				AcceptEntityInput(i, "RemoveHealth");
+			}
+		}
+	}
+	
 	public void RemoveAllItems() {
 		int client = this.index;
 		TF2_RemovePlayerDisguise(client);

@@ -271,7 +271,8 @@ public int MusicTogglePanelH(Menu menu, MenuAction action, int param1, int param
 				CPrintToChat(param1, "{olive}[VSH 2]{default} You've turned On the VS Saxton Hale 2 Music.");
 			} else {
 				player.bNoMusic = true;
-				CPrintToChat(param1, "{olive}[VSH 2]{default} You've turned Off the VS Saxton Hale 2 Music.\nWhen the music stops, it won't play again.");
+				CPrintToChat(param1, "{olive}[VSH 2]{default} You've turned Off the VS Saxton Hale 2 Music.");
+				StopSound(param1, SNDCHAN_AUTO, g_vsh2.m_strBackgroundSong);
 			}
 		}
 	}
@@ -293,8 +294,8 @@ public Action ForceBossRealtime(int client, int args)
 		return Plugin_Handled;
 	}
 	
-	char targetname[32];	GetCmdArg(1, targetname, sizeof(targetname));
-	char strBossid[32];	GetCmdArg(2, strBossid, sizeof(strBossid));
+	char targetname[32]; GetCmdArg(1, targetname, sizeof(targetname));
+	char strBossid[32]; GetCmdArg(2, strBossid, sizeof(strBossid));
 	
 	int bosstype = StringToInt(strBossid);
 	if( bosstype > MAXBOSS )

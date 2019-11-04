@@ -24,7 +24,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.5.6"
+#define PLUGIN_VERSION       "2.5.7"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -554,7 +554,7 @@ public void OnClientPutInServer(int client)
 	boss.iClimbs = 0;
 	boss.iStabbed = 0;
 	boss.iMarketted = 0;
-	boss.iDifficulty = -1;
+	boss.iDifficulty = 0;
 	boss.bIsBoss = false;
 	boss.bSetOnSpawn = false;
 	boss.bUsedUltimate = false;
@@ -1004,6 +1004,11 @@ public Action Timer_DrawGame(Handle timer)
 		
 		/// Thx MasterOfTheXP
 		case 0: {
+			/*for( int i=MaxClients; i; i-- ) {
+				if( !IsClientInGame(i) )
+					continue;
+				TF2_
+			}*/
 			ForceTeamWin(VSH2Team_Boss);
 			return Plugin_Stop;
 		}

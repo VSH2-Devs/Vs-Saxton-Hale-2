@@ -215,6 +215,22 @@ methodmap VSH2Player {
 		return this.IsInRange(target.index, dist, pTrace);
 	}
 	
+	public int GetPlayersInRange(VSH2Player[] players, const float dist, bool trace=false) {
+		int count;
+		VSH2Player player;
+		for( int i=MaxClients; i; --i ) {
+			if( i <= 0 || i > MaxClients || !IsClientInGame(i) || !IsPlayerAlive(i) )
+				continue;
+			
+			player = VSH2Player(i);
+			if( player==this )
+				continue;
+			else if( this.IsInRange(i, dist, trace) )
+				players[count++] = player;
+		}
+		return count;
+	}
+	
 	public native void RemoveBack(int[] indices, const int len);
 	public native int FindBack(int[] indices, const int len);
 	public native int ShootRocket(bool bCrit=false, float vPosition[3], float vAngles[3], const float flSpeed, const float dmg, const char[] model, bool arc=false);
@@ -458,6 +474,7 @@ typeset VSH2HookCB {
 	 * OnBossTakeFallDamage
 	 * OnBossTakeDamage_OnTriggerHurt
 	 * OnBossTakeDamage_OnMantreadsStomp
+	 * OnPlayerTakeFallDamage -> when a red takes fall dmg.
 	 */
 	function Action (VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom);
 	

@@ -706,7 +706,11 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				}
 			}
 			
-			if( !(GetEntityFlags(victim.index) & FL_ONGROUND) && !StrContains(inflictor_name, "tf_projectile_", false) ) {
+			/// Patch Nov 1, 2019: being in water fires air shot hook.
+			int boss_flags = GetEntityFlags(victim.index);
+			int grounded = boss_flags & FL_ONGROUND;
+			int swimming = boss_flags & FL_INWATER;
+			if( !grounded && !swimming && !StrContains(inflictor_name, "tf_projectile_", false) ) {
 				float ray_angle[] = { 90.0, 0.0, 0.0 };
 				TR_TraceRayFilter(damagePosition, ray_angle, MASK_PLAYERSOLID_BRUSHONLY, RayType_Infinite, TraceRayIgnoreEnts);
 				if( TR_DidHit() ) {
@@ -1261,7 +1265,6 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 
 public void ManageMessageIntro(ArrayList bosses)
 {
-	char intro_msg[MAXMESSAGE];
 	if( gamemode.bDoors ) {
 		int ent = -1;
 		while( (ent = FindEntityByClassname(ent, "func_door")) != -1 ) {
@@ -1270,6 +1273,8 @@ public void ManageMessageIntro(ArrayList bosses)
 		}
 	}
 	
+	char intro_msg[MAXMESSAGE];
+	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
 	int i;
 	BaseBoss base;
 	int len = bosses.Length;
@@ -1280,15 +1285,15 @@ public void ManageMessageIntro(ArrayList bosses)
 		
 		char name[MAX_BOSS_NAME_SIZE];
 		base.GetName(name);
+		
+		/// TODO: add something that can prefix and suffix the intro message possibly?
+		Format(intro_msg, MAXMESSAGE, "%s\n%N has become %s with %i Health", intro_msg, base.index, name, base.iHealth);
 		Action act = Call_OnMessageIntro(base, intro_msg);
 		if( act > Plugin_Changed )
 			continue;
-		
-		Format(intro_msg, MAXMESSAGE, "%s\n%N has become %s with %i Health", intro_msg, base.index, name, base.iHealth);
 	}
-	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
 	for( i=MaxClients; i; --i ) {
-		if( IsValidClient(i) )
+		if( IsClientInGame(i) )
 			ShowHudText(i, -1, "%s", intro_msg);
 	}
 	gamemode.iRoundState = StateRunning;
@@ -1322,7 +1327,6 @@ public void ManageResetVariables(const BaseBoss base)
 	base.iMarketted = 0;
 	base.flRAGE = 0.0;
 	base.bIsMinion = false;
-	base.iDifficulty = 0;
 	base.iDamage = 0;
 	base.iAirDamage = 0;
 	base.iUberTarget = 0;
@@ -1356,7 +1360,7 @@ public void ManageEntityCreated(const int entity, const char[] classname)
 	} else if( gamemode.iRoundState == StateRunning ) {
 		if( !strcmp(classname, "tf_projectile_pipe", false) )
 			SDKHook(entity, SDKHook_SpawnPost, OnEggBombSpawned);
-		else if( !strcmp(classname, "item_healthkit_medium", false) ) {
+		else if( !strcmp(classname, "item_healthkit_medium", false) || !strcmp(classname, "item_healthkit_small", false) ) {
 			int team = GetEntProp(entity, Prop_Send, "m_iTeamNum");
 			if( team != VSH2Team_Red )
 				SetEntProp(entity, Prop_Send, "m_iTeamNum", VSH2Team_Red, 4);
@@ -1467,6 +1471,7 @@ public void ManageRoundEndBossInfo(ArrayList bosses, bool bossWon)
 				case VSH2Boss_Hale:	ToCHale(base).PlayWinSound();
 			}
 		}
+		base.iDifficulty = 0;
 	}
 	if( round_end_msg[0] != '\0' ) {
 		CPrintToChatAll("{olive}[VSH 2] End of Round{default} %s", round_end_msg);
