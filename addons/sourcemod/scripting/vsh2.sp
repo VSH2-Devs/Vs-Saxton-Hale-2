@@ -24,7 +24,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.5.7"
+#define PLUGIN_VERSION       "2.6.8"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -108,6 +108,7 @@ enum /** CvarName */ {
 	MaxRandomMultiBosses,
 	VagineerUberTime,
 	VagineerUberAirBlast,
+	CapReenableTime,
 	VersionNumber,
 	MaxVSH2ConVars
 };
@@ -134,6 +135,8 @@ enum struct VSH2Globals {
 	/// 'struct' of the gamemode manager.
 	StringMap m_hGameModeFields;
 	
+	ConfigMap m_hCfg;
+	
 	/** 
 	 * When making new properties, remember to base it off this StringMap AND do NOT forget to initialize it in OnClientPutInServer()
 	 */
@@ -142,6 +145,7 @@ enum struct VSH2Globals {
 
 VSH2Globals g_vsh2;
 
+#include "modules/cfg.sp"
 #include "modules/stocks.inc" /// include stocks first.
 #include "modules/handler.sp" /// Contains the game mode logic as well
 #include "modules/events.sp"
@@ -206,7 +210,8 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_vsh2wep", MakeWeapInvis);
 	RegConsoleCmd("sm_vsh2vm", MakeWeapInvis);
 	
-	RegAdminCmd("sm_reloadbosscfg", CmdReloadCFG, ADMFLAG_GENERIC);
+	RegAdminCmd("sm_vsh2_reloadcfg", CmdReloadCFG, ADMFLAG_GENERIC);
+	
 	RegAdminCmd("sm_hale_select", CommandBossSelect, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss.");
 	RegAdminCmd("sm_ff2_select", CommandBossSelect, ADMFLAG_VOTE, "ff2_select <target> - Select a player to be next boss.");
 	RegAdminCmd("sm_boss_select", CommandBossSelect, ADMFLAG_VOTE, "boss_select <target> - Select a player to be next boss.");
@@ -303,6 +308,7 @@ public void OnPluginStart()
 	g_vsh2.m_hCvars[MaxRandomMultiBosses] = CreateConVar("vsh2_random_multibosses_limit", "2", "The maximum limit of random multibosses", FCVAR_NONE, true, 1.0, true, 30.0);
 	g_vsh2.m_hCvars[VagineerUberTime] = CreateConVar("vsh2_vagineer_uber_time", "10.0", "The maximum length of the Vagineer boss' uber.", FCVAR_NONE, true, 1.0, false);
 	g_vsh2.m_hCvars[VagineerUberAirBlast] = CreateConVar("vsh2_vagineer_uber_time_airblast", "2.0", "extra time given to vagineer's uber when airblasted.", FCVAR_NONE, true, 1.0, false);
+	g_vsh2.m_hCvars[CapReenableTime] = CreateConVar("vsh2_multiple_cp_capture_reenable_time", "30.0", "time to reenable the control pointer after being captured, does nothing is 'vsh2_multiple_cp_captures' is disabled.", FCVAR_NONE, true, 1.0, false);
 	
 	gamemode.bSteam = LibraryExists("SteamTools");
 	gamemode.bTF2Attribs = LibraryExists("tf2attributes");
@@ -351,7 +357,7 @@ public void OnPluginStart()
 	AddMultiTargetFilter("@!hale", HaleTargetFilter, "all non-Boss players", false);
 	AddMultiTargetFilter("@!minion", MinionTargetFilter, "all non-Minions", false);
 	AddMultiTargetFilter("@!minions", MinionTargetFilter, "all non-Minions", false);
-	AddMultiTargetFilter("@nextboss", NextHaleTargetFilter, "The Next Boss", false);
+	AddMultiTargetFilter("@nextboss", NextHaleTargetFilter, "the Next Boss", false);
 	
 	g_vsh2.m_hPlayerFields[0] = new StringMap();   /// This will be freed when plugin is unloaded again
 	g_vsh2.m_hBossesRegistered = new ArrayList(MAX_BOSS_NAME_SIZE);
@@ -616,6 +622,7 @@ public void OnMapStart()
 	gamemode.iRoundCount = 0;
 	gamemode.iRoundState = StateDisabled;
 	gamemode.hNextBoss = view_as< BaseBoss >(0);
+	g_vsh2.m_hCfg = new ConfigMap("configs/saxton_hale/vsh2.cfg");
 }
 public void OnMapEnd()
 {
@@ -625,6 +632,7 @@ public void OnMapEnd()
 	FindConVar("tf_arena_first_blood").IntValue = g_oldcvar_vals.tf_arena_first_blood;
 	FindConVar("mp_forcecamera").IntValue = g_oldcvar_vals.mp_forcecamera;
 	FindConVar("tf_scout_hype_pep_max").FloatValue = g_oldcvar_vals.tf_scout_hype_pep_max;
+	g_vsh2.m_hCfg.Destroy();
 }
 
 public void _MakePlayerBoss(const int userid)
@@ -718,8 +726,9 @@ public Action Timer_PlayerThink(Handle hTimer)
 
 public Action CmdReloadCFG(int client, int args)
 {
-	ServerCommand("sm_rcon exec sourcemod/VSHv2.cfg");
-	CReplyToCommand(client, "{olive}[VSH 2]{default} **** Reloaded ConVar Config ****");
+	g_vsh2.m_hCfg.Destroy();
+	g_vsh2.m_hCfg = new ConfigMap("configs/saxton_hale/vsh2.cfg");
+	CReplyToCommand(client, "{olive}[VSH 2]{default} **** Reloaded VSH2 Config ****");
 	return Plugin_Handled;
 }
 
@@ -770,8 +779,8 @@ public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& dam
 			int item = GetPlayerWeaponSlot(victim, (TF2_GetPlayerClass(victim) == TFClass_DemoMan ? TFWeaponSlot_Primary : TFWeaponSlot_Secondary));
 			if( item <= 0 || !IsValidEntity(item) || (TF2_GetPlayerClass(victim)==TFClass_Spy && TF2_IsPlayerInCondition(victim, TFCond_Cloaked)) ) {
 				damage /= 10;
-				return Plugin_Changed;
 			}
+			return Call_OnPlayerTakeFallDamage(BossVictim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 		}
 		return Plugin_Continue;
 	}
@@ -817,7 +826,7 @@ public Action cdVoiceMenu(int client, const char[] command, int argc)
 {
 	if( !g_vsh2.m_hCvars[Enabled].BoolValue )
 		return Plugin_Continue;
-	if( argc < 2 || !IsPlayerAlive(client) )
+	else if( argc < 2 || !IsPlayerAlive(client) )
 		return Plugin_Handled;
 	
 	char szCmd1[8]; GetCmdArg(1, szCmd1, sizeof(szCmd1));
@@ -1089,7 +1098,7 @@ int GetRandomBossType(int[] boss_filter, int filter_size=0)
 	int[] bosses = new int[bosses_size];
 	
 	int count;
-	for( int i; i<MAXBOSS; i++ ) {
+	for( int i; i<=MAXBOSS; i++ ) {
 		bool filtered;
 		for( int n; n<filter_size; n++ ) {
 			if( boss_filter[n] >= bosses_size )
@@ -1128,6 +1137,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2_Unhook", Native_Unhook);
 	CreateNative("VSH2_UnhookEx", Native_UnhookEx);
 	CreateNative("VSH2_GetRandomBossType", Native_GetRandomBossType);
+	CreateNative("VSH2_GetBossIDs", Native_GetBossIDs);
+	CreateNative("VSH2_StopMusic", Native_StopMusic);
 	
 	CreateNative("VSH2Player.VSH2Player", Native_VSH2Instance);
 	
@@ -1174,6 +1185,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2Player.GiveRage", Native_VSH2_GiveRage);
 	CreateNative("VSH2Player.MakeBossAndSwitch", Native_VSH2_MakeBossAndSwitch);
 	CreateNative("VSH2Player.DoGenericStun", Native_VSH2_DoGenericStun);
+	CreateNative("VSH2Player.StunPlayers", Native_VSH2_StunPlayers);
+	CreateNative("VSH2Player.StunBuildings", Native_VSH2_StunBuildings);
 	CreateNative("VSH2Player.RemoveAllItems", Native_VSH2_RemoveAllItems);
 	CreateNative("VSH2Player.GetName", Native_VSH2_GetName);
 	CreateNative("VSH2Player.SetName", Native_VSH2_SetName);
@@ -1321,7 +1334,6 @@ public int Native_Hook(Handle plugin, int numParams)
 	if( g_vsh2.m_hForwards[vsh2Hook] != null )
 		g_vsh2.m_hForwards[vsh2Hook].AddFunction(plugin, Func);
 }
-
 public int Native_HookEx(Handle plugin, int numParams)
 {
 	int vsh2Hook = GetNativeCell(1);
@@ -1353,6 +1365,39 @@ public int Native_GetRandomBossType(Handle plugin, int numParams)
 	return GetRandomBossType(filter, filter_size);
 }
 
+public any Native_GetBossIDs(Handle plugin, int numParams)
+{
+	bool registered_only = GetNativeCell(1);
+	StringMap boss_map = new StringMap();
+	
+	if( !registered_only ) {
+		boss_map.SetValue("saxton_hale", VSH2Boss_Hale);
+		boss_map.SetValue("vagineer", VSH2Boss_Vagineer);
+		boss_map.SetValue("christian_brutal_sniper", VSH2Boss_CBS);
+		boss_map.SetValue("hhh_jr", VSH2Boss_HHHjr);
+		boss_map.SetValue("easter_bunny", VSH2Boss_Bunny);
+	}
+	
+	for( int i; i<g_vsh2.m_hBossesRegistered.Length; i++ ) {
+		char boss_name[MAX_BOSS_NAME_SIZE];
+		g_vsh2.m_hBossesRegistered.GetString(i, boss_name, sizeof(boss_name));
+		boss_map.SetValue(boss_name, i + MaxDefaultVSH2Bosses);
+	}
+	
+	if( !boss_map.Size )
+		delete boss_map;
+	return boss_map;
+}
+
+public int Native_StopMusic(Handle plugin, int numParams)
+{
+	bool reset_time = GetNativeCell(1);
+	StopBackGroundMusic();
+	if( reset_time )
+		gamemode.flMusicTime = -1.0;
+	return 0;
+}
+
 
 public int Native_VSH2_ConvertToMinion(Handle plugin, int numParams)
 {
@@ -1360,6 +1405,7 @@ public int Native_VSH2_ConvertToMinion(Handle plugin, int numParams)
 	float spawntime = GetNativeCell(2);
 	player.ConvertToMinion(spawntime);
 }
+
 public int Native_VSH2_SpawnWep(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
@@ -1539,6 +1585,24 @@ public int Native_VSH2_DoGenericStun(Handle plugin, int numParams)
 	float rage_radius = GetNativeCell(2);
 	player.DoGenericStun(rage_radius);
 }
+
+public int Native_VSH2_StunPlayers(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	float rage_radius = GetNativeCell(2);
+	float stun_time = GetNativeCell(3);
+	player.StunPlayers(rage_radius, stun_time);
+}
+
+public int Native_VSH2_StunBuildings(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	float rage_radius = GetNativeCell(2);
+	float sentry_stun_time = GetNativeCell(3);
+	player.StunBuildings(rage_radius, sentry_stun_time);
+}
+
+
 
 public int Native_VSH2_RemoveAllItems(Handle plugin, int numParams)
 {

@@ -80,17 +80,20 @@ public Plugin myinfo = {
 
 int g_iTemplateID;
 
-ConVar
-	g_vsh2_scout_rage_gen,
-	g_vsh2_airblast_rage,
-	g_vsh2_jarate_rage
-;
+enum struct VSH2CVars {
+	ConVar scout_rage_gen;
+	ConVar airblast_rage;
+	ConVar jarate_rage;
+}
+
+VSH2CVars g_vsh2_cvars;
+
 
 public void OnLibraryAdded(const char[] name) {
 	if( StrEqual(name, "VSH2") ) {
-		g_vsh2_scout_rage_gen = FindConVar("vsh2_scout_rage_gen");
-		g_vsh2_airblast_rage = FindConVar("vsh2_airblast_rage");
-		g_vsh2_jarate_rage = FindConVar("vsh2_jarate_rage");
+		g_vsh2_cvars.scout_rage_gen = FindConVar("vsh2_scout_rage_gen");
+		g_vsh2_cvars.airblast_rage = FindConVar("vsh2_airblast_rage");
+		g_vsh2_cvars.jarate_rage = FindConVar("vsh2_jarate_rage");
 		g_iTemplateID = VSH2_RegisterPlugin("template_boss");
 		LoadVSH2Hooks();
 	}
@@ -218,7 +221,7 @@ public void Template_OnBossThink(const VSH2Player player)
 	}
 	
 	if( OnlyScoutsLeft(VSH2Team_Red) )
-		player.SetPropFloat("flRAGE", player.GetPropFloat("flRAGE") + g_vsh2_scout_rage_gen.FloatValue);
+		player.SetPropFloat("flRAGE", player.GetPropFloat("flRAGE") + g_vsh2_cvars.scout_rage_gen.FloatValue);
 	
 	VSH2_WeighDownThink(player, 2.0, 0.1);
 	
@@ -297,7 +300,7 @@ public void Template_OnPlayerAirblasted(const VSH2Player airblaster, const VSH2P
 	if( !IsTemplate(airblasted) )
 		return;
 	float rage = airblasted.GetPropFloat("flRAGE");
-	airblasted.SetPropFloat("flRAGE", rage + g_vsh2_airblast_rage.FloatValue);
+	airblasted.SetPropFloat("flRAGE", rage + g_vsh2_cvars.airblast_rage.FloatValue);
 }
 public void Template_OnBossMedicCall(const VSH2Player player)
 {
@@ -321,7 +324,7 @@ public void Template_OnBossJarated(const VSH2Player victim, const VSH2Player thr
 	if( !IsTemplate(victim) )
 		return;
 	float rage = victim.GetPropFloat("flRAGE");
-	victim.SetPropFloat("flRAGE", rage - g_vsh2_jarate_rage.FloatValue);
+	victim.SetPropFloat("flRAGE", rage - g_vsh2_cvars.jarate_rage.FloatValue);
 }
 
 
@@ -370,25 +373,26 @@ public void Template_OnLastPlayer(const VSH2Player player)
 
 stock bool IsValidClient(const int client, bool nobots=false)
 { 
-	if (client <= 0 || client > MaxClients || !IsClientConnected(client) || (nobots && IsFakeClient(client)))
+	if( client <= 0 || client > MaxClients || !IsClientConnected(client) || (nobots && IsFakeClient(client)) )
 		return false; 
 	return IsClientInGame(client); 
 }
 
 stock int GetSlotFromWeapon(const int iClient, const int iWeapon)
 {
-	for (int i=0; i<5; i++) {
+	for( int i; i<5; i++ )
 		if( iWeapon == GetPlayerWeaponSlot(iClient, i) )
 			return i;
-	}
+	
 	return -1;
 }
+
 stock bool OnlyScoutsLeft(const int team)
 {
-	for (int i=MaxClients; i; --i) {
+	for( int i=MaxClients; i; --i ) {
 		if( !IsValidClient(i) || !IsPlayerAlive(i) )
 			continue;
-		if (GetClientTeam(i) == team && TF2_GetPlayerClass(i) != TFClass_Scout)
+		else if( GetClientTeam(i) == team && TF2_GetPlayerClass(i) != TFClass_Scout )
 			return false;
 	}
 	return true;
@@ -408,7 +412,7 @@ public Action DoThink(Handle hTimer, DataPack hndl)
 	hndl.Reset();
 	
 	Function pFunc = hndl.ReadFunction();
-	Call_StartFunction( null, pFunc );
+	Call_StartFunction(null, pFunc);
 	
 	any param1 = hndl.ReadCell();
 	if( param1 != -999 )

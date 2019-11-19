@@ -1,29 +1,3 @@
-/*
-enum {
-	Skill_Normal = 0,
-	Skill_AllCrits,
-	Skill_RuneKing,
-	Skill_RuneHaste,
-	Skill_RuneKnockout,
-	Skill_RunePrecision,
-	Skill_RuneAgility,
-	Skill_RuneStrength,
-	Skill_GnG,
-	Skill_MiniCrits
-};
-
-public int AllowedDifficulties[] = {
-	Skill_AllCrits,
-	Skill_RuneKing,
-	Skill_RuneHaste,
-	Skill_RuneKnockout,
-	Skill_RunePrecision,
-	Skill_RuneAgility,
-	Skill_RuneStrength,
-	Skill_MiniCrits
-};
-*/
-
 /** all game mode oriented code should be handled HERE ONLY */
 methodmap VSHGameMode { /* < StringMap */
 	public VSHGameMode() {

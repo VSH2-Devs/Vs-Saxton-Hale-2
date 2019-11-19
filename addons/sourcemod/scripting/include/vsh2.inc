@@ -240,6 +240,8 @@ methodmap VSH2Player {
 	public native void GiveRage(const int damage);
 	public native void MakeBossAndSwitch(const int type, const bool callEvent);
 	public native void DoGenericStun(const float rageDist);
+	public native void StunPlayers(float rage_dist, float stun_time=5.0);
+	public native void StunBuildings(float rage_dist, float sentry_stun_time=8.0);
 	public native void RemoveAllItems();
 	
 	public native bool GetName(const char buffer[MAX_BOSS_NAME_SIZE]);
@@ -395,6 +397,7 @@ enum { /// VSH2HookType
 	OnBossThinkPost,
 	OnRedPlayerThink,
 	OnBossEquippedPost,
+	OnPlayerTakeFallDamage,
 	MaxVSH2Forwards
 };
 
@@ -553,6 +556,21 @@ native bool VSH2_UnhookEx(const int callbacktype, VSH2HookCB callback);
 native int VSH2_GetMaxBosses();
 native int VSH2_GetRandomBossType(int[] boss_filter, int filter_size=0);
 
+/**
+ * Gets the ID and (short) names of all bosses.
+ * @param registered_only: gets only the boss modules.
+ * @return                 StringMap of all bosses, null if empty or error.
+ * @note     Don't forget to delete the StringMap when you're done with it.
+ */
+native StringMap VSH2_GetBossIDs(bool registered_only=false);
+
+/**
+ * Stops the VSH2 background music at will.
+ * @param reset_time: resets the music time so that 'OnMusic' hook can be called again.
+ * @noreturn
+ */
+native void VSH2_StopMusic(bool reset_time=true);
+
 
 native any VSH2GameMode_GetProperty(const char prop_name[64]);
 native void VSH2GameMode_SetProperty(const char prop_name[64], any value);
@@ -638,13 +656,13 @@ stock void PrepareSound(const char[] sound_path)
 
 stock void DownloadSoundList(const char[][] file_list, int size)
 {
-	for( int i; i < size; i++ )
+	for( int i; i<size; i++ )
 		PrepareSound(file_list[i]);
 }
 
 stock void PrecacheSoundList(const char[][] file_list, int size)
 {
-	for( int i; i < size; i++ )
+	for( int i; i<size; i++ )
 		PrecacheSound(file_list[i], true);
 }
 
@@ -661,7 +679,7 @@ stock void PrepareMaterial(const char[] matpath)
 stock void DownloadMaterialList(const char[][] file_list, int size)
 {
 	char s[PLATFORM_MAX_PATH];
-	for( int i; i < size; i++ ) {
+	for( int i; i<size; i++ ) {
 		strcopy(s, sizeof(s), file_list[i]);
 		CheckDownload(s);
 	}
@@ -676,13 +694,28 @@ stock int PrepareModel(const char[] model_path, bool model_only = false)
 	strcopy(model_base, sizeof(model_base), model_path);
 	SplitString(model_base, ".mdl", model_base, sizeof(model_base)); /// Kind of redundant, but eh.
 	if( !model_only ) {
-		for( int i; i < sizeof(extensions); i++) {
+		for( int i; i<sizeof(extensions); i++ ) {
 			Format(path, PLATFORM_MAX_PATH, "%s%s", model_base, extensions[i]);
 			CheckDownload(path);
 		}
 	}
 	else CheckDownload(model_path);
 	return PrecacheModel(model_path, true);
+}
+
+/// Contributed by ScaleFace
+stock bool IsStockSound(char sample[PLATFORM_MAX_PATH])
+{
+	char exclusions[][] = {
+		"_pain","_medic","_battlecry","_pain","_auto","_activatecharge","_jeers","_cheers","_help",
+		"_incoming","_goodjob","_head","_fight","_cloaked","_melee","_move","_positive","_negative","_need",
+		"_nice","_thanks", "_yes","_no","_go","_sentry"
+	};
+	for( int i; i<sizeof(exclusions); i++ )
+		if( StrContains(sample, exclusions[i], false) != -1 )
+			return true;
+	
+	return false;
 }
 
 
@@ -743,6 +776,8 @@ public void __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2Player.GiveRage");
 	MarkNativeAsOptional("VSH2Player.MakeBossAndSwitch");
 	MarkNativeAsOptional("VSH2Player.DoGenericStun");
+	MarkNativeAsOptional("VSH2Player.StunPlayers");
+	MarkNativeAsOptional("VSH2Player.StunBuildings");
 	MarkNativeAsOptional("VSH2Player.RemoveAllItems");
 	
 	MarkNativeAsOptional("VSH2Player.GetName");
@@ -758,6 +793,8 @@ public void __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2_UnhookEx");
 	MarkNativeAsOptional("VSH2_GetMaxBosses");
 	MarkNativeAsOptional("VSH2_GetRandomBossType");
+	MarkNativeAsOptional("VSH2_GetBossIDs");
+	MarkNativeAsOptional("VSH2_StopMusic");
 	
 	MarkNativeAsOptional("VSH2GameMode_GetProperty");
 	MarkNativeAsOptional("VSH2GameMode_SetProperty");

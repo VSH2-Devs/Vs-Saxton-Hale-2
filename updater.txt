@@ -4,22 +4,15 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.5.7"
+			"Latest"	"2.6.8"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.5.7:"
-		"Notes"	"Patched some bosses erroneously getting over 100% jump charge."
-		"Notes"	"'iDifficulty' property now resets to 0 instead of -1."
-		"Notes"	"Added 'StunPlayers' and 'StunBuildings' to have separate stun natives."
-		"Notes"	"Moving 'iDifficulty' reset to when boss player's turn is over instead at beginning of round."
-		"Notes"	"Moved 'Format' code for boss message intro to prior the OnMessageIntro hook call."
-		"Notes"	"Corrected Engineer help panel info."
-		"Notes"	"Replaced client check for boss message intro so all clients can see the message."
-		"Notes"	"Patched Airshot hook being fired when the boss is in water."
-		"Notes"	"Toggling background music to off will now immediately stop music."
-		"Notes"	"Further patched Heavy's healing the boss using lunchbox items."
-		"Notes"	"Added new convenience method for the VSH2Player methodmap: 'GetPlayersInRange'."
-		"Notes"	"Pushing new VSH2 Boss module template."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.6.8:"
+		"Notes"	"Added new natives: 'VSH2_GetBossIDs' & 'VSH2_StopMusic'."
+		"Notes"	"Cleaned up 'ManageDownloads' in handler.sp."
+		"Notes"	"Added new method natives: 'StunPlayers' & 'StunBuildings'."
+		"Notes"	"Added new forward hook: 'OnPlayerTakeFallDamage'."
+		"Notes"	"Added self-contained Config System for VSH2 (Config system alone is MIT licensed)."
 	}
 	
 	"Files"
@@ -39,6 +32,7 @@
 		"Source"	"Path_SM/scripting/modules/forwards.sp"
 		"Source"	"Path_SM/scripting/modules/gamemode.sp"
 		"Source"	"Path_SM/scripting/modules/handler.sp"
+		"Source"	"Path_SM/scripting/modules/cfg.sp"
 		"Source"	"Path_SM/scripting/modules/stocks.inc"
 		"Source"	"Path_SM/scripting/modules/bosses/bunny.sp"
 		"Source"	"Path_SM/scripting/modules/bosses/cbs.sp"

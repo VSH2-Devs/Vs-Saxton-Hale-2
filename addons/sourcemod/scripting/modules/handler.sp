@@ -20,24 +20,24 @@ public void ManageDownloads()
 	if( act==Plugin_Stop )
 		return;
 	
-	PrecacheSound("ui/item_store_add_to_cart.wav", true);
-	PrecacheSound("player/doubledonk.wav", true);
-
-	PrecacheSound("saxton_hale/9000.wav", true);
-	CheckDownload("sound/saxton_hale/9000.wav");
-	PrecacheSound("vo/announcer_am_capincite01.mp3", true);
-	PrecacheSound("vo/announcer_am_capincite03.mp3", true);
-	PrecacheSound("vo/announcer_am_capenabled02.mp3", true);
-	
-	PrecacheSound("vo/announcer_ends_60sec.mp3", true);
-	PrecacheSound("vo/announcer_ends_30sec.mp3", true);
-	PrecacheSound("vo/announcer_ends_10sec.mp3", true);
-	PrecacheSound("vo/announcer_ends_1sec.mp3", true);
-	PrecacheSound("vo/announcer_ends_2sec.mp3", true);
-	PrecacheSound("vo/announcer_ends_3sec.mp3", true);
-	PrecacheSound("vo/announcer_ends_4sec.mp3", true);
-	PrecacheSound("vo/announcer_ends_5sec.mp3", true);
-	PrecacheSound("items/pumpkin_pickup.wav", true);
+	char basic_sounds[][] = {
+		"ui/item_store_add_to_cart.wav",
+		"player/doubledonk.wav",
+		"vo/announcer_am_capincite01.mp3",
+		"vo/announcer_am_capincite03.mp3",
+		"vo/announcer_am_capenabled02.mp3",
+		"vo/announcer_ends_60sec.mp3",
+		"vo/announcer_ends_30sec.mp3",
+		"vo/announcer_ends_10sec.mp3",
+		"vo/announcer_ends_1sec.mp3",
+		"vo/announcer_ends_2sec.mp3",
+		"vo/announcer_ends_3sec.mp3",
+		"vo/announcer_ends_4sec.mp3",
+		"vo/announcer_ends_5sec.mp3",
+		"items/pumpkin_pickup.wav"
+	};
+	PrecacheSoundList(basic_sounds, sizeof(basic_sounds));
+	PrepareSound("saxton_hale/9000.wav");
 	
 	AddHaleToDownloads   ();
 	AddVagToDownloads    ();
@@ -595,11 +595,10 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				}
 				/// Candy Cane
 				case 317: {
-					SpawnSmallHealthPackAt(attacker, GetClientTeam(attacker));
+					BaseBoss(attacker).SpawnSmallHealthPack(GetClientTeam(attacker));
 					if( Call_OnBossTakeDamage_OnHitCandyCane(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) == Plugin_Changed )
 						return Plugin_Changed;
 				}
-				
 				/// Chdata's Market Gardener backstab
 				case 416: {
 					if( BaseBoss(attacker).bInJump ) {
@@ -1349,7 +1348,7 @@ public void ManageResetVariables(const BaseBoss base)
 }
 public void ManageEntityCreated(const int entity, const char[] classname)
 {
-	if( StrContains(classname, "rune") != -1 )	/// Special request
+	if( StrContains(classname, "rune") != -1 )
 		CreateTimer( 0.1, RemoveEnt, EntIndexToEntRef(entity) );
 	/// Remove dropped weapons to avoid bad things
 	else if( !g_vsh2.m_hCvars[DroppedWeapons].BoolValue && StrEqual(classname, "tf_dropped_weapon") ) {
@@ -1786,110 +1785,38 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 	
 	TF2Item hItemOverride = null;
 	TF2Item hItemCast = view_as< TF2Item >(hItem);
-	switch( iItemDefinitionIndex ) {
-		case 59: {	/// dead ringer
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "35; 2.0");
-		}
-		case 1103: {	/// Backscatter
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "179; 1.0");
-		}
-		case 40, 1146: {	/// backburner
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "165; 1.0");
-		}
-		case 220: {	/// shortstop
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "525; 1; 526; 1.2; 533; 1.4; 534; 1.4; 328; 1; 241; 1.5; 78; 1.389; 97; 0.75", true);
-		}
-		case 349: {	/// sun on a stick
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "134; 13; 208; 1");
-		}
-		case 648: {	/// wrap assassin
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "279; 3.0");
-		}
-		case 224:{	/// Letranger
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "166; 15; 1; 0.8", true);
-		}
-		case 225, 574: {	/// YER
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "155; 1; 160; 1", true);
-		}
-		case 226: {	/// The Battalion's Backup
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "252; 0.25");
-		}
-		case 305, 1079: {	/// Medic Xbow
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "17; 0.15; 2; 1.45"); //; 266; 1.0");
-		}
-		case 56, 1005, 1092: {	/// Huntsman
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "2 ; 1.5 ; 76; 2.0");
-		}
-		case 43, 239, 1084, 1100: {	/// GRU
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, iItemDefinitionIndex, "107; 1.5; 1; 0.5; 128; 1; 206; 2.0; 772; 1.5", true);
-		}
-		case 415: {	/// reserve shooter
-			if( TF2_GetPlayerClass(client)==TFClass_Soldier )
-				hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "135 ; 0.7 ; 179; 1.0; 2; 1.1");
-			else hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "179; 1.0; 2; 1.1");
-		}
-		case 405, 608: {	/// Demo boots have falling stomp damage
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "259; 1; 252; 0.25");
-		}
-		case 36, 412: {	/// Blutsauger and Overdose
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "17; 0.01");
-		}
-		case 772: {	/// Baby Face's Blaster
-			//hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "106; 0.3; 4; 1.33; 45; 0.6; 114; 1.0", true);
-			/// 36 ; 1.25 -> less accuracy.
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "418 ; 1; 49 ; 1; 3 ; 0.66; 532 ; 1; 793 ; 1", true);
-		}
-		//case 133: {	/// Gunboats; make gunboats attractive compared to the mantreads by having it reduce more rj dmg
-		//	hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "135; 0.2", true);
-		//}
-		//case 444: {    /// Mantreads
-		//	hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, " 275 ; 1");
-		//}
-		/// Enforcer
-		case 460: {
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "2; 1.2");
-		}
-		/// Righteous Bison
-		//case 442: {
-		//	hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "275; 1.0");
-		//}
-		/// Darwin's Danger Shield
-		case 231: {
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "26; 35.0");
-		}
-		/// boston basher & 3rune blade
-		//case 325, 452: {
-		//	hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "204 ; 0 ; 149 ; 5", true);
-		//}
-		/// gas passer
-		case 1180: {
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "875 ; 1.0");
-		}
-		/// thermal thruster
-		case 1179: {
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "872 ; 1.0");
-		}
-		/// Axtinguisher, Postal Pummeler, & Festive Axtinguisher
-		case 38, 457, 1000: {
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "795 ; 1.20");
-		}
-		/// Hot Hand
-		case 1181: {
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "877 ; 2.0");
-		}
-		/// Short Circuit
-		case 528: {
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "2 ; 4.0; 299 ; 40.0");
-		}
-		/// Southern Hospitality
-		case 155: {
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "264 ; 1.5; 263 ; 1.55");
-		}
-		/// Natascha
-		case 41: {
-			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "", true);
+	
+	ConfigMap preserved = g_vsh2.m_hCfg.GetSection("weapon overrides.preserve");
+	PrintToConsole(client, "ConfigMap preserved is null? %s", preserved == null ? "yes" : "no");
+	ConfigMap override = g_vsh2.m_hCfg.GetSection("weapon overrides.override");
+	PrintToConsole(client, "ConfigMap override is null? %s", override == null ? "yes" : "no");
+	
+	if( preserved != null ) {
+		char key_path[64]; Format(key_path, sizeof(key_path), "%i", iItemDefinitionIndex);
+		int attribs_len = preserved.GetSize(key_path);
+		if( attribs_len > 0 ) {
+			char[] attribs = new char[attribs_len];
+			if( preserved.Get(key_path, attribs, attribs_len) )
+				hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, attribs);
 		}
 	}
+	
+	if( override != null ) {
+		char key_path[64]; Format(key_path, sizeof(key_path), "%i", iItemDefinitionIndex);
+		int attribs_len = override.GetSize(key_path);
+		if( attribs_len > 0 ) {
+			char[] attribs = new char[attribs_len];
+			if( override.Get(key_path, attribs, attribs_len) )
+				hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, attribs, true);
+		}
+	}
+	
+	if( hItemOverride==null && iItemDefinitionIndex==415 ) {
+		if( TF2_GetPlayerClass(client)==TFClass_Soldier )
+			hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "135 ; 0.7 ; 179; 1.0; 2; 1.1");
+		else hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "179; 1.0; 2; 1.1");
+	}
+	
 	if( hItemOverride != null ) {
 		Action act = Call_OnItemOverride(BaseBoss(client), classname, iItemDefinitionIndex, view_as< Handle >(hItemOverride));
 		if( act > Plugin_Changed )
@@ -1902,10 +1829,10 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 	if( !strncmp(classname, "tf_weapon_rocketlauncher", 24, false) || !strncmp(classname, "tf_weapon_particle_cannon", 25, false) ) {
 		switch( iItemDefinitionIndex ) {
 			/// Direct Hit
-			case 127: hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "114; 1.0; 179; 1.0");
+			case 127: hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "114 ; 1.0; 179 ; 1.0");
 			
 			/// Liberty Launcher.
-			case 414: hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "114; 1.0; 99; 1.25");
+			case 414: hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "114 ; 1.0; 99 ; 1.25");
 			
 			/// Air Strike.
 			case 1104: hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "76; 1.25; 114; 1.0");

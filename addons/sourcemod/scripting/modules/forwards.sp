@@ -77,6 +77,7 @@ void InitializeForwards()
 	g_vsh2.m_hForwards[OnBossTakeDamage_OnMantreadsStomp] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 	g_vsh2.m_hForwards[OnBossThinkPost] = new PrivateForward( ET_Hook, Param_Cell );
 	g_vsh2.m_hForwards[OnBossEquippedPost] = new PrivateForward( ET_Hook, Param_Cell );
+	g_vsh2.m_hForwards[OnPlayerTakeFallDamage] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 }
 
 Action Call_OnCallDownloads()
@@ -921,4 +922,22 @@ Action Call_OnBossEquippedPost(const BaseBoss player)
 	Call_PushCell(player);
 	Call_Finish(act);
 	return act;
+}
+
+
+Action Call_OnPlayerTakeFallDamage(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action result;
+	Call_StartForward(g_vsh2.m_hForwards[OnPlayerTakeFallDamage]);
+	Call_PushCell(player);
+	Call_PushCellRef(attacker);
+	Call_PushCellRef(inflictor);
+	Call_PushFloatRef(damage);
+	Call_PushCellRef(damagetype);
+	Call_PushCellRef(weapon);
+	Call_PushArray(damageForce,3);
+	Call_PushArray(damagePosition,3);
+	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
 }

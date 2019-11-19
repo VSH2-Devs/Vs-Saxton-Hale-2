@@ -420,7 +420,7 @@ public Action PointCapture(Event event, const char[] name, bool dontBroadcast)
 		ForceTeamWin(iCapTeam);
 		return Plugin_Continue;
 	}
-	_SetCapOwner(VSH2Team_Neutral, gamemode.bDoors); /// in stocks.inc
+	_SetCapOwner(VSH2Team_Neutral, gamemode.bDoors, g_vsh2.m_hCvars[CapReenableTime].FloatValue); /// in stocks.inc
 	
 	/// TODO: replace index string with BaseBoss array + size.
 	char sCappers[MAXPLAYERS+1];

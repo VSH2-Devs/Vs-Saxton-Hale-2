@@ -233,6 +233,12 @@ public Action fwdOnBossTakeDamage_OnMantreadsStomp(VSH2Player victim, int& attac
 	PrintToConsole(victim.index, "fwdOnBossTakeDamage_OnMantreadsStomp:: ==> attacker name: %N | victim name: %N", attacker, victim.index);
 	return Plugin_Continue;
 }
+public Action fwdOnPlayerTakeFallDamage(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	PrintToConsole(attacker, "fwdOnPlayerTakeFallDamage:: ==> victim name: %N", attacker, victim.index);
+	PrintToConsole(victim.index, "fwdOnPlayerTakeFallDamage:: ==> victim name: %N", attacker, victim.index);
+	return Plugin_Continue;
+}
 
 
 public Action fwdOnBossDealDamage(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
@@ -654,4 +660,7 @@ public void LoadVSH2Hooks()
 		
 	if (!VSH2_HookEx(OnBossEquippedPost, fwdOnBossEquippedPost))
 		LogError("Error Hooking OnBossEquippedPost forward for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnPlayerTakeFallDamage, fwdOnPlayerTakeFallDamage))
+		LogError("Error Hooking OnPlayerTakeFallDamage forward for VSH2 Test plugin.");
 }

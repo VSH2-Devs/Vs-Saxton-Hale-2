@@ -462,7 +462,8 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		if( IsValidEntity(healthpack) ) {
 			float pos[3]; GetClientAbsOrigin(this.index, pos);
 			pos[2] += 20.0;
-			DispatchKeyValue(healthpack, "OnPlayerTouch", "!self,Kill,,0,-1");  /// for safety, though it normally doesn't respawn
+			/// for safety, though it normally doesn't respawn
+			DispatchKeyValue(healthpack, "OnPlayerTouch", "!self,Kill,,0,-1");
 			DispatchSpawn(healthpack);
 			SetEntProp(healthpack, Prop_Send, "m_iTeamNum", ownerteam, 4);
 			SetEntityMoveType(healthpack, MOVETYPE_VPHYSICS);
@@ -535,20 +536,73 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 	{
 		if( IsVoteInProgress() )
 			return;
-		char helpstr[MAX_PANEL_MSG];
-		switch( TF2_GetPlayerClass(this.index) ) {
-			case TFClass_Scout: Format(helpstr, sizeof(helpstr), "Scout:\nCrit-a-Cola: grants criticals instead of minicrits.\nFan O' War: removes 5%% rage on hit.\nPistols get minicrits.\nCandycane: drops health pack on hit.\nMedics healing you get a speed-buff.\nSun-on-a-Stick: ignites Boss on fire.\nBackscatter: crits whenever it minicrits.");
-			case TFClass_Soldier: Format(helpstr, sizeof(helpstr), "Soldier:\nBattalion's Backup: nerfs Boss damage.\nHalf-Zatoichi: heals 35HP on hit + can overheal to +25. Honorbound is removed on hit.\nShotguns: minicrit Boss in midair + lower rocketjump damage.\nDirect Hit: crits when it minicrits.\nReserve Shooter: faster weapon switch + damage buff.\nGunboats: blocks 60%% of rocket jump dmg & less fall damage.\nMantreads: higher jump height + less fall damage.\nRocket Jumper: replaced with Rocket Launcher.");
-			case TFClass_Pyro: Format(helpstr, sizeof(helpstr), "Pyro:\nFlare Gun: replaced by the Mega Detonator.\nAirblasting Bosses builds Rage and lengthens the Vagineer's uber.\nThird Degree: gains uber for healers on hit.\nBackburner: Chargeable airblast.\nMannmelter: crits do extra damage.\nAxtinguisher & Reskins: extra dmg on burning players.\nGas Passer: explodes on ignition.\nThermal Thruster: let's you fly mid-air.");
-			case TFClass_DemoMan: Format(helpstr, sizeof(helpstr), "Demoman:\nShields block at least one hit from Boss melees.\nUsing shields grants crits on all weapons.\nEyelander/reskins gain heads on hit.\nHalf-Zatoichi: heals 35HP on hit and can overheal to +25. Honorbound is removed on hit.\nPersian Persuader: gives 2x reserve ammo.\nBoots do stomp damage.\nLoch-n-Load: afterburn on hit.\nGrenade Launchers reduces explosive jumping if the weapon is active.\nStickyJumper replaced with Sticky Launcher.\nDecapitator taunt gives 4 heads if Successful.");
-			case TFClass_Heavy: Format(helpstr, sizeof(helpstr), "Heavy:\nthe KGB & Fists of Steel are replaced with the\nGloves of Running, and Fists, respectively.\nThe Gloves of Running are fast but cause you to take more damage.\nThe Holiday Punch will remove any stun on you if you hit a Boss while stunned.\nMiniguns get +15% damage boost when being healed by a medic.\nShotguns give damage back as some health.\n");
-			case TFClass_Engineer: Format(helpstr, sizeof(helpstr), "Engineer:\nFrontier Justice: gains crits only while your sentry is targetting Bosses.\nTelefrags kill Bosses in one shot.\nShort Circuit: ammo on hit and does 4x more zap damage.\nSouthern Hospitality: larger melee range.");
-			case TFClass_Medic: Format(helpstr, sizeof(helpstr), "Medic:\nCharge: Kritz+Uber. Charge starts at 40percent.\nCharge lasts for 150 percent after activation.\nSyringe Guns: on hit: +5 to Uber.\nCrossbow: 100 percent crits, +150%% damage, +15 uber on hit.\nBlutsauger + Overdose are Unlocked + give 1%% Uber on hit.");
-			case TFClass_Sniper: Format(helpstr, sizeof(helpstr), "Sniper:\nJarate removes small pct of Boss Rage.\nBack-equipped weapons are replaced with SMG.\nSniper Rifles causes Certain Bosses to glow. Glow time scales with charge.\nAll Sniper melees climb walls, but has slower rate of fire.\nHuntsman carries 2x more ammo.\nBazaar Bargain gains heads on headshot.\nRazorback blocks one fatal hit.");
-			case TFClass_Spy: Format(helpstr, sizeof(helpstr), "Spy:\nBackstab does about 10+ percent of a Boss' max HP.\nCloaknDagger replaced with normal inviswatch.\nAll revolvers minicrit.\nYour Eternal Reward backstabs will disguise you.\nKunai backstabs will get you a health bonus.\nSappers are replaced with a rechargeable throwing kunai.\nDiamondback gets 2 crits on backstab.\nBig Earner gives full Cloak on backstab.\nAmbassador headshots do extra damage.");
-		}
+		
 		Panel panel = new Panel();
-		panel.SetTitle(helpstr);
+		switch( TF2_GetPlayerClass(this.index) ) {
+			case TFClass_Scout: {
+				char cfg_key[] = "help.scout";
+				int len = g_vsh2.m_hCfg.GetSize(cfg_key);
+				char[] helpstr = new char[len];
+				g_vsh2.m_hCfg.Get(cfg_key, helpstr, len);
+				panel.SetTitle(helpstr);
+			}
+			case TFClass_Soldier: {
+				char cfg_key[] = "help.soldier";
+				int len = g_vsh2.m_hCfg.GetSize(cfg_key);
+				char[] helpstr = new char[len];
+				g_vsh2.m_hCfg.Get(cfg_key, helpstr, len);
+				panel.SetTitle(helpstr);
+			}
+			case TFClass_Pyro: {
+				char cfg_key[] = "help.pyro";
+				int len = g_vsh2.m_hCfg.GetSize(cfg_key);
+				char[] helpstr = new char[len];
+				g_vsh2.m_hCfg.Get(cfg_key, helpstr, len);
+				panel.SetTitle(helpstr);
+			}
+			case TFClass_DemoMan: {
+				char cfg_key[] = "help.demo";
+				int len = g_vsh2.m_hCfg.GetSize(cfg_key);
+				char[] helpstr = new char[len];
+				g_vsh2.m_hCfg.Get(cfg_key, helpstr, len);
+				panel.SetTitle(helpstr);
+			}
+			case TFClass_Heavy: {
+				char cfg_key[] = "help.heavy";
+				int len = g_vsh2.m_hCfg.GetSize(cfg_key);
+				char[] helpstr = new char[len];
+				g_vsh2.m_hCfg.Get(cfg_key, helpstr, len);
+				panel.SetTitle(helpstr);
+			}
+			case TFClass_Engineer: {
+				char cfg_key[] = "help.engie";
+				int len = g_vsh2.m_hCfg.GetSize(cfg_key);
+				char[] helpstr = new char[len];
+				g_vsh2.m_hCfg.Get(cfg_key, helpstr, len);
+				panel.SetTitle(helpstr);
+			}
+			case TFClass_Medic: {
+				char cfg_key[] = "help.medic";
+				int len = g_vsh2.m_hCfg.GetSize(cfg_key);
+				char[] helpstr = new char[len];
+				g_vsh2.m_hCfg.Get(cfg_key, helpstr, len);
+				panel.SetTitle(helpstr);
+			}
+			case TFClass_Sniper: {
+				char cfg_key[] = "help.sniper";
+				int len = g_vsh2.m_hCfg.GetSize(cfg_key);
+				char[] helpstr = new char[len];
+				g_vsh2.m_hCfg.Get(cfg_key, helpstr, len);
+				panel.SetTitle(helpstr);
+			}
+			case TFClass_Spy: {
+				char cfg_key[] = "help.spy";
+				int len = g_vsh2.m_hCfg.GetSize(cfg_key);
+				char[] helpstr = new char[len];
+				g_vsh2.m_hCfg.Get(cfg_key, helpstr, len);
+				panel.SetTitle(helpstr);
+			}
+		}
 		panel.DrawItem("Exit");
 		panel.Send(this.index, HintPanel, 20);
 		delete panel;
