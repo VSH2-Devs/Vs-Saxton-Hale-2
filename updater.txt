@@ -4,15 +4,12 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.6.8"
+			"Latest"	"2.6.9"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.6.8:"
-		"Notes"	"Added new natives: 'VSH2_GetBossIDs' & 'VSH2_StopMusic'."
-		"Notes"	"Cleaned up 'ManageDownloads' in handler.sp."
-		"Notes"	"Added new method natives: 'StunPlayers' & 'StunBuildings'."
-		"Notes"	"Added new forward hook: 'OnPlayerTakeFallDamage'."
-		"Notes"	"Added self-contained Config System for VSH2 (Config system alone is MIT licensed)."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.6.9:"
+		"Notes"	"Removed debug printing in 'OnGiveNamedItem'."
+		"Notes"	"Changed VSH2 to Saxton Hale compatibility layer plugin to 'saxtonhale.sp'."
 	}
 	
 	"Files"
@@ -24,6 +21,7 @@
 		"Source"	"Path_SM/scripting/vsh2boss_plaguedoctor.sp"
 		"Source"	"Path_SM/scripting/vsh2_addon_noboss.sp"
 		"Source"	"Path_SM/scripting/vsh2boss_template.sp"
+		"Source"	"Path_SM/scripting/saxtonhale.sp"
 		
 		"Source"	"Path_SM/scripting/modules/base.sp"
 		"Source"	"Path_SM/scripting/modules/bosses.sp"

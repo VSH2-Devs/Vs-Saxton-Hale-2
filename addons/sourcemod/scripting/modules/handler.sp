@@ -1787,9 +1787,7 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 	TF2Item hItemCast = view_as< TF2Item >(hItem);
 	
 	ConfigMap preserved = g_vsh2.m_hCfg.GetSection("weapon overrides.preserve");
-	PrintToConsole(client, "ConfigMap preserved is null? %s", preserved == null ? "yes" : "no");
 	ConfigMap override = g_vsh2.m_hCfg.GetSection("weapon overrides.override");
-	PrintToConsole(client, "ConfigMap override is null? %s", override == null ? "yes" : "no");
 	
 	if( preserved != null ) {
 		char key_path[64]; Format(key_path, sizeof(key_path), "%i", iItemDefinitionIndex);
