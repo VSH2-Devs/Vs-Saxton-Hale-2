@@ -244,7 +244,7 @@ methodmap VSH2Player {
 	public native void StunBuildings(float rage_dist, float sentry_stun_time=8.0);
 	public native void RemoveAllItems();
 	
-	public native bool GetName(const char buffer[MAX_BOSS_NAME_SIZE]);
+	public native bool GetName(char buffer[MAX_BOSS_NAME_SIZE]);
 	public native bool SetName(const char name[MAX_BOSS_NAME_SIZE]);
 	
 	public native void SuperJump(const float power, const float reset);
@@ -264,9 +264,9 @@ methodmap VSH2Player {
  * WeighDownThink -> handles weighdown charging
  */
 
-stock void VSH2_SpeedThink(VSH2Player boss, const float iota) {
+stock void VSH2_SpeedThink(VSH2Player boss, const float iota, const float minspeed=100.0) {
 	float speed = iota + 0.7 * (100 - boss.iHealth * 100 / boss.GetPropInt("iMaxHealth"));
-	SetEntPropFloat(boss.index, Prop_Send, "m_flMaxspeed", speed);
+	SetEntPropFloat(boss.index, Prop_Send, "m_flMaxspeed", (speed < minspeed) ? minspeed : speed);
 }
 
 stock void VSH2_GlowThink(VSH2Player boss, const float decrease) {

@@ -113,7 +113,7 @@ methodmap ConfigMap < StringMap {
 		char target_section[PLATFORM_MAX_PATH];
 		ParseTargetPath(key, target_section, sizeof(target_section));
 		
-		StringMap itermap = this;
+		ConfigMap itermap = this;
 		while( itermap != null ) {
 			int n;
 			char curr_section[PLATFORM_MAX_PATH];
@@ -202,7 +202,8 @@ methodmap ConfigMap < StringMap {
 		bool result = this.GetVal(key_path, val);
 		if( result && val.tag==KeyValType_Section ) {
 			val.data.Reset();
-			return val.data.ReadCell();
+			ConfigMap sect = val.data.ReadCell();
+			return sect;
 		}
 		return null;
 	}
@@ -322,6 +323,7 @@ void DeleteCfg(ConfigMap cfg, bool clear_only=false) {
 				val.data.Reset();
 				ConfigMap section = val.data.ReadCell();
 				DeleteCfg(section);
+				delete val.data;
 			}
 		}
 	}

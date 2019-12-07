@@ -998,9 +998,9 @@ methodmap BaseBoss < BaseFighter {
 		}
 	}
 	
-	public void SpeedThink(const float iota) {
+	public void SpeedThink(const float iota, const float minspeed=100.0) {
 		float speed = iota + 0.7 * (100-this.iHealth*100/this.iMaxHealth);
-		SetEntPropFloat(this.index, Prop_Send, "m_flMaxspeed", speed);
+		SetEntPropFloat(this.index, Prop_Send, "m_flMaxspeed", (speed < minspeed) ? minspeed : speed);
 	}
 	public void GlowThink(const float decrease) {
 		if( this.flGlowtime > 0.0 ) {

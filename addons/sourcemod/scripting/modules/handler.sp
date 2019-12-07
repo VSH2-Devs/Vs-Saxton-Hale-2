@@ -20,6 +20,31 @@ public void ManageDownloads()
 	if( act==Plugin_Stop )
 		return;
 	
+	char download_keys[][] = {
+		"downloads.sounds",
+		"downloads.models",
+		"downloads.materials"
+	};
+	
+	for( int i; i<sizeof(download_keys); i++ ) {
+		ConfigMap download_map = g_vsh2.m_hCfg.GetSection(download_keys[i]);
+		if( download_map != null ) {
+			for( int n; n<download_map.Size; n++ ) {
+				char index[10];
+				Format(index, sizeof(index), "%i", n);
+				int value_size = download_map.GetSize(index);
+				char[] filepath = new char[value_size];
+				if( download_map.Get(index, filepath, value_size) ) {
+					switch( i ) {
+						case 0: PrepareSound(filepath);
+						case 1: PrepareModel(filepath);
+						case 2: PrepareMaterial(filepath);
+					}
+				}
+			}
+		}
+	}
+	
 	char basic_sounds[][] = {
 		"ui/item_store_add_to_cart.wav",
 		"player/doubledonk.wav",
@@ -37,7 +62,7 @@ public void ManageDownloads()
 		"items/pumpkin_pickup.wav"
 	};
 	PrecacheSoundList(basic_sounds, sizeof(basic_sounds));
-	PrepareSound("saxton_hale/9000.wav");
+	//PrepareSound("saxton_hale/9000.wav");
 	
 	AddHaleToDownloads   ();
 	AddVagToDownloads    ();
@@ -132,12 +157,13 @@ public void ManageOnBossSelected(const BaseBoss base)
 	
 	/// random multibosses code.
 	int playing = gamemode.iPlaying;
-	if( !g_vsh2.m_hCvars[AllowRandomMultiBosses].BoolValue || playing < 10 || GetRandomInt(0, 3) > 0 )
+	int max_random_bosses = g_vsh2.m_hCvars[MaxRandomMultiBosses].IntValue;
+	if( !g_vsh2.m_hCvars[AllowRandomMultiBosses].BoolValue || playing < 10 || GetRandomInt(0, 3) > 0 || gamemode.CountBosses(false) >= max_random_bosses )
 		return;
 	
 	int extra_bosses = GetRandomInt(1, playing / 12);
-	if( extra_bosses > g_vsh2.m_hCvars[MaxRandomMultiBosses].IntValue )
-		extra_bosses = g_vsh2.m_hCvars[MaxRandomMultiBosses].IntValue;
+	if( extra_bosses > max_random_bosses )
+		extra_bosses = max_random_bosses;
 	
 	for( int i; i<extra_bosses; i++ )
 		gamemode.FindNextBoss().MakeBossAndSwitch(GetRandomInt(VSH2Boss_Hale, MAXBOSS), false);
@@ -1786,26 +1812,21 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 	TF2Item hItemOverride = null;
 	TF2Item hItemCast = view_as< TF2Item >(hItem);
 	
-	ConfigMap preserved = g_vsh2.m_hCfg.GetSection("weapon overrides.preserve");
-	ConfigMap override = g_vsh2.m_hCfg.GetSection("weapon overrides.override");
+	char override_keys[][] = {
+		"weapon overrides.preserve",
+		"weapon overrides.override"
+	};
 	
-	if( preserved != null ) {
-		char key_path[64]; Format(key_path, sizeof(key_path), "%i", iItemDefinitionIndex);
-		int attribs_len = preserved.GetSize(key_path);
-		if( attribs_len > 0 ) {
-			char[] attribs = new char[attribs_len];
-			if( preserved.Get(key_path, attribs, attribs_len) )
-				hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, attribs);
-		}
-	}
-	
-	if( override != null ) {
-		char key_path[64]; Format(key_path, sizeof(key_path), "%i", iItemDefinitionIndex);
-		int attribs_len = override.GetSize(key_path);
-		if( attribs_len > 0 ) {
-			char[] attribs = new char[attribs_len];
-			if( override.Get(key_path, attribs, attribs_len) )
-				hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, attribs, true);
+	for( int i; i<sizeof(override_keys); i++ ) {
+		ConfigMap override_map = g_vsh2.m_hCfg.GetSection(override_keys[i]);
+		if( override_map != null ) {
+			char key_path[64]; Format(key_path, sizeof(key_path), "%i", iItemDefinitionIndex);
+			int attribs_len = override_map.GetSize(key_path);
+			if( attribs_len > 0 ) {
+				char[] attribs = new char[attribs_len];
+				if( override_map.Get(key_path, attribs, attribs_len) )
+					hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, attribs, i==1 ? true : false);
+			}
 		}
 	}
 	

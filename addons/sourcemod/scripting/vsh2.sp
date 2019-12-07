@@ -24,7 +24,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.6.9"
+#define PLUGIN_VERSION       "2.6.10"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -776,11 +776,14 @@ public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& dam
 	/// BUG PATCH: Client index 0 is invalid
 	if( !IsClientValid(attacker) ) {
 		if( (damagetype & DMG_FALL) && !BossVictim.bIsBoss ) {
+			Action act = Call_OnPlayerTakeFallDamage(BossVictim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
+			
 			int item = GetPlayerWeaponSlot(victim, (TF2_GetPlayerClass(victim) == TFClass_DemoMan ? TFWeaponSlot_Primary : TFWeaponSlot_Secondary));
 			if( item <= 0 || !IsValidEntity(item) || (TF2_GetPlayerClass(victim)==TFClass_Spy && TF2_IsPlayerInCondition(victim, TFCond_Cloaked)) ) {
-				damage /= 10;
+				if( act != Plugin_Changed )
+					damage /= 10;
 			}
-			return Call_OnPlayerTakeFallDamage(BossVictim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
+			return Plugin_Changed;
 		}
 		return Plugin_Continue;
 	}

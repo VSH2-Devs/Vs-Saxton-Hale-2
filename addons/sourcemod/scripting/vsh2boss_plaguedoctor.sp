@@ -169,56 +169,59 @@ public void OnLibraryAdded(const char[] name) {
 	}
 }
 
+
 public void LoadVSH2Hooks()
 {
-	if (!VSH2_HookEx(OnCallDownloads, PlagueDoc_OnCallDownloads))
+	if( !VSH2_HookEx(OnCallDownloads, PlagueDoc_OnCallDownloads) )
 		LogError("Error loading OnCallDownloads forwards for Plague Doctor subplugin.");
 	
-	if (!VSH2_HookEx(OnBossMenu, PlagueDoc_OnBossMenu))
+	if( !VSH2_HookEx(OnBossMenu, PlagueDoc_OnBossMenu) )
 		LogError("Error loading OnBossMenu forwards for Plague Doctor subplugin.");
 	
-	if (!VSH2_HookEx(OnBossSelected, PlagueDoc_OnBossSelected))
+	if( !VSH2_HookEx(OnBossSelected, PlagueDoc_OnBossSelected) )
 		LogError("Error loading OnBossSelected forwards for Plague Doctor subplugin.");
 	
-	if (!VSH2_HookEx(OnBossThink, PlagueDoc_OnBossThink))
+	if( !VSH2_HookEx(OnBossThink, PlagueDoc_OnBossThink) )
 		LogError("Error loading OnBossThink forwards for Plague Doctor subplugin.");
 	
-	if (!VSH2_HookEx(OnBossModelTimer, PlagueDoc_OnBossModelTimer))
+	if( !VSH2_HookEx(OnBossModelTimer, PlagueDoc_OnBossModelTimer) )
 		LogError("Error loading OnBossModelTimer forwards for Plague Doctor subplugin.");
 	
-	if (!VSH2_HookEx(OnBossEquipped, PlagueDoc_OnBossEquipped))
+	if( !VSH2_HookEx(OnBossEquipped, PlagueDoc_OnBossEquipped) )
 		LogError("Error loading OnBossEquipped forwards for Plague Doctor subplugin.");
 	
-	if (!VSH2_HookEx(OnBossInitialized, PlagueDoc_OnBossInitialized))
+	if( !VSH2_HookEx(OnBossInitialized, PlagueDoc_OnBossInitialized) )
 		LogError("Error loading OnBossInitialized forwards for Plague Doctor subplugin.");
 	
-	if (!VSH2_HookEx(OnMinionInitialized, PlagueDoc_OnMinionInitialized))
+	if( !VSH2_HookEx(OnMinionInitialized, PlagueDoc_OnMinionInitialized) )
 		LogError("Error loading OnMinionInitialized forwards for Plague Doctor subplugin.");
 	
-	if (!VSH2_HookEx(OnBossPlayIntro, PlagueDoc_OnBossPlayIntro))
+	if( !VSH2_HookEx(OnBossPlayIntro, PlagueDoc_OnBossPlayIntro) )
 		LogError("Error loading OnBossPlayIntro forwards for Plague Doctor subplugin.");
 	
-	if (!VSH2_HookEx(OnPlayerKilled, PlagueDoc_OnPlayerKilled))
+	if( !VSH2_HookEx(OnPlayerKilled, PlagueDoc_OnPlayerKilled) )
 		LogError("Error loading OnPlayerKilled forwards for Plague Doctor subplugin.");
 	
-	if (!VSH2_HookEx(OnPlayerHurt, PlagueDoc_OnPlayerHurt))
+	if( !VSH2_HookEx(OnPlayerHurt, PlagueDoc_OnPlayerHurt) )
 		LogError("Error loading OnPlayerHurt forwards for Plague Doctor subplugin.");
 	
-	if (!VSH2_HookEx(OnPlayerAirblasted, PlagueDoc_OnPlayerAirblasted))
+	if( !VSH2_HookEx(OnPlayerAirblasted, PlagueDoc_OnPlayerAirblasted) )
 		LogError("Error loading OnPlayerAirblasted forwards for Plague Doctor subplugin.");
 	
-	if (!VSH2_HookEx(OnBossMedicCall, PlagueDoc_OnBossMedicCall))
+	if( !VSH2_HookEx(OnBossMedicCall, PlagueDoc_OnBossMedicCall) )
 		LogError("Error loading OnBossMedicCall forwards for Plague Doctor subplugin.");
 	
-	if (!VSH2_HookEx(OnBossTaunt, PlagueDoc_OnBossMedicCall))
+	if( !VSH2_HookEx(OnBossTaunt, PlagueDoc_OnBossMedicCall) )
 		LogError("Error loading OnBossTaunt forwards for Plague Doctor subplugin.");
 	
-	if (!VSH2_HookEx(OnBossJarated, PlagueDoc_OnBossJarated))
+	if( !VSH2_HookEx(OnBossJarated, PlagueDoc_OnBossJarated) )
 		LogError("Error loading OnBossJarated forwards for Plague Doctor subplugin.");
 	
-	if (!VSH2_HookEx(OnRoundEndInfo, PlagueDoc_OnRoundEndInfo))
+	if( !VSH2_HookEx(OnRoundEndInfo, PlagueDoc_OnRoundEndInfo) )
 		LogError("Error loading OnRoundEndInfo forwards for Plague Doctor subplugin.");
 }
+
+
 stock bool IsPlagueDoctor(const VSH2Player player) {
 	return player.GetPropInt("iBossType") == g_iPlagueDocID;
 }
@@ -421,24 +424,24 @@ void RecruitMinion(const VSH2Player base)
 
 stock bool IsValidClient(const int client, bool nobots=false)
 { 
-	if (client <= 0 || client > MaxClients || !IsClientConnected(client) || (nobots && IsFakeClient(client)))
+	if( client <= 0 || client > MaxClients || !IsClientConnected(client) || (nobots && IsFakeClient(client)) )
 		return false; 
 	return IsClientInGame(client); 
 }
 stock int GetSlotFromWeapon(const int iClient, const int iWeapon)
 {
-	for (int i=0; i<5; i++) {
+	for( int i; i<5; i++ )
 		if( iWeapon == GetPlayerWeaponSlot(iClient, i) )
 			return i;
-	}
+	
 	return -1;
 }
 stock bool OnlyScoutsLeft(const int team)
 {
-	for (int i=MaxClients; i; --i) {
+	for( int i=MaxClients; i; --i ) {
 		if( !IsValidClient(i) || !IsPlayerAlive(i) )
 			continue;
-		if (GetClientTeam(i) == team && TF2_GetPlayerClass(i) != TFClass_Scout)
+		else if( GetClientTeam(i) == team && TF2_GetPlayerClass(i) != TFClass_Scout )
 			return false;
 	}
 	return true;
