@@ -20,7 +20,7 @@ public void ManageDownloads()
 	if( act==Plugin_Stop )
 		return;
 	
-	char download_keys[][] = {
+	static char download_keys[][] = {
 		"downloads.sounds",
 		"downloads.models",
 		"downloads.materials"
@@ -1812,7 +1812,7 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 	TF2Item hItemOverride = null;
 	TF2Item hItemCast = view_as< TF2Item >(hItem);
 	
-	char override_keys[][] = {
+	static char override_keys[][] = {
 		"weapon overrides.preserve",
 		"weapon overrides.override"
 	};

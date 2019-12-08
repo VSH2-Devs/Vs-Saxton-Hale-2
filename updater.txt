@@ -4,14 +4,11 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.6.10"
+			"Latest"	"2.6.11"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.6.10:"
-		"Notes"	"Patched small handle leak with config when destroying the configmap."
-		"Notes"	"Added patch for when a boss disconnects, multibosses might appear."
-		"Notes"	"Added minimum speed for the boss movement speed think stock."
-		"Notes"	"Added download section to the VSH2 config."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.6.11:"
+		"Notes"	"Fixed use-after-free issue with ConfigMap."
 	}
 	
 	"Files"

@@ -24,7 +24,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.6.10"
+#define PLUGIN_VERSION       "2.6.11"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -622,7 +622,12 @@ public void OnMapStart()
 	gamemode.iRoundCount = 0;
 	gamemode.iRoundState = StateDisabled;
 	gamemode.hNextBoss = view_as< BaseBoss >(0);
+	
+	if( g_vsh2.m_hCfg != null )
+		DeleteCfg(g_vsh2.m_hCfg);
 	g_vsh2.m_hCfg = new ConfigMap("configs/saxton_hale/vsh2.cfg");
+	if( g_vsh2.m_hCfg==null )
+		LogError("[VSH 2] ERROR :: **** couldn't find 'configs/saxton_hale/vsh2.cfg' ****");
 }
 public void OnMapEnd()
 {
@@ -632,7 +637,6 @@ public void OnMapEnd()
 	FindConVar("tf_arena_first_blood").IntValue = g_oldcvar_vals.tf_arena_first_blood;
 	FindConVar("mp_forcecamera").IntValue = g_oldcvar_vals.mp_forcecamera;
 	FindConVar("tf_scout_hype_pep_max").FloatValue = g_oldcvar_vals.tf_scout_hype_pep_max;
-	g_vsh2.m_hCfg.Destroy();
 }
 
 public void _MakePlayerBoss(const int userid)
@@ -726,9 +730,12 @@ public Action Timer_PlayerThink(Handle hTimer)
 
 public Action CmdReloadCFG(int client, int args)
 {
-	g_vsh2.m_hCfg.Destroy();
+	if( g_vsh2.m_hCfg != null )
+		DeleteCfg(g_vsh2.m_hCfg);
 	g_vsh2.m_hCfg = new ConfigMap("configs/saxton_hale/vsh2.cfg");
-	CReplyToCommand(client, "{olive}[VSH 2]{default} **** Reloaded VSH2 Config ****");
+	if( g_vsh2.m_hCfg==null )
+		CReplyToCommand(client, "{olive}[VSH 2] ERROR{default} :: **** {axis}couldn't find 'configs/saxton_hale/vsh2.cfg'{default} ****");
+	else CReplyToCommand(client, "{olive}[VSH 2]{default} **** Reloaded VSH2 Config ****");
 	return Plugin_Handled;
 }
 

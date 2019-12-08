@@ -94,6 +94,9 @@ methodmap ConfigMap < StringMap {
 	
 	public bool GetVal(const char[] key, PackVal valbuf)
 	{
+		if( this==null )
+			return false;
+		
 		/// first check if we're getting a singular value OR we iterate through a sectional path.
 		int dot = FindCharInString(key, '.');
 		/// Patch: dot and escaped dot glitching out the hashmap hashing...
@@ -146,10 +149,6 @@ methodmap ConfigMap < StringMap {
 		return false;
 	}
 	
-	public void Destroy() {
-		DeleteCfg(this);
-	}
-	
 	/**
 	 * 
 	 * name:      GetSize
@@ -159,11 +158,12 @@ methodmap ConfigMap < StringMap {
 	 *            for keys that have a dot in their name, use '\\.'
 	 */
 	public int GetSize(const char[] key_path) {
+		if( this==null )
+			return 0;
+		
 		PackVal val;
 		bool result = this.GetVal(key_path, val);
-		if( result && val.tag==KeyValType_Value )
-			return val.size;
-		return -1;
+		return( result && val.tag==KeyValType_Value ) ? val.size : 0;
 	}
 	
 	/**
@@ -177,6 +177,8 @@ methodmap ConfigMap < StringMap {
 	 *            for keys that have a dot in their name, use '\\.'
 	 */
 	public bool Get(const char[] key_path, char[] buffer, int buf_size) {
+		if( this==null || buf_size==0 )
+			return false;
 		PackVal val;
 		bool result = this.GetVal(key_path, val);
 		if( result && val.tag==KeyValType_Value ) {
@@ -198,12 +200,14 @@ methodmap ConfigMap < StringMap {
 	 *            for keys that have a dot in their name, use '\\.'
 	 */
 	public ConfigMap GetSection(const char[] key_path) {
+		if( this==null )
+			return null;
 		PackVal val;
 		bool result = this.GetVal(key_path, val);
 		if( result && val.tag==KeyValType_Section ) {
 			val.data.Reset();
-			ConfigMap sect = val.data.ReadCell();
-			return sect;
+			ConfigMap section = val.data.ReadCell();
+			return section;
 		}
 		return null;
 	}
@@ -217,6 +221,8 @@ methodmap ConfigMap < StringMap {
 	 *            for keys that have a dot in their name, use '\\.'
 	 */
 	public KeyValType GetKeyValType(const char[] key_path) {
+		if( this==null )
+			return KeyValType_Null;
 		PackVal val;
 		return( this.GetVal(key_path, val) ) ? val.tag : KeyValType_Null;
 	}
@@ -304,7 +310,10 @@ stock bool ParseTargetPath(const char[] key, char[] buffer, int buffer_len)
 	return n > 0;
 }
 
-void DeleteCfg(ConfigMap cfg, bool clear_only=false) {
+void DeleteCfg(ConfigMap& cfg, bool clear_only=false) {
+	if( cfg==null )
+		return;
+	
 	StringMapSnapshot snap = cfg.Snapshot();
 	if( !snap )
 		return;
@@ -335,6 +344,8 @@ void DeleteCfg(ConfigMap cfg, bool clear_only=false) {
 }
 
 public void PrintCfg(ConfigMap cfg) {
+	if( cfg==null )
+		return;
 	StringMapSnapshot snap = cfg.Snapshot();
 	if( !snap )
 		return;
