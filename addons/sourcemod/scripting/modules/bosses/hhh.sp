@@ -60,7 +60,7 @@ methodmap CHHHJr < BaseBoss {
 				target = GetRandomClient(_, VSH2Team_Red);
 				if( target != -1 ) {
 					/// Chdata's HHH teleport rework
-					if (TF2_GetPlayerClass(target) != TFClass_Scout && TF2_GetPlayerClass(target) != TFClass_Soldier) {
+					if( TF2_GetPlayerClass(target) != TFClass_Scout && TF2_GetPlayerClass(target) != TFClass_Soldier ) {
 						/// Makes HHH clipping go away for player and some projectiles
 						SetEntProp(this.index, Prop_Send, "m_CollisionGroup", 2);
 						SetPawnTimer(HHHTeleCollisionReset, 2.0, this.userid);
@@ -118,8 +118,8 @@ methodmap CHHHJr < BaseBoss {
 		float jmp = this.flCharge;
 		int max_climbs = g_vsh2.m_hCvars[HHHMaxClimbs].IntValue;
 		if( this.flRAGE >= 100.0 )
-			ShowSyncHudText(this.index, g_vsh2.m_hHudText, "Teleport: %i%% | Climbs: %i / %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 2, this.iClimbs, max_climbs);
-		else ShowSyncHudText(this.index, g_vsh2.m_hHudText, "Teleport: %i%% | Climbs: %i / %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 2, this.iClimbs, max_climbs, this.flRAGE);
+			ShowSyncHudText(this.index, g_vsh2.m_hHUDs[PlayerHUD], "Teleport: %i%% | Climbs: %i / %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 2, this.iClimbs, max_climbs);
+		else ShowSyncHudText(this.index, g_vsh2.m_hHUDs[PlayerHUD], "Teleport: %i%% | Climbs: %i / %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 2, this.iClimbs, max_climbs, this.flRAGE);
 	}
 	public void SetModel() {
 		SetVariantString(HHHModel);

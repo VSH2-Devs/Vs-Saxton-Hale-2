@@ -137,8 +137,8 @@ methodmap CHale < BaseBoss {
 		SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
 		float jmp = this.flCharge;
 		if( this.flRAGE >= 100.0 )
-			ShowSyncHudText(this.index, g_vsh2.m_hHudText, "Jump: %i%% | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 4);
-		else ShowSyncHudText(this.index, g_vsh2.m_hHudText, "Jump: %i%% | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 4, this.flRAGE);
+			ShowSyncHudText(this.index, g_vsh2.m_hHUDs[PlayerHUD], "Jump: %i%% | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 4);
+		else ShowSyncHudText(this.index, g_vsh2.m_hHUDs[PlayerHUD], "Jump: %i%% | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 4, this.flRAGE);
 	}
 	public void SetModel() {
 		SetVariantString(HaleModel);
@@ -357,7 +357,7 @@ public void AddHaleToMenu(Menu& menu)
 public void EnableSG(const int iid)
 {
 	int i = EntRefToEntIndex(iid);
-	if (IsValidEntity(i) && i > MaxClients) {
+	if( IsValidEntity(i) && i > MaxClients ) {
 		char s[32]; GetEdictClassname(i, s, sizeof(s));
 		if( StrEqual(s, "obj_sentrygun") ) {
 			SetEntProp(i, Prop_Send, "m_bDisabled", 0);

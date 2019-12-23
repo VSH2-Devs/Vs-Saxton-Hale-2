@@ -62,8 +62,8 @@ methodmap CVagineer < BaseBoss {
 		SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
 		float jmp = this.flCharge;
 		if( this.flRAGE >= 100.0 )
-			ShowSyncHudText(this.index, g_vsh2.m_hHudText, "Jump: %i%% | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 4);
-		else ShowSyncHudText(this.index, g_vsh2.m_hHudText, "Jump: %i%% | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 4, this.flRAGE);
+			ShowSyncHudText(this.index, g_vsh2.m_hHUDs[PlayerHUD], "Jump: %i%% | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 4);
+		else ShowSyncHudText(this.index, g_vsh2.m_hHUDs[PlayerHUD], "Jump: %i%% | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 4, this.flRAGE);
 		
 		if( TF2_IsPlayerInCondition(this.index, TFCond_Ubercharged) )
 			SetEntProp(this.index, Prop_Data, "m_takedamage", 0);

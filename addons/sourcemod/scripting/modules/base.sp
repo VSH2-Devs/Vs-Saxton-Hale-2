@@ -63,7 +63,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 				return i;
 			}
 			char strPoints[10];	/// HOW WILL OUR QUEUE SURPASS OVER 9 DIGITS?
-			g_vsh2.m_hPointCookie.Get(player, strPoints, sizeof(strPoints));
+			g_vsh2.m_hCookies[Points].Get(player, strPoints, sizeof(strPoints));
 			int points = StringToInt(strPoints);
 			g_vsh2.m_hPlayerFields[player].SetValue("iQueue", points);
 			return points;
@@ -79,7 +79,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			g_vsh2.m_hPlayerFields[player].SetValue("iQueue", val);
 			char strPoints[10];
 			IntToString(val, strPoints, sizeof(strPoints));
-			g_vsh2.m_hPointCookie.Set(player, strPoints);
+			g_vsh2.m_hCookies[Points].Set(player, strPoints);
 		}
 	}
 	property int iPresetType {    /// if cookies aren't cached, oh well!
@@ -87,12 +87,12 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			int player = this.index;
 			if( !player )
 				return -1;
-			if( !AreClientCookiesCached(player) ) {
+			else if( !AreClientCookiesCached(player) ) {
 				int i; g_vsh2.m_hPlayerFields[player].GetValue("iPresetType", i);
 				return i;
 			}
 			char setboss[6];
-			g_vsh2.m_hBossCookie.Get(player, setboss, sizeof(setboss));
+			g_vsh2.m_hCookies[BossOpt].Get(player, setboss, sizeof(setboss));
 			int bossType = StringToInt(setboss);
 			g_vsh2.m_hPlayerFields[player].SetValue("iPresetType", bossType);
 			return bossType;
@@ -108,7 +108,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			g_vsh2.m_hPlayerFields[player].SetValue("iPresetType", val);
 			char setboss[6];
 			IntToString(val, setboss, sizeof(setboss));
-			g_vsh2.m_hBossCookie.Set(player, setboss);
+			g_vsh2.m_hCookies[BossOpt].Set(player, setboss);
 		}
 	}
 	property int iKills {
@@ -244,7 +244,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			if( !AreClientCookiesCached(this.index) )
 				return false;
 			char musical[6];
-			g_vsh2.m_hMusicCookie.Get(this.index, musical, sizeof(musical));
+			g_vsh2.m_hCookies[MusicOpt].Get(this.index, musical, sizeof(musical));
 			return( StringToInt(musical) == 1 );
 		}
 		public set( const bool val ) {
@@ -252,10 +252,10 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 				return;
 			char musical[6];
 			IntToString(( val ) ? 1 : 0, musical, sizeof(musical));
-			g_vsh2.m_hMusicCookie.Set(this.index, musical);
+			g_vsh2.m_hCookies[MusicOpt].Set(this.index, musical);
 		}
 	}
-
+	
 	property float flGlowtime {
 		public get() {
 			float i; g_vsh2.m_hPlayerFields[this.index].GetValue("flGlowtime", i);
@@ -537,72 +537,25 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		if( IsVoteInProgress() )
 			return;
 		
+		static char class_help[][] = {
+			"help.unknown",
+			"help.scout",
+			"help.sniper",
+			"help.soldier",
+			"help.demo",
+			"help.medic",
+			"help.heavy",
+			"help.pyro",
+			"help.spy",
+			"help.engie"
+		};
+		
 		Panel panel = new Panel();
-		switch( TF2_GetPlayerClass(this.index) ) {
-			case TFClass_Scout: {
-				char cfg_key[] = "help.scout";
-				int len = g_vsh2.m_hCfg.GetSize(cfg_key);
-				char[] helpstr = new char[len];
-				g_vsh2.m_hCfg.Get(cfg_key, helpstr, len);
-				panel.SetTitle(helpstr);
-			}
-			case TFClass_Soldier: {
-				char cfg_key[] = "help.soldier";
-				int len = g_vsh2.m_hCfg.GetSize(cfg_key);
-				char[] helpstr = new char[len];
-				g_vsh2.m_hCfg.Get(cfg_key, helpstr, len);
-				panel.SetTitle(helpstr);
-			}
-			case TFClass_Pyro: {
-				char cfg_key[] = "help.pyro";
-				int len = g_vsh2.m_hCfg.GetSize(cfg_key);
-				char[] helpstr = new char[len];
-				g_vsh2.m_hCfg.Get(cfg_key, helpstr, len);
-				panel.SetTitle(helpstr);
-			}
-			case TFClass_DemoMan: {
-				char cfg_key[] = "help.demo";
-				int len = g_vsh2.m_hCfg.GetSize(cfg_key);
-				char[] helpstr = new char[len];
-				g_vsh2.m_hCfg.Get(cfg_key, helpstr, len);
-				panel.SetTitle(helpstr);
-			}
-			case TFClass_Heavy: {
-				char cfg_key[] = "help.heavy";
-				int len = g_vsh2.m_hCfg.GetSize(cfg_key);
-				char[] helpstr = new char[len];
-				g_vsh2.m_hCfg.Get(cfg_key, helpstr, len);
-				panel.SetTitle(helpstr);
-			}
-			case TFClass_Engineer: {
-				char cfg_key[] = "help.engie";
-				int len = g_vsh2.m_hCfg.GetSize(cfg_key);
-				char[] helpstr = new char[len];
-				g_vsh2.m_hCfg.Get(cfg_key, helpstr, len);
-				panel.SetTitle(helpstr);
-			}
-			case TFClass_Medic: {
-				char cfg_key[] = "help.medic";
-				int len = g_vsh2.m_hCfg.GetSize(cfg_key);
-				char[] helpstr = new char[len];
-				g_vsh2.m_hCfg.Get(cfg_key, helpstr, len);
-				panel.SetTitle(helpstr);
-			}
-			case TFClass_Sniper: {
-				char cfg_key[] = "help.sniper";
-				int len = g_vsh2.m_hCfg.GetSize(cfg_key);
-				char[] helpstr = new char[len];
-				g_vsh2.m_hCfg.Get(cfg_key, helpstr, len);
-				panel.SetTitle(helpstr);
-			}
-			case TFClass_Spy: {
-				char cfg_key[] = "help.spy";
-				int len = g_vsh2.m_hCfg.GetSize(cfg_key);
-				char[] helpstr = new char[len];
-				g_vsh2.m_hCfg.Get(cfg_key, helpstr, len);
-				panel.SetTitle(helpstr);
-			}
-		}
+		TFClassType tfclass = TF2_GetPlayerClass(this.index);
+		int len = g_vsh2.m_hCfg.GetSize(class_help[tfclass]);
+		char[] helpstr = new char[len];
+		g_vsh2.m_hCfg.Get(class_help[tfclass], helpstr, len);
+		panel.SetTitle(helpstr);
 		panel.DrawItem("Exit");
 		panel.Send(this.index, HintPanel, 20);
 		delete panel;

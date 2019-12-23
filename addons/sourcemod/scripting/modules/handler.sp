@@ -2,7 +2,7 @@
 	ALL NON-BOSS AND NON-MINION RELATED CODE IS AT THE BOTTOM. HAVE FUN CODING!
 */
 
-#define MAXBOSS    (MaxDefaultVSH2Bosses - 1) + (g_vsh2.m_hBossesRegistered.Length)
+#define MAXBOSS    (MaxDefaultVSH2Bosses + (g_vsh2.m_hBossesRegistered.Length - 1))
 
 #include "modules/bosses.sp"
 
@@ -568,7 +568,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				}
 				/*
 				case 14, 201, 230, 402, 526, 664, 752, 792, 801, 851, 881, 890, 899, 908, 957, 966, 1098: {
-					switch (wepindex) {	/// cleaner to read than if wepindex == || wepindex == || etc.
+					switch( wepindex ) {	/// cleaner to read than if wepindex == || wepindex == || etc.
 						case 14, 201, 664, 792, 801, 851, 881, 890, 899, 908, 957, 966: {	/// sniper rifles
 							if (gamemode.iRoundState != StateEnding) {
 								float bossGlow = victim.flGlowtime;
@@ -921,7 +921,7 @@ public Action ManageOnGoombaStomp(int attacker, int client, float& damageMultipl
 	boss = BaseBoss(attacker);
 	/// The Boss(es) Stomping a player
 	if( boss.bIsBoss ) {
-		switch (boss.iBossType) {
+		switch( boss.iBossType ) {
 			/// Ignore if not boss at all.
 			case -1: {}
 			/// Default behaviour for the Boss Goomba Stomping other players.
@@ -1942,7 +1942,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 			if( !(buttons & IN_SCORE) )
 				Format(HUDText, 300, "Damage: %d", fighter.iDamage);
 		}
-		ShowSyncHudText(i, g_vsh2.m_hHudText, HUDText);
+		ShowSyncHudText(i, g_vsh2.m_hHUDs[PlayerHUD], HUDText);
 		return;
 	}
 	
@@ -1950,7 +1950,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 		if( gamemode.bMedieval || g_vsh2.m_hCvars[ForceLives].BoolValue )
 			Format(HUDText, 300, "Damage: %d | Lives: %d", fighter.iDamage, fighter.iLives);
 		else Format(HUDText, 300, "Damage: %d", fighter.iDamage);
-		ShowSyncHudText(i, g_vsh2.m_hHudText, HUDText);
+		ShowSyncHudText(i, g_vsh2.m_hHUDs[PlayerHUD], HUDText);
 	}
 	
 	if( HasEntProp(i, Prop_Send, "m_iKillStreak") ) {
@@ -2021,7 +2021,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 		}
 	}
 	if( !(buttons & IN_SCORE) )
-		ShowSyncHudText(i, g_vsh2.m_hHudText, HUDText);
+		ShowSyncHudText(i, g_vsh2.m_hHUDs[PlayerHUD], HUDText);
 	
 	int living = gamemode.iPlaying;
 	if( living == 1 && !TF2_IsPlayerInCondition(i, TFCond_Cloaked) ) {

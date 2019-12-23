@@ -24,12 +24,12 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.6.11"
+#define PLUGIN_VERSION       "2.6.12"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
 #define IsClientValid(%1)    ( 0 < (%1) && (%1) <= MaxClients && IsClientInGame((%1)) )
-#define PLYR                 MAXPLAYERS+1
+#define PLYR                 35
 
 /// misc.
 #define PATH                 64
@@ -113,33 +113,34 @@ enum /** CvarName */ {
 	MaxVSH2ConVars
 };
 
+enum /** HUDs */ {
+	PlayerHUD, TimeLeftHUD, HealthHUD, MaxVSH2HUDs
+};
+
+enum /** Cookies */ {
+	Points, BossOpt, MusicOpt, MaxVSH2Cookies
+};
+
+enum struct BossModule {
+	char name[MAX_BOSS_NAME_SIZE];
+	Handle plugin;
+}
+
 
 enum struct VSH2Globals {
 	ArrayList m_hBossesRegistered;
-	
-	/// HUD handles
-	Handle m_hHudText;
-	Handle m_hTimeleftHUD;
-	Handle m_hHealthHUD;
-	
-	Cookie m_hPointCookie;
-	Cookie m_hBossCookie;
-	Cookie m_hMusicCookie;
-	
+	Handle m_hHUDs[MaxVSH2HUDs];
+	Cookie m_hCookies[MaxVSH2Cookies];
 	ConVar m_hCvars[MaxVSH2ConVars];
-	
 	PrivateForward m_hForwards[MaxVSH2Forwards];
-	
 	char m_strBackgroundSong[PLATFORM_MAX_PATH];
 	
 	/// 'struct' of the gamemode manager.
 	StringMap m_hGameModeFields;
 	
 	ConfigMap m_hCfg;
-	
-	/** 
-	 * When making new properties, remember to base it off this StringMap AND do NOT forget to initialize it in OnClientPutInServer()
-	 */
+	/// When making new properties, remember to base it off this StringMap
+	/// AND do NOT forget to initialize it in 'OnClientPutInServer'.
 	StringMap m_hPlayerFields[PLYR];
 }
 
@@ -207,9 +208,6 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_resetq", ResetQueue);
 	RegConsoleCmd("sm_resetqueue", ResetQueue);
 	
-	RegConsoleCmd("sm_vsh2wep", MakeWeapInvis);
-	RegConsoleCmd("sm_vsh2vm", MakeWeapInvis);
-	
 	RegAdminCmd("sm_vsh2_reloadcfg", CmdReloadCFG, ADMFLAG_GENERIC);
 	
 	RegAdminCmd("sm_hale_select", CommandBossSelect, ADMFLAG_VOTE, "hale_select <target> - Select a player to be next boss.");
@@ -232,18 +230,14 @@ public void OnPluginStart()
 	RegAdminCmd("sm_hale_classrush", MenuDoClassRush, ADMFLAG_GENERIC, "forces all red players to a class.");
 	RegAdminCmd("sm_vsh2_classrush", MenuDoClassRush, ADMFLAG_GENERIC, "forces all red players to a class.");
 	
-	RegAdminCmd("sm_vsh2adwep", AdminMakeWeapInvis, ADMFLAG_GENERIC);
-	RegAdminCmd("sm_vsh2advm", AdminMakeWeapInvis, ADMFLAG_GENERIC);
-	
 	AddCommandListener(BlockSuicide, "explode");
 	AddCommandListener(BlockSuicide, "kill");
 	AddCommandListener(BlockSuicide, "jointeam");
 	AddCommandListener(CheckLateSpawn, "joinclass");
 	AddCommandListener(CheckLateSpawn, "join_class");
 	
-	g_vsh2.m_hHudText = CreateHudSynchronizer();
-	g_vsh2.m_hTimeleftHUD = CreateHudSynchronizer();
-	g_vsh2.m_hHealthHUD = CreateHudSynchronizer();
+	for( int i; i<MaxVSH2HUDs; i++ )
+		g_vsh2.m_hHUDs[i] = CreateHudSynchronizer();
 	
 	g_vsh2.m_hCvars[Enabled] = CreateConVar("vsh2_enabled", "1", "Enable VSH 2 plugin", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_vsh2.m_hCvars[VersionNumber] = CreateConVar("vsh2_version", PLUGIN_VERSION, "VSH 2 Plugin Version. (DO NOT CHANGE)", FCVAR_NOTIFY);
@@ -336,9 +330,9 @@ public void OnPluginStart()
 	AddCommandListener(cdVoiceMenu, "voicemenu");
 	AddNormalSoundHook(HookSound);
 	
-	g_vsh2.m_hPointCookie = new Cookie("vsh2_queuepoints", "Amount of VSH2 Queue points a player has.", CookieAccess_Protected);
-	g_vsh2.m_hBossCookie = new Cookie("vsh2_presetbosses", "Preset bosses for VSH2 players.", CookieAccess_Protected);
-	g_vsh2.m_hMusicCookie = new Cookie("vsh2_music_settings", "HaleMusic setting.", CookieAccess_Public);
+	g_vsh2.m_hCookies[Points] = new Cookie("vsh2_queuepoints", "Amount of VSH2 Queue points a player has.", CookieAccess_Protected);
+	g_vsh2.m_hCookies[BossOpt] = new Cookie("vsh2_presetbosses", "Preset bosses for VSH2 players.", CookieAccess_Protected);
+	g_vsh2.m_hCookies[MusicOpt] = new Cookie("vsh2_music_settings", "HaleMusic setting.", CookieAccess_Public);
 	
 	/// in handler.sp
 	ManageDownloads();
@@ -360,7 +354,7 @@ public void OnPluginStart()
 	AddMultiTargetFilter("@nextboss", NextHaleTargetFilter, "the Next Boss", false);
 	
 	g_vsh2.m_hPlayerFields[0] = new StringMap();   /// This will be freed when plugin is unloaded again
-	g_vsh2.m_hBossesRegistered = new ArrayList(MAX_BOSS_NAME_SIZE);
+	g_vsh2.m_hBossesRegistered = new ArrayList(sizeof(BossModule));
 }
 
 public bool HaleTargetFilter(const char[] pattern, ArrayList clients)
@@ -717,7 +711,7 @@ public Action Timer_PlayerThink(Handle hTimer)
 		
 		if( gamemode.iPlaying <= g_vsh2.m_hCvars[ShowBossHPLiving].IntValue ) {
 			SetHudTextParams(-1.0, 0.20, 0.11, 255, 255, 255, 255);
-			ShowSyncHudText(i, g_vsh2.m_hHealthHUD, "Total Boss Health: %i", gamemode.GetTotalBossHealth());
+			ShowSyncHudText(i, g_vsh2.m_hHUDs[HealthHUD], "Total Boss Health: %i", gamemode.GetTotalBossHealth());
 		}
 	}
 	
@@ -1009,7 +1003,7 @@ public Action Timer_DrawGame(Handle timer)
 	for( int i=MaxClients; i; --i ) {
 		if( !IsValidClient(i) )
 			continue;
-		ShowSyncHudText(i, g_vsh2.m_hTimeleftHUD, strTime);
+		ShowSyncHudText(i, g_vsh2.m_hHUDs[TimeLeftHUD], strTime);
 	}
 	switch( time ) {
 		case 60: EmitSoundToAll("vo/announcer_ends_60sec.mp3");
@@ -1124,16 +1118,39 @@ int GetRandomBossType(int[] boss_filter, int filter_size=0)
 	return bosses[GetRandomInt(0, count)];
 }
 
-public int RegisterBoss(const char modulename[MAX_BOSS_NAME_SIZE])
+
+public int RegisterBoss(Handle plugin, const char modulename[MAX_BOSS_NAME_SIZE])
 {
 	if( !ValidateName(modulename) ) {
 		LogError("VSH2 :: Boss Registrar: **** Invalid Name For Boss Module: '%s' ****", modulename);
 		return -1;
-	} else if( g_vsh2.m_hBossesRegistered.FindString(modulename) != -1 ) {
-		LogError("VSH2 :: Boss Registrar: **** Plugin '%s' Already Registered ****", modulename);
-		return -1;
 	}
-	g_vsh2.m_hBossesRegistered.PushString(modulename);
+	
+	for( int i; i<g_vsh2.m_hBossesRegistered.Length; i++ ) {
+		BossModule module;
+		g_vsh2.m_hBossesRegistered.GetArray(i, module, sizeof(module));
+		/// if we already have a module of the name, let's check if its plugin is valid.
+		if( !strcmp(module.name, modulename) ) {
+			/// iterate through all plugins and see if it actually exists.
+			for( Handle iter=GetPluginIterator(), p=ReadPlugin(iter); MorePlugins(iter); p = ReadPlugin(iter) ) {
+				if( p==module.plugin ) {
+					LogError("VSH2 :: Boss Registrar: **** Plugin '%s' Already Registered ****", modulename);
+					return -1;
+				}
+			}
+			/// the boss being registered has the same name but it's of a different handle ID?
+			/// override its plugin ID then, it was probably reloaded.
+			module.plugin = plugin;
+			g_vsh2.m_hBossesRegistered.SetArray(i, module, sizeof(module));
+			return i + MaxDefaultVSH2Bosses;
+		}
+	}
+	
+	/// Couldn't find boss of the name at all, assume it's a brand new boss being reg'd.
+	BossModule module;
+	module.name = modulename;
+	module.plugin = plugin;
+	g_vsh2.m_hBossesRegistered.PushArray(module, sizeof(module));
 	return MAXBOSS;
 }
 
@@ -1241,7 +1258,7 @@ public int Native_RegisterBoss(Handle plugin, int numParams)
 {
 	char module_name[MAX_BOSS_NAME_SIZE]; GetNativeString(1, module_name, sizeof(module_name));
 	/// ALL PROPS TO COOKIES.NET AKA COOKIES.IO
-	return RegisterBoss(module_name);
+	return RegisterBoss(plugin, module_name);
 }
 
 public any Native_VSH2Instance(Handle plugin, int numParams)
@@ -1389,9 +1406,9 @@ public any Native_GetBossIDs(Handle plugin, int numParams)
 	}
 	
 	for( int i; i<g_vsh2.m_hBossesRegistered.Length; i++ ) {
-		char boss_name[MAX_BOSS_NAME_SIZE];
-		g_vsh2.m_hBossesRegistered.GetString(i, boss_name, sizeof(boss_name));
-		boss_map.SetValue(boss_name, i + MaxDefaultVSH2Bosses);
+		BossModule boss_plugin;
+		g_vsh2.m_hBossesRegistered.GetArray(i, boss_plugin, sizeof(boss_plugin));
+		boss_map.SetValue(boss_plugin.name, i + MaxDefaultVSH2Bosses);
 	}
 	
 	if( !boss_map.Size )
@@ -1728,7 +1745,7 @@ public int Native_VSH2GameMode_GetTotalRedPlayers(Handle plugin, int numParams)
 
 public any Native_VSH2GameMode_GetHUDHandle(Handle plugin, int numParams)
 {
-	return g_vsh2.m_hHudText;
+	return g_vsh2.m_hHUDs[PlayerHUD];
 }
 
 public int Native_VSH2GameMode_GetBosses(Handle plugin, int numParams)

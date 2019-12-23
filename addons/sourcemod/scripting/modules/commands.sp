@@ -24,48 +24,6 @@ public Action ResetQueue(int client, int args)
 }
 
 
-public Action MakeWeapInvis(int client, int args)
-{
-	if( !client ) {
-		CReplyToCommand(client, "{olive}[VSH 2]{default} You can only use this command ingame.");
-		return Plugin_Handled;
-	} else if( args < 1 ) {
-		CReplyToCommand(client, "{olive}[VSH 2]{default} Usage: /vsh2vm <0-255>");
-		return Plugin_Handled;
-	}
-	char number[8]; GetCmdArg(1, number, sizeof(number));
-	int maxalpha = StringToInt(number);
-	BaseBoss(client).SetWepInvis(maxalpha);
-	CPrintToChat(client, "{olive}[VSH 2]{default} your weapon transparency has been set to %i.", maxalpha);
-	return Plugin_Handled;
-}
-
-public Action AdminMakeWeapInvis(int client, int args)
-{
-	if (args < 2) {
-		CReplyToCommand(client, "{olive}[VSH 2]{default} Usage: /vsh2advm <target> <0-255>");
-		return Plugin_Handled;
-	}
-	char szTargetname[64]; GetCmdArg(1, szTargetname, sizeof(szTargetname));
-	char szNum[64]; GetCmdArg(2, szNum, sizeof(szNum));
-	int maxalpha = StringToInt(szNum);
-	char target_name[MAX_TARGET_LENGTH];
-	int target_list[MAXPLAYERS+1], target_count;
-	bool tn_is_ml;
-	if ( (target_count = ProcessTargetString(szTargetname, client, target_list, MAXPLAYERS, COMMAND_FILTER_ALIVE, target_name, sizeof(target_name), tn_is_ml)) <= 0 ) {
-		ReplyToTargetError(client, target_count);
-		return Plugin_Handled;
-	}
-	for (int i=0; i < target_count; i++) {
-		if ( IsValidClient(target_list[i]) && IsPlayerAlive(target_list[i]) ) {
-			BaseBoss(target_list[i]).SetWepInvis(maxalpha);
-			CPrintToChat(target_list[i], "{olive}[VSH 2]{orange}an Admin made your weapon transparent!");
-		}
-	}
-	return Plugin_Handled;
-}
-
-
 public void QueuePanel(const int client)
 {
 	Panel panel = new Panel();

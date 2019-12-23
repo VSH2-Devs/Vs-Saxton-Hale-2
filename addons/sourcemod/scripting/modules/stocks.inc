@@ -177,7 +177,7 @@ stock int GetWeaponClip(const int weapon)
 }
 stock int SetWeaponClip(const int weapon, const int ammo)
 {
-	if (IsValidEntity(weapon)) {
+	if( IsValidEntity(weapon) ) {
 		int iAmmoTable = FindSendPropInfo("CTFWeaponBase", "m_iClip1");
 		SetEntData(weapon, iAmmoTable, ammo, 4, true);
 	}
@@ -188,16 +188,15 @@ stock int ShootRocket(const int client, bool bCrit = false, float vPosition[3], 
 	int iTeam = GetClientTeam(client);
 	int iProjectile = CreateEntityByName("tf_projectile_rocket");
 	
-	if (!IsValidEntity(iProjectile))
+	if( !IsValidEntity(iProjectile) )
 		return 0;
 	
 	float vVelocity[3];
 	GetAngleVectors(vAngles, vVelocity, NULL_VECTOR, NULL_VECTOR);
 	
-	if (!arc)
+	if( !arc )
 		NormalizeVector(vVelocity, vVelocity);
-	else
-		vVelocity[2] -= 0.025;
+	else vVelocity[2] -= 0.025;
 	
 	ScaleVector(vVelocity, flSpeed);
 	SetEntPropEnt(iProjectile,	Prop_Send, "m_hOwnerEntity", client);
@@ -213,7 +212,7 @@ stock int ShootRocket(const int client, bool bCrit = false, float vPosition[3], 
 	
 	TeleportEntity(iProjectile, vPosition, vAngles, vVelocity); 
 	DispatchSpawn(iProjectile);
-	if (arc)
+	if( arc )
 		SetEntityMoveType(iProjectile, MOVETYPE_FLYGRAVITY);
 	if( model[0] != '\0' )
 		SetEntityModel(iProjectile, model);
@@ -229,16 +228,13 @@ stock void SetClientOverlay(const int client, const char[] strOverlay)
 
 stock bool IsValidClient(const int client, bool replaycheck=true)
 {
-	if (client <= 0 || client > MaxClients)
+	if( client <= 0 || client > MaxClients || !IsClientInGame(client) )
 		return false;
-	if (!IsClientInGame(client))
+	else if( GetEntProp(client, Prop_Send, "m_bIsCoaching") )
 		return false;
-	if (GetEntProp(client, Prop_Send, "m_bIsCoaching"))
+	else if( replaycheck && (IsClientSourceTV(client) || IsClientReplay(client)) )
 		return false;
-	if (replaycheck)
-		if (IsClientSourceTV(client) || IsClientReplay(client))
-			return false;
-	if (TF2_GetPlayerClass(client) == TFClass_Unknown)
+	else if( TF2_GetPlayerClass(client)==TFClass_Unknown )
 		return false;
 	return true;
 }
@@ -886,7 +882,7 @@ stock int GetMaxAmmo(const int client, const int slot)
 		return 0;
 	int weapon = GetPlayerWeaponSlot(client, slot);
 	if (IsValidEntity(weapon)) {
-		switch (slot) {
+		switch( slot ) {
 			case TFWeaponSlot_Primary: return GetEntData(client, FindDataMapInfo(client, "m_iAmmo")+4);
 			case TFWeaponSlot_Secondary: return GetEntData(client, FindDataMapInfo(client, "m_iAmmo")+8);
 			case TFWeaponSlot_Melee: return GetEntData(client, FindDataMapInfo(client, "m_iAmmo")+12);
@@ -917,8 +913,7 @@ stock bool MapHasMusic(bool forceRecalc = false)	/// Does this even work?
 	if (!found) {
 		int i = -1;
 		char name[64];
-		while ((i = FindEntityByClassname(i, "info_target")) != -1)
-		{
+		while( (i = FindEntityByClassname(i, "info_target")) != -1 ) {
 			GetEntPropString(i, Prop_Data, "m_iName", name, sizeof(name));
 			if( !strcmp(name, "hale_no_music", false) )
 				hasMusic = true;
@@ -1113,7 +1108,7 @@ stock void PrepareSoundDir(bool valve = false, char[] dir = "sound")
 	int len;
 	l.GetNext(buffer, sizeof(buffer));
 	
-	while (l.GetNext(buffer, sizeof(buffer), type)) {
+	while( l.GetNext(buffer, sizeof(buffer), type) ) {
 		if (buffer[0] == '\0' || !strcmp(buffer, ".", false) || !strcmp(buffer, "..", false))
 			continue;
 		
@@ -1143,7 +1138,7 @@ stock void PrepareModelDir(bool valve = false, char[] dir = "models")
 	FileType type;
 	l.GetNext(buffer, sizeof(buffer));
 	
-	while (l.GetNext(buffer, sizeof(buffer), type)) {
+	while( l.GetNext(buffer, sizeof(buffer), type) ) {
 		if (buffer[0] == '\0' || !strcmp(buffer, ".", false) || !strcmp(buffer, "..", false))
 			continue;
 		
@@ -1173,7 +1168,7 @@ stock void PrepareMaterialDir(bool valve = false, char[] dir = "materials")
 	FileType type;
 	l.GetNext(buffer, sizeof(buffer));
 	
-	while (l.GetNext(buffer, sizeof(buffer), type)) {
+	while( l.GetNext(buffer, sizeof(buffer), type) ) {
 		if (buffer[0] == '\0' || !strcmp(buffer, ".", false) || !strcmp(buffer, "..", false))
 			continue;
 		
@@ -1196,7 +1191,7 @@ stock void PrepareMaterialDir(bool valve = false, char[] dir = "materials")
 stock char[] TF2_GetPlayerClassname(const int client, bool capitalize = false)
 {
 	char s[16];
-	switch (TF2_GetPlayerClass(client)) {
+	switch( TF2_GetPlayerClass(client) ) {
 		case TFClass_Scout: s = "scout";
 		case TFClass_Soldier: s = "soldier";
 		case TFClass_Pyro: s = "pyro";
@@ -1208,13 +1203,13 @@ stock char[] TF2_GetPlayerClassname(const int client, bool capitalize = false)
 		case TFClass_Engineer: s = "engineer";
 	}
 	
-	if (capitalize)
+	if( capitalize )
 		s[0] = CharToUpper(s[0]);
 	return s;
 }
 stock int FindMatchingTeleporter(const int tele)
 {
-	if (!HasEntProp(tele, Prop_Send, "m_bMatchBuilding"))
+	if( !HasEntProp(tele, Prop_Send, "m_bMatchBuilding") )
 		return;
 	
 	int offset = FindSendPropInfo("CObjectTeleporter", "m_bMatchBuilding")+4;
@@ -1233,7 +1228,7 @@ stock bool TF2_IsKillable(const int entity)
 			bResult = false;
 		}
 	}
-	if (GetEntProp(entity, Prop_Data, "m_takedamage") != 2)
+	if( GetEntProp(entity, Prop_Data, "m_takedamage") != 2 )
 		bResult = false;
 	
 	return bResult;
@@ -1245,7 +1240,7 @@ stock int SetMetal(const int client, const int amount)
 }
 stock void SetActiveWep(const int client, const int wep)
 {
-	if (wep > MaxClients && IsValidEntity(wep))
+	if( wep > MaxClients && IsValidEntity(wep) )
 		SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", wep);
 }
 stock int GetRandomClient(bool balive=true, int team=0)
