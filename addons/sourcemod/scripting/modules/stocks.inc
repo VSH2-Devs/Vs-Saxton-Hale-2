@@ -383,18 +383,8 @@ stock void IncrementHeadCount(const int client, bool addhealth = true, int addhe
 		TF2_AddCondition(client, TFCond_DemoBuff, TFCondDuration_Infinite);
 	int decapitations = GetEntProp(client, Prop_Send, "m_iDecapitations");
 	SetEntProp(client, Prop_Send, "m_iDecapitations", decapitations + addheads);
-	if( addhealth )
-	{
-		int health = GetClientHealth(client);
-		//health += (decapitations >= 4 ? 10 : 15);
-		
-		/// TODO: Replace this with an overheal calculation (MaxHP * 1.5) OR add a maxhealth arg.
-		if( health + (15 * addheads) <= 300 )
-			health += 15 * addheads;
-		else
-			health = 300;
-		SetEntProp(client, Prop_Data, "m_iHealth", health);
-		SetEntProp(client, Prop_Send, "m_iHealth", health);
+	if( addhealth ) {
+		HealPlayer(client, 15 * addheads, true);
 	}
 	
 	/// recalc their speed
@@ -1236,7 +1226,7 @@ stock bool TF2_IsKillable(const int entity)
 stock int SetMetal(const int client, const int amount)
 {
 	int iMetalTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
-	SetEntData(client, iMetalTable + (4*3), 200, 4, true);
+	SetEntData(client, iMetalTable + (4*3), amount, 4, true);
 }
 stock void SetActiveWep(const int client, const int wep)
 {
@@ -1262,4 +1252,28 @@ stock int GetRandomClient(bool balive=true, int team=0)
 stock int GetThrower(const int ent)
 {
 	return IsValidEntity(ent) ? GetEntPropEnt(ent, Prop_Send, "m_hThrower") : -1;
+}
+stock void HealPlayer(const int client, const int health, bool on_hud = false)
+{
+	int hp = GetEntProp(client, Prop_Data, "m_iHealth");
+	int maxhp = GetEntProp(client, Prop_Data, "m_iMaxHealth");
+	int to_set = health;
+
+	int max_overheal = RoundFloat(FindConVar("tf_max_health_boost").FloatValue * maxhp);
+	if( to_set > max_overheal - hp )
+		to_set = max_overheal - hp;
+
+	if( to_set > 0 ) {
+		SetEntityHealth(client, hp + to_set);
+
+		if( on_hud ) {
+			Event event = CreateEvent("player_healonhit");
+			if( event ) {
+				event.SetInt("amount", to_set);
+				event.SetInt("entindex", client);
+				event.FireToClient(client);
+				delete event;
+			}
+		}
+	}
 }

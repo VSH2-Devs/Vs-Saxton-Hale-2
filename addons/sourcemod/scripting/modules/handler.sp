@@ -1062,9 +1062,9 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 		int heavy_overheal = RoundFloat(FindConVar("tf_max_health_boost").FloatValue * maxhp);
 		
 		int health_from_dmg = ( health < maxhp ) ? (maxhp - health) % damage : (heavy_overheal - health) % damage;
-		SetEntityHealth(attacker.index, (!health_from_dmg) ?
-													health + ((damage) >> view_as< int >((health > maxhp))) :
-													(health + health_from_dmg));
+		HealPlayer(attacker.index, (!health_from_dmg) ?
+													((damage) >> view_as< int >((health > maxhp))) :
+													(health_from_dmg), true);
 	}
 	
 	/// Medics now count as 3/5 of a backstab, similar to telefrag assists.
