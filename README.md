@@ -4,7 +4,9 @@
 [![Master Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=master)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
 #### Current DEVELOPMENT Version: *2.6.12*
 [![Develop Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=develop)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
-======
+
+**[VSH2 Addons Repository](https://github.com/VSH2-Devs/VSH2-Addons)**
+
 VSH2 is rewrite of VSH1. VSH1 and FF2 both had a very bad code framework using shoddy, hacky coding. I could even go as far to say they probably had no framework at all and even no real structure to its code.
 
 VSH2 actually has a structured, event-based framework and combines the best features of both FF2 and VSH1 by not only having multiplayer boss support but also to make it easier to add new bosses **and** give them truly unique abilities and mechanics through giving the developer full, uninhibited control by code rather than config files.
@@ -14,7 +16,6 @@ FF2's purpose was to be very easy to add bosses in a generic, cookie-cutter mann
 If you do require help in setting up the bosses or at least need some info on the API for boss building in VSH2, [have a look at the VSH2 wiki](https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki)
 
 **NB:** While VSH2 will work perfectly fine as-is out of the box as a VSH1 replacement, it was designed with capable SourcePawn **_developers_** in mind to make the most out of the coded-from-scratch framework! So don't expect to be able to easily modify/add bosses if you have no prior SourcePawn experience like you would with FF2.
-======
 
 ### Why VSH2?
 
