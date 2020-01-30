@@ -614,9 +614,9 @@ stock void SpawnRandomAmmo()
 			if( spawned >= minlim )
 				if( GetRandomInt(0, 3) )
 					continue;
-		if( maxlim )
-			if( spawned >= maxlim )
-				break;
+		//if( maxlim )
+		if( spawned >= maxlim )
+			break;
 		/// Technically you'll never find a map without a spawn point.
 		GetEntPropVector(iEnt, Prop_Send, "m_vecOrigin", vPos);
 		GetEntPropVector(iEnt, Prop_Send, "m_angRotation", vAng);
@@ -639,9 +639,9 @@ stock void SpawnRandomHealth()
 			if( spawned >= minlim )
 				if( GetRandomInt(0, 3) )
 					continue;
-		if( maxlim )
-			if( spawned >= maxlim )
-				break;
+		//if( maxlim )
+		if( spawned >= maxlim )
+			break;
 		GetEntPropVector(iEnt, Prop_Send, "m_vecOrigin", vPos);
 		GetEntPropVector(iEnt, Prop_Send, "m_angRotation", vAng);
 		int healthkit = CreateEntityByName("item_healthkit_small");
