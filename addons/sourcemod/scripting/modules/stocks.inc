@@ -834,11 +834,7 @@ stock int FindPlayerBack(int client, int[] indices, int len)
 }
 stock int FindSentry(const int client)
 {
-	int i = -1;
-	while( (i = FindEntityByClassname(i, "obj_sentrygun")) != -1 )
-		if( GetEntPropEnt(i, Prop_Send, "m_hBuilder") == client )
-			return i;
-	return -1;
+	return TF2_GetObjectOfType(client, TFObject_Sentry);
 }
 stock bool TF2_IsPlayerCritBuffed(const int client)
 {
