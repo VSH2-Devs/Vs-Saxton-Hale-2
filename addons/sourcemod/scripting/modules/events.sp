@@ -82,7 +82,8 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 				}
 				case 2: {
 					int numobjs = TF2_GetObjectCount(victim.index);
-					for( int i=0; i<numobjs; ++i) {
+					/// Always iterate backwards when removing/killing
+					for( int i=numobjs-1; i>=0; --i) {
 						int ent = TF2_GetObject(victim.index, i);
 						SetVariantInt(GetEntProp(ent, Prop_Send, "m_iMaxHealth")+8);
 						AcceptEntityInput(ent, "RemoveHealth");
