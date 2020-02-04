@@ -270,7 +270,7 @@ stock void TeleportToSpawn(const int client, int team = 0)
 	ArrayList hArray = new ArrayList();
 	while( (spawn = FindEntityByClassname(spawn, "info_player_teamspawn")) != -1 ) {
 		/// skip disabled spawns.
-		if( GetEntProp(spawn, Prop_Send, "m_bDisabled") )
+		if( GetEntProp(spawn, Prop_Data, "m_bDisabled") )
 			continue;
 		else if (team <= 1)
 			hArray.Push(spawn);
