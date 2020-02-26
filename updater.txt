@@ -4,14 +4,14 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.6.12"
+			"Latest"	"2.6.13"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.6.12:"
-		"Notes"	"Cleaned up class-based help string configmap code."
-		"Notes"	"Grouped loose cookies and hud handles into arrays."
-		"Notes"	"Moved transparent weapons feature into a separate addon."
-		"Notes"	"Automated Boss Module System unloading so that custom bosses will not glitch out the core plugin."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.6.13:"
+		"Notes"	"Fixed cvar glitch with limiting spawn health & ammo (Scags)."
+		"Notes"	"Patched prop type in stocks.inc::TeleportToSpawn() stock (Scags)."
+		"Notes"	"Added HealPlayer stock (Scags)."
+		"Notes"	"'methodized' HealPlayer stock for addons & modules to use."
 	}
 	
 	"Files"
@@ -19,10 +19,7 @@
 		"Plugin"	"Path_SM/plugins/vsh2.smx"
 		
 		"Source"	"Path_SM/scripting/vsh2.sp"
-		"Source"	"Path_SM/scripting/vsh2_addon_dmgtracker.sp"
-		"Source"	"Path_SM/scripting/vsh2_addon_trans_weps.sp"
 		"Source"	"Path_SM/scripting/vsh2boss_plaguedoctor.sp"
-		"Source"	"Path_SM/scripting/vsh2_addon_noboss.sp"
 		"Source"	"Path_SM/scripting/vsh2boss_template.sp"
 		"Source"	"Path_SM/scripting/saxtonhale.sp"
 		

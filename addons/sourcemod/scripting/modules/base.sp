@@ -579,6 +579,9 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 	public int ShootRocket(bool bCrit=false, float vPosition[3], float vAngles[3], const float flSpeed, const float dmg, const char[] model, bool arc=false) {
 		return ShootRocket(this.index, bCrit, vPosition, vAngles, flSpeed, dmg, model, arc);
 	}
+	public void Heal(const int health, bool on_hud=false) {
+		HealPlayer(this.index, health, on_hud);
+	}
 };
 
 methodmap BaseBoss < BaseFighter {

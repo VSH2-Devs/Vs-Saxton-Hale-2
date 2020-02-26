@@ -24,7 +24,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.6.12"
+#define PLUGIN_VERSION       "2.6.13"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -278,10 +278,10 @@ public void OnPluginStart()
 	g_vsh2.m_hCvars[ForceLives] = CreateConVar("vsh2_force_player_lives", "0", "Forces the gamemode to apply Medieval Mode lives on players, whether or not medieval mode is enabled", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_vsh2.m_hCvars[Anchoring] = CreateConVar("vsh2_allow_boss_anchor", "1", "When enabled, reduces all knockback bosses experience when crouching.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_vsh2.m_hCvars[BlockRageSuicide] = CreateConVar("vsh2_block_raged_suicide", "1", "when enabled, stops raged players from suiciding.", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_vsh2.m_hCvars[HealthKitLimitMax] = CreateConVar("vsh2_spawn_health_kit_limit_max", "6", "max amount of health kits that can be produced in RED spawn. 0 for unlimited amount", FCVAR_NONE, true, 0.0, true, 50.0);
-	g_vsh2.m_hCvars[HealthKitLimitMin] = CreateConVar("vsh2_spawn_health_kit_limit_min", "4", "minimum amount of health kits that can be produced in RED spawn. 0 for no minimum limit", FCVAR_NONE, true, 0.0, true, 50.0);
-	g_vsh2.m_hCvars[AmmoKitLimitMax] = CreateConVar("vsh2_spawn_ammo_kit_limit_max", "6", "max amount of ammo kits that can be produced in RED spawn. 0 for unlimited amount", FCVAR_NONE, true, 0.0, true, 50.0);
-	g_vsh2.m_hCvars[AmmoKitLimitMin] = CreateConVar("vsh2_spawn_ammo_kit_limit_min", "4", "minimum amount of ammo kits that can be produced in RED spawn. 0 for no minimum limit", FCVAR_NONE, true, 0.0, true, 50.0);
+	g_vsh2.m_hCvars[HealthKitLimitMax] = CreateConVar("vsh2_spawn_health_kit_limit_max", "6", "max amount of health kits that can be produced in RED spawn. -1 for unlimited amount", FCVAR_NONE, true, 0.0, true, 50.0);
+	g_vsh2.m_hCvars[HealthKitLimitMin] = CreateConVar("vsh2_spawn_health_kit_limit_min", "4", "minimum amount of health kits that can be produced in RED spawn. -1 for no minimum limit", FCVAR_NONE, true, 0.0, true, 50.0);
+	g_vsh2.m_hCvars[AmmoKitLimitMax] = CreateConVar("vsh2_spawn_ammo_kit_limit_max", "6", "max amount of ammo kits that can be produced in RED spawn. -1 for unlimited amount", FCVAR_NONE, true, -1.0, true, 50.0);
+	g_vsh2.m_hCvars[AmmoKitLimitMin] = CreateConVar("vsh2_spawn_ammo_kit_limit_min", "4", "minimum amount of ammo kits that can be produced in RED spawn. -1 for no minimum limit", FCVAR_NONE, true, -1.0, true, 50.0);
 	g_vsh2.m_hCvars[ShieldRegenDmgReq] = CreateConVar("vsh2_shield_regen_damage", "2000", "damage required for demoknights to regenerate their shield, put 0 to disable.", FCVAR_NONE, true, 0.0, true, 99999.0);
 	g_vsh2.m_hCvars[AllowRandomMultiBosses] = CreateConVar("vsh2_allow_random_multibosses", "1", "allows VSH2 to make random combinations of various bosses.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_vsh2.m_hCvars[HHHMaxClimbs] = CreateConVar("vsh2_hhhjr_max_climbs", "10", "maximum amount of climbs HHH Jr. can do.", FCVAR_NONE, true, 0.0, false);
@@ -1206,6 +1206,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2Player.RemoveBack", Native_VSH2_RemoveBack);
 	CreateNative("VSH2Player.FindBack", Native_VSH2_FindBack);
 	CreateNative("VSH2Player.ShootRocket", Native_VSH2_ShootRocket);
+	CreateNative("VSH2Player.Heal", Native_VSH2_Heal);
 	
 	/// VSH2 Boss Methods
 	CreateNative("VSH2Player.ConvertToBoss", Native_VSH2_ConvertToBoss);
@@ -1582,6 +1583,15 @@ public int Native_VSH2_ShootRocket(Handle plugin, int numParams)
 	char modelname[PLATFORM_MAX_PATH]; GetNativeString(7, modelname, PLATFORM_MAX_PATH);
 	bool arc = GetNativeCell(8);
 	return player.ShootRocket(crit, vpos, vang, speed, dmg, modelname, arc);
+}
+
+public int Native_VSH2_Heal(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	int health = GetNativeCell(2);
+	bool hud = GetNativeCell(3);
+	player.Heal(health, hud);
+	return 0;
 }
 
 

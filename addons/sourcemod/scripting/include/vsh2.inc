@@ -234,8 +234,9 @@ methodmap VSH2Player {
 	public native void RemoveBack(int[] indices, const int len);
 	public native int FindBack(int[] indices, const int len);
 	public native int ShootRocket(bool bCrit=false, float vPosition[3], float vAngles[3], const float flSpeed, const float dmg, const char[] model, bool arc=false);
+	public native void Heal(const int health, bool on_hud=false);
 	
-	/// Boss oriented methods ///
+	/// Boss oriented methods
 	public native void ConvertToBoss();
 	public native void GiveRage(const int damage);
 	public native void MakeBossAndSwitch(const int type, const bool callEvent);
@@ -771,6 +772,7 @@ public void __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2Player.RemoveBack");
 	MarkNativeAsOptional("VSH2Player.FindBack");
 	MarkNativeAsOptional("VSH2Player.ShootRocket");
+	MarkNativeAsOptional("VSH2Player.Heal");
 	
 	MarkNativeAsOptional("VSH2Player.ConvertToBoss");
 	MarkNativeAsOptional("VSH2Player.GiveRage");

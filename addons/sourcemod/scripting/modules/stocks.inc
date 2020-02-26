@@ -383,9 +383,8 @@ stock void IncrementHeadCount(const int client, bool addhealth = true, int addhe
 		TF2_AddCondition(client, TFCond_DemoBuff, TFCondDuration_Infinite);
 	int decapitations = GetEntProp(client, Prop_Send, "m_iDecapitations");
 	SetEntProp(client, Prop_Send, "m_iDecapitations", decapitations + addheads);
-	if( addhealth ) {
+	if( addhealth )
 		HealPlayer(client, 15 * addheads, true);
-	}
 	
 	/// recalc their speed
 	TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
@@ -610,11 +609,9 @@ stock void SpawnRandomAmmo()
 	int maxlim = g_vsh2.m_hCvars[AmmoKitLimitMax].IntValue;
 	int minlim = g_vsh2.m_hCvars[AmmoKitLimitMin].IntValue;
 	while( (iEnt = FindEntityByClassname(iEnt, "info_player_teamspawn")) != -1 ) {
-		if( minlim )
-			if( spawned >= minlim )
-				if( GetRandomInt(0, 3) )
-					continue;
-		//if( maxlim )
+		if( spawned >= minlim )
+			if( GetRandomInt(0, 3) )
+				continue;
 		if( spawned >= maxlim )
 			break;
 		/// Technically you'll never find a map without a spawn point.
@@ -635,11 +632,9 @@ stock void SpawnRandomHealth()
 	int maxlim = g_vsh2.m_hCvars[HealthKitLimitMax].IntValue;
 	int minlim = g_vsh2.m_hCvars[HealthKitLimitMin].IntValue;
 	while( (iEnt = FindEntityByClassname(iEnt, "info_player_teamspawn")) != -1 ) {
-		if( minlim )
-			if( spawned >= minlim )
-				if( GetRandomInt(0, 3) )
-					continue;
-		//if( maxlim )
+		if( spawned >= minlim )
+			if( GetRandomInt(0, 3) )
+				continue;
 		if( spawned >= maxlim )
 			break;
 		GetEntPropVector(iEnt, Prop_Send, "m_vecOrigin", vPos);
@@ -1253,7 +1248,7 @@ stock int GetThrower(const int ent)
 {
 	return IsValidEntity(ent) ? GetEntPropEnt(ent, Prop_Send, "m_hThrower") : -1;
 }
-stock void HealPlayer(const int client, const int health, bool on_hud = false)
+stock void HealPlayer(const int client, const int health, bool on_hud=false)
 {
 	int hp = GetEntProp(client, Prop_Data, "m_iHealth");
 	int maxhp = GetEntProp(client, Prop_Data, "m_iMaxHealth");
@@ -1265,7 +1260,6 @@ stock void HealPlayer(const int client, const int health, bool on_hud = false)
 
 	if( to_set > 0 ) {
 		SetEntityHealth(client, hp + to_set);
-
 		if( on_hud ) {
 			Event event = CreateEvent("player_healonhit");
 			if( event ) {
