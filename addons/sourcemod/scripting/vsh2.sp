@@ -335,7 +335,7 @@ public void OnPluginStart()
 	g_vsh2.m_hCookies[MusicOpt] = new Cookie("vsh2_music_settings", "HaleMusic setting.", CookieAccess_Public);
 	
 	/// in handler.sp
-	ManageDownloads();
+	//ManageDownloads();
 	
 	for( int i=MaxClients; i; --i ) {
 		if( !IsClientInGame(i) )
