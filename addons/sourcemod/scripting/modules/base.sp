@@ -504,7 +504,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		char classname[64];
 		int TRIndex = TR_GetEntityIndex(null);
 		GetEdictClassname(TRIndex, classname, sizeof(classname));
-		if( !StrEqual(classname, "worldspawn") )
+		if( !(StrEqual(classname, "worldspawn") || !strncmp(classname, "prop_", 5)) )
 			return false;
 		
 		float fNormal[3];

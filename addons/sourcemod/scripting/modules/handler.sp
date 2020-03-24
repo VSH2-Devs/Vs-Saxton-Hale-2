@@ -1205,12 +1205,17 @@ public void ManagePlayerJarated(const BaseBoss attacker, const BaseBoss victim)
 			victim.flRAGE -= g_vsh2.m_hCvars[JarateRage].FloatValue;
 	}
 }
+
 public Action HookSound(int clients[64], int& numClients, char sample[PLATFORM_MAX_PATH], int& entity, int& channel, float& volume, int& level, int& pitch, int& flags)
 {
 	if( !g_vsh2.m_hCvars[Enabled].BoolValue || !IsValidClient(entity) )
 		return Plugin_Continue;
 	
 	BaseBoss base = BaseBoss(entity);
+	Action act = Call_OnSoundHook(base, sample, channel, volume, level, pitch, flags);
+	if( act != Plugin_Continue )
+		return act;
+	
 	switch( base.iBossType ) {
 		case -1: {}
 		case VSH2Boss_Hale: {

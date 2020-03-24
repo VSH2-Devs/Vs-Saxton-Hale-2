@@ -121,44 +121,46 @@ methodmap VSH2Player {
 	public native bool SetPropAny(const char prop_name[64], any value);
 	
 	/** AVAILABLE PROPERTIES
-	property int iQueue
-	property int iPresetType
-	property int iLives
-	property int iState
-	property int iDamage
-	property int iAirDamage
-	property int iSongPick
-	property int iClimbs
+	 * int iQueue
+	 * int iPresetType
+	 * int iLives
+	 * int iState
+	 * int iDamage
+	 * int iAirDamage
+	 * int iSongPick
+	 * int iClimbs
 	
 	* use 'hOwnerBoss' instead of this.
-	property int iOwnerBoss
+	 * int iOwnerBoss
 	
 	** please use userid on this; convert to client index if you want but userid is safer **
 	* Use 'hUberTarget' property instead this
-	property int iUberTarget
+	 * int iUberTarget
 	
 	** use like a bool **
-	property int bGlow -> will not set glowing like in internal VSH2.
+	 * int bGlow -> will not set glowing like in internal VSH2.
 	
-	property bool bIsMinion
-	property bool bInJump
-	property float flGlowtime
-	property float flLastHit
-	property float flLastShot
+	 * bool bIsMinion
+	 * bool bInJump
+	 * float flGlowtime
+	 * float flLastHit
+	 * float flLastShot
 	
 	** ALL PROPERTIES AFTER THIS COMMENT ONLY ACCOUNT FOR BOSSES BUT CAN STILL APPLY ON NON-BOSSES AND MINIONS **
-	property int iHealth
-	property int iMaxHealth
-	property int iBossType
-	property int iStabbed
-	property int iMarketted
-	property int iDifficulty
-	property bool bUsedUltimate
-	property float flSpeed
-	property float flCharge
-	property float flRAGE
-	property float flKillSpree
-	property float flWeighDown
+	 * int iHealth
+	 * int iMaxHealth
+	 * int iBossType
+	 * int iStabbed
+	 * int iMarketted
+	 * int iDifficulty
+	 * bool bUsedUltimate
+	 * bool bIsBoss
+	 * bool bSuperCharge
+	 * float flSpeed
+	 * float flCharge
+	 * float flRAGE
+	 * float flKillSpree
+	 * float flWeighDown
 	*/
 	
 	property int iHealth {
@@ -399,6 +401,7 @@ enum { /// VSH2HookType
 	OnRedPlayerThink,
 	OnBossEquippedPost,
 	OnPlayerTakeFallDamage,
+	OnSoundHook,
 	MaxVSH2Forwards
 };
 
@@ -408,35 +411,35 @@ enum { /// VSH2HookType
 
 typeset VSH2HookCB {
 	/**
-		OnBossSelected
-		OnBossThink
-		OnBossModelTimer
-		OnBossDeath
-		OnBossEquipped
-		OnBossEquippedPost -> Action has no effect on this forward.
-		OnBossInitialized
-		OnBossPlayIntro
-		OnBossMedicCall
-		OnBossTaunt
-		OnVariablesReset
-		OnPrepRedTeam
-		OnRedPlayerThink
-		OnLastPlayer - Player is a random boss in this case.
-		OnBossSuperJump
-		OnBossWeighDown
-		OnBossThinkPost -> Action has no effect on this forward.
-	*/
+	 * OnBossSelected
+	 * BossThink
+	 * BossModelTimer
+	 * BossDeath
+	 * BossEquipped
+	 * BossEquippedPost -> Action has no effect on this forward.
+	 * BossInitialized
+	 * BossPlayIntro
+	 * BossMedicCall
+	 * BossTaunt
+	 * VariablesReset
+	 * PrepRedTeam
+	 * RedPlayerThink
+	 * LastPlayer - Player is a random boss in this case.
+	 * BossSuperJump
+	 * BossWeighDown
+	 * BossThinkPost -> Action has no effect on this forward.
+	 */
 	function Action (const VSH2Player player);
 	function void (const VSH2Player player);
 	
 	/**
-		OnTouchPlayer - victim is boss, attacker is other player.
-		OnBossJarated
-		OnUberDeployed - Victim is medic, Attacker (Check if valid) is uber target
-		OnUberLoop - Victim is medic, Attacker (Check if valid) is uber target
-		OnRPSTaunt - victim is loser, attacker is winner.
-		OnMinionInitialized - victim is minion, attacker is the owner/master boss.
-	*/
+	 * TouchPlayer - victim is boss, attacker is other player.
+	 * BossJarated
+	 * UberDeployed - Victim is medic, Attacker (Check if valid) is uber target
+	 * UberLoop - Victim is medic, Attacker (Check if valid) is uber target
+	 * RPSTaunt - victim is loser, attacker is winner.
+	 * MinionInitialized - victim is minion, attacker is the owner/master boss.
+	 */
 	function Action (const VSH2Player victim, const VSH2Player attacker);
 	function void (const VSH2Player victim, const VSH2Player attacker);
 	
@@ -483,10 +486,10 @@ typeset VSH2HookCB {
 	function Action (VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom);
 	
 	/**
-		OnPlayerKilled
-		OnPlayerAirblasted - player is the airblaster
-		OnPlayerHurt
-	*/
+	 * PlayerKilled
+	 * PlayerAirblasted - player is the airblaster
+	 * PlayerHurt
+	 */
 	function Action (const VSH2Player player, const VSH2Player victim, Event event);
 	function void (const VSH2Player player, const VSH2Player victim, Event event);
 	
@@ -499,9 +502,9 @@ typeset VSH2HookCB {
 	function void (const VSH2Player player, char message[MAXMESSAGE]);
 	
 	/**
-		OnBossHealthCheck - bossBool determines if command user was the boss
-		OnRoundEndInfo - bossBool determines if boss won the round
-	*/
+	 * BossHealthCheck - bossBool determines if command user was the boss
+	 * RoundEndInfo - bossBool determines if boss won the round
+	 */
 	function Action (const VSH2Player player, bool bossBool, char message[MAXMESSAGE]);
 	function void (const VSH2Player player, bool bossBool, char message[MAXMESSAGE]);
 	
@@ -545,6 +548,10 @@ typeset VSH2HookCB {
 	/// OnBossCalcHealth
 	function Action (const VSH2Player player, int& max_health, const int boss_count, const int red_players);
 	function void (const VSH2Player player, int& max_health, const int boss_count, const int red_players);
+	
+	/// OnSoundHook
+	function Action (const VSH2Player player, char sample[PLATFORM_MAX_PATH], int& channel, float& volume, int& level, int& pitch, int& flags);
+	function void (const VSH2Player player, char sample[PLATFORM_MAX_PATH], int& channel, float& volume, int& level, int& pitch, int& flags);
 };
 
 /// Use hooktype enum on these.
@@ -601,21 +608,22 @@ stock void VSH2GameMode_SetPropAny(const char prop_name[64], any value) {
 	VSH2GameMode_SetProperty(prop_name, value);
 }
 
-/**	Available Properties:
-property int iRoundState
-property int iSpecial
-property int iTotalMaxHealth
-property int iTimeLeft
-property int iRoundCount
-property int iHealthChecks
-property int iCaptures
-property bool bSteam
-property bool bTF2Attribs
-property bool bPointReady
-property bool bMedieval
-property float flHealthTime
-property float flMusicTime
-property VSH2Player hNextBoss
+/**
+ * Available Properties:
+ * int iRoundState
+ * int iSpecial
+ * int iTotalMaxHealth
+ * int iTimeLeft
+ * int iRoundCount
+ * int iHealthChecks
+ * int iCaptures
+ * bool bSteam
+ * bool bTF2Attribs
+ * bool bPointReady
+ * bool bMedieval
+ * float flHealthTime
+ * float flMusicTime
+ * VSH2Player hNextBoss
 */
 
 native VSH2Player VSH2GameMode_FindNextBoss();
@@ -639,7 +647,8 @@ native Handle VSH2GameMode_GetHUDHandle();
 native bool VSH2GameMode_IsVSHMap();
 
 
-/** VSH2 Misc. Useful stocks.
+/**
+ * VSH2 Misc. Useful stocks.
  */
 stock void CheckDownload(const char[] dlpath)
 {
@@ -685,6 +694,7 @@ stock void DownloadMaterialList(const char[][] file_list, int size)
 		CheckDownload(s);
 	}
 }
+
 /// For custom models, do NOT omit .MDL extension
 stock int PrepareModel(const char[] model_path, bool model_only = false)
 {
@@ -712,11 +722,17 @@ stock bool IsStockSound(char sample[PLATFORM_MAX_PATH])
 		"_incoming","_goodjob","_head","_fight","_cloaked","_melee","_move","_positive","_negative","_need",
 		"_nice","_thanks", "_yes","_no","_go","_sentry"
 	};
+	
 	for( int i; i<sizeof(exclusions); i++ )
 		if( StrContains(sample, exclusions[i], false) != -1 )
 			return true;
 	
 	return false;
+}
+
+stock bool IsVoiceLine(char sample[PLATFORM_MAX_PATH])
+{
+	return !strncmp(sample, "vo", 2, false);
 }
 
 

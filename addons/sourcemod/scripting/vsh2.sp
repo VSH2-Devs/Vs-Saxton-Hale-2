@@ -24,7 +24,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.6.13"
+#define PLUGIN_VERSION       "2.6.14"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -38,7 +38,7 @@
 
 public Plugin myinfo = {
 	name            = "Vs Saxton Hale 2 Mod",
-	author          = "nergal/assyrian, props to Flamin' Sarge, Chdata, & Buzzkillington",
+	author          = "nergal/assyrian, props to Flamin' Sarge, Chdata, Scags, & Buzzkillington",
 	description     = "Allows Players to play as various bosses of TF2",
 	version         = PLUGIN_VERSION,
 	url             = "https://forums.alliedmods.net/showthread.php?t=286701"
@@ -333,9 +333,6 @@ public void OnPluginStart()
 	g_vsh2.m_hCookies[Points] = new Cookie("vsh2_queuepoints", "Amount of VSH2 Queue points a player has.", CookieAccess_Protected);
 	g_vsh2.m_hCookies[BossOpt] = new Cookie("vsh2_presetbosses", "Preset bosses for VSH2 players.", CookieAccess_Protected);
 	g_vsh2.m_hCookies[MusicOpt] = new Cookie("vsh2_music_settings", "HaleMusic setting.", CookieAccess_Public);
-	
-	/// in handler.sp
-	ManageDownloads();
 	
 	for( int i=MaxClients; i; --i ) {
 		if( !IsClientInGame(i) )

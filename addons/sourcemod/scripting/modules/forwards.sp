@@ -78,6 +78,8 @@ void InitializeForwards()
 	g_vsh2.m_hForwards[OnBossThinkPost] = new PrivateForward( ET_Hook, Param_Cell );
 	g_vsh2.m_hForwards[OnBossEquippedPost] = new PrivateForward( ET_Hook, Param_Cell );
 	g_vsh2.m_hForwards[OnPlayerTakeFallDamage] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
+	
+	g_vsh2.m_hForwards[OnSoundHook] = new PrivateForward( ET_Event, Param_Cell, Param_String, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_CellByRef );
 }
 
 Action Call_OnCallDownloads()
@@ -924,7 +926,6 @@ Action Call_OnBossEquippedPost(const BaseBoss player)
 	return act;
 }
 
-
 Action Call_OnPlayerTakeFallDamage(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action result;
@@ -938,6 +939,21 @@ Action Call_OnPlayerTakeFallDamage(const BaseBoss player, int& attacker, int& in
 	Call_PushArray(damageForce,3);
 	Call_PushArray(damagePosition,3);
 	Call_PushCell(damagecustom);
+	Call_Finish(result);
+	return result;
+}
+
+Action Call_OnSoundHook(const BaseBoss player, char sample[PLATFORM_MAX_PATH], int& channel, float& volume, int& level, int& pitch, int& flags)
+{
+	Action result;
+	Call_StartForward(g_vsh2.m_hForwards[OnSoundHook]);
+	Call_PushCell(player);
+	Call_PushStringEx(sample, PLATFORM_MAX_PATH, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+	Call_PushCellRef(channel);
+	Call_PushFloatRef(volume);
+	Call_PushCellRef(level);
+	Call_PushCellRef(pitch);
+	Call_PushCellRef(flags);
 	Call_Finish(result);
 	return result;
 }

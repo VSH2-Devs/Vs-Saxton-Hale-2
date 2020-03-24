@@ -6,7 +6,7 @@ public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 	BaseBoss player = BaseBoss( event.GetInt("userid"), true );
 	if( player && IsClientInGame(player.index) ) {
 		SetVariantString(""); AcceptEntityInput(player.index, "SetCustomModel");
-		player.SetOverlay("0"); //SetClientOverlay(client, "0");
+		player.SetOverlay("0");
 		
 		if( player.bIsBoss && (StateDisabled < gamemode.iRoundState < StateEnding) ) {
 			if( GetClientTeam(player.index) != VSH2Team_Boss )

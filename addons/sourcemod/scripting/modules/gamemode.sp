@@ -1,5 +1,5 @@
 /** all game mode oriented code should be handled HERE ONLY */
-methodmap VSHGameMode { /* < StringMap */
+methodmap VSHGameMode { /* < StringMap { */
 	public VSHGameMode() {
 		g_vsh2.m_hGameModeFields = new StringMap();
 	}

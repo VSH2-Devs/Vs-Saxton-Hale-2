@@ -371,6 +371,17 @@ public void Template_OnLastPlayer(const VSH2Player player)
 	player.PlayVoiceClip(TemplateLast[GetRandomInt(0, sizeof(TemplateLast)-1)], VSH2_VOICE_LASTGUY);
 }
 
+public Action Template_OnSoundHook(const VSH2Player player, char sample[PLATFORM_MAX_PATH], int& channel, float& volume, int& level, int& pitch, int& flags)
+{
+	if( !IsTemplate(player) )
+		return Plugin_Continue;
+	else if( IsVoiceLine(sample) )    /// this code: returning Plugin_Handled blocks the sound, a voiceline in this case.
+		return Plugin_Handled;
+	
+	return Plugin_Continue;
+}
+
+/// Stocks =============================================
 stock bool IsValidClient(const int client, bool nobots=false)
 { 
 	if( client <= 0 || client > MaxClients || !IsClientConnected(client) || (nobots && IsFakeClient(client)) )

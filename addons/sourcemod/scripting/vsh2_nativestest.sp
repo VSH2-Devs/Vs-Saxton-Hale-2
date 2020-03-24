@@ -455,6 +455,11 @@ public void fwdOnBossCalcHealth(VSH2Player player, int& max_health, const int bo
 	PrintToChat(player.index, "fwdOnBossCalcHealth:: ==> boss name: %N | max health: %i, boss count: %i, players: %i", player.index, max_health, boss_count, red_players);
 }
 
+public void fwdOnSoundHook(const VSH2Player player, char sample[PLATFORM_MAX_PATH], int& channel, float& volume, int& level, int& pitch, int& flags)
+{
+	PrintToChat(player.index, "fwdOnSoundHook:: ==> boss name: %N | sample: %s, channel: %i, volume: %f, level: %i, pitch: %i, flags: %i", player.index, sample, channel, volume, level, pitch, flags);
+}
+
 public void LoadVSH2Hooks()
 {
 	if (!VSH2_HookEx(OnCallDownloads, fwdOnDownloadsCalled))
@@ -662,5 +667,8 @@ public void LoadVSH2Hooks()
 		LogError("Error Hooking OnBossEquippedPost forward for VSH2 Test plugin.");
 		
 	if (!VSH2_HookEx(OnPlayerTakeFallDamage, fwdOnPlayerTakeFallDamage))
+		LogError("Error Hooking OnPlayerTakeFallDamage forward for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnSoundHook, fwdOnSoundHook))
 		LogError("Error Hooking OnPlayerTakeFallDamage forward for VSH2 Test plugin.");
 }

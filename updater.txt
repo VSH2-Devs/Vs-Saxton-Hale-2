@@ -4,14 +4,14 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.6.13"
+			"Latest"	"2.6.14"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.6.13:"
-		"Notes"	"Fixed cvar glitch with limiting spawn health & ammo (Scags)."
-		"Notes"	"Patched prop type in stocks.inc::TeleportToSpawn() stock (Scags)."
-		"Notes"	"Added HealPlayer stock (Scags)."
-		"Notes"	"'methodized' HealPlayer stock for addons & modules to use."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.6.14:"
+		"Notes"	"Allow wallclimbs to hit prop_* entites (Scags)."
+		"Notes"	"Removed extraneous Downloads call (Scags)."
+		"Notes"	"Added `OnSoundHook` forward."
+		"Notes"	"Added `IsVoiceLine` stock function for use with `OnSoundHook` forward."
 	}
 	
 	"Files"
