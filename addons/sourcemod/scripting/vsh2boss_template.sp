@@ -157,6 +157,9 @@ public void LoadVSH2Hooks()
 	
 	if( !VSH2_HookEx(OnLastPlayer, Template_OnLastPlayer) )
 		LogError("Error loading OnLastPlayer forwards for Template subplugin.");
+	
+	if( !VSH2_HookEx(OnSoundHook, Template_OnSoundHook) )
+		LogError("Error loading OnSoundHook forwards for Template subplugin.");
 }
 
 
