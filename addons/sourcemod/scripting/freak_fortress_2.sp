@@ -11,7 +11,7 @@ public Plugin myinfo = {
 	name           = "VSH2 to FF2 Compatibility layer.",
 	author         = "Nergal/Assyrianic & BatFoxKid",
 	description    = "Implements FF2's forwards & natives using VSH2's API",
-	version        = "1.0a",
+	version        = "1.0b",
 	url            = "https://github.com/VSH2-Devs/Vs-Saxton-Hale-2"
 };
 
@@ -92,11 +92,13 @@ public void OnLibraryRemoved(const char[] name) {
 public Action OnMusicFF2(char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player)
 {
 	Action act;
-	Call_StartForward(ff2.m_forwards[FF2OnMusic]);
+	Call_StartForward(ff2.m_forwards[FF2OnMusic2]);
 	char song2[PLATFORM_MAX_PATH]; strcopy(song2, sizeof(song2), song);
 	Call_PushStringEx(song, sizeof(song), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 	float time2 = time;
 	Call_PushFloatRef(time2);
+	Call_PushStringEx("Unknown Song", 64, SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+	Call_PushStringEx("Unknown Artist", 64, SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 	Call_Finish(act);
 	if( act != Plugin_Continue ) {
 		strcopy(song, sizeof(song), song2);
@@ -104,13 +106,11 @@ public Action OnMusicFF2(char song[PLATFORM_MAX_PATH], float& time, const VSH2Pl
 		return act;
 	}
 
-	Call_StartForward(ff2.m_forwards[FF2OnMusic2]);
+	Call_StartForward(ff2.m_forwards[FF2OnMusic]);
 	strcopy(song2, sizeof(song2), song);
 	Call_PushStringEx(song, sizeof(song), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 	time2 = time;
 	Call_PushFloatRef(time2);
-	Call_PushStringEx("Unknown Song", 64, SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
-	Call_PushStringEx("Unknown Artist", 64, SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 	Call_Finish(act);
 	if( act != Plugin_Continue ) {
 		strcopy(song, sizeof(song), song2);
