@@ -165,11 +165,11 @@ public Action OnBossSelectedFF2(const VSH2Player player)
 	Call_Finish(act);
 	if( act != Plugin_Changed )
 		return Plugin_Continue;
-
+	
 	/// if( name[0] ) {
 		/// Here we would search boss's names to try to find the matching boss
 	/// }
-
+	
 	player.SetPropInt("iBossType", boss);
 	return Plugin_Changed;
 }
@@ -178,8 +178,7 @@ public void OnPlayerKilledFF2(const VSH2Player player, const VSH2Player victim, 
 {
 	if( event.GetInt("death_flags") & TF_DEATHFLAG_DEADRINGER )
 		return;
-
-	if( victim.GetPropAny("bIsBoss") ) {
+	else if( victim.GetPropAny("bIsBoss") ) {
 		Action act;
 		Call_StartForward(ff2.m_forwards[FF2OnLoseLife]);
 		int boss = ClientToBossIndex(victim.index);
@@ -192,11 +191,10 @@ public void OnPlayerKilledFF2(const VSH2Player player, const VSH2Player victim, 
 		if( act==Plugin_Changed ) {
 			if( lives > ToFF2Player(victim).iMaxLives )
 				ToFF2Player(victim).iMaxLives = lives;
-
 			victim.SetPropInt("iLives", lives);
 		}
 	}
-
+	
 	/// TODO: FF2_OnAlivePlayersChanged is called more ways, OnClientDisconnect, player_spawn, arena_round_start
 	Call_StartForward(ff2.m_forwards[FF2OnAlive]);
 	VSH2Player[] array = new VSH2Player[MaxClients];
@@ -220,7 +218,7 @@ public Action OnBossBackstabFF2(VSH2Player victim, int& attacker, int& inflictor
 		return Plugin_Changed;
 	else if( act==Plugin_Handled )
 		damage = 0.0;
-
+	
 	return Plugin_Continue;
 }
 
@@ -240,7 +238,7 @@ public Action OnBossTiggerHurtFF2(VSH2Player victim, int& attacker, int& inflict
 		damage = damage2;
 		return Plugin_Changed;
 	}
-
+	
 	damage = 0.0;
 	return Plugin_Changed;
 }
@@ -256,7 +254,7 @@ public Action OnBossTauntFF2(const VSH2Player player)
 	bool enabled = true;
 	Call_PushCellRef(enabled); /// TODO: Make it possible to prevent a rage
 	Call_Finish();
-
+	
 	Action act;
 	Call_StartForward(ff2.m_forwards[FF2OnAbility]);
 	Call_PushCell(boss);
@@ -309,7 +307,7 @@ public void FinishQueueArray()
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-	if( !ff2.m_vsh2 || !vsh2cvars.m_enabled.BoolValue )
+	if( !ff2.m_vsh2 )
 		return APLRes_Failure;
 	
 	CreateNative("FF2_IsFF2Enabled", Native_FF2_IsFF2Enabled);

@@ -71,7 +71,7 @@ void InitializeForwards()
 	g_vsh2.m_hForwards[OnBossAirShotProj] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 	g_vsh2.m_hForwards[OnBossTakeFallDamage] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 	g_vsh2.m_hForwards[OnBossGiveRage] = new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_FloatByRef );
-	g_vsh2.m_hForwards[OnBossCalcHealth] = new PrivateForward( ET_Event, Param_Cell, Param_CellByRef, Param_Cell, Param_Cell );
+	g_vsh2.m_hForwards[OnBossCalcHealth] = new PrivateForward( ET_Single, Param_Cell, Param_CellByRef, Param_Cell, Param_Cell );
 	
 	g_vsh2.m_hForwards[OnBossTakeDamage_OnTriggerHurt] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 	g_vsh2.m_hForwards[OnBossTakeDamage_OnMantreadsStomp] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
@@ -80,6 +80,7 @@ void InitializeForwards()
 	g_vsh2.m_hForwards[OnPlayerTakeFallDamage] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 	
 	g_vsh2.m_hForwards[OnSoundHook] = new PrivateForward( ET_Event, Param_Cell, Param_String, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_CellByRef );
+	g_vsh2.m_hForwards[OnRoundStart] = new PrivateForward( ET_Ignore, Param_Array, Param_Cell, Param_Array, Param_Cell );
 }
 
 Action Call_OnCallDownloads()
@@ -866,6 +867,8 @@ Action Call_OnBossCalcHealth(const BaseBoss player, int& max_health, const int b
 {
 	Action act;
 	Call_StartForward(g_vsh2.m_hForwards[OnBossCalcHealth]);
+	int plugins_hooked = g_vsh2.m_hForwards[OnBossCalcHealth].FunctionCount;
+	for( int i; i<plugins_hooked; i++ )
 	Call_PushCell(player);
 	Call_PushCellRef(max_health);
 	Call_PushCell(boss_count);
@@ -956,4 +959,15 @@ Action Call_OnSoundHook(const BaseBoss player, char sample[PLATFORM_MAX_PATH], i
 	Call_PushCellRef(flags);
 	Call_Finish(result);
 	return result;
+}
+
+void Call_OnRoundStart(BaseBoss[] bosses, const int boss_count, BaseBoss[] reds, const int red_count)
+{
+	Call_StartForward(g_vsh2.m_hForwards[OnRoundStart]);
+	Call_PushArrayEx(bosses, boss_count, SM_PARAM_COPYBACK);
+	Call_PushCell(boss_count);
+	
+	Call_PushArrayEx(reds, red_count, SM_PARAM_COPYBACK);
+	Call_PushCell(red_count);
+	Call_Finish();
 }

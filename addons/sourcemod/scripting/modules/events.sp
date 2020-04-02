@@ -378,8 +378,8 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 		int red_players = gamemode.iPlaying;
 		/// Automatically divides health based on boss count but this can be changed if necessary
 		
-		int max_health = CalcBossHealth(760.8, red_players, 1.0, 1.0341, 2046.0) / (bosscount);	/// In stocks.sp
-		if( max_health < 3000 && bosscount == 1 )
+		int max_health = CalcBossHealth(760.8, red_players, 1.0, 1.0341, 2046.0) / (bosscount);    /// In stocks.sp
+		if( max_health < 3000 && bosscount==1 )
 			max_health = 3000;
 		
 		/// Putting in multiboss Handicap from complaints of fighting multiple bosses being too overpowered since teamwork itself is overpowered :)
@@ -402,6 +402,13 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 	if( gamemode.iPlaying > 5 )
 		SetControlPoint(false);
 	gamemode.flHealthTime = GetGameTime() + g_vsh2.m_hCvars[HealthCheckInitialDelay].FloatValue;
+	
+	BaseBoss[] b = new BaseBoss[MaxClients];
+	int boss_count = gamemode.GetBosses(b, true);
+	BaseBoss[] r = new BaseBoss[MaxClients];
+	int red_count = gamemode.GetFighters(r, true);
+	Call_OnRoundStart(b, boss_count, r, red_count);
+	
 	return Plugin_Continue;
 }
 

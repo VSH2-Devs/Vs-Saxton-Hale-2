@@ -460,6 +460,14 @@ public void fwdOnSoundHook(const VSH2Player player, char sample[PLATFORM_MAX_PAT
 	PrintToChat(player.index, "fwdOnSoundHook:: ==> boss name: %N | sample: %s, channel: %i, volume: %f, level: %i, pitch: %i, flags: %i", player.index, sample, channel, volume, level, pitch, flags);
 }
 
+public void fwdOnRoundStart(const VSH2Player[] bosses, const int boss_count, const VSH2Player[] red_players, const int red_count)
+{
+	for( int i; i<boss_count; i++ )
+		PrintToChatAll("fwdOnRoundStart :: boss name: %N", bosses[i].index);
+	for( int i; i<red_count; i++ )
+		PrintToChatAll("fwdOnRoundStart :: red name: %N", red_players[i].index);
+}
+
 public void LoadVSH2Hooks()
 {
 	if (!VSH2_HookEx(OnCallDownloads, fwdOnDownloadsCalled))
@@ -670,5 +678,8 @@ public void LoadVSH2Hooks()
 		LogError("Error Hooking OnPlayerTakeFallDamage forward for VSH2 Test plugin.");
 		
 	if (!VSH2_HookEx(OnSoundHook, fwdOnSoundHook))
-		LogError("Error Hooking OnPlayerTakeFallDamage forward for VSH2 Test plugin.");
+		LogError("Error Hooking OnSoundHook forward for VSH2 Test plugin.");
+		
+	if (!VSH2_HookEx(OnRoundStart, fwdOnRoundStart))
+		LogError("Error Hooking OnRoundStart forward for VSH2 Test plugin.");
 }

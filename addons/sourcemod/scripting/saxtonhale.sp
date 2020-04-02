@@ -8,7 +8,7 @@
 #pragma newdecls         required
 
 public Plugin myinfo = {
-	name           = "VSH2 to VSH Compatibility Layer",
+	name           = "VSH2/VSH1 Compatibility Engine",
 	author         = "Nergal/Assyrianic",
 	description    = "Implements Old VSH forwards & natives using VSH2's API.",
 	version        = "1.1",

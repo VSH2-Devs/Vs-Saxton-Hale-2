@@ -24,7 +24,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.6.14"
+#define PLUGIN_VERSION       "2.6.15"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -511,6 +511,7 @@ public void OnConfigsExecuted()
 #endif
 	}
 }
+
 public void OnClientPutInServer(int client)
 {
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);

@@ -402,6 +402,7 @@ enum { /// VSH2HookType
 	OnBossEquippedPost,
 	OnPlayerTakeFallDamage,
 	OnSoundHook,
+	OnRoundStart,
 	MaxVSH2Forwards
 };
 
@@ -546,12 +547,19 @@ typeset VSH2HookCB {
 	function void (const VSH2Player player, const int damage, float& calcd_rage);
 	
 	/// OnBossCalcHealth
+	/**
+	 * Exercise caution using this, multiple plugins could call and modify 'max_health'.
+	 * It's preferred that you use/modify the 'iMaxHealth' property instead.
+	 */
 	function Action (const VSH2Player player, int& max_health, const int boss_count, const int red_players);
 	function void (const VSH2Player player, int& max_health, const int boss_count, const int red_players);
 	
 	/// OnSoundHook
 	function Action (const VSH2Player player, char sample[PLATFORM_MAX_PATH], int& channel, float& volume, int& level, int& pitch, int& flags);
 	function void (const VSH2Player player, char sample[PLATFORM_MAX_PATH], int& channel, float& volume, int& level, int& pitch, int& flags);
+	
+	/// OnRoundStart
+	function void (const VSH2Player[] bosses, const int boss_count, const VSH2Player[] red_players, const int red_count);
 };
 
 /// Use hooktype enum on these.
