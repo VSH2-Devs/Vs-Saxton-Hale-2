@@ -1,14 +1,17 @@
 #include <morecolors>
+#include <tf2_stocks>
 
 #undef REQUIRE_PLUGIN
 #include <vsh2>
 #define REQUIRE_PLUGIN
 
+#include "modules/cfg.sp"
+
 #pragma semicolon        1
 #pragma newdecls         required
 
 public Plugin myinfo = {
-	name           = "VSH2 to FF2 Compatibility layer.",
+	name           = "VSH2/FF2 Compatibility Engine",
 	author         = "Nergal/Assyrianic & BatFoxKid",
 	description    = "Implements FF2's forwards & natives using VSH2's API",
 	version        = "1.0b",
@@ -18,6 +21,35 @@ public Plugin myinfo = {
 
 #define MAX_SUBPLUGIN_NAME    64
 #define PLYR                  35
+
+methodmap FF2Player < VSH2Player {
+	public FF2Player(const int index, bool userid=false) {
+		return view_as< FF2Player >(VSH2Player(index, userid));
+	}
+	
+	property int iMaxLives {
+		public get() {
+			return this.GetPropInt("iMaxLives");
+		}
+		public set(int val) {
+			this.SetPropInt("iMaxLives", val);
+		}
+	}
+	
+	property int iRageDmg {
+		public get() {
+			return this.GetPropInt("iRageDmg");
+		}
+		public set(int val) {
+			this.SetPropInt("iRageDmg", val);
+		}
+	}
+}
+
+stock FF2Player ToFF2Player(VSH2Player p)
+{
+	return view_as< FF2Player >(p);
+}
 
 enum {
 	FF2OnMusic,
@@ -37,6 +69,8 @@ enum struct FF2CompatPlugin {
 	ArrayList      m_subplugins;
 	bool           m_vsh2;
 	bool           m_cheats;
+	int            m_queuePoints[PLYR];
+	bool           m_queueChecking;
 }
 
 enum struct VSH2ConVars {
@@ -46,8 +80,6 @@ enum struct VSH2ConVars {
 
 static FF2CompatPlugin ff2;
 static VSH2ConVars     vsh2cvars;
-static int queuePoints[PLYR];
-static bool queueChecking;
 
 public void OnPluginStart()
 {
@@ -57,29 +89,31 @@ public void OnPluginStart()
 	CreateConVar("ff2_solo_shame", "0", "Always insult the boss for solo raging", _, true, 0.0, true, 1.0);
 }
 
-public void OnAllPluginsLoaded() 
-{
-	ff2.m_subplugins = new ArrayList(MAX_SUBPLUGIN_NAME);
-	VSH2_Hook(OnMusic, OnMusicFF2);
-	VSH2_Hook(OnBossSelected, OnBossSelectedFF2);
-	VSH2_Hook(OnPlayerKilled, OnPlayerKilledFF2);
-	VSH2_Hook(OnBossTakeDamage_OnStabbed, OnBossBackstabFF2);
-	VSH2_Hook(OnBossTaunt, OnBossTauntFF2);
-	VSH2_Hook(OnScoreTally, OnScoreTallyFF2);
-	
-	/// FF2 has a set max lives limit, VSH2 imposes no such limit on lives.
-	/// Create iMaxLives property for FF2 to use exclusively.
-	for( int i=MaxClients; i; i-- )
-		if( 0 < i <= MaxClients && IsClientInGame(i) )
-			VSH2Player(i).SetPropInt("iMaxLives", 0);
-}
 
 public void OnLibraryAdded(const char[] name) {
 	if (StrEqual(name, "VSH2")) {
 		ff2.m_vsh2 = true;
-		vsh2cvars.m_enabled = FindConVar("vsh2cvars.m_enabled");
-		vsh2cvars.m_version = FindConVar("vsh2cvars.m_version");
+		vsh2cvars.m_enabled = FindConVar("vsh2_enabled");
+		vsh2cvars.m_version = FindConVar("vsh2_version");
+		
+		ff2.m_subplugins = new ArrayList(MAX_SUBPLUGIN_NAME);
+		VSH2_Hook(OnMusic, OnMusicFF2);
+		VSH2_Hook(OnBossSelected, OnBossSelectedFF2);
+		VSH2_Hook(OnPlayerKilled, OnPlayerKilledFF2);
+		VSH2_Hook(OnBossTakeDamage_OnStabbed, OnBossBackstabFF2);
+		VSH2_Hook(OnBossTaunt, OnBossTauntFF2);
+		VSH2_Hook(OnScoreTally, OnScoreTallyFF2);
+		for( int i=MaxClients; i; i-- )
+			if( 0 < i <= MaxClients && IsClientInGame(i) )
+				OnClientPutInServer(i);
 	}
+}
+
+public void OnClientPutInServer(int client)
+{
+	FF2Player player = FF2Player(client);
+	player.iMaxLives = 0;
+	player.iRageDmg = 0;
 }
 
 public void OnLibraryRemoved(const char[] name) {
@@ -151,12 +185,13 @@ public void OnPlayerKilledFF2(const VSH2Player player, const VSH2Player victim, 
 		int boss = ClientToBossIndex(victim.index);
 		Call_PushCell(boss);
 		int lives = victim.GetPropInt("iLives");
-		Call_PushCellRef(bossLives);
-		Call_PushCell(BossLivesMax[boss]);
+		Call_PushCellRef(lives);
+		int maxlives = ToFF2Player(victim).iMaxLives;
+		Call_PushCell(maxlives);
 		Call_Finish(act);
 		if( act==Plugin_Changed ) {
-			if( lives > victim.GetPropInt("iMaxLives") )
-				victim.SetPropInt("iMaxLives", lives);
+			if( lives > ToFF2Player(victim).iMaxLives )
+				ToFF2Player(victim).iMaxLives = lives;
 
 			victim.SetPropInt("iLives", lives);
 		}
@@ -212,7 +247,7 @@ public Action OnBossTiggerHurtFF2(VSH2Player victim, int& attacker, int& inflict
 
 public Action OnBossTauntFF2(const VSH2Player player)
 {
-	int boss = ClientToBossIndex(victim.index);
+	int boss = ClientToBossIndex(player.index);
 	Call_StartForward(ff2.m_forwards[FF2OnPreAbility]);
 	Call_PushCell(boss);
 	Call_PushString("vsh2");
@@ -233,40 +268,40 @@ public Action OnBossTauntFF2(const VSH2Player player)
 
 public void OnScoreTallyFF2(const VSH2Player player, int& points_earned, int& queue_earned)
 {
-	queuePoints[player.index] = queue_earned;
-	if (!queueChecking ) {
+	ff2.m_queuePoints[player.index] = queue_earned;
+	if( !ff2.m_queueChecking ) {
 		RequestFrame(FinishQueueArray);
-		queueChecking = true;
+		ff2.m_queueChecking = true;
 	}
 }
 
 public void FinishQueueArray()
 {
-	queueChecking = false;
-
+	ff2.m_queueChecking = false;
+	
 	Call_StartForward(ff2.m_forwards[FF2OnQueuePoints]);
 	int[] points = new int[MaxClients];
 	for( int i=1; i<=MaxClients; i++ )
-		points[i] = queuePoints[i];
-
+		points[i] = ff2.m_queuePoints[i];
+	
+	Action action;
 	Call_PushArrayEx(points, MaxClients+1, SM_PARAM_COPYBACK);
 	Call_Finish(action);
 	if( action == Plugin_Changed ) {
 		for( int i=1; i<=MaxClients; i++ ) {
 			if( !IsClientInGame(i) )
 				continue;
-
+			
 			VSH2Player player = VSH2Player(i);
-			player.SetPropInt("iQueue", points[i]-queuePoints[i]+player.GetPropInt("iQueue"));
+			player.SetPropInt("iQueue", points[i] - ff2.m_queuePoints[i] + player.GetPropInt("iQueue"));
 		}
-	}
-	else if( action != Plugin_Continue ) {
+	} else if( action != Plugin_Continue ) {
 		for( int i=1; i<=MaxClients; i++ ) { 
 			if( !IsClientInGame(i) )
 				continue;
-
+			
 			VSH2Player player = VSH2Player(i);
-			player.SetPropInt("iQueue", player.GetPropInt("iQueue")-queuePoints[i]);
+			player.SetPropInt("iQueue", player.GetPropInt("iQueue") - ff2.m_queuePoints[i]);
 		}
 	}
 }
@@ -336,8 +371,8 @@ public int Native_FF2_GetBossUserId(Handle plugin, int numParams)
 	if( boss < 0 || boss > MaxClients )
 		return -1;
 	else if( boss==0 ) {
-		VSHPlayer player;
-		if( ZeroBossToVSHPlayer(player) )
+		VSH2Player player;
+		if( ZeroBossToVSH2Player(player) )
 			return player.userid;
 		else return -1;
 	}
@@ -375,8 +410,8 @@ public int Native_FF2_GetBossHealth(Handle plugin, int numParams)
 	if( boss < 0 || boss > MaxClients )
 		return 0;
 	else if( boss==0 ) {
-		VSHPlayer player;
-		if( ZeroBossToVSHPlayer(player) )
+		VSH2Player player;
+		if( ZeroBossToVSH2Player(player) )
 			return player.GetPropInt("iHealth");
 	}
 	VSH2Player player = VSH2Player(boss);
@@ -392,8 +427,8 @@ public any Native_FF2_SetBossHealth(Handle plugin, int numParams)
 	
 	int new_health = GetNativeCell(2);
 	if( boss==0 ) {
-		VSHPlayer player;
-		if( ZeroBossToVSHPlayer(player) )
+		VSH2Player player;
+		if( ZeroBossToVSH2Player(player) )
 			return player.SetPropInt("iHealth", new_health);
 	}
 	VSH2Player player = VSH2Player(boss);
@@ -407,8 +442,8 @@ public int Native_FF2_GetBossMaxHealth(Handle plugin, int numParams)
 	if( boss < 0 || boss > MaxClients )
 		return 0;
 	else if( boss==0 ) {
-		VSHPlayer player;
-		if( ZeroBossToVSHPlayer(player) )
+		VSH2Player player;
+		if( ZeroBossToVSH2Player(player) )
 			return player.GetPropInt("iMaxHealth");
 	}
 	VSH2Player player = VSH2Player(boss);
@@ -424,8 +459,8 @@ public any Native_FF2_SetBossMaxHealth(Handle plugin, int numParams)
 	
 	int new_maxhealth = GetNativeCell(2);
 	if( boss==0 ) {
-		VSHPlayer player;
-		if( ZeroBossToVSHPlayer(player) )
+		VSH2Player player;
+		if( ZeroBossToVSH2Player(player) )
 			return player.SetPropInt("iMaxHealth", new_maxhealth);
 	}
 	VSH2Player player = VSH2Player(boss);
@@ -439,8 +474,8 @@ public int Native_FF2_GetBossLives(Handle plugin, int numParams)
 	if( boss < 0 || boss > MaxClients )
 		return 0;
 	else if( boss==0 ) {
-		VSHPlayer player;
-		if( ZeroBossToVSHPlayer(player) )
+		VSH2Player player;
+		if( ZeroBossToVSH2Player(player) )
 			return player.GetPropInt("iLives");
 	}
 	VSH2Player player = VSH2Player(boss);
@@ -456,8 +491,8 @@ public any Native_FF2_SetBossLives(Handle plugin, int numParams)
 	
 	int lives = GetNativeCell(2);
 	if( boss==0 ) {
-		VSHPlayer player;
-		if( ZeroBossToVSHPlayer(player) )
+		VSH2Player player;
+		if( ZeroBossToVSH2Player(player) )
 			return player.SetPropInt("iLives", lives);
 	}
 	VSH2Player player = VSH2Player(boss);
@@ -471,8 +506,8 @@ public int Native_FF2_GetBossMaxLives(Handle plugin, int numParams)
 	if( boss < 0 || boss > MaxClients )
 		return 0;
 	else if( boss==0 ) {
-		VSHPlayer player;
-		if( ZeroBossToVSHPlayer(player) )
+		VSH2Player player;
+		if( ZeroBossToVSH2Player(player) )
 			return player.GetPropInt("iMaxLives");
 	}
 	VSH2Player player = VSH2Player(boss);
@@ -488,8 +523,8 @@ public any Native_FF2_SetBossMaxLives(Handle plugin, int numParams)
 	
 	int lives = GetNativeCell(2);
 	if( boss==0 ) {
-		VSHPlayer player;
-		if( ZeroBossToVSHPlayer(player) )
+		VSH2Player player;
+		if( ZeroBossToVSH2Player(player) )
 			return player.SetPropInt("iMaxLives", lives);
 	}
 	VSH2Player player = VSH2Player(boss);
@@ -513,7 +548,7 @@ public any Native_FF2_GetQueuePoints(Handle plugin, int numParams)
 	int client = GetNativeCell(1);
 	if( client <= 0 || client > MaxClients )
 		return -1;	/// Batfoxkid: In FF2, invalid client throws an error
-
+	
 	VSH2Player player = VSH2Player(client);
 	return player.GetPropInt("iQueue");
 }
@@ -547,6 +582,203 @@ public any Native_FF2_GetCheats(Handle plugin, int numParams)
 	return ff2.m_cheats;
 }
 
+/** TODO float FF2_GetBossCharge(int boss, int slot); */
+public any Native_FF2_GetBossCharge(Handle plugin, int numParams)
+{
+	int client = GetNativeCell(1);
+	int slot = GetNativeCell(2);
+	return 0.0;
+}
+
+/** TODO void FF2_SetBossCharge(int boss, int slot, float value); */
+public any Native_FF2_SetBossCharge(Handle plugin, int numParams)
+{
+	int client = GetNativeCell(1);
+	int slot = GetNativeCell(2);
+	float value = GetNativeCell(3);
+	return 0;
+}
+/** TODO int FF2_GetBossRageDamage(int boss); */
+public int Native_FF2_GetBossRageDamage(Handle plugin, int numParams)
+{
+	int client = GetNativeCell(1);
+	FF2Player player = FF2Player(client);
+	return player.iRageDmg;
+}
+
+/** TODO void FF2_SetBossRageDamage(int boss, int damage); */
+public any Native_FF2_SetBossRageDamage(Handle plugin, int numParams)
+{
+	int client = GetNativeCell(1);
+	FF2Player player = FF2Player(client);
+	int damage = GetNativeCell(2);
+	player.iRageDmg = damage;
+	return 0;
+}
+
+/** int FF2_GetClientDamage(int client); */
+public int Native_FF2_GetClientDamage(Handle plugin, int numParams)
+{
+	int client = GetNativeCell(1);
+	FF2Player player = FF2Player(client);
+	return player.GetPropInt("iDamage");
+}
+
+/** TODO float FF2_GetRageDist(int boss=0, const char[] pluginName="", const char[] abilityName=""); */
+public any Native_FF2_GetRageDist(Handle plugin, int numParams)
+{
+	return 0.0;
+}
+
+/** TODO bool FF2_HasAbility(int boss, const char[] pluginName, const char[] abilityName); */
+public any Native_FF2_HasAbility(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO void FF2_DoAbility(int boss, const char[] pluginName, const char[] abilityName, int slot, int buttonMode=0); */
+public any Native_FF2_DoAbility(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO int FF2_GetAbilityArgument(int boss, const char[] pluginName, const char[] abilityName, int argument, int defValue=0); */
+public any Native_FF2_GetAbilityArgument(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO float FF2_GetAbilityArgumentFloat(int boss, const char[] plugin_name, const char[] ability_name, int argument, float defValue=0.0); */
+public any Native_FF2_GetAbilityArgumentFloat(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO void FF2_GetAbilityArgumentString(int boss, const char[] pluginName, const char[] abilityName, int argument, char[] buffer, int bufferLength); */
+public any Native_FF2_GetAbilityArgumentString(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO int FF2_GetArgNamedI(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, int defValue=0); */
+public any Native_FF2_GetArgNamedI(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO float FF2_GetArgNamedF(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, float defValue=0.0); */
+public any Native_FF2_GetArgNamedF(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO void FF2_GetArgNamedS(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, char[] buffer, int bufferLength); */
+public any Native_FF2_GetArgNamedS(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO bool FF2_RandomSound(const char[] keyvalue, char[] buffer, int bufferLength, int boss=0, int slot=0); */
+public any Native_FF2_RandomSound(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO void FF2_StartMusic(int client=0); */
+public any Native_FF2_StartMusic(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO void FF2_StopMusic(int client=0); */
+public any Native_FF2_StopMusic(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO Handle FF2_GetSpecialKV(int boss, int specialIndex=0); */
+public any Native_FF2_GetSpecialKV(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO int FF2_GetFF2flags(int client); */
+public any Native_FF2_GetFF2flags(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO void FF2_SetFF2flags(int client, int flags); */
+public any Native_FF2_SetFF2flags(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO float FF2_GetClientGlow(int client); */
+public any Native_FF2_GetClientGlow(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO void FF2_SetClientGlow(int client, float time1, float time2=-1.0); */
+public any Native_FF2_SetClientGlow(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO int FF2_GetAlivePlayers(); */
+public any Native_FF2_GetAlivePlayers(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO int FF2_GetBossPlayers(); */
+public any Native_FF2_GetBossPlayers(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO float FF2_GetClientShield(int client); */
+public any Native_FF2_GetClientShield(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO void FF2_SetClientShield(int client, int entity=0, float health=-1.0, float reduction=-1.0); */
+public any Native_FF2_SetClientShield(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO void FF2_RemoveClientShield(int client); */
+public any Native_FF2_RemoveClientShield(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO void FF2_MakeBoss(int client, int boss, int special=-1, bool rival=false); */
+public any Native_FF2_MakeBoss(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO bool FF2_SelectBoss(int client, const char[] boss, bool access=true); */
+public any Native_FF2_SelectBoss(Handle plugin, int numParams)
+{
+	return 0;
+}
+
+/** TODO ZZZZZZZZZZZZZZZZZZZZZZZZZZZ */
+/*
+public any Native_ZZZ(Handle plugin, int numParams)
+{
+	return 0;
+}
+*/
+
+/**
+ * Stocks
+ */
 stock int ClientToBossIndex(int client)
 {
 	VSH2Player[] players = new VSH2Player[MaxClients];
@@ -563,12 +795,12 @@ stock int ClientToBossIndex(int client)
 	return -1;
 }
 
-stock bool ZeroBossToVSHPlayer(VSH2Player& player)
+stock bool ZeroBossToVSH2Player(VSH2Player& player)
 {
 	VSH2Player[] players = new VSH2Player[MaxClients];
 	if( VSH2GameMode_GetBosses(players, false) < 1 )
 		return false;
-
+	
 	player = players[0];
 	return true;
 }
