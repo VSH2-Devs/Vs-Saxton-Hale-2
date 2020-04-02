@@ -4,13 +4,11 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.6.15"
+			"Latest"	"2.6.16"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.6.15:"
-		"Notes"	"Added `OnRoundStart` forward."
-		"Notes"	"Replaced health-modifications by using mentioned `OnRoundStart` forward."
-		"Notes"	"Added convar to gunshot bride addon to control sound reset time."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.6.16:"
+		"Notes"	"quick patch for oversight in OnBossCalcHealth call."
 	}
 	
 	"Files"

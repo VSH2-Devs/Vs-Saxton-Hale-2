@@ -867,8 +867,6 @@ Action Call_OnBossCalcHealth(const BaseBoss player, int& max_health, const int b
 {
 	Action act;
 	Call_StartForward(g_vsh2.m_hForwards[OnBossCalcHealth]);
-	int plugins_hooked = g_vsh2.m_hForwards[OnBossCalcHealth].FunctionCount;
-	for( int i; i<plugins_hooked; i++ )
 	Call_PushCell(player);
 	Call_PushCellRef(max_health);
 	Call_PushCell(boss_count);
