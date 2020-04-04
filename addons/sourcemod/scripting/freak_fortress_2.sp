@@ -341,8 +341,10 @@ public Action OnHurtShieldFF2(VSH2Player victim, int& attacker, int& inflictor, 
 public void PostRoundStartFF2(const VSH2Player[] bosses, const int boss_count, const VSH2Player[] red_players, const int red_count)
 {
 	Call_StartForward(ff2.m_forwards[FF2PostRoundStart]);
-	Call_PushArray(bosses, boss_count);
-	Call_PushArray(red_players, red_count);
+	Call_PushArray(bosses, boss_count + 1);
+	Call_PushCell(boss_count);
+	Call_PushArray(red_players, red_count + 1);
+	Call_PushCell(red_count);
 	Call_Finish();
 }
 
@@ -871,7 +873,7 @@ stock bool ZeroBossToVSH2Player(VSH2Player& player)
 /**
  * GameDataFF2, SDKCalls
  */
- static void Prep_GameDataFF2() {
+static void Prep_GameDataFF2() {
 	GameData Config = new GameData("freak_fortess_2");
 	if(Config == null){
 		LogError("[GameData] Failed to Load \"freak_fortess_2.txt\"");
