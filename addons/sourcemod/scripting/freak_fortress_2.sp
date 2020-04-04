@@ -22,6 +22,8 @@ public Plugin myinfo = {
 #define MAX_SUBPLUGIN_NAME    64
 #define PLYR                  35
 
+static Handle SDKCall_GetEquippedWearable = null;
+
 methodmap FF2Player < VSH2Player {
 	public FF2Player(const int index, bool userid=false) {
 		return view_as< FF2Player >(VSH2Player(index, userid));
@@ -61,6 +63,9 @@ enum {
 	FF2OnPreAbility,
 	FF2OnAbility,
 	FF2OnQueuePoints,
+	FF2OnHurtShield,
+	FF2PostRoundStart,
+	FF2OnBossJarated,
 	MaxFF2Forwards
 };
 
@@ -76,6 +81,7 @@ enum struct FF2CompatPlugin {
 enum struct VSH2ConVars {
 	ConVar m_enabled;
 	ConVar m_version;
+	ConVar m_fljarate;
 }
 
 static FF2CompatPlugin ff2;
@@ -87,6 +93,9 @@ public void OnPluginStart()
 	CreateConVar("ff2_oldjump", "1", "Use old Saxton Hale jump equations", _, true, 0.0, true, 1.0);
 	CreateConVar("ff2_base_jumper_stun", "0", "Whether or not the Base Jumper should be disabled when a player gets stunned", _, true, 0.0, true, 1.0);
 	CreateConVar("ff2_solo_shame", "0", "Always insult the boss for solo raging", _, true, 0.0, true, 1.0);
+	
+	/// GameData
+	Prep_GameDataFF2();
 }
 
 
@@ -95,6 +104,7 @@ public void OnLibraryAdded(const char[] name) {
 		ff2.m_vsh2 = true;
 		vsh2cvars.m_enabled = FindConVar("vsh2_enabled");
 		vsh2cvars.m_version = FindConVar("vsh2_version");
+		vsh2cvars.m_fljarate = FindConVar("vsh2_jarate_rage");
 		
 		ff2.m_subplugins = new ArrayList(MAX_SUBPLUGIN_NAME);
 		VSH2_Hook(OnMusic, OnMusicFF2);
@@ -103,6 +113,9 @@ public void OnLibraryAdded(const char[] name) {
 		VSH2_Hook(OnBossTakeDamage_OnStabbed, OnBossBackstabFF2);
 		VSH2_Hook(OnBossTaunt, OnBossTauntFF2);
 		VSH2_Hook(OnScoreTally, OnScoreTallyFF2);
+		VSH2_Hook(OnBossDealDamage_OnHitShield, OnHurtShieldFF2);
+		VSH2_Hook(OnRoundStart, PostRoundStartFF2);
+		VSH2_Hook(OnBossJarated, OnBossJaratedFF2);
 		for( int i=MaxClients; i; i-- )
 			if( 0 < i <= MaxClients && IsClientInGame(i) )
 				OnClientPutInServer(i);
@@ -304,6 +317,54 @@ public void FinishQueueArray()
 	}
 }
 
+public Action OnHurtShieldFF2(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action act;
+	Call_StartForward(ff2.m_forwards[FF2OnHurtShield]);
+	Call_PushCell(victim.index);
+	int shield = GetEquippedWearableForLoadoutSlot(victim.index, TFWeaponSlot_Secondary);
+	Call_PushCellRef(shield);
+	int boss = ClientToBossIndex(attacker);
+	Call_PushCell(boss);
+	Call_PushCell(attacker);
+	float damage2 = damage;
+	Call_PushCellRef(damage2);
+	Call_Finish(act);
+	if( act==Plugin_Stop )
+		return Plugin_Changed;
+	else if( act==Plugin_Handled)
+		damage = damage2;
+	
+	return Plugin_Continue;
+}
+
+public void PostRoundStartFF2(const VSH2Player[] bosses, const int boss_count, const VSH2Player[] red_players, const int red_count)
+{
+	Call_StartForward(ff2.m_forwards[FF2PostRoundStart]);
+	Call_PushArray(bosses, boss_count);
+	Call_PushArray(red_players, red_count);
+	Call_Finish();
+}
+
+public Action OnBossJaratedFF2(const VSH2Player victim, const VSH2Player attacker)
+{
+	Action act;
+	Call_StartForward(ff2.m_forwards[FF2OnBossJarated]);
+	int boss = ClientToBossIndex(victim.index);
+	Call_PushCell(boss);
+	Call_PushCell(attacker.index);
+	float rage = victim.GetPropFloat("flRage");
+	Call_PushFloatRef(rage);
+	Call_Finish(act);
+	if(act == Plugin_Stop)	return Plugin_Changed;
+	
+	rage -= vsh2cvars.m_fljarate.FloatValue;
+	if(rage <= 0.0)	rage = 0.0;
+	victim.SetPropFloat("flRage", rage);
+	
+	return Plugin_Continue;
+}
+
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
@@ -322,6 +383,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	ff2.m_forwards[FF2OnPreAbility] = new GlobalForward("FF2_PreAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell, Param_CellByRef);
 	ff2.m_forwards[FF2OnAbility] = new GlobalForward("FF2_OnAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell);
 	ff2.m_forwards[FF2OnQueuePoints] = new GlobalForward("FF2_OnAddQueuePoints", ET_Hook, Param_Array);
+	ff2.m_forwards[FF2OnHurtShield] = new GlobalForward("FF2_OnHurtShield", ET_Hook, Param_Cell, Param_CellByRef, Param_Cell, Param_Cell, Param_CellByRef);
+	ff2.m_forwards[FF2PostRoundStart] = new GlobalForward("FF2_OnPostRoundStart", ET_Ignore, Param_Array, Param_Cell, Param_Array, Param_Cell);
+	ff2.m_forwards[FF2OnBossJarated] = new GlobalForward("FF2_OnBossJarated", ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef);
 	
 	RegPluginLibrary("freak_fortress_2");
 	return APLRes_Success;
@@ -801,4 +865,34 @@ stock bool ZeroBossToVSH2Player(VSH2Player& player)
 	
 	player = players[0];
 	return true;
+}
+
+
+/**
+ * GameDataFF2, SDKCalls
+ */
+ static void Prep_GameDataFF2() {
+	GameData Config = new GameData("freak_fortess_2");
+	if(Config == null){
+		LogError("[GameData] Failed to Load \"freak_fortess_2.txt\"");
+		return;
+	}
+	
+	StartPrepSDKCall(SDKCall_Player);
+	PrepSDKCall_SetFromConf(Config, SDKConf_Signature, "CTFPlayer::GetEquippedWearableForLoadoutSlot");
+	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+	PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity, SDKPass_Pointer);
+	if((SDKCall_GetEquippedWearable = EndPrepSDKCall()) == null){
+		LogError("[SDKCall] Invalid Handle for \"CTFPlayer::GetEquippedWearableForLoadoutSlot()\"!");
+	}
+	
+	delete Config;
+}
+
+///int wearable = CTFPlayer::GetEquippedWearableForLoadoutSlot(client, slot)
+static stock int GetEquippedWearableForLoadoutSlot(int client, int slot){
+	if(SDKCall_GetEquippedWearable != null){
+		return SDKCall(SDKCall_GetEquippedWearable, client, slot);
+	}
+	else return -1;
 }
