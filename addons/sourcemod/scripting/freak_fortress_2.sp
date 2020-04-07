@@ -503,7 +503,7 @@ public int Native_FF2_GetBossSpecial(Handle plugin, int numParams)
 	;
 	char[] name = new char[buflen];
 	
-	ConfigMap cfg = GetFF2Config(index, !!meaning);
+	ConfigMap cfg = GetFF2Config(index, view_as<bool>(meaning));
 	if( cfg != null ) {
 		bool result = cfg.Get("character.name", name, buflen);
 		if( result )
