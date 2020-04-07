@@ -964,49 +964,19 @@ public any Native_FF2_SetClientGlow(Handle plugin, int numParams)
 	return 0;
 }
 
-/** int FF2_GetAlivePlayers(int[] players, bool alives); */
+/** TODO int FF2_GetAlivePlayers(); */
 public any Native_FF2_GetAlivePlayers(Handle plugin, int numParams)
 {
-	FF2Player[] arr = new FF2Player[MaxClients];
-	bool balives = GetNativeCell(2);
-	int size = VSH2GameMode_GetFighters(arr, balives);
-	SetNativeArray(1, arr, size);
-	return size;
+	return 0;
 }
 
-/** int FF2_GetMinionPlayers(int[] minions, bool alives); */
-public int Native_FF2_GetMinionPlayers(Handle plugin, int numParams)
+/** TODO int FF2_GetBossPlayers(); */
+public any Native_FF2_GetBossPlayers(Handle plugin, int numParams)
 {
-	FF2Player[] arr = new FF2Player[MaxClients];
-	bool balives = GetNativeCell(2);
-	int size = VSH2GameMode_GetMinions(arr, balives);
-	SetNativeArray(1, arr, size);
-	return size;
+	return 0;
 }
 
-/** int FF2_GetBossPlayers(int[] bosses, bool alives); */
-public int Native_FF2_GetBossPlayers(Handle plugin, int numParams)
-{
-	FF2Player[] arr = new FF2Player[MaxClients];
-	bool balives = GetNativeCell(2);
-	int size = VSH2GameMode_GetBosses(arr, balives);
-	SetNativeArray(1, arr, size);
-	return size;
-}
-
-/** int FF2_GetClientShieldIndex(int client); */
-public any Native_FF2_GetClientShieldIndex(Handle plugin, int numParams)
-{
-	///Pollux : one returns the shield's index, and other one should return health
-	int client = GetNativeCell(1);
-	if( !IsClientValid(client) )
-		return -1;
-	
-	FF2Player player = FF2Player(client);
-	return EntRefToEntIndex(player.iShieldId);
-}
-
-/** float FF2_GetClientShieldHealth(int client); */
+/** TODO float FF2_GetClientShield(int client); */
 public any Native_FF2_GetClientShieldHealth(Handle plugin, int numParams)
 {
 	int client = GetNativeCell(1);
@@ -1014,7 +984,7 @@ public any Native_FF2_GetClientShieldHealth(Handle plugin, int numParams)
 		return 0.0;
 	
 	FF2Player player = FF2Player(client);
-	return player.iShieldHP;
+	return (player.iShieldId == -1) ? -1:RoundFloat(player.iShieldHP);
 }
 
 /** TODO void FF2_SetClientShield(int client, int entity=0, float health=0.0, float reduction=-1.0); */
@@ -1025,12 +995,13 @@ public any Native_FF2_SetClientShield(Handle plugin, int numParams)
 		return 0;
 	
 	int shield = GetNativeCell(2);
-	if( shield < 0 )
+	if( !IsValidEntity(shield) )
 		return 0;
-	
+		
 	FF2Player player = FF2Player(client);
 	float health = GetNativeCell(3);
-	player.iShieldId = ( GetOwner(shield)!=client ) ? player.iShieldId : EntIndexToEntRef(shield);
+	
+	player.iShieldId = ( GetOwner(shield)!=client || shield==0 ) ? player.iShieldId : EntIndexToEntRef(shield);
 	player.iShieldHP = health;
 	
 	return 0;
