@@ -1003,7 +1003,7 @@ public any Native_FF2_GetClientShieldIndex(Handle plugin, int numParams)
 		return -1;
 	
 	FF2Player player = FF2Player(client);
-	return player.iShieldId;
+	return EntRefToEntIndex(player.iShieldId);
 }
 
 /** float FF2_GetClientShieldHealth(int client); */
@@ -1030,7 +1030,7 @@ public any Native_FF2_SetClientShield(Handle plugin, int numParams)
 	
 	FF2Player player = FF2Player(client);
 	float health = GetNativeCell(3);
-	player.iShieldId = ( GetOwner(shield)!=client ) ? player.iShieldId : shield;
+	player.iShieldId = ( GetOwner(shield)!=client ) ? player.iShieldId : EntIndexToEntRef(shield);
 	player.iShieldHP = health;
 	
 	return 0;
@@ -1047,7 +1047,7 @@ public any Native_FF2_RemoveClientShield(Handle plugin, int numParams)
 	player.iShieldHP = 0.0;
 	
 	int shield = GetEquippedWearableForLoadoutSlot(client, TFWeaponSlot_Secondary);
-	if( shield ==-1 )
+	if( shield == -1 || player.iShieldId == -1 )
 		return false;
 	
 	TF2_RemoveWearable(client, shield);
