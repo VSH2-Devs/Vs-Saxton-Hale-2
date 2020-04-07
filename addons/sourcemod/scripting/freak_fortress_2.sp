@@ -336,7 +336,7 @@ public void FinishQueueArray()
 			if( !IsClientInGame(i) )
 				continue;
 			
-			VSH2Player player = VSH2Player(i);
+			FF2Player player = FF2Player(i);
 			player.SetPropInt("iQueue", points[i] - ff2.m_queuePoints[i] + player.GetPropInt("iQueue"));
 		}
 	} else if( action != Plugin_Continue ) {
@@ -344,7 +344,7 @@ public void FinishQueueArray()
 			if( !IsClientInGame(i) )
 				continue;
 			
-			VSH2Player player = VSH2Player(i);
+			FF2Player player = FF2Player(i);
 			player.SetPropInt("iQueue", player.GetPropInt("iQueue") - ff2.m_queuePoints[i]);
 		}
 	}
@@ -470,10 +470,10 @@ public int Native_FF2_GetBossUserId(Handle plugin, int numParams)
 	if( boss < 0 || boss > MaxClients )
 		return -1;
 	else if( boss==0 ) {
-		VSH2Player player;
-		return( ZeroBossToVSH2Player(player) ) ? player.userid : -1;
+		FF2Player player;
+		return( ZeroBossToFF2Player(player) ) ? player.userid : -1;
 	}
-	VSH2Player player = VSH2Player(boss);
+	FF2Player player = FF2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.userid : -1;
 }
 
@@ -520,10 +520,10 @@ public int Native_FF2_GetBossHealth(Handle plugin, int numParams)
 	if( boss < 0 || boss > MaxClients )
 		return 0;
 	else if( boss==0 ) {
-		VSH2Player player;
-		return( ZeroBossToVSH2Player(player) ) ? player.iHealth : 0;
+		FF2Player player;
+		return( ZeroBossToFF2Player(player) ) ? player.iHealth : 0;
 	}
-	VSH2Player player = VSH2Player(boss);
+	FF2Player player = FF2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.iHealth : 0;
 }
 
@@ -536,10 +536,10 @@ public any Native_FF2_SetBossHealth(Handle plugin, int numParams)
 	
 	int new_health = GetNativeCell(2);
 	if( boss==0 ) {
-		VSH2Player player;
-		return( ZeroBossToVSH2Player(player) ) ? player.SetPropInt("iHealth", new_health) : false;
+		FF2Player player;
+		return( ZeroBossToFF2Player(player) ) ? player.SetPropInt("iHealth", new_health) : false;
 	}
-	VSH2Player player = VSH2Player(boss);
+	FF2Player player = FF2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.SetPropInt("iHealth", new_health) : false;
 }
 
@@ -550,10 +550,10 @@ public int Native_FF2_GetBossMaxHealth(Handle plugin, int numParams)
 	if( boss < 0 || boss > MaxClients )
 		return 0;
 	else if( boss==0 ) {
-		VSH2Player player;
-		return( ZeroBossToVSH2Player(player) ) ? player.GetPropInt("iMaxHealth") : 0;
+		FF2Player player;
+		return( ZeroBossToFF2Player(player) ) ? player.GetPropInt("iMaxHealth") : 0;
 	}
-	VSH2Player player = VSH2Player(boss);
+	FF2Player player = FF2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.GetPropInt("iMaxHealth") : 0;
 }
 
@@ -566,10 +566,10 @@ public any Native_FF2_SetBossMaxHealth(Handle plugin, int numParams)
 	
 	int new_maxhealth = GetNativeCell(2);
 	if( boss==0 ) {
-		VSH2Player player;
-		return( ZeroBossToVSH2Player(player) ) ? player.SetPropInt("iMaxHealth", new_maxhealth) : false;
+		FF2Player player;
+		return( ZeroBossToFF2Player(player) ) ? player.SetPropInt("iMaxHealth", new_maxhealth) : false;
 	}
-	VSH2Player player = VSH2Player(boss);
+	FF2Player player = FF2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.SetPropInt("iMaxHealth", new_maxhealth) : false;
 }
 
@@ -580,10 +580,10 @@ public int Native_FF2_GetBossLives(Handle plugin, int numParams)
 	if( boss < 0 || boss > MaxClients )
 		return 0;
 	else if( boss==0 ) {
-		VSH2Player player;
-		return( ZeroBossToVSH2Player(player) ) ? player.GetPropInt("iLives") : 0;
+		FF2Player player;
+		return( ZeroBossToFF2Player(player) ) ? player.GetPropInt("iLives") : 0;
 	}
-	VSH2Player player = VSH2Player(boss);
+	FF2Player player = FF2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.GetPropInt("iLives") : 0;
 }
 
@@ -596,10 +596,10 @@ public any Native_FF2_SetBossLives(Handle plugin, int numParams)
 	
 	int lives = GetNativeCell(2);
 	if( boss==0 ) {
-		VSH2Player player;
-		return( ZeroBossToVSH2Player(player) ) ? player.SetPropInt("iLives", lives) : false;
+		FF2Player player;
+		return( ZeroBossToFF2Player(player) ) ? player.SetPropInt("iLives", lives) : false;
 	}
-	VSH2Player player = VSH2Player(boss);
+	FF2Player player = FF2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.SetPropInt("iLives", lives) : false;
 }
 
@@ -610,10 +610,10 @@ public int Native_FF2_GetBossMaxLives(Handle plugin, int numParams)
 	if( boss < 0 || boss > MaxClients )
 		return 0;
 	else if( boss==0 ) {
-		VSH2Player player;
-		return( ZeroBossToVSH2Player(player) ) ? player.GetPropInt("iMaxLives") : 0;
+		FF2Player player;
+		return( ZeroBossToFF2Player(player) ) ? player.GetPropInt("iMaxLives") : 0;
 	}
-	VSH2Player player = VSH2Player(boss);
+	FF2Player player = FF2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.GetPropInt("iMaxLives") : 0;
 }
 
@@ -626,10 +626,10 @@ public any Native_FF2_SetBossMaxLives(Handle plugin, int numParams)
 	
 	int lives = GetNativeCell(2);
 	if( boss==0 ) {
-		VSH2Player player;
-		return( ZeroBossToVSH2Player(player) ) ? player.SetPropInt("iMaxLives", lives) : false;
+		FF2Player player;
+		return( ZeroBossToFF2Player(player) ) ? player.SetPropInt("iMaxLives", lives) : false;
 	}
-	VSH2Player player = VSH2Player(boss);
+	FF2Player player = FF2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.SetPropInt("iMaxLives", lives) : false;
 }
 
@@ -640,7 +640,7 @@ public any Native_FF2_SetQueuePoints(Handle plugin, int numParams)
 	if( client <= 0 || client > MaxClients )
 		return 0;
 	int q = GetNativeCell(2);
-	VSH2Player player = VSH2Player(client);
+	FF2Player player = FF2Player(client);
 	return player.SetPropInt("iQueue", q);
 }
 
@@ -651,7 +651,7 @@ public any Native_FF2_GetQueuePoints(Handle plugin, int numParams)
 	if( client <= 0 || client > MaxClients )
 		return -1;    /// Batfoxkid: In FF2, invalid client throws an error
 	
-	VSH2Player player = VSH2Player(client);
+	FF2Player player = FF2Player(client);
 	return player.GetPropInt("iQueue");
 }
 
@@ -1090,7 +1090,7 @@ public any Native_ZZZ(Handle plugin, int numParams)
 
 stock int ClientToBossIndex(int client)
 {
-	VSH2Player[] players = new VSH2Player[MaxClients];
+	FF2Player[] players = new FF2Player[MaxClients];
 	int amount_of_bosses = VSH2GameMode_GetBosses(players, false);
 	if( amount_of_bosses > 0 ) {
 		for( int i; i<amount_of_bosses; i++ ) {
@@ -1104,9 +1104,9 @@ stock int ClientToBossIndex(int client)
 	return -1;
 }
 
-stock bool ZeroBossToVSH2Player(VSH2Player& player)
+stock bool ZeroBossToFF2Player(FF2Player& player)
 {
-	VSH2Player[] players = new VSH2Player[MaxClients];
+	FF2Player[] players = new FF2Player[MaxClients];
 	if( VSH2GameMode_GetBosses(players, false) < 1 )
 		return false;
 	
