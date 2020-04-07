@@ -243,7 +243,7 @@ public void OnPlayerKilledFF2(const VSH2Player player, const VSH2Player victim, 
 	
 	/// TODO: FF2_OnAlivePlayersChanged is called more ways, OnClientDisconnect, player_spawn, arena_round_start
 	Call_StartForward(ff2.m_forwards[FF2OnAlive]);
-	VSH2Player[] array = new VSH2Player[MaxClients];
+	FF2Player[] array = new FF2Player[MaxClients];
 	Call_PushCell(VSH2GameMode_GetFighters(array, true));
 	int bosses = VSH2GameMode_GetBosses(array, true);
 	Call_PushCell(bosses+VSH2GameMode_GetMinions(array, true));
@@ -964,26 +964,34 @@ public any Native_FF2_SetClientGlow(Handle plugin, int numParams)
 	return 0;
 }
 
-/** int FF2_GetAlivePlayers(); */
+/** int FF2_GetAlivePlayers(int[] players, bool alives); */
 public any Native_FF2_GetAlivePlayers(Handle plugin, int numParams)
 {
-	int total;
-	for ( int x = 1; x <= MaxClients; x++ ) {
-		if( IsClientValid(x) && ClientToBossIndex(x) < 0 )
-			total++;
-	}
-	return total;
+	FF2Player[] arr = new FF2Player[MaxClients];
+	bool balives = GetNativeCell(2);
+	int size = VSH2GameMode_GetFighters(arr, balives);
+	SetNativeArray(1, arr, size);
+	return size;
 }
 
-/** int FF2_GetBossPlayers(); */
-public any Native_FF2_GetBossPlayers(Handle plugin, int numParams)
+/** int FF2_GetMinionPlayers(int[] minions, bool alives); */
+public int Native_FF2_GetMinionPlayers(Handle plugin, int numParams)
 {
-	int total;
-	for ( int x = 1; x <= MaxClients; x++ ) {
-		if( IsClientValid(x) && ClientToBossIndex(x) >= 0 )
-			total++;
-	}
-	return total;
+	FF2Player[] arr = new FF2Player[MaxClients];
+	bool balives = GetNativeCell(2);
+	int size = VSH2GameMode_GetMinions(arr, balives);
+	SetNativeArray(1, arr, size);
+	return size;
+}
+
+/** int FF2_GetBossPlayers(int[] bosses, bool alives); */
+public int Native_FF2_GetBossPlayers(Handle plugin, int numParams)
+{
+	FF2Player[] arr = new FF2Player[MaxClients];
+	bool balives = GetNativeCell(2);
+	int size = VSH2GameMode_GetBosses(arr, balives);
+	SetNativeArray(1, arr, size);
+	return size;
 }
 
 /** int FF2_GetClientShieldIndex(int client); */
