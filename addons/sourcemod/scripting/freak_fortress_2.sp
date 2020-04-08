@@ -4,6 +4,7 @@
 #undef REQUIRE_PLUGIN
 #include <vsh2>
 #define REQUIRE_PLUGIN
+#include <sdkhooks>
 
 #include "modules/cfg.sp"
 #include "modules/stocks.inc"
@@ -11,9 +12,11 @@
 #pragma semicolon        1
 #pragma newdecls         required
 
+#define IsClientValid(%1)    ( 0 < (%1) && (%1) <= MaxClients && IsClientInGame((%1)) )
+
 public Plugin myinfo = {
 	name           = "VSH2/FF2 Compatibility Engine",
-	author         = "Nergal/Assyrianic & BatFoxKid",
+	author         = "Nergal/Assyrianic, BatFoxKid and 01Pollux",
 	description    = "Implements FF2's forwards & natives using VSH2's API",
 	version        = "1.0b",
 	url            = "https://github.com/VSH2-Devs/Vs-Saxton-Hale-2"
@@ -52,6 +55,24 @@ methodmap FF2Player < VSH2Player {
 		}
 		public set(int val) {
 			this.SetPropInt("iCfg", val);
+		}
+	}
+	
+	property int iShieldId {
+		public get() {
+			return this.GetPropInt("iShieldId");
+		}
+		public set(int val) {
+			this.SetPropInt("iShieldId", val);
+		}
+	}
+	
+	property float iShieldHP {
+		public get() {
+			return this.GetPropFloat("iShieldHP");
+		}
+		public set(float val) {
+			this.SetPropFloat("iShieldHP", val);
 		}
 	}
 }
@@ -137,6 +158,8 @@ public void OnClientPutInServer(int client)
 	FF2Player player = FF2Player(client);
 	player.iMaxLives = 0;
 	player.iRageDmg = 0;
+	player.iShieldId = -1;
+	player.iShieldHP = 0.0;
 }
 
 public void OnLibraryRemoved(const char[] name) {
@@ -220,7 +243,7 @@ public void OnPlayerKilledFF2(const VSH2Player player, const VSH2Player victim, 
 	
 	/// TODO: FF2_OnAlivePlayersChanged is called more ways, OnClientDisconnect, player_spawn, arena_round_start
 	Call_StartForward(ff2.m_forwards[FF2OnAlive]);
-	VSH2Player[] array = new VSH2Player[MaxClients];
+	FF2Player[] array = new FF2Player[MaxClients];
 	Call_PushCell(VSH2GameMode_GetFighters(array, true));
 	int bosses = VSH2GameMode_GetBosses(array, true);
 	Call_PushCell(bosses+VSH2GameMode_GetMinions(array, true));
@@ -313,7 +336,7 @@ public void FinishQueueArray()
 			if( !IsClientInGame(i) )
 				continue;
 			
-			VSH2Player player = VSH2Player(i);
+			FF2Player player = FF2Player(i);
 			player.SetPropInt("iQueue", points[i] - ff2.m_queuePoints[i] + player.GetPropInt("iQueue"));
 		}
 	} else if( action != Plugin_Continue ) {
@@ -321,7 +344,7 @@ public void FinishQueueArray()
 			if( !IsClientInGame(i) )
 				continue;
 			
-			VSH2Player player = VSH2Player(i);
+			FF2Player player = FF2Player(i);
 			player.SetPropInt("iQueue", player.GetPropInt("iQueue") - ff2.m_queuePoints[i]);
 		}
 	}
@@ -351,9 +374,9 @@ public Action OnHurtShieldFF2(VSH2Player victim, int& attacker, int& inflictor, 
 public void PostRoundStartFF2(const VSH2Player[] bosses, const int boss_count, const VSH2Player[] red_players, const int red_count)
 {
 	Call_StartForward(ff2.m_forwards[FF2PostRoundStart]);
-	Call_PushArray(bosses, boss_count + 1);
+	Call_PushArray(bosses, boss_count);
 	Call_PushCell(boss_count);
-	Call_PushArray(red_players, red_count + 1);
+	Call_PushArray(red_players, red_count);
 	Call_PushCell(red_count);
 	Call_Finish();
 }
@@ -447,10 +470,10 @@ public int Native_FF2_GetBossUserId(Handle plugin, int numParams)
 	if( boss < 0 || boss > MaxClients )
 		return -1;
 	else if( boss==0 ) {
-		VSH2Player player;
-		return( ZeroBossToVSH2Player(player) ) ? player.userid : -1;
+		FF2Player player;
+		return( ZeroBossToFF2Player(player) ) ? player.userid : -1;
 	}
-	VSH2Player player = VSH2Player(boss);
+	FF2Player player = FF2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.userid : -1;
 }
 
@@ -480,7 +503,7 @@ public int Native_FF2_GetBossSpecial(Handle plugin, int numParams)
 	;
 	char[] name = new char[buflen];
 	
-	ConfigMap cfg = GetFF2Config(index, meaning);
+	ConfigMap cfg = GetFF2Config(index, view_as<bool>(meaning));
 	if( cfg != null ) {
 		bool result = cfg.Get("character.name", name, buflen);
 		if( result )
@@ -497,10 +520,10 @@ public int Native_FF2_GetBossHealth(Handle plugin, int numParams)
 	if( boss < 0 || boss > MaxClients )
 		return 0;
 	else if( boss==0 ) {
-		VSH2Player player;
-		return( ZeroBossToVSH2Player(player) ) ? player.iHealth : 0;
+		FF2Player player;
+		return( ZeroBossToFF2Player(player) ) ? player.iHealth : 0;
 	}
-	VSH2Player player = VSH2Player(boss);
+	FF2Player player = FF2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.iHealth : 0;
 }
 
@@ -513,10 +536,10 @@ public any Native_FF2_SetBossHealth(Handle plugin, int numParams)
 	
 	int new_health = GetNativeCell(2);
 	if( boss==0 ) {
-		VSH2Player player;
-		return( ZeroBossToVSH2Player(player) ) ? player.SetPropInt("iHealth", new_health) : false;
+		FF2Player player;
+		return( ZeroBossToFF2Player(player) ) ? player.SetPropInt("iHealth", new_health) : false;
 	}
-	VSH2Player player = VSH2Player(boss);
+	FF2Player player = FF2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.SetPropInt("iHealth", new_health) : false;
 }
 
@@ -527,10 +550,10 @@ public int Native_FF2_GetBossMaxHealth(Handle plugin, int numParams)
 	if( boss < 0 || boss > MaxClients )
 		return 0;
 	else if( boss==0 ) {
-		VSH2Player player;
-		return( ZeroBossToVSH2Player(player) ) ? player.GetPropInt("iMaxHealth") : 0;
+		FF2Player player;
+		return( ZeroBossToFF2Player(player) ) ? player.GetPropInt("iMaxHealth") : 0;
 	}
-	VSH2Player player = VSH2Player(boss);
+	FF2Player player = FF2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.GetPropInt("iMaxHealth") : 0;
 }
 
@@ -543,10 +566,10 @@ public any Native_FF2_SetBossMaxHealth(Handle plugin, int numParams)
 	
 	int new_maxhealth = GetNativeCell(2);
 	if( boss==0 ) {
-		VSH2Player player;
-		return( ZeroBossToVSH2Player(player) ) ? player.SetPropInt("iMaxHealth", new_maxhealth) : false;
+		FF2Player player;
+		return( ZeroBossToFF2Player(player) ) ? player.SetPropInt("iMaxHealth", new_maxhealth) : false;
 	}
-	VSH2Player player = VSH2Player(boss);
+	FF2Player player = FF2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.SetPropInt("iMaxHealth", new_maxhealth) : false;
 }
 
@@ -557,10 +580,10 @@ public int Native_FF2_GetBossLives(Handle plugin, int numParams)
 	if( boss < 0 || boss > MaxClients )
 		return 0;
 	else if( boss==0 ) {
-		VSH2Player player;
-		return( ZeroBossToVSH2Player(player) ) ? player.GetPropInt("iLives") : 0;
+		FF2Player player;
+		return( ZeroBossToFF2Player(player) ) ? player.GetPropInt("iLives") : 0;
 	}
-	VSH2Player player = VSH2Player(boss);
+	FF2Player player = FF2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.GetPropInt("iLives") : 0;
 }
 
@@ -573,10 +596,10 @@ public any Native_FF2_SetBossLives(Handle plugin, int numParams)
 	
 	int lives = GetNativeCell(2);
 	if( boss==0 ) {
-		VSH2Player player;
-		return( ZeroBossToVSH2Player(player) ) ? player.SetPropInt("iLives", lives) : false;
+		FF2Player player;
+		return( ZeroBossToFF2Player(player) ) ? player.SetPropInt("iLives", lives) : false;
 	}
-	VSH2Player player = VSH2Player(boss);
+	FF2Player player = FF2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.SetPropInt("iLives", lives) : false;
 }
 
@@ -587,10 +610,10 @@ public int Native_FF2_GetBossMaxLives(Handle plugin, int numParams)
 	if( boss < 0 || boss > MaxClients )
 		return 0;
 	else if( boss==0 ) {
-		VSH2Player player;
-		return( ZeroBossToVSH2Player(player) ) ? player.GetPropInt("iMaxLives") : 0;
+		FF2Player player;
+		return( ZeroBossToFF2Player(player) ) ? player.GetPropInt("iMaxLives") : 0;
 	}
-	VSH2Player player = VSH2Player(boss);
+	FF2Player player = FF2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.GetPropInt("iMaxLives") : 0;
 }
 
@@ -603,10 +626,10 @@ public any Native_FF2_SetBossMaxLives(Handle plugin, int numParams)
 	
 	int lives = GetNativeCell(2);
 	if( boss==0 ) {
-		VSH2Player player;
-		return( ZeroBossToVSH2Player(player) ) ? player.SetPropInt("iMaxLives", lives) : 0;
+		FF2Player player;
+		return( ZeroBossToFF2Player(player) ) ? player.SetPropInt("iMaxLives", lives) : false;
 	}
-	VSH2Player player = VSH2Player(boss);
+	FF2Player player = FF2Player(boss);
 	return( player && player.GetPropAny("bIsBoss") ) ? player.SetPropInt("iMaxLives", lives) : false;
 }
 
@@ -617,7 +640,7 @@ public any Native_FF2_SetQueuePoints(Handle plugin, int numParams)
 	if( client <= 0 || client > MaxClients )
 		return 0;
 	int q = GetNativeCell(2);
-	VSH2Player player = VSH2Player(client);
+	FF2Player player = FF2Player(client);
 	return player.SetPropInt("iQueue", q);
 }
 
@@ -628,7 +651,7 @@ public any Native_FF2_GetQueuePoints(Handle plugin, int numParams)
 	if( client <= 0 || client > MaxClients )
 		return -1;    /// Batfoxkid: In FF2, invalid client throws an error
 	
-	VSH2Player player = VSH2Player(client);
+	FF2Player player = FF2Player(client);
 	return player.GetPropInt("iQueue");
 }
 
@@ -676,7 +699,7 @@ public any Native_FF2_GetBossCharge(Handle plugin, int numParams)
 		}
 		default: {
 			char ability_key[64];
-			Format(ability_key, "character.ability%i.name", slot);
+			Format(ability_key, sizeof(ability_key), "character.ability%i.name", slot);
 			ConfigMap config = GetFF2Config(client);
 			int len = config.GetSize(ability_key);
 			char[] ability_name = new char[len];
@@ -687,12 +710,13 @@ public any Native_FF2_GetBossCharge(Handle plugin, int numParams)
 					return player.GetPropFloat("flCharge");
 				} else {
 					char new_ability[64];
-					Format(new_ability, "flCharge%i", slot);
+					Format(new_ability, sizeof(ability_key), "flCharge%i", slot);
 					return player.GetPropFloat(new_ability);
 				}
 			}
 		}
 	}
+	return 0.0;
 }
 
 /** TODO void FF2_SetBossCharge(int boss, int slot, float value); */
@@ -711,7 +735,7 @@ public any Native_FF2_SetBossCharge(Handle plugin, int numParams)
 		}
 		default: {
 			char ability_key[64];
-			Format(ability_key, "character.ability%i.name", slot);
+			Format(ability_key, sizeof(ability_key), "character.ability%i.name", slot);
 			ConfigMap config = GetFF2Config(client);
 			int len = config.GetSize(ability_key);
 			char[] ability_name = new char[len];
@@ -721,8 +745,8 @@ public any Native_FF2_SetBossCharge(Handle plugin, int numParams)
 				} else if( StrContains(ability_name, "bravejump", false) != -1 ) {
 					return player.SetPropFloat("flCharge", value);
 				} else {
-					char new_ability[20];
-					Format(new_ability, "flCharge%i", slot);
+					char new_ability[64];
+					Format(new_ability, sizeof(ability_key), "flCharge%i", slot);
 					return player.SetPropFloat(new_ability, value);
 				}
 			}
@@ -753,8 +777,20 @@ public any Native_FF2_SetBossRageDamage(Handle plugin, int numParams)
 public int Native_FF2_GetClientDamage(Handle plugin, int numParams)
 {
 	int client = GetNativeCell(1);
+	if( !IsClientValid(client) )
+		return 0;
 	FF2Player player = FF2Player(client);
 	return player.GetPropInt("iDamage");
+}
+
+/** void FF2_SetClientDamage(int client, int val); */
+public int Native_FF2_SetClientDamage(Handle plugin, int numParams)
+{
+	int client = GetNativeCell(1);
+	if( !IsClientValid(client) )
+		return 0;
+	FF2Player player = FF2Player(client);
+	return player.SetPropInt("iDamage", GetNativeCell(2));
 }
 
 /** float FF2_GetRageDist(int boss=0, const char[] pluginName="", const char[] abilityName=""); */
@@ -803,6 +839,7 @@ public any Native_FF2_GetRageDist(Handle plugin, int numParams)
 	}
 	return 0.0;
 	*/
+	return 0.0;
 }
 
 /** TODO bool FF2_HasAbility(int boss, const char[] pluginName, const char[] abilityName); */
@@ -897,15 +934,33 @@ public any Native_FF2_SetFF2flags(Handle plugin, int numParams)
 	return 0;
 }
 
-/** TODO float FF2_GetClientGlow(int client); */
+/** float FF2_GetClientGlow(int client); */
 public any Native_FF2_GetClientGlow(Handle plugin, int numParams)
 {
-	return 0;
+	int client = GetNativeCell(1);
+	if(!GetEntProp(client, Prop_Send, "m_bGlowEnabled"))
+		return 0.0;
+	
+	FF2Player player = FF2Player(client);
+	return (player.GetPropFloat("flGlowtime"));
 }
 
-/** TODO void FF2_SetClientGlow(int client, float time1, float time2=-1.0); */
+/** void FF2_SetClientGlow(int client, float time1, float time2=-1.0); */
 public any Native_FF2_SetClientGlow(Handle plugin, int numParams)
 {
+	int client = GetNativeCell(1);
+	if( !IsClientValid(client) )
+		return 0;
+	
+	FF2Player player = FF2Player(client);
+	float time1 = GetNativeCell(2);
+	float time2 = GetNativeCell(3);
+	float glowt = player.GetPropFloat("flGlowtime");
+	player.SetPropFloat("fl_GLowTime", glowt + time1);
+	
+	if( time2 > 0.0 )
+		player.SetPropFloat("fl_GLowTime", time2);
+	
 	return 0;
 }
 
@@ -922,21 +977,54 @@ public any Native_FF2_GetBossPlayers(Handle plugin, int numParams)
 }
 
 /** TODO float FF2_GetClientShield(int client); */
-public any Native_FF2_GetClientShield(Handle plugin, int numParams)
+public any Native_FF2_GetClientShieldHealth(Handle plugin, int numParams)
 {
-	return 0;
+	int client = GetNativeCell(1);
+	if( !IsClientValid(client) )
+		return 0.0;
+	
+	FF2Player player = FF2Player(client);
+	return (player.iShieldId == -1) ? -1:RoundFloat(player.iShieldHP);
 }
 
-/** TODO void FF2_SetClientShield(int client, int entity=0, float health=-1.0, float reduction=-1.0); */
+/** TODO void FF2_SetClientShield(int client, int entity=0, float health=0.0, float reduction=-1.0); */
 public any Native_FF2_SetClientShield(Handle plugin, int numParams)
 {
+	int client = GetNativeCell(1);
+	if( !IsClientValid(client) )
+		return 0;
+	
+	int shield = GetNativeCell(2);
+	if( !IsValidEntity(shield) )
+		return 0;
+		
+	FF2Player player = FF2Player(client);
+	float health = GetNativeCell(3);
+	
+	player.iShieldId = ( GetOwner(shield)!=client || shield==0 ) ? player.iShieldId : EntIndexToEntRef(shield);
+	player.iShieldHP = health;
+	
 	return 0;
 }
 
-/** TODO void FF2_RemoveClientShield(int client); */
+/** bool FF2_RemoveClientShield(int client); */
 public any Native_FF2_RemoveClientShield(Handle plugin, int numParams)
 {
-	return 0;
+	int client = GetNativeCell(1);
+	if( !IsClientValid(client) )
+		return false;
+	
+	FF2Player player = FF2Player(client);
+	player.iShieldHP = 0.0;
+	
+	int shield = GetEquippedWearableForLoadoutSlot(client, TFWeaponSlot_Secondary);
+	if( shield == -1 || player.iShieldId == -1 )
+		return false;
+	
+	TF2_RemoveWearable(client, shield);
+	player.iShieldId = -1;
+	
+	return true;
 }
 
 /** TODO void FF2_MakeBoss(int client, int boss, int special=-1, bool rival=false); */
@@ -973,7 +1061,7 @@ public any Native_ZZZ(Handle plugin, int numParams)
 
 stock int ClientToBossIndex(int client)
 {
-	VSH2Player[] players = new VSH2Player[MaxClients];
+	FF2Player[] players = new FF2Player[MaxClients];
 	int amount_of_bosses = VSH2GameMode_GetBosses(players, false);
 	if( amount_of_bosses > 0 ) {
 		for( int i; i<amount_of_bosses; i++ ) {
@@ -987,9 +1075,9 @@ stock int ClientToBossIndex(int client)
 	return -1;
 }
 
-stock bool ZeroBossToVSH2Player(VSH2Player& player)
+stock bool ZeroBossToFF2Player(FF2Player& player)
 {
-	VSH2Player[] players = new VSH2Player[MaxClients];
+	FF2Player[] players = new FF2Player[MaxClients];
 	if( VSH2GameMode_GetBosses(players, false) < 1 )
 		return false;
 	
@@ -1007,7 +1095,7 @@ stock ConfigMap GetFF2Config(const int index=0, const bool is_cfg_index=false)
 		if( player.iCfg > -1 && player.iCfg < ff2.m_bosscfgs.Length )
 			cfg_index = player.iCfg;
 	}
-	return( cfg_index != -1 ) ? ff2.m_bosscfgs.Get(cfg_index) : null;
+	return( cfg_index != -1 ) ? ff2.m_bosscfgs.Get(cfg_index) : view_as<ConfigMap>(null);
 }
 
 
@@ -1019,9 +1107,9 @@ static Handle SDKCall_GetEquippedWearable = null;
 
 static void Prep_GameDataFF2()
 {
-	GameData config = new GameData("freak_fortess_2");
+	GameData config = new GameData("freak_fortress_2");
 	if( config==null ) {
-		LogError("[VSH/FF2] Failed to Load \"freak_fortess_2.txt\" GameData.");
+		LogError("[VSH/FF2] Failed to Load \"freak_fortress_2.txt\" GameData.");
 		return;
 	}
 	

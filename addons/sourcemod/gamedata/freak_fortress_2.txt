@@ -11,5 +11,13 @@
 				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x8B\xC1\x53\x56\x33\xF6"
 			}
 		}
+		"Offsets"
+		{
+			"CBasePlayer::EquipWearable"
+			{
+				"linux"		"431"
+				"windows"	"430"
+			}
+		}
 	}
 }
