@@ -216,9 +216,9 @@ public void Template_OnBossThink(const VSH2Player player)
 	if( !IsPlayerAlive(client) || !IsTemplate(player) )
 		return;
 	
-	VSH2_SpeedThink(player, 340.0);
-	VSH2_GlowThink(player, 0.1);
-	if( VSH2_SuperJumpThink(player, 2.5, 25.0) ) {
+	player.SpeedThink(340.0);
+	player.GlowThink(0.1);
+	if( player.SuperJumpThink(2.5, 25.0) ) {
 		player.PlayVoiceClip(TemplateJump[GetRandomInt(0, sizeof(TemplateJump)-1)], VSH2_VOICE_ABILITY);
 		player.SuperJump(player.GetPropFloat("flCharge"), -100.0);
 	}
@@ -226,7 +226,7 @@ public void Template_OnBossThink(const VSH2Player player)
 	if( OnlyScoutsLeft(VSH2Team_Red) )
 		player.SetPropFloat("flRAGE", player.GetPropFloat("flRAGE") + g_vsh2_cvars.scout_rage_gen.FloatValue);
 	
-	VSH2_WeighDownThink(player, 2.0, 0.1);
+	player.WeighDownThink(2.0, 0.1);
 	
 	/// hud code
 	SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);

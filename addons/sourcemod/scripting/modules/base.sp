@@ -747,6 +747,15 @@ methodmap BaseBoss < BaseFighter {
 			g_vsh2.m_hPlayerFields[this.index].SetValue("flWeighDown", val);
 		}
 	}
+	property float flMusicTime {
+		public get() {
+			float i; g_vsh2.m_hPlayerFields[this.index].GetValue("flMusicTime", i);
+			return i;
+		}
+		public set( const float val ) {
+			g_vsh2.m_hPlayerFields[this.index].SetValue("flMusicTime", val);
+		}
+	}
 	
 	public void ConvertToBoss() {
 		this.bIsBoss = this.bSetOnSpawn;
@@ -994,6 +1003,17 @@ methodmap BaseBoss < BaseFighter {
 			if( ang[0] > 60.0 )
 				this.WeighDown(0.0);
 		}
+	}
+	
+	public void PlayMusic(const float vol) {
+		if( this.bNoMusic )
+			return;
+		
+		EmitSoundToClient(this.index, g_vsh2.m_strBackgroundSong, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+	}
+	
+	public void StopMusic() {
+		StopSound(this.index, SNDCHAN_AUTO, g_vsh2.m_strBackgroundSong);
 	}
 };
 

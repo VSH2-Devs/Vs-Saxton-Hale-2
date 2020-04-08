@@ -255,9 +255,9 @@ public void PlagueDoc_OnBossThink(const VSH2Player boss)
 	
 	CPlague player = ToCPlague(boss);
 	
-	VSH2_SpeedThink(boss, 340.0);
-	VSH2_GlowThink(boss, 0.1);
-	if( VSH2_SuperJumpThink(boss, 2.5, 25.0) ) {
+	player.SpeedThink(340.0);
+	player.GlowThink(0.1);
+	if( player.SuperJumpThink(2.5, 25.0) ) {
 		player.SuperJump(player.flCharge, -100.0);
 		player.PlayVoiceClip("vo/medic_yes01.mp3", VSH2_VOICE_ABILITY);
 	}
@@ -265,7 +265,7 @@ public void PlagueDoc_OnBossThink(const VSH2Player boss)
 	if( OnlyScoutsLeft(VSH2Team_Red) )
 		player.flRAGE += g_vsh2_scout_rage_gen.FloatValue;
 	
-	VSH2_WeighDownThink(boss, 3.0, 0.1);
+	player.WeighDownThink(3.0, 0.1);
 	
 	/// hud code
 	SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);

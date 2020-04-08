@@ -1,23 +1,24 @@
 public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !g_vsh2.m_hCvars[Enabled].BoolValue || gamemode.iRoundState == StateDisabled )
+	int roundstate = gamemode.iRoundState;
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue || roundstate==StateDisabled )
 		return Plugin_Continue;
 	
-	BaseBoss player = BaseBoss( event.GetInt("userid"), true );
+	BaseBoss player = BaseBoss(event.GetInt("userid"), true);
 	if( player && IsClientInGame(player.index) ) {
 		SetVariantString(""); AcceptEntityInput(player.index, "SetCustomModel");
 		player.SetOverlay("0");
 		
-		if( player.bIsBoss && (StateDisabled < gamemode.iRoundState < StateEnding) ) {
+		if( player.bIsBoss && (StateDisabled < roundstate < StateEnding) ) {
 			if( GetClientTeam(player.index) != VSH2Team_Boss )
 				player.ForceTeamChange(VSH2Team_Boss);
 			
-			player.ConvertToBoss();		/// in base.sp
+			player.ConvertToBoss();    /// in base.sp
 			if( player.iHealth <= 0 )
 				player.iHealth = player.iMaxHealth;
 		}
 		
-		if( !player.bIsBoss && (StateDisabled < gamemode.iRoundState < StateEnding) && !player.bIsMinion) {
+		if( !player.bIsBoss && (StateDisabled < roundstate < StateEnding) && !player.bIsMinion) {
 			if( GetClientTeam(player.index) == VSH2Team_Boss )
 				player.ForceTeamChange(VSH2Team_Red);
 			SetPawnTimer(PrepPlayers, 0.2, player);
@@ -27,13 +28,13 @@ public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 }
 public Action Resupply(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !g_vsh2.m_hCvars[Enabled].BoolValue || gamemode.iRoundState == StateDisabled )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue || gamemode.iRoundState==StateDisabled )
 		return Plugin_Continue;
 	
 	BaseBoss player = BaseBoss( event.GetInt("userid"), true );
 	if( player && IsClientInGame(player.index) ) {
 		SetVariantString(""); AcceptEntityInput(player.index, "SetCustomModel");
-		player.SetOverlay("0"); //SetClientOverlay(client, "0");
+		player.SetOverlay("0");
 		
 		if( player.bIsBoss && (StateDisabled < gamemode.iRoundState < StateEnding) ) {
 			if( GetClientTeam(player.index) != VSH2Team_Boss )
@@ -47,7 +48,7 @@ public Action Resupply(Event event, const char[] name, bool dontBroadcast)
 public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
 	/// Bug patch: first round kill immediately ends the round.
-	if( !g_vsh2.m_hCvars[Enabled].BoolValue || gamemode.iRoundState == StateDisabled )
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue || gamemode.iRoundState==StateDisabled )
 		return Plugin_Continue;
 	
 	BaseBoss victim = BaseBoss( event.GetInt("userid"), true );
@@ -63,7 +64,7 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 		&& !victim.bIsBoss
 		&& !victim.bIsMinion
 		&& victim.iLives
-		&& gamemode.iRoundState == StateRunning
+		&& gamemode.iRoundState==StateRunning
 		&& !(death_flags & TF_DEATHFLAG_DEADRINGER) )
 	{
 		SetPawnTimer(_RespawnPlayer, g_vsh2.m_hCvars[MedievalRespawnTime].FloatValue, victim.userid);

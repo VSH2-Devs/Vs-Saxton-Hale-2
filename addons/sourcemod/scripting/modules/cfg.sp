@@ -226,6 +226,55 @@ methodmap ConfigMap < StringMap {
 		PackVal val;
 		return( this.GetVal(key_path, val) ) ? val.tag : KeyValType_Null;
 	}
+	
+	/**
+	 * 
+	 * name:      GetInt
+	 * @param     key_path : key path to the data you need.
+	 * @param     val : integer reference to store int data.
+	 * @param     base : numeric base to do the conversion with.
+	 * @return    Number of chars used, 0 if error.
+	 * @note      to directly access subsections, use a '.' like "root.section1.section2"
+	 *            for keys that have a dot in their name, use '\\.'
+	 */
+	public int GetInt(const char[] key_path, int& i, int base=10) {
+		if( this==null )
+			return 0;
+		
+		PackVal val;
+		bool result = this.GetVal(key_path, val);
+		if( result && val.tag==KeyValType_Value ) {
+			val.data.Reset();
+			char[] strval = new char[val.size];
+			val.data.ReadString(strval, val.size);
+			return StringToIntEx(strval, i, base);
+		}
+		return 0;
+	}
+	
+	/**
+	 * 
+	 * name:      GetFloat
+	 * @param     key_path : key path to the data you need.
+	 * @param     val : integer reference to store int data.
+	 * @return    Number of chars used, 0 if error.
+	 * @note      to directly access subsections, use a '.' like "root.section1.section2"
+	 *            for keys that have a dot in their name, use '\\.'
+	 */
+	public int GetFloat(const char[] key_path, float& f) {
+		if( this==null )
+			return 0;
+		
+		PackVal val;
+		bool result = this.GetVal(key_path, val);
+		if( result && val.tag==KeyValType_Value ) {
+			val.data.Reset();
+			char[] strval = new char[val.size];
+			val.data.ReadString(strval, val.size);
+			return StringToFloatEx(strval, f);
+		}
+		return 0;
+	}
 };
 
 public SMCResult ConfigMap_OnNewSection(SMCParser smc, const char[] name, bool opt_quotes)
@@ -310,7 +359,7 @@ stock bool ParseTargetPath(const char[] key, char[] buffer, int buffer_len)
 	return n > 0;
 }
 
-void DeleteCfg(ConfigMap& cfg, bool clear_only=false) {
+stock void DeleteCfg(ConfigMap& cfg, bool clear_only=false) {
 	if( cfg==null )
 		return;
 	
@@ -343,7 +392,7 @@ void DeleteCfg(ConfigMap& cfg, bool clear_only=false) {
 	else delete cfg;
 }
 
-public void PrintCfg(ConfigMap cfg) {
+stock void PrintCfg(ConfigMap cfg) {
 	if( cfg==null )
 		return;
 	StringMapSnapshot snap = cfg.Snapshot();

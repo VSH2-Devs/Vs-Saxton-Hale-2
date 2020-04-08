@@ -226,6 +226,11 @@ stock void SetClientOverlay(const int client, const char[] strOverlay)
 	ClientCommand(client, "r_screenoverlay \"%s\"", strOverlay);
 }
 
+stock bool IsClientValid(const int client)
+{
+	return( 0 < client && client <= MaxClients && IsClientInGame(client) );
+}
+
 stock bool IsValidClient(const int client, bool replaycheck=true)
 {
 	if( client <= 0 || client > MaxClients || !IsClientInGame(client) )

@@ -1,4 +1,27 @@
 /** all game mode oriented code should be handled HERE ONLY */
+
+/*
+enum struct VSHGameMode {
+	int      iRoundState;
+	int      iSpecial;
+	int      iTotalMaxHealth;
+	int      iTimeLeft;
+	int      iRoundCount;
+	int      iHealthChecks;
+	int      iCaptures;
+	int      iHealthBar;
+	bool     bSteam;
+	bool     bTF2Attribs;
+	bool     bPointReady;
+	bool     bMedieval;
+	bool     bDoors;
+	bool     bTeleToSpawn;
+	float    flHealthTime;
+	float    flMusicTime;
+	BaseBoss hNextBoss;
+}
+*/
+
 methodmap VSHGameMode { /* < StringMap { */
 	public VSHGameMode() {
 		g_vsh2.m_hGameModeFields = new StringMap();

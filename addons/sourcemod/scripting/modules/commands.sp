@@ -230,7 +230,7 @@ public int MusicTogglePanelH(Menu menu, MenuAction action, int param1, int param
 			} else {
 				player.bNoMusic = true;
 				CPrintToChat(param1, "{olive}[VSH 2]{default} You've turned Off the VS Saxton Hale 2 Music.");
-				StopSound(param1, SNDCHAN_AUTO, g_vsh2.m_strBackgroundSong);
+				BaseBoss(param1).StopMusic();
 			}
 		}
 	}

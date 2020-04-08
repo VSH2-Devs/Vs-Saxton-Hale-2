@@ -24,11 +24,10 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.6.16"
+#define PLUGIN_VERSION       "2.7.16"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
-#define IsClientValid(%1)    ( 0 < (%1) && (%1) <= MaxClients && IsClientInGame((%1)) )
 #define PLYR                 35
 
 /// misc.
@@ -576,6 +575,9 @@ public void ConnectionMessage(const int userid)
 	int client = GetClientOfUserId(userid);
 	if( IsValidClient(client) )
 		CPrintToChat(client, "{olive}[VSH 2]{default} Welcome to VSH2, type /bosshelp for help!");
+	
+	if( gamemode.iRoundState==StateRunning )
+		BaseBoss(client).PlayMusic(g_vsh2.m_hCvars[MusicVolume].FloatValue);
 }
 
 public Action OnTouch(int client, int other)
@@ -1061,6 +1063,7 @@ public Action Timer_UberLoop(Handle timer, any medigunid)
 	else return Plugin_Stop;
 	return Plugin_Continue;
 }
+
 public void _MusicPlay()
 {
 	if( !g_vsh2.m_hCvars[Enabled].BoolValue || !g_vsh2.m_hCvars[EnableMusic].BoolValue || gamemode.iRoundState != StateRunning )
@@ -1074,20 +1077,16 @@ public void _MusicPlay()
 	float time = -1.0;
 	ManageMusic(bg_music, time);    /// in handler.sp
 	
-	BaseBoss boss;
 	float vol = g_vsh2.m_hCvars[MusicVolume].FloatValue;
-	if( bg_music[0] != '\0' ) {
+	if( bg_music[0] != 0 ) {
 		strcopy(g_vsh2.m_strBackgroundSong, PLATFORM_MAX_PATH, bg_music);
 		for( int i=MaxClients; i; --i ) {
 			if( !IsClientValid(i) )
 				continue;
-			
-			boss = BaseBoss(i);
-			if( boss.bNoMusic )
-				continue;
-			EmitSoundToClient(i, g_vsh2.m_strBackgroundSong, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+			BaseBoss(i).PlayMusic(vol);
 		}
 	}
+	
 	if( time != -1.0 ) {
 		gamemode.flMusicTime = currtime+time;
 	}
@@ -1219,6 +1218,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2Player.SuperJump", Native_VSH2_SuperJump);
 	CreateNative("VSH2Player.WeighDown", Native_VSH2_WeighDown);
 	CreateNative("VSH2Player.PlayVoiceClip", Native_VSH2_PlayVoiceClip);
+	CreateNative("VSH2Player.PlayMusic", Native_VSH2_PlayMusic);
+	CreateNative("VSH2Player.StopMusic", Native_VSH2_StopMusic);
 	
 	/// VSH2 Game Mode Managers Methods
 	CreateNative("VSH2GameMode_GetProperty", Native_VSH2GameMode_GetProperty);
@@ -1685,6 +1686,21 @@ public int Native_VSH2_PlayVoiceClip(Handle plugin, int numParams)
 	char sound[PLATFORM_MAX_PATH]; GetNativeString(2, sound, sizeof(sound));
 	int flags = GetNativeCell(3);
 	player.PlayVoiceClip(sound, flags);
+	return 0;
+}
+
+public int Native_VSH2_PlayMusic(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	float vol = GetNativeCell(2);
+	player.PlayMusic(vol);
+	return 0;
+}
+
+public int Native_VSH2_StopMusic(Handle plugin, int numParams)
+{
+	BaseBoss player = GetNativeCell(1);
+	player.StopMusic();
 	return 0;
 }
 

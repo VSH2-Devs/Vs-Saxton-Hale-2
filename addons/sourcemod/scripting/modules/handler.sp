@@ -1466,11 +1466,11 @@ public void ManageMusic(char song[PLATFORM_MAX_PATH], float& time)
 }
 public void StopBackGroundMusic()
 {
-	if( g_vsh2.m_strBackgroundSong[0] != '\0' ) {
+	if( g_vsh2.m_strBackgroundSong[0] != 0 ) {
 		for( int i=MaxClients; i; --i ) {
 			if( !IsClientValid(i) )
 				continue;
-			StopSound(i, SNDCHAN_AUTO, g_vsh2.m_strBackgroundSong);
+			BaseBoss(i).StopMusic();
 		}
 	}
 }

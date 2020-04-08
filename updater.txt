@@ -4,11 +4,13 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.6.16"
+			"Latest"	"2.7.16"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.6.16:"
-		"Notes"	"quick patch for oversight in OnBossCalcHealth call."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.7.16:"
+		"Notes"	"Added `GetFloat` and `GetInt` to the `ConfigMap`."
+		"Notes"	"Added 'PlayMusic' & 'StopMusic' natives to VSH2Player."
+		"Notes"	"Added methodized versions of the Common Boss Think functions."
 	}
 	
 	"Files"

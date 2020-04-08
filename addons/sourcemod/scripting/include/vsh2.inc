@@ -64,7 +64,6 @@ enum { /** Voice Clip Flags */
 #define VSH2_VOICE_LASTGUY (VSH2_VOICE_BOSSPOS)
 
 
-
 methodmap VSH2Player {
 	/** [ C O N S T R U C T O R ]
 	 * Constructs an instance of the BaseBoss internal methodmap
@@ -255,6 +254,22 @@ methodmap VSH2Player {
 	
 	/** use the VSH2_VOICE_* flags above^^^. */
 	public native void PlayVoiceClip(const char[] voiceclip, const int flags);
+	
+	public native void PlayMusic(const float vol=100.0);
+	public native void StopMusic();
+	
+	public void SpeedThink(const float iota, const float minspeed=100.0) {
+		VSH2_SpeedThink(this, iota, minspeed);
+	}
+	public void GlowThink(const float decrease) {
+		VSH2_GlowThink(this, decrease);
+	}
+	public bool SuperJumpThink(const float charging, const float jumpcharge) {
+		return VSH2_SuperJumpThink(this, charging, jumpcharge);
+	}
+	public void WeighDownThink(const float weighdown_time, const float incr) {
+		VSH2_WeighDownThink(this, weighdown_time, incr);
+	}
 };
 
 
@@ -407,8 +422,9 @@ enum { /// VSH2HookType
 };
 
 /**
-	IF YOU'RE USING THE HOOKING SYSTEM FOR A CUSTOM BOSS, YOU HAVE TO REGISTER YOUR PLUGIN WITH VSH2 BECAUSE YOU NEED THE BOSS' INDEX TRACKED.
-*/
+ * IF YOU'RE USING THE HOOKING SYSTEM FOR A CUSTOM BOSS,
+ * YOU HAVE TO REGISTER YOUR PLUGIN WITH VSH2 BECAUSE YOU NEED THE BOSS' INDEX TRACKED.
+ */
 
 typeset VSH2HookCB {
 	/**
@@ -629,10 +645,13 @@ stock void VSH2GameMode_SetPropAny(const char prop_name[64], any value) {
  * bool bTF2Attribs
  * bool bPointReady
  * bool bMedieval
+ * bool bDoors
+ * bool bTeleToSpawn
  * float flHealthTime
  * float flMusicTime
  * VSH2Player hNextBoss
-*/
+ */
+
 
 native VSH2Player VSH2GameMode_FindNextBoss();
 native VSH2Player VSH2GameMode_GetRandomBoss(const bool IsAlive);
@@ -704,7 +723,7 @@ stock void DownloadMaterialList(const char[][] file_list, int size)
 }
 
 /// For custom models, do NOT omit .MDL extension
-stock int PrepareModel(const char[] model_path, bool model_only = false)
+stock int PrepareModel(const char[] model_path, bool model_only=false)
 {
 	char extensions[][] = { ".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd", ".phy" };
 	char model_base[PLATFORM_MAX_PATH];
@@ -812,6 +831,8 @@ public void __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2Player.SuperJump");
 	MarkNativeAsOptional("VSH2Player.WeighDown");
 	MarkNativeAsOptional("VSH2Player.PlayVoiceClip");
+	MarkNativeAsOptional("VSH2Player.PlayMusic");
+	MarkNativeAsOptional("VSH2Player.StopMusic");
 	
 	MarkNativeAsOptional("VSH2_Hook");
 	MarkNativeAsOptional("VSH2_HookEx");
