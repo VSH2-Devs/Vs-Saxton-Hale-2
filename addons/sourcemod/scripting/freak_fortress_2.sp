@@ -719,7 +719,7 @@ public any Native_FF2_GetBossCharge(Handle plugin, int numParams)
 	return 0.0;
 }
 
-/** TODO void FF2_SetBossCharge(int boss, int slot, float value); */
+/** void FF2_SetBossCharge(int boss, int slot, float value); */
 public any Native_FF2_SetBossCharge(Handle plugin, int numParams)
 {
 	int client = GetNativeCell(1);
@@ -976,7 +976,7 @@ public any Native_FF2_GetBossPlayers(Handle plugin, int numParams)
 	return 0;
 }
 
-/** TODO float FF2_GetClientShield(int client); */
+/** float FF2_GetClientShield(int client); */
 public any Native_FF2_GetClientShieldHealth(Handle plugin, int numParams)
 {
 	int client = GetNativeCell(1);
@@ -987,7 +987,7 @@ public any Native_FF2_GetClientShieldHealth(Handle plugin, int numParams)
 	return (player.iShieldId == -1) ? -1:RoundFloat(player.iShieldHP);
 }
 
-/** TODO void FF2_SetClientShield(int client, int entity=0, float health=0.0, float reduction=-1.0); */
+/** void FF2_SetClientShield(int client, int entity=0, float health=0.0, float reduction=-1.0); */
 public any Native_FF2_SetClientShield(Handle plugin, int numParams)
 {
 	int client = GetNativeCell(1);
