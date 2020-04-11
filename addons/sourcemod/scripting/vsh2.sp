@@ -24,7 +24,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.7.16"
+#define PLUGIN_VERSION       "2.8.17"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -1240,6 +1240,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2GameMode_IsVSHMap", Native_VSH2GameMode_IsVSHMap);
 	CreateNative("VSH2GameMode_GetFighters", Native_VSH2GameMode_GetFighters);
 	CreateNative("VSH2GameMode_GetMinions", Native_VSH2GameMode_GetMinions);
+	CreateNative("VSH2GameMode_GetQueue", Native_VSH2GameMode_GetQueue);
+	CreateNative("VSH2GameMode_GetBossesByType", Native_VSH2GameMode_GetBossesByType);
 	
 	CreateNative("VSH2_GetMaxBosses", Native_VSH2_GetMaxBosses);
 #if defined _steamtools_included
@@ -1807,4 +1809,22 @@ public int Native_VSH2GameMode_GetMinions(Handle plugin, int numParams)
 	int numminions = gamemode.GetMinions(minions, balive);
 	SetNativeArray(1, minions, MaxClients);
 	return numminions;
+}
+
+public int Native_VSH2GameMode_GetQueue(Handle plugin, int numParams)
+{
+	BaseBoss[] players = new BaseBoss[MaxClients];
+	int n = gamemode.GetQueue(players);
+	SetNativeArray(1, players, MaxClients);
+	return n;
+}
+
+public int Native_VSH2GameMode_GetBossesByType(Handle plugin, int numParams)
+{
+	BaseBoss[] bosses = new BaseBoss[MaxClients];
+	int type = GetNativeCell(2);
+	bool alive = GetNativeCell(3);
+	int n = gamemode.GetBossesByType(bosses, type, alive);
+	SetNativeArray(1, bosses, MaxClients);
+	return n;
 }

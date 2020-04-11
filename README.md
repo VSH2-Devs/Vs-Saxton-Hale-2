@@ -2,7 +2,7 @@
 
 #### Current STABLE Version: *2.0.5*
 [![Master Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=master)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
-#### Current DEVELOPMENT Version: *2.7.16*
+#### Current DEVELOPMENT Version: *2.8.17*
 [![Develop Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=develop)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
 
 **[VSH2 Addons Repository](https://github.com/VSH2-Devs/VSH2-Addons)**
@@ -12,7 +12,7 @@ VSH2 is rewrite of VSH1. VSH1 and FF2 both had a very bad code framework using s
 
 VSH2 actually has a structured, event-based framework and combines the best features of both FF2 and VSH1 by not only having multiplayer boss support but also to make it easier to add new bosses **and** give them truly unique abilities and mechanics through giving the developer full, uninhibited control by code rather than config files.
 
-FF2's purpose was to be very easy to add bosses in a generic, cookie-cutter manner. Of course there's a trade off: FF2 is alot more difficult, if not impossible, to truly customize boss mechanics and abilities without having to recode parts of FF2 itself. VSH2, since it requires experience with SourcePawn, is somewhat more difficult for a newbie than FF2 to create new bosses but it rewards taking the harder route by allowing you to control damn near every individual boss behavior and logic.
+FF2's purpose is to be very easy to add bosses in a generic, cookie-cutter manner. Of course there's a trade off: FF2 is alot more difficult, if not impossible, to truly customize boss mechanics and abilities without having to recode parts of FF2 itself. VSH2, since it requires experience with SourcePawn, is somewhat more difficult for a newbie than FF2 to create new bosses but it rewards taking the harder route by allowing you to control damn near every individual boss behavior and logic.
 
 If you do require help in setting up the bosses or at least need some info on the API for boss building in VSH2, [have a look at the VSH2 wiki](https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki)
 
@@ -36,16 +36,17 @@ If you do require help in setting up the bosses or at least need some info on th
 
 ### Who do I talk to?
 
-* **Main Plugin Developer:** *Nergal the Ashurian/Assyrian* - https://forums.alliedmods.net/member.php?u=176545
-* **Repository Manager and Contributor:** *Starblaster 64* - https://forums.alliedmods.net/member.php?u=261662
-* **Contributor:** *Scags/RageNewb* 
+* **Lead Developer:** *Nergal the Ashurian/Assyrian* - https://forums.alliedmods.net/member.php?u=176545
+* **Repository Manager & Contributor:** *Starblaster 64* - https://forums.alliedmods.net/member.php?u=261662
+* **Contributors:** *Scags/RageNewb* , *BatFoxKid* , *01Pollux/WhiteFalcon* .
 
 ### Contribution Rules
 #### Code Format:
-* use New sourcepawn syntax (sourcemod 1.7+).
-* single line comments that convey a message must have 3 slashes: `///`.
-* multi-line comments that convey a message should have an extra beginning star: `/**`.
-* properties, functions, & methods smaller than 20 lines of code should have the beginning `{` brace in K&R C style, for example: `ret func() {`
-* local variable names should be in snake_case.
-* property names must have a single-letter prefix of their type.
-* functions, methods, methodmaps, enums, enum values, must be named in PascalCase. Pascal_Case is also acceptable. enum values used as flags may be upper-case.
+* Use New sourcepawn syntax (sourcemod 1.7+).
+* Single line comments that convey a message must have 3 slashes: `///`.
+* Multi-line comments that convey a message should have an extra beginning star: `/**`.
+* Properties, functions, & methods smaller than 30 lines of code should have the beginning `{` brace in K&R C style, for example: `ret func() {`.
+* Local variable names should be in snake_case.
+* Property names must have a single-letter prefix of their type.
+* Functions, methods, methodmaps, enums, enum values, must be named in PascalCase. Pascal_Case is also acceptable.
+* Enum values used as flags may be upper-case.

@@ -285,6 +285,15 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			g_vsh2.m_hPlayerFields[this.index].SetValue("flLastShot", val);
 		}
 	}
+	property float flMusicTime {
+		public get() {
+			float i; g_vsh2.m_hPlayerFields[this.index].GetValue("flMusicTime", i);
+			return i;
+		}
+		public set( const float val ) {
+			g_vsh2.m_hPlayerFields[this.index].SetValue("flMusicTime", val);
+		}
+	}
 	
 	public void ConvertToMinion(const float time) {
 		this.bIsMinion = true;
@@ -582,6 +591,17 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 	public void Heal(const int health, bool on_hud=false) {
 		HealPlayer(this.index, health, on_hud);
 	}
+	
+	public void PlayMusic(const float vol) {
+		if( this.bNoMusic )
+			return;
+		
+		EmitSoundToClient(this.index, g_vsh2.m_strBackgroundSong, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+	}
+	
+	public void StopMusic() {
+		StopSound(this.index, SNDCHAN_AUTO, g_vsh2.m_strBackgroundSong);
+	}
 };
 
 methodmap BaseBoss < BaseFighter {
@@ -745,15 +765,6 @@ methodmap BaseBoss < BaseFighter {
 		}
 		public set( const float val ) {
 			g_vsh2.m_hPlayerFields[this.index].SetValue("flWeighDown", val);
-		}
-	}
-	property float flMusicTime {
-		public get() {
-			float i; g_vsh2.m_hPlayerFields[this.index].GetValue("flMusicTime", i);
-			return i;
-		}
-		public set( const float val ) {
-			g_vsh2.m_hPlayerFields[this.index].SetValue("flMusicTime", val);
 		}
 	}
 	
@@ -938,7 +949,7 @@ methodmap BaseBoss < BaseFighter {
 		fVelocity[2] = -1000.0;
 		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, fVelocity);
 		SetEntityGravity(client, 6.0);
-		SetPawnTimer(SetGravityNormal, 1.0, this.userid);
+		SetPawnTimer(SetGravityNormal, 1.0, this);
 		this.flWeighDown = reset;
 	}
 	
@@ -1004,17 +1015,6 @@ methodmap BaseBoss < BaseFighter {
 				this.WeighDown(0.0);
 		}
 	}
-	
-	public void PlayMusic(const float vol) {
-		if( this.bNoMusic )
-			return;
-		
-		EmitSoundToClient(this.index, g_vsh2.m_strBackgroundSong, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
-	}
-	
-	public void StopMusic() {
-		StopSound(this.index, SNDCHAN_AUTO, g_vsh2.m_strBackgroundSong);
-	}
 };
 
 
@@ -1022,9 +1022,9 @@ public int HintPanel(Menu menu, MenuAction action, int param1, int param2) {
 	return;
 }
 
-public void SetGravityNormal(const int userid)
+public void SetGravityNormal(const BaseBoss b)
 {
-	int i = GetClientOfUserId(userid);
+	int i = b.index;
 	if( IsClientValid(i) )
 		SetEntityGravity(i, 1.0);
 }

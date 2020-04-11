@@ -40,7 +40,7 @@ public void OnLibraryAdded(const char[] name) {
 public Action CommandInfo(int client, int args)
 {	PrintToConsole(client, "calling natives command");
 	VSH2Player player = VSH2Player(client);
-	if (player) {
+	if( player ) {
 		PrintToConsole(client, "VSH2Player methodmap Constructor is working");
 		PrintToConsole(client, "player.index = %d | player.userid = %d", player.index, player.userid);
 		int damage = player.GetPropInt("iDamage");
@@ -62,12 +62,12 @@ public Action CommandInfo(int client, int args)
 
 public void fwdOnDownloadsCalled()
 {
-	for (int i=0; i < 5; ++i)
+	for( int i; i<5; ++i )
 		PrintToServer("Forward OnDownloadsCalled called");
 }
 public Action fwdBossSelected(const VSH2Player base)
 {
-	for (int i=MaxClients; i; --i)
+	for( int i=MaxClients; i; --i )
 		if( IsClientInGame(i) )
 			PrintToConsole(i, "fwdBossSelected:: ==> %N @ index: %i", base.index, base.index);
 }
@@ -370,7 +370,7 @@ public void fwdOnRoundEndInfo(const VSH2Player player, bool bossBool, char messa
 }
 public void fwdOnLastPlayer(const VSH2Player boss)
 {
-	for (int i=MaxClients; i; --i)
+	for( int i=MaxClients; i; --i )
 		if( IsClientInGame(i) )
 			PrintToConsole(i, "fwdOnLastPlayer:: ==> Called");
 }
@@ -470,216 +470,216 @@ public void fwdOnRoundStart(const VSH2Player[] bosses, const int boss_count, con
 
 public void LoadVSH2Hooks()
 {
-	if (!VSH2_HookEx(OnCallDownloads, fwdOnDownloadsCalled))
+	if( !VSH2_HookEx(OnCallDownloads, fwdOnDownloadsCalled) )
 		LogError("Error Hooking OnCallDownloads forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossSelected, fwdBossSelected))
+	if( !VSH2_HookEx(OnBossSelected, fwdBossSelected) )
 		LogError("Error Hooking OnBossSelected forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnTouchPlayer, fwdOnTouchPlayer))
+	if( !VSH2_HookEx(OnTouchPlayer, fwdOnTouchPlayer) )
 		LogError("Error Hooking OnTouchPlayer forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnTouchBuilding, fwdOnTouchBuilding))
+	if( !VSH2_HookEx(OnTouchBuilding, fwdOnTouchBuilding) )
 		LogError("Error Hooking OnTouchBuilding forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossThink, fwdOnBossThink))
+	if( !VSH2_HookEx(OnBossThink, fwdOnBossThink) )
 		LogError("Error Hooking OnBossThink forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossModelTimer, fwdOnBossModelTimer))
+	if( !VSH2_HookEx(OnBossModelTimer, fwdOnBossModelTimer) )
 		LogError("Error Hooking OnBossModelTimer forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossDeath, fwdOnBossDeath))
+	if( !VSH2_HookEx(OnBossDeath, fwdOnBossDeath) )
 		LogError("Error Hooking OnBossDeath forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossEquipped, fwdOnBossEquipped))
+	if( !VSH2_HookEx(OnBossEquipped, fwdOnBossEquipped) )
 		LogError("Error Hooking OnBossEquipped forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossInitialized, fwdOnBossInitialized))
+	if( !VSH2_HookEx(OnBossInitialized, fwdOnBossInitialized) )
 		LogError("Error Hooking OnBossInitialized forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnMinionInitialized, fwdOnMinionInitialized))
+	if( !VSH2_HookEx(OnMinionInitialized, fwdOnMinionInitialized) )
 		LogError("Error Hooking OnMinionInitialized forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossPlayIntro, fwdOnBossPlayIntro))
+	if( !VSH2_HookEx(OnBossPlayIntro, fwdOnBossPlayIntro) )
 		LogError("Error Hooking OnBossPlayIntro forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTakeDamage, fwdOnBossTakeDamage))
+	if( !VSH2_HookEx(OnBossTakeDamage, fwdOnBossTakeDamage) )
 		LogError("Error Hooking OnBossTakeDamage forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossDealDamage, fwdOnBossDealDamage))
+	if( !VSH2_HookEx(OnBossDealDamage, fwdOnBossDealDamage) )
 		LogError("Error Hooking OnBossDealDamage forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnPlayerKilled, fwdOnPlayerKilled))
+	if( !VSH2_HookEx(OnPlayerKilled, fwdOnPlayerKilled) )
 		LogError("Error Hooking OnPlayerKilled forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnPlayerAirblasted, fwdOnPlayerAirblasted))
+	if( !VSH2_HookEx(OnPlayerAirblasted, fwdOnPlayerAirblasted) )
 		LogError("Error Hooking OnPlayerAirblasted forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnTraceAttack, fwdOnTraceAttack))
+	if( !VSH2_HookEx(OnTraceAttack, fwdOnTraceAttack) )
 		LogError("Error Hooking OnTraceAttack forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossMedicCall, fwdOnBossMedicCall))
+	if( !VSH2_HookEx(OnBossMedicCall, fwdOnBossMedicCall) )
 		LogError("Error Hooking OnBossMedicCall forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTaunt, fwdOnBossTaunt))
+	if( !VSH2_HookEx(OnBossTaunt, fwdOnBossTaunt) )
 		LogError("Error Hooking OnBossTaunt forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossKillBuilding, fwdOnBossKillBuilding))
+	if( !VSH2_HookEx(OnBossKillBuilding, fwdOnBossKillBuilding) )
 		LogError("Error Hooking OnBossKillBuilding forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossJarated, fwdOnBossJarated))
+	if( !VSH2_HookEx(OnBossJarated, fwdOnBossJarated) )
 		LogError("Error Hooking OnBossJarated forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnMessageIntro, fwdOnMessageIntro))
+	if( !VSH2_HookEx(OnMessageIntro, fwdOnMessageIntro) )
 		LogError("Error Hooking OnMessageIntro forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossPickUpItem, fwdOnBossPickUpItem))
+	if( !VSH2_HookEx(OnBossPickUpItem, fwdOnBossPickUpItem) )
 		LogError("Error Hooking OnBossPickUpItem forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnVariablesReset, fwdOnVariablesReset))
+	if( !VSH2_HookEx(OnVariablesReset, fwdOnVariablesReset) )
 		LogError("Error Hooking OnVariablesReset forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnUberDeployed, fwdOnUberDeployed))
+	if( !VSH2_HookEx(OnUberDeployed, fwdOnUberDeployed) )
 		LogError("Error Hooking OnUberDeployed forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnUberLoop, fwdOnUberLoop))
+	if( !VSH2_HookEx(OnUberLoop, fwdOnUberLoop) )
 		LogError("Error Hooking OnUberLoop forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnMusic, fwdOnMusic))
+	if( !VSH2_HookEx(OnMusic, fwdOnMusic) )
 		LogError("Error Hooking OnMusic forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnRoundEndInfo, fwdOnRoundEndInfo))
+	if( !VSH2_HookEx(OnRoundEndInfo, fwdOnRoundEndInfo) )
 		LogError("Error Hooking OnRoundEndInfo forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnLastPlayer, fwdOnLastPlayer))
+	if( !VSH2_HookEx(OnLastPlayer, fwdOnLastPlayer) )
 		LogError("Error Hooking OnLastPlayer forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossHealthCheck, fwdOnBossHealthCheck))
+	if( !VSH2_HookEx(OnBossHealthCheck, fwdOnBossHealthCheck) )
 		LogError("Error Hooking OnBossHealthCheck forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnControlPointCapped, fwdOnControlPointCapped))
+	if( !VSH2_HookEx(OnControlPointCapped, fwdOnControlPointCapped) )
 		LogError("Error Hooking OnControlPointCapped forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnPrepRedTeam, fwdOnPrepRedTeam))
+	if( !VSH2_HookEx(OnPrepRedTeam, fwdOnPrepRedTeam) )
 		LogError("Error Hooking OnPrepRedTeam forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnRedPlayerThink, fwdOnRedPlayerThink))
+	if( !VSH2_HookEx(OnRedPlayerThink, fwdOnRedPlayerThink) )
 		LogError("Error Hooking OnRedPlayerThink forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnScoreTally, fwdOnScoreTally))
+	if( !VSH2_HookEx(OnScoreTally, fwdOnScoreTally) )
 		LogError("Error Hooking OnScoreTally forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnItemOverride, fwdOnItemOverride))
+	if( !VSH2_HookEx(OnItemOverride, fwdOnItemOverride) )
 		LogError("Error Hooking OnItemOverride forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossDealDamage_OnStomp, fwdOnBossDealDamage_OnStomp))
+	if( !VSH2_HookEx(OnBossDealDamage_OnStomp, fwdOnBossDealDamage_OnStomp) )
 		LogError("Error Hooking OnBossDealDamage_OnStomp forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossDealDamage_OnHitDefBuff, fwdOnBossDealDamage_OnHitDefBuff))
+	if( !VSH2_HookEx(OnBossDealDamage_OnHitDefBuff, fwdOnBossDealDamage_OnHitDefBuff) )
 		LogError("Error Hooking OnBossDealDamage_OnHitDefBuff forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossDealDamage_OnHitCritMmmph, fwdOnBossDealDamage_OnHitCritMmmph))
+	if( !VSH2_HookEx(OnBossDealDamage_OnHitCritMmmph, fwdOnBossDealDamage_OnHitCritMmmph) )
 		LogError("Error Hooking OnBossDealDamage_OnHitCritMmmph forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossDealDamage_OnHitMedic, fwdOnBossDealDamage_OnHitMedic))
+	if( !VSH2_HookEx(OnBossDealDamage_OnHitMedic, fwdOnBossDealDamage_OnHitMedic) )
 		LogError("Error Hooking OnBossDealDamage_OnHitMedic forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossDealDamage_OnHitDeadRinger, fwdOnBossDealDamage_OnHitDeadRinger))
+	if( !VSH2_HookEx(OnBossDealDamage_OnHitDeadRinger, fwdOnBossDealDamage_OnHitDeadRinger) )
 		LogError("Error Hooking OnBossDealDamage_OnHitDeadRinger forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossDealDamage_OnHitCloakedSpy, fwdOnBossDealDamage_OnHitCloakedSpy))
+	if( !VSH2_HookEx(OnBossDealDamage_OnHitCloakedSpy, fwdOnBossDealDamage_OnHitCloakedSpy) )
 		LogError("Error Hooking OnBossDealDamage_OnHitCloakedSpy forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossDealDamage_OnHitShield, fwdOnBossDealDamage_OnHitShield))
+	if( !VSH2_HookEx(OnBossDealDamage_OnHitShield, fwdOnBossDealDamage_OnHitShield) )
 		LogError("Error Hooking OnBossDealDamage_OnHitShield forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTakeDamage_OnStabbed, fwdOnBossTakeDamage_OnStabbed))
+	if( !VSH2_HookEx(OnBossTakeDamage_OnStabbed, fwdOnBossTakeDamage_OnStabbed) )
 		LogError("Error Hooking OnBossTakeDamage_OnStabbed forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTakeDamage_OnTelefragged, fwdOnBossTakeDamage_OnTelefragged))
+	if( !VSH2_HookEx(OnBossTakeDamage_OnTelefragged, fwdOnBossTakeDamage_OnTelefragged) )
 		LogError("Error Hooking OnBossTakeDamage_OnTelefragged forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTakeDamage_OnSwordTaunt, fwdOnBossTakeDamage_OnSwordTaunt))
+	if( !VSH2_HookEx(OnBossTakeDamage_OnSwordTaunt, fwdOnBossTakeDamage_OnSwordTaunt) )
 		LogError("Error Hooking OnBossTakeDamage_OnSwordTaunt forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTakeDamage_OnHeavyShotgun, fwdOnBossTakeDamage_OnHeavyShotgun))
+	if( !VSH2_HookEx(OnBossTakeDamage_OnHeavyShotgun, fwdOnBossTakeDamage_OnHeavyShotgun) )
 		LogError("Error Hooking OnBossTakeDamage_OnHeavyShotgun forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTakeDamage_OnSniped, fwdOnBossTakeDamage_OnSniped))
+	if( !VSH2_HookEx(OnBossTakeDamage_OnSniped, fwdOnBossTakeDamage_OnSniped) )
 		LogError("Error Hooking OnBossTakeDamage_OnSniped forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTakeDamage_OnThirdDegreed, fwdOnBossTakeDamage_OnThirdDegreed))
+	if( !VSH2_HookEx(OnBossTakeDamage_OnThirdDegreed, fwdOnBossTakeDamage_OnThirdDegreed) )
 		LogError("Error Hooking OnBossTakeDamage_OnThirdDegreed forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTakeDamage_OnHitSword, fwdOnBossTakeDamage_OnHitSword))
+	if( !VSH2_HookEx(OnBossTakeDamage_OnHitSword, fwdOnBossTakeDamage_OnHitSword) )
 		LogError("Error Hooking OnBossTakeDamage_OnHitSword forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTakeDamage_OnHitFanOWar, fwdOnBossTakeDamage_OnHitFanOWar))
+	if( !VSH2_HookEx(OnBossTakeDamage_OnHitFanOWar, fwdOnBossTakeDamage_OnHitFanOWar) )
 		LogError("Error Hooking OnBossTakeDamage_OnHitFanOWar forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTakeDamage_OnHitCandyCane, fwdOnBossTakeDamage_OnHitCandyCane))
+	if( !VSH2_HookEx(OnBossTakeDamage_OnHitCandyCane, fwdOnBossTakeDamage_OnHitCandyCane) )
 		LogError("Error Hooking OnBossTakeDamage_OnHitCandyCane forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTakeDamage_OnMarketGardened, fwdOnBossTakeDamage_OnMarketGardened))
+	if( !VSH2_HookEx(OnBossTakeDamage_OnMarketGardened, fwdOnBossTakeDamage_OnMarketGardened) )
 		LogError("Error Hooking OnBossTakeDamage_OnMarketGardened forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTakeDamage_OnPowerJack, fwdOnBossTakeDamage_OnPowerJack))
+	if( !VSH2_HookEx(OnBossTakeDamage_OnPowerJack, fwdOnBossTakeDamage_OnPowerJack) )
 		LogError("Error Hooking OnBossTakeDamage_OnPowerJack forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTakeDamage_OnKatana, fwdOnBossTakeDamage_OnKatana))
+	if( !VSH2_HookEx(OnBossTakeDamage_OnKatana, fwdOnBossTakeDamage_OnKatana) )
 		LogError("Error Hooking OnBossTakeDamage_OnKatana forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTakeDamage_OnAmbassadorHeadshot, fwdOnBossTakeDamage_OnAmbassadorHeadshot))
+	if( !VSH2_HookEx(OnBossTakeDamage_OnAmbassadorHeadshot, fwdOnBossTakeDamage_OnAmbassadorHeadshot) )
 		LogError("Error Hooking OnBossTakeDamage_OnAmbassadorHeadshot forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTakeDamage_OnDiamondbackManmelterCrit, fwdOnBossTakeDamage_OnDiamondbackManmelterCrit))
+	if( !VSH2_HookEx(OnBossTakeDamage_OnDiamondbackManmelterCrit, fwdOnBossTakeDamage_OnDiamondbackManmelterCrit) )
 		LogError("Error Hooking OnBossTakeDamage_OnDiamondbackManmelterCrit forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTakeDamage_OnHolidayPunch, fwdOnBossTakeDamage_OnHolidayPunch))
+	if( !VSH2_HookEx(OnBossTakeDamage_OnHolidayPunch, fwdOnBossTakeDamage_OnHolidayPunch) )
 		LogError("Error Hooking OnBossTakeDamage_OnHolidayPunch forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossSuperJump, fwdOnBossSuperJump))
+	if( !VSH2_HookEx(OnBossSuperJump, fwdOnBossSuperJump) )
 		LogError("Error Hooking OnBossSuperJump forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossDoRageStun, fwdOnBossDoRageStun))
+	if( !VSH2_HookEx(OnBossDoRageStun, fwdOnBossDoRageStun) )
 		LogError("Error Hooking OnBossDoRageStun forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossWeighDown, fwdOnBossWeighDown))
+	if( !VSH2_HookEx(OnBossWeighDown, fwdOnBossWeighDown) )
 		LogError("Error Hooking OnBossWeighDown forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnRPSTaunt, fwdOnRPSTaunt))
+	if( !VSH2_HookEx(OnRPSTaunt, fwdOnRPSTaunt) )
 		LogError("Error Hooking OnRPSTaunt forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossAirShotProj, fwdOnBossAirShotProj))
+	if( !VSH2_HookEx(OnBossAirShotProj, fwdOnBossAirShotProj) )
 		LogError("Error Hooking OnBossAirShotProj forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTakeFallDamage, fwdOnBossTakeFallDamage))
+	if( !VSH2_HookEx(OnBossTakeFallDamage, fwdOnBossTakeFallDamage) )
 		LogError("Error Hooking OnBossTakeFallDamage forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossGiveRage, fwdOnBossGiveRage))
+	if( !VSH2_HookEx(OnBossGiveRage, fwdOnBossGiveRage) )
 		LogError("Error Hooking OnBossGiveRage forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossCalcHealth, fwdOnBossCalcHealth))
+	if( !VSH2_HookEx(OnBossCalcHealth, fwdOnBossCalcHealth) )
 		LogError("Error Hooking OnBossCalcHealth forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTakeDamage_OnTriggerHurt, fwdOnBossTakeDamage_OnTriggerHurt))
+	if( !VSH2_HookEx(OnBossTakeDamage_OnTriggerHurt, fwdOnBossTakeDamage_OnTriggerHurt) )
 		LogError("Error Hooking OnBossTakeDamage_OnTriggerHurt forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossTakeDamage_OnMantreadsStomp, fwdOnBossTakeDamage_OnMantreadsStomp))
+	if( !VSH2_HookEx(OnBossTakeDamage_OnMantreadsStomp, fwdOnBossTakeDamage_OnMantreadsStomp) )
 		LogError("Error Hooking OnBossTakeDamage_OnMantreadsStomp forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossThinkPost, fwdOnBossThinkPost))
+	if( !VSH2_HookEx(OnBossThinkPost, fwdOnBossThinkPost) )
 		LogError("Error Hooking OnBossThinkPost forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnBossEquippedPost, fwdOnBossEquippedPost))
+	if( !VSH2_HookEx(OnBossEquippedPost, fwdOnBossEquippedPost) )
 		LogError("Error Hooking OnBossEquippedPost forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnPlayerTakeFallDamage, fwdOnPlayerTakeFallDamage))
+	if( !VSH2_HookEx(OnPlayerTakeFallDamage, fwdOnPlayerTakeFallDamage) )
 		LogError("Error Hooking OnPlayerTakeFallDamage forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnSoundHook, fwdOnSoundHook))
+	if( !VSH2_HookEx(OnSoundHook, fwdOnSoundHook) )
 		LogError("Error Hooking OnSoundHook forward for VSH2 Test plugin.");
 		
-	if (!VSH2_HookEx(OnRoundStart, fwdOnRoundStart))
+	if( !VSH2_HookEx(OnRoundStart, fwdOnRoundStart) )
 		LogError("Error Hooking OnRoundStart forward for VSH2 Test plugin.");
 }

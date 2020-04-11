@@ -38,18 +38,20 @@ public void QueuePanel(const int client)
 	}
 	else panel.DrawItem("None");
 	
-	for( int i=0; i<8; ++i ) {
-		Boss = gamemode.FindNextBoss();	/// Using Boss to look at the next boss
-		if( Boss ) {
-			Format(strBossList, 128, "%N - %i", Boss.index, Boss.iQueue);
+	BaseBoss[] b = new BaseBoss[MaxClients];
+	gamemode.GetQueue(b);
+	for( int i; i<8; ++i ) {
+		//Boss = gamemode.FindNextBoss();	/// Using Boss to look at the next boss
+		if( b[i] ) {
+			Format(strBossList, 128, "%N - %i", b[i].index, b[i].iQueue);
 			panel.DrawItem(strBossList);
 			
 			/// This will have VSHGameMode::FindNextBoss() skip this guy when looping again
-			Boss.bSetOnSpawn = true;
+			//Boss.bSetOnSpawn = true;
 		}
 		else panel.DrawItem("-");
 	}
-	
+	/*
 	/// Ughhh, reset shit...
 	for( int n=MaxClients; n; --n ) {
 		if( !IsValidClient(n) )
@@ -58,6 +60,7 @@ public void QueuePanel(const int client)
 		if( !Boss.bIsBoss )
 			Boss.bSetOnSpawn = false;
 	}
+	*/
 	
 	Format(strBossList, 64, "Your queue points: %i (select to set to 0)", BaseBoss(client).iQueue );
 	panel.DrawItem(strBossList);
@@ -91,9 +94,9 @@ public int TurnToZeroPanelH(Menu menu, MenuAction action, int param1, int param2
 		if( player.iQueue ) {
 			player.iQueue = 0;
 			CPrintToChat(param1, "{olive}[VSH 2]{default} You have reset your queue points to {olive}0{default}");
-			BaseBoss nextBoss = gamemode.FindNextBoss(); //int cl = FindNextHaleEx();
-			if( nextBoss )
-				SkipBossPanelNotify(nextBoss.index);
+			BaseBoss next = gamemode.FindNextBoss();
+			if( next )
+				SkipBossPanelNotify(next.index);
 		}
 	}
 }

@@ -57,7 +57,7 @@ public bool TraceRayIgnoreEnts(int entity, int mask, any data)
 stock void ForceTeamWin(const int team)
 {
 	int entity = FindEntityByClassname(-1, "team_control_point_master");
-	if (entity <= 0) {
+	if( entity <= 0 ) {
 		entity = CreateEntityByName("team_control_point_master");
 		DispatchSpawn(entity);
 		AcceptEntityInput(entity, "Enable");
@@ -107,7 +107,7 @@ stock int AttachParticle(const int ent, const char[] particleType, float offset 
 	DispatchKeyValue(particle, "effect_name", particleType);
 	DispatchSpawn(particle);
 	SetVariantString(tName);
-	if (battach) {
+	if( battach ) {
 		AcceptEntityInput(particle, "SetParent", particle, particle, 0);
 		SetEntPropEnt(particle, Prop_Send, "m_hOwnerEntity", ent);
 	}
@@ -119,7 +119,7 @@ stock int AttachParticle(const int ent, const char[] particleType, float offset 
 stock void CreateParticles(char[] particlename, float Pos[3] = NULL_VECTOR, float time)
 {
 	int particle = CreateEntityByName("info_particle_system");
-	if (IsValidEntity(particle)) {
+	if( IsValidEntity(particle) ) {
 		DispatchKeyValue(particle, "effect_name", particlename);
 		ActivateEntity(particle);
 		AcceptEntityInput(particle, "start");
@@ -134,10 +134,12 @@ stock void SetWeaponInvis(const int client, const int alpha)
 	for( int i; i<5; i++ ) {
 		int entity = GetPlayerWeaponSlot(client, i); 
 		if( IsValidEntity(entity) ) {
-			if (transparent > 255)
+			if( transparent > 255 )
 				transparent = 255;
-			if (transparent < 0)
+				
+			if( transparent < 0 )
 				transparent = 0;
+			
 			SetEntityRenderMode(entity, RENDER_TRANSCOLOR); 
 			SetEntityRenderColor(entity, 150, 150, 150, transparent); 
 		}
@@ -146,9 +148,9 @@ stock void SetWeaponInvis(const int client, const int alpha)
 stock int SetWeaponAmmo(const int weapon, const int ammo)
 {
 	int owner = GetEntPropEnt(weapon, Prop_Send, "m_hOwnerEntity");
-	if (owner <= 0)
+	if( owner <= 0 )
 		return 0;
-	if (IsValidEntity(weapon)) {
+	else if( IsValidEntity(weapon) ) {
 		int iOffset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
 		int iAmmoTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
 		SetEntData(owner, iAmmoTable+iOffset, ammo, 4, true);
@@ -158,9 +160,9 @@ stock int SetWeaponAmmo(const int weapon, const int ammo)
 stock int GetWeaponAmmo(int weapon)
 {
 	int owner = GetOwner(weapon);
-	if (owner <= 0)
+	if( owner <= 0 )
 		return 0;
-	if (IsValidEntity(weapon)) {
+	else if( IsValidEntity(weapon) ) {
 		int iOffset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
 		int iAmmoTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
 		return GetEntData(owner, iAmmoTable+iOffset, 4);
@@ -169,7 +171,7 @@ stock int GetWeaponAmmo(int weapon)
 }
 stock int GetWeaponClip(const int weapon)
 {
-	if (IsValidEntity(weapon)) {
+	if( IsValidEntity(weapon) ) {
 		int AmmoClipTable = FindSendPropInfo("CTFWeaponBase", "m_iClip1");
 		return GetEntData(weapon, AmmoClipTable);
 	}
@@ -259,10 +261,10 @@ stock int FindTeleOwner(const int client)
 {
 	int teleporter = GetGroundEntity(client);
 	char classname[32];
-	if (IsValidEntity(teleporter) && GetEdictClassname(teleporter, classname, sizeof(classname)) && !strcmp(classname, "obj_teleporter", false))
+	if( IsValidEntity(teleporter) && GetEdictClassname(teleporter, classname, sizeof(classname)) && !strcmp(classname, "obj_teleporter", false) )
 	{
 		int owner = GetBuilder(teleporter);
-		if (IsValidClient(owner, false))
+		if( IsValidClient(owner, false) )
 			return owner;
 	}
 	return -1;
@@ -277,11 +279,11 @@ stock void TeleportToSpawn(const int client, int team = 0)
 		/// skip disabled spawns.
 		if( GetEntProp(spawn, Prop_Data, "m_bDisabled") )
 			continue;
-		else if (team <= 1)
+		else if( team <= 1 )
 			hArray.Push(spawn);
 		else {
 			int iSpawnTeam = GetEntProp(spawn, Prop_Send, "m_iTeamNum");
-			if (iSpawnTeam == team)
+			if( iSpawnTeam==team )
 				hArray.Push(spawn);
 		}
 	}
@@ -354,20 +356,19 @@ stock float[] nNegateVector(const float vec[3])
 	result[2] = -vec[2];
 	return result;
 }
-stock bool VectorCompare (const float v1[3], const float v2[3])
+stock bool VectorCompare(const float v1[3], const float v2[3])
 {
-	for (int i=0; i<3; i++)
-		if (v1[i] != v2[i])
+	for( int i=0; i<3; i++ )
+		if( v1[i] != v2[i] )
 			return false;
-			
 	return true;
 }
 stock bool OnlyScoutsLeft(const int team)
 {
-	for (int i=MaxClients; i; --i) {
+	for( int i=MaxClients; i; --i ) {
 		if( !IsValidClient(i) || !IsPlayerAlive(i) )
 			continue;
-		if (GetClientTeam(i) == team && TF2_GetPlayerClass(i) != TFClass_Scout)
+		else if( GetClientTeam(i) == team && TF2_GetPlayerClass(i) != TFClass_Scout )
 			return false;
 	}
 	return true;
@@ -375,12 +376,13 @@ stock bool OnlyScoutsLeft(const int team)
 stock int GetLivingPlayers(const int team)
 {
 	int AlivePlayers = 0;
-	for (int i=MaxClients; i; --i) {
+	for( int i=MaxClients; i; --i ) {
 		if( IsValidClient(i) && IsPlayerAlive(i) && GetClientTeam(i) == team )
 			++AlivePlayers;
 	}
 	return AlivePlayers;
 }
+
 stock void IncrementHeadCount(const int client, bool addhealth = true, int addheads = 1)
 {
 	/// Apply this condition to Demomen to give them their glowing eye effect.
@@ -396,7 +398,7 @@ stock void IncrementHeadCount(const int client, bool addhealth = true, int addhe
 }
 stock void SpawnSmallHealthPackAt(const int client, int ownerteam = 0)
 {
-	if (!IsValidClient(client) || !IsPlayerAlive(client))
+	if( !IsValidClient(client) || !IsPlayerAlive(client) )
 		return;
 	int healthpack = CreateEntityByName("item_healthkit_small");
 	if( IsValidEntity(healthpack) ) {
@@ -412,7 +414,6 @@ stock void SpawnSmallHealthPackAt(const int client, int ownerteam = 0)
 		vel[0] = float(GetRandomInt(-10, 10)), vel[1] = float(GetRandomInt(-10, 10)), vel[2] = 50.0;
 		TeleportEntity(healthpack, pos, NULL_VECTOR, vel);
 	}
-	return;
 }
 
 /// Credit to Mecha the Slag
@@ -421,15 +422,11 @@ public void SickleClimbWalls(const int client, const int weapon, const float upw
 	if( !IsValidClient(client) || (GetClientHealth(client) <= health) )
 		return;
 	
-	char classname[64];
-	float vecClientEyePos[3];
-	float vecClientEyeAng[3];
-	
 	/// Get the position of the player's eyes
-	GetClientEyePosition(client, vecClientEyePos);
+	float vecClientEyePos[3]; GetClientEyePosition(client, vecClientEyePos);
 	
 	/// Get the angle the player is looking
-	GetClientEyeAngles(client, vecClientEyeAng);
+	float vecClientEyeAng[3]; GetClientEyeAngles(client, vecClientEyeAng);
 	
 	/// Check for colliding entities
 	TR_TraceRayFilter(vecClientEyePos, vecClientEyeAng, MASK_PLAYERSOLID, RayType_Infinite, TraceRayDontHitSelf, client);
@@ -438,24 +435,23 @@ public void SickleClimbWalls(const int client, const int weapon, const float upw
 		return;
 	
 	int TRIndex = TR_GetEntityIndex(null);
+	char classname[64];
 	GetEdictClassname(TRIndex, classname, sizeof(classname));
-	if (!StrEqual(classname, "worldspawn"))
+	if( !StrEqual(classname, "worldspawn") )
 		return;
 	
 	float fNormal[3];
 	TR_GetPlaneNormal(null, fNormal);
 	GetVectorAngles(fNormal, fNormal);
 	
-	if (fNormal[0] >= 30.0 && fNormal[0] <= 330.0)
+	if( fNormal[0] >= 30.0 && fNormal[0] <= 330.0 )
 		return;
-	if (fNormal[0] <= -30.0)
+	else if( fNormal[0] <= -30.0 )
 		return;
 	
-	float pos[3];
-	TR_GetEndPosition(pos);
+	float pos[3]; TR_GetEndPosition(pos);
 	float distance = GetVectorDistance(vecClientEyePos, pos);
-	
-	if (distance >= 100.0)
+	if( distance >= 100.0 )
 		return;
 	
 	float fVelocity[3];
@@ -465,10 +461,7 @@ public void SickleClimbWalls(const int client, const int weapon, const float upw
 	TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, fVelocity);
 	SDKHooks_TakeDamage(client, client, client, health, DMG_CLUB, GetPlayerWeaponSlot(client, TFWeaponSlot_Melee));
 	
-	//if (!IsBoss[client])
-	//	ClientCommand(client, "playgamesound \"%s\"", "player\\taunt_clip_spin.wav");
-	
-	if (attackdelay)
+	if( attackdelay )
 		RequestFrame(NoAttacking, EntIndexToEntRef(weapon));
 }
 public void NoAttacking(const any ref)
@@ -479,7 +472,7 @@ public void NoAttacking(const any ref)
 }
 stock void SetNextAttack(const int weapon, float duration = 0.0)
 {
-	if (weapon <= MaxClients || !IsValidEntity(weapon))
+	if( weapon <= MaxClients || !IsValidEntity(weapon) )
 		return;
 	float next = GetGameTime()+duration;
 	SetEntPropFloat(weapon, Prop_Send, "m_flNextPrimaryAttack", next);
@@ -517,20 +510,46 @@ stock void SetPawnTimer(Function func, float thinktime = 0.1, any param1 = -999,
 	CreateTimer(thinktime, DoThink, thinkpack, TIMER_DATA_HNDL_CLOSE);
 }
 
-public Action DoThink(Handle hTimer, DataPack hndl)
+public Action DoThink(Handle t, DataPack pack)
 {
-	hndl.Reset();
-	Function pFunc = hndl.ReadFunction();
-	Call_StartFunction( null, pFunc );
+	pack.Reset();
+	Function fn = pack.ReadFunction();
+	Call_StartFunction(null, fn);
 	
-	any param1 = hndl.ReadCell();
-	if( param1 != -999 )
-		Call_PushCell(param1);
+	any param = pack.ReadCell();
+	if( param != -999 )
+		Call_PushCell(param);
 	
-	any param2 = hndl.ReadCell();
-	if( param2 != -999 )
-		Call_PushCell(param2);
+	param = pack.ReadCell();
+	if( param != -999 )
+		Call_PushCell(param);
 	
+	Call_Finish();
+	return Plugin_Continue;
+}
+
+
+stock void SetPawnTimerEx(Function func, float thinktime = 0.1, const any[] args, const int len)
+{
+	DataPack thinkpack = new DataPack();
+	thinkpack.WriteFunction(func);
+	thinkpack.WriteCell(len);
+	for( int i; i<len; i++ )
+		thinkpack.WriteCell(args[i]);
+	CreateTimer(thinktime, DoPawnTimer, thinkpack, TIMER_DATA_HNDL_CLOSE);
+}
+
+public Action DoPawnTimer(Handle t, DataPack pack)
+{
+	pack.Reset();
+	Function fn = pack.ReadFunction();
+	Call_StartFunction(null, fn);
+	
+	int len = pack.ReadCell();
+	for( int i; i<len; i++ ) {
+		any param = pack.ReadCell();
+		Call_PushCell(param);
+	}
 	Call_Finish();
 	return Plugin_Continue;
 }
@@ -559,11 +578,12 @@ stock void SetArenaCapEnableTime(const float time)
 
 stock void SetClientGlow(const int client, const float time1, float clampfl = 0.0, float &glowtimer)
 {
-	if (IsValidClient(client)) {
+	if( IsValidClient(client) ) {
 		glowtimer += time1;
-		if (clampfl > 0.0)
+		if( clampfl > 0.0 )
 			glowtimer = clampfl;
-		if (glowtimer <= 0.0) {
+		
+		if( glowtimer <= 0.0 ) {
 			glowtimer = 0.0;
 			SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
 		}
@@ -588,7 +608,7 @@ public void EnableCap(const bool open_doors)
 	SetControlPoint(true);
 	if( open_doors ) {
 		int ent = -1;
-		while ((ent = FindEntityByClassname(ent, "func_door")) != -1) {
+		while( (ent = FindEntityByClassname(ent, "func_door")) != -1 ) {
 			AcceptEntityInput(ent, "Open");
 			AcceptEntityInput(ent, "Unlock");
 		}
@@ -654,18 +674,20 @@ stock void SpawnRandomHealth()
 stock int GetTeamPlayerCount(const int team)
 {
 	int count = 0;
-	for (int i=MaxClients; i; --i)
-		if (IsValidClient(i) && GetClientTeam(i) == team)
+	for( int i=MaxClients; i; --i )
+		if( IsValidClient(i) && GetClientTeam(i) == team )
 			count++;
 	return count;
 }
 stock int GetClientCloakIndex(const int client)
 {
-	if (!IsValidClient(client))
+	if( !IsValidClient(client) )
 		return -1;
+	
 	int wep = GetPlayerWeaponSlot(client, 4);
-	if (!IsValidEntity(wep))
+	if( !IsValidEntity(wep) )
 		return -1;
+	
 	char classname[32];
 	GetEntityClassname(wep, classname, sizeof(classname));
 	if( !strncmp(classname, "tf_wea", 6, false) )
@@ -674,19 +696,17 @@ stock int GetClientCloakIndex(const int client)
 }
 stock int GetSlotFromWeapon(const int iClient, const int iWeapon)
 {
-	for (int i=0; i<5; i++) {
-		if( iWeapon == GetPlayerWeaponSlot(iClient, i) )
+	for( int i; i<5; i++ )
+		if( iWeapon==GetPlayerWeaponSlot(iClient, i) )
 			return i;
-	}
+	
 	return -1;
 }
 stock bool RemoveDemoShield(int iClient) /// Taken from VSH1
 {
 	int iEnt = MaxClients + 1;
-	while ((iEnt = FindEntityByClassname(iEnt, "tf_wearable_demoshield")) != -1)
-	{
-		if (GetEntPropEnt(iEnt, Prop_Send, "m_hOwnerEntity") == iClient && !GetEntProp(iEnt, Prop_Send, "m_bDisguiseWearable"))
-		{
+	while( (iEnt = FindEntityByClassname(iEnt, "tf_wearable_demoshield")) != -1 ) {
+		if( GetEntPropEnt(iEnt, Prop_Send, "m_hOwnerEntity") == iClient && !GetEntProp(iEnt, Prop_Send, "m_bDisguiseWearable") ) {
 			TF2_RemoveWearable(iClient, iEnt);
 			return true; /// Returns true if Shield was removed...
 		}
@@ -697,10 +717,8 @@ stock bool RemoveDemoShield(int iClient) /// Taken from VSH1
 stock bool RemoveRazorBack(int iClient)
 {
 	int iEnt = MaxClients + 1;
-	while ((iEnt = FindEntityByClassname(iEnt, "tf_wearable_razorback")) != -1)
-	{
-		if (GetEntPropEnt(iEnt, Prop_Send, "m_hOwnerEntity") == iClient && !GetEntProp(iEnt, Prop_Send, "m_bDisguiseWearable"))
-		{
+	while( (iEnt = FindEntityByClassname(iEnt, "tf_wearable_razorback")) != -1 ) {
+		if( GetEntPropEnt(iEnt, Prop_Send, "m_hOwnerEntity") == iClient && !GetEntProp(iEnt, Prop_Send, "m_bDisguiseWearable") ) {
 			TF2_RemoveWearable(iClient, iEnt);
 			return true; /// Returns true if Shield was removed...
 		}
@@ -710,113 +728,83 @@ stock bool RemoveRazorBack(int iClient)
 
 stock void RemovePlayerBack(int client, int[] indices, int len)
 {
-	if (len <= 0)
+	if( len <= 0 )
 		return;
 	int edict = MaxClients+1;
-	while ((edict = FindEntityByClassname(edict, "tf_wearable")) != -1)
-	{
+	while( (edict = FindEntityByClassname(edict, "tf_wearable")) != -1 ) {
 		char netclass[32];
-		if (GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearable"))
-		{
+		if( GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearable") ) {
 			int idx = GetItemIndex(edict);
-			if (GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
-			{
-				for (int i = 0; i < len; i++) {
-					if (idx == indices[i]) {
+			if( GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable") ) {
+				for( int i; i<len; i++ )
+					if( idx==indices[i] )
 						TF2_RemoveWearable(client, edict);
-						//AcceptEntityInput(edict, "Kill");
-					}
-				}
 			}
 		}
 	}
 	edict = MaxClients+1;
-	while ((edict = FindEntityByClassname(edict, "tf_powerup_bottle")) != -1)
-	{
+	while( (edict = FindEntityByClassname(edict, "tf_powerup_bottle")) != -1 ) {
 		char netclass[32];
-		if (GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFPowerupBottle"))
-		{
+		if( GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFPowerupBottle") ) {
 			int idx = GetItemIndex(edict);
-			if (GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
-			{
-				for (int i=0; i < len; i++) {
-					if (idx == indices[i]) {
+			if( GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable") ) {
+				for( int i; i<len; i++ )
+					if( idx==indices[i] )
 						TF2_RemoveWearable(client, edict);
-						//AcceptEntityInput(edict, "Kill");
-					}
-				}
 			}
 		}
 	}
 	edict = MaxClients+1;
-	while ((edict = FindEntityByClassname(edict, "tf_wearable_razorback")) != -1)
-	{
+	while( (edict = FindEntityByClassname(edict, "tf_wearable_razorback")) != -1 ) {
 		char netclass[32];
-		if (GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearableRazorback"))
-		{
+		if( GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearableRazorback") ) {
 			int idx = GetItemIndex(edict);
-			if (GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
-			{
-				for (int i = 0; i < len; i++) {
-					if (idx == indices[i]) {
+			if( GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable") ) {
+				for( int i; i<len; i++ )
+					if( idx==indices[i] )
 						TF2_RemoveWearable(client, edict);
-						//AcceptEntityInput(edict, "Kill");
-					}
-				}
 			}
 		}
 	}
 }
 stock int FindPlayerBack(int client, int[] indices, int len)
 {
-	if (len <= 0)
+	if( len <= 0 )
 		return -1;
+	
 	int edict = MaxClients+1;
-	while ((edict = FindEntityByClassname(edict, "tf_wearable")) != -1)
-	{
+	while( (edict = FindEntityByClassname(edict, "tf_wearable")) != -1 ) {
 		char netclass[32];
-		if (GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearable"))
-		{
+		if( GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearable") ) {
 			int idx = GetItemIndex(edict);
-			if (GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
-			{
-				for (int i = 0; i < len; i++) {
-					if (idx == indices[i])
+			if( GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable") ) {
+				for( int i; i<len; i++ )
+					if( idx==indices[i] )
 						return edict;
-				}
 			}
 		}
 	}
 	edict = MaxClients+1;
-	while ((edict = FindEntityByClassname(edict, "tf_powerup_bottle")) != -1)
-	{
+	while( (edict = FindEntityByClassname(edict, "tf_powerup_bottle")) != -1 ) {
 		char netclass[32];
-		if (GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFPowerupBottle"))
-		{
+		if( GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFPowerupBottle") ) {
 			int idx = GetItemIndex(edict);
-			if (GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
-			{
-				for (int i = 0; i < len; i++) {
-					if (idx == indices[i])
+			if( GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable") ) {
+				for( int i; i<len; i++ )
+					if( idx==indices[i] )
 						return edict;
-				}
 			}
 		}
 	}
 	edict = MaxClients+1;
-	while ((edict = FindEntityByClassname(edict, "tf_wearable_razorback")) != -1)
-	{
+	while( (edict = FindEntityByClassname(edict, "tf_wearable_razorback")) != -1 ) {
 		char netclass[32];
-		if (GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearableRazorback"))
-		{
+		if( GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearableRazorback") ) {
 			int idx = GetItemIndex(edict);
-			if (GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
-			{
-				for (int i = 0; i < len; i++) {
-					if (idx == indices[i]) {
+			if( GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable") ) {
+				for( int i; i<len; i++ )
+					if( idx==indices[i] )
 						return edict;
-					}
-				}
 			}
 		}
 	}
@@ -832,7 +820,7 @@ stock int FindSentry(const int client)
 }
 stock bool TF2_IsPlayerCritBuffed(const int client)
 {
-	return (TF2_IsPlayerInCondition(client, TFCond_Kritzkrieged)
+	return( TF2_IsPlayerInCondition(client, TFCond_Kritzkrieged)
 			|| TF2_IsPlayerInCondition(client, TFCond_HalloweenCritCandy)
 			|| TF2_IsPlayerInCondition(client, view_as<TFCond>(34))
 			|| TF2_IsPlayerInCondition(client, view_as<TFCond>(35))
@@ -851,27 +839,27 @@ stock void OverNineThousand()
 public void _NoHonorBound(const int userid)
 {
 	int client = GetClientOfUserId(userid);
-	if (IsValidClient(client) && IsPlayerAlive(client)) {
+	if( IsValidClient(client) && IsPlayerAlive(client) ) {
 		int weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
 		int index = GetItemIndex(weapon);
 		int active = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 		char classname[32];
 		if( IsValidEntity(active) )
 			GetEdictClassname(active, classname, sizeof(classname));
-		if( index == 357 && active == weapon && !strcmp(classname, "tf_weapon_katana", false) )
-		{
+		if( index == 357 && active == weapon && !strcmp(classname, "tf_weapon_katana", false) ) {
 			SetEntProp(weapon, Prop_Send, "m_bIsBloody", 1);
-			if (GetEntProp(client, Prop_Send, "m_iKillCountSinceLastDeploy") < 1)
+			if( GetEntProp(client, Prop_Send, "m_iKillCountSinceLastDeploy") < 1 )
 				SetEntProp(client, Prop_Send, "m_iKillCountSinceLastDeploy", 1);
 		}
 	}
 }
 stock int GetMaxAmmo(const int client, const int slot)
 {
-	if (!IsValidClient(client))
+	if( !IsValidClient(client) )
 		return 0;
+	
 	int weapon = GetPlayerWeaponSlot(client, slot);
-	if (IsValidEntity(weapon)) {
+	if( IsValidEntity(weapon) ) {
 		switch( slot ) {
 			case TFWeaponSlot_Primary: return GetEntData(client, FindDataMapInfo(client, "m_iAmmo")+4);
 			case TFWeaponSlot_Secondary: return GetEntData(client, FindDataMapInfo(client, "m_iAmmo")+8);
@@ -887,20 +875,21 @@ stock bool IsWeaponSlotActive(const int client, const int slot)
 public void _StopTickle(const int userid)
 {
 	int client = GetClientOfUserId(userid);
-	if (!IsValidClient(client) || !IsPlayerAlive(client))
+	if( !IsValidClient(client) || !IsPlayerAlive(client) )
 		return;
-	if (!GetEntProp(client, Prop_Send, "m_bIsReadyToHighFive") && !IsValidEntity(GetEntPropEnt(client, Prop_Send, "m_hHighFivePartner")))
+	
+	if( !GetEntProp(client, Prop_Send, "m_bIsReadyToHighFive") && !IsValidEntity(GetEntPropEnt(client, Prop_Send, "m_hHighFivePartner")) )
 		TF2_RemoveCondition(client, TFCond_Taunting);
 }
 stock bool MapHasMusic(bool forceRecalc = false)	/// Does this even work?
 {
 	static bool hasMusic;
 	static bool found = false;
-	if (forceRecalc) {
+	if( forceRecalc ) {
 		found = false;
 		hasMusic = false;
 	}
-	if (!found) {
+	if( !found ) {
 		int i = -1;
 		char name[64];
 		while( (i = FindEntityByClassname(i, "info_target")) != -1 ) {
@@ -914,10 +903,10 @@ stock bool MapHasMusic(bool forceRecalc = false)	/// Does this even work?
 }
 stock bool IsValidAdmin(const int client, const char[] flags)
 {
-	if (!IsClientInGame(client))
+	if( !IsClientInGame(client) )
 		return false;
 	int ibFlags = ReadFlagString(flags);
-	if (!StrEqual(flags, "")) {
+	if( !StrEqual(flags, "") ) {
 		if( (GetUserFlagBits(client) & ibFlags) == ibFlags )
 			return true;
 	}
@@ -927,10 +916,10 @@ stock bool IsValidAdmin(const int client, const char[] flags)
 }
 stock int AttachProjectileModel(const int entity, const char[] strModel, char[] strAnim = "")
 {
-	if (!IsValidEntity(entity))
+	if( !IsValidEntity(entity) )
 		return -1;
 	int model = CreateEntityByName("prop_dynamic");
-	if (IsValidEntity(model)) {
+	if( IsValidEntity(model) ) {
 		float pos[3], ang[3];
 		GetEntPropVector(entity, Prop_Send, "m_vecOrigin", pos);
 		GetEntPropVector(entity, Prop_Send, "m_angRotation", ang);
@@ -939,7 +928,7 @@ stock int AttachProjectileModel(const int entity, const char[] strModel, char[] 
 		DispatchSpawn(model);
 		SetVariantString("!activator");
 		AcceptEntityInput(model, "SetParent", entity, model, 0);
-		if (strAnim[0] != '\0') {
+		if( strAnim[0] != '\0' ) {
 			SetVariantString(strAnim);
 			AcceptEntityInput(model, "SetDefaultAnimation");
 			SetVariantString(strAnim);
@@ -958,7 +947,7 @@ stock bool GetRandomBool()
 stock void SetAmmo(const int client, const int slot, const int ammo)
 {
 	int weapon = GetPlayerWeaponSlot(client, slot);
-	if (IsValidEntity(weapon)) {
+	if( IsValidEntity(weapon) ) {
 		int iOffset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
 		int iAmmoTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
 		SetEntData(client, iAmmoTable+iOffset, ammo, 4, true);
@@ -967,17 +956,17 @@ stock void SetAmmo(const int client, const int slot, const int ammo)
 stock void SetClip(const int client, const int slot, const int ammo)
 {
 	int weapon = GetPlayerWeaponSlot(client, slot);
-	if (IsValidEntity(weapon)) {
+	if( IsValidEntity(weapon) ) {
 		int iAmmoTable = FindSendPropInfo("CTFWeaponBase", "m_iClip1");
 		SetEntData(weapon, iAmmoTable, ammo, 4, true);
 	}
 }
 stock int GetAmmo(const int client, const int slot)
 {
-	if (!IsValidClient(client))
+	if( !IsValidClient(client) )
 		return 0;
 	int weapon = GetPlayerWeaponSlot(client, slot);
-	if (IsValidEntity(weapon)) {
+	if( IsValidEntity(weapon) ) {
 		int iOffset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
 		int iAmmoTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
 		return GetEntData(client, iAmmoTable+iOffset);
@@ -987,7 +976,7 @@ stock int GetAmmo(const int client, const int slot)
 stock int GetClip(const int client, const int slot)
 {
 	int weapon = GetPlayerWeaponSlot(client, slot);
-	if (IsValidEntity(weapon)) {
+	if( IsValidEntity(weapon) ) {
 		int AmmoClipTable = FindSendPropInfo("CTFWeaponBase", "m_iClip1");
 		return GetEntData(weapon, AmmoClipTable);
 	}
@@ -996,7 +985,7 @@ stock int GetClip(const int client, const int slot)
 
 stock void SkipBossPanelNotify(const int client/*, bool newchoice = true*/)
 {
-	if (!g_vsh2.m_hCvars[Enabled].BoolValue || !IsValidClient(client) || IsFakeClient(client) || IsVoteInProgress())
+	if( !g_vsh2.m_hCvars[Enabled].BoolValue || !IsValidClient(client) || IsFakeClient(client) || IsVoteInProgress() )
 		return;
 	
 	Panel panel = new Panel();
@@ -1015,7 +1004,7 @@ stock void _SetCapOwner(const int iCapTeam, const bool open_doors, float flEnabl
 	int cap_master = FindEntityByClassname(-1, "team_control_point_master");
 	while( (i = FindEntityByClassname(i, "team_control_point")) != -1 ) {
 		/// Adapted from Arena:Respawn
-		if (IsValidEntity(i)) {
+		if( IsValidEntity(i) ) {
 			SetVariantInt(iCapTeam);
 			
 			/// Must have team_control_point_master as the activator, less it will just ignore the Input
@@ -1033,10 +1022,10 @@ stock bool StrStarts(const char[] szStr, const char[] szSubStr, bool bCaseSensit
 stock bool ValidateName(const char[] name)
 {
 	int length = strlen(name);
-	for (int i=0; i<length; ++i) {
+	for( int i; i<length; ++i ) {
 		int holder = name[i];
 		/// Invalid name, names may only contains numbers, underscores, and normal letters.
-		if (!(IsCharAlpha(holder) || IsCharNumeric(holder) || holder == '_'))
+		if( !(IsCharAlpha(holder) || IsCharNumeric(holder) || holder=='_') )
 			return false;
 	}
 	/// A name is, of course, only valid if it's 1 or more chars long, though longer is recommended
@@ -1053,7 +1042,7 @@ stock int GetHealerByIndex(const int client, const int index)
 
 stock float GetConditionDuration(const int client, const TFCond cond)
 {
-	if (!TF2_IsPlayerInCondition(client, cond))
+	if( !TF2_IsPlayerInCondition(client, cond) )
 		return 0.0;
 	
 	int m_Shared = FindSendPropInfo("CTFPlayer", "m_Shared");
@@ -1066,7 +1055,7 @@ stock float GetConditionDuration(const int client, const TFCond cond)
 
 stock void SetConditionDuration(const int client, const TFCond cond, const float duration)
 {
-	if (!TF2_IsPlayerInCondition(client, cond))
+	if( !TF2_IsPlayerInCondition(client, cond) )
 		return;
 	
 	int m_Shared = FindSendPropInfo("CTFPlayer", "m_Shared");
@@ -1087,7 +1076,6 @@ enum {
 stock void SetAmmoPackData(int pack, int type, int val)
 {
 	int offset = ((type * 4) + (FindDataMapInfo(pack, "m_vOriginalSpawnAngles") + 20));
-
 	SetEntData(pack, offset, val, _, true);
 }
 stock void PrepareSoundDir(bool valve = false, char[] dir = "sound")
@@ -1099,23 +1087,26 @@ stock void PrepareSoundDir(bool valve = false, char[] dir = "sound")
 	l.GetNext(buffer, sizeof(buffer));
 	
 	while( l.GetNext(buffer, sizeof(buffer), type) ) {
-		if (buffer[0] == '\0' || !strcmp(buffer, ".", false) || !strcmp(buffer, "..", false))
+		if( buffer[0] == '\0' || !strcmp(buffer, ".", false) || !strcmp(buffer, "..", false) )
 			continue;
 		
-		if (type == FileType_Directory) {
+		if( type==FileType_Directory ) {
 			Format(buffer, PLATFORM_MAX_PATH, "%s/%s", dir, buffer);
 			PrepareSoundDir(valve, buffer);
-		} else if (type == FileType_File) {
-			if ((len = strlen(buffer)) < 5)			/// .mp3, .wav, etc
+		} else if( type==FileType_File ) {
+			/// .mp3, .wav, etc
+			if( (len = strlen(buffer)) < 5 )
 				continue;
 			
-			if (StrContains(buffer[len-4], ".mp3") == -1 && StrContains(buffer[len-4], ".wav") == -1 && StrContains(buffer[len-4], ".ogg") == -1)		/// Don't think TF2 supports .ogg but w/e
+			/// Don't think TF2 supports .ogg but w/e
+			if( StrContains(buffer[len-4], ".mp3") == -1 && StrContains(buffer[len-4], ".wav") == -1 && StrContains(buffer[len-4], ".ogg") == -1 )
 				continue;
 			
 			Format(buffer, sizeof(buffer), "%s/%s", dir, buffer);
 			AddFileToDownloadsTable(buffer);
 			
-			if (!IsSoundPrecached(buffer[6]))	/// Offsets 'sound/'
+			/// Offsets 'sound/'
+			if( !IsSoundPrecached(buffer[6]) )
 				PrecacheSound(buffer[6]);
 		}
 	}
@@ -1129,23 +1120,23 @@ stock void PrepareModelDir(bool valve = false, char[] dir = "models")
 	l.GetNext(buffer, sizeof(buffer));
 	
 	while( l.GetNext(buffer, sizeof(buffer), type) ) {
-		if (buffer[0] == '\0' || !strcmp(buffer, ".", false) || !strcmp(buffer, "..", false))
+		if( buffer[0] == '\0' || !strcmp(buffer, ".", false) || !strcmp(buffer, "..", false) )
 			continue;
 		
-		if (type == FileType_Directory) {
+		if( type==FileType_Directory ) {
 			Format(buffer, PLATFORM_MAX_PATH, "%s/%s", dir, buffer);
 			PrepareModelDir(valve, buffer);
-		} else if (type == FileType_File) {
-			if (strlen(buffer) < 5)
+		} else if( type==FileType_File ) {
+			if( strlen(buffer) < 5 )
 				continue;
 			
-			if (StrContains(buffer, ".dx80.vtx") == -1 && StrContains(buffer, ".dx90.vtx") == -1 && StrContains(buffer, ".mdl") == -1
-			 && StrContains(buffer, ".phy") == -1 && StrContains(buffer, ".sw.vtx") == -1 && StrContains(buffer, ".vvd") == -1)
+			if( StrContains(buffer, ".dx80.vtx") == -1 && StrContains(buffer, ".dx90.vtx") == -1 && StrContains(buffer, ".mdl") == -1
+			 && StrContains(buffer, ".phy") == -1 && StrContains(buffer, ".sw.vtx") == -1 && StrContains(buffer, ".vvd") == -1 )
 				continue;
 			
 			Format(buffer, sizeof(buffer), "%s/%s", dir, buffer);
 			AddFileToDownloadsTable(buffer);
-			if (StrContains(buffer, ".mdl", false) != -1 && !IsModelPrecached(buffer))
+			if( StrContains(buffer, ".mdl", false) != -1 && !IsModelPrecached(buffer) )
 				PrecacheModel(buffer);
 		}
 	}
@@ -1159,17 +1150,16 @@ stock void PrepareMaterialDir(bool valve = false, char[] dir = "materials")
 	l.GetNext(buffer, sizeof(buffer));
 	
 	while( l.GetNext(buffer, sizeof(buffer), type) ) {
-		if (buffer[0] == '\0' || !strcmp(buffer, ".", false) || !strcmp(buffer, "..", false))
+		if( buffer[0] == '\0' || !strcmp(buffer, ".", false) || !strcmp(buffer, "..", false) )
 			continue;
 		
-		if (type == FileType_Directory) {
+		if( type==FileType_Directory ) {
 			Format(buffer, PLATFORM_MAX_PATH, "%s/%s", dir, buffer);
 			PrepareMaterialDir(valve, buffer);
-		} else if (type == FileType_File) {
-			if (strlen(buffer) < 5)
+		} else if( type==FileType_File ) {
+			if( strlen(buffer) < 5 )
 				continue;
-			
-			if (StrContains(buffer, ".vmt") == -1 && StrContains(buffer, ".vtf") == -1)
+			else if( StrContains(buffer, ".vmt") == -1 && StrContains(buffer, ".vtf") == -1 )
 				continue;
 			
 			Format(buffer, sizeof(buffer), "%s/%s", dir, buffer);

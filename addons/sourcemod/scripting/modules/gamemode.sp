@@ -202,8 +202,10 @@ methodmap VSHGameMode { /* < StringMap { */
 	property BaseBoss hNextBoss {
 		public get() {
 			BaseBoss i; g_vsh2.m_hGameModeFields.GetValue("hNextBoss", i);
-			if( !i || !i.index )
-				return view_as< BaseBoss >(0);
+			if( i && !i.index ) {
+				g_vsh2.m_hGameModeFields.SetValue("hNextBoss", 0);
+				i = view_as< BaseBoss >(0);
+			}
 			return i;
 		}
 		public set(const BaseBoss val) {
@@ -255,7 +257,7 @@ methodmap VSHGameMode { /* < StringMap { */
 			boss = BaseBoss(i);
 			if( !boss.bIsBoss )
 				continue;
-			if( boss.iBossType==type )
+			else if( boss.iBossType==type )
 				return boss;
 		}
 		return view_as< BaseBoss >(0);
@@ -268,21 +270,38 @@ methodmap VSHGameMode { /* < StringMap { */
 			SetControlPoint(false);
 		}
 	}
-	public BaseBoss FindNextBoss() {
-		BaseBoss tBoss;
-		int points = -999;
-		BaseBoss boss;
+	
+	public int GetQueue(BaseBoss[] players) {
+		int k;
 		for( int i=MaxClients; i; --i ) {
 			if( !IsValidClient(i) || GetClientTeam(i) <= VSH2Team_Spectator )
 				continue;
-			boss = BaseBoss(i);
-			if( boss.iQueue >= points && !boss.bSetOnSpawn ) {
-				tBoss = boss;
-				points = boss.iQueue;
+			
+			BaseBoss boss = BaseBoss(i);
+			if( boss.bSetOnSpawn )
+				continue;
+			
+			players[k++] = boss;
+		}
+		
+		for( int i; i<k; i++ ) {
+			for( int n; n<k; n++ ) {
+				if( players[n].iQueue < players[i].iQueue ) {
+					BaseBoss t = players[i];
+					players[i] = players[n];
+					players[n] = t;
+				}
 			}
 		}
-		return tBoss;
+		return k;
 	}
+	
+	public BaseBoss FindNextBoss() {
+		BaseBoss[] players = new BaseBoss[MaxClients];
+		this.GetQueue(players);
+		return players[0];
+	}
+	
 	public int CountMinions(const bool balive) {
 		BaseBoss boss;
 		int count=0;
@@ -377,7 +396,7 @@ methodmap VSHGameMode { /* < StringMap { */
 		while( (ent = FindEntityByClassname(ent, "item_healthkit_medium")) != -1 ) {
 			SetEntProp(ent, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 			count++;
-			if (!foundHealth)
+			if( !foundHealth )
 				foundHealth = (count > 2);//true;
 		}
 		ent = -1;
@@ -440,9 +459,9 @@ methodmap VSHGameMode { /* < StringMap { */
 			return true;
 		
 		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/maps.cfg");
-		if (!FileExists(config)) {
+		if( !FileExists(config) ) {
 			BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/saxton_hale/saxton_hale_maps.cfg");
-			if (!FileExists(config)) {
+			if( !FileExists(config) ) {
 				LogError("[VSH 2] ERROR: **** Unable to find VSH/FF2 Compatible Map Configs, Disabling VSH 2 ****");
 				return false;
 			}
@@ -475,7 +494,8 @@ methodmap VSHGameMode { /* < StringMap { */
 		return false;
 		
 		/// do not remove this.
-		//if (FindEntityByClassname(-1, "tf_logic_arena") != -1) return true;
+		//if( FindEntityByClassname(-1, "tf_logic_arena") != -1 )
+		//	return true;
 		//return false;
 	}
 	
@@ -487,22 +507,22 @@ methodmap VSHGameMode { /* < StringMap { */
 		this.bDoors = false;
 		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/saxton_hale/saxton_hale_doors.cfg");
 		if( !FileExists(config) ) {
-			if (!strncmp(currentmap, lolcano, sizeof(lolcano), false))
+			if( !strncmp(currentmap, lolcano, sizeof(lolcano), false) )
 				this.bDoors = true;
 			return;
 		}
 		
 		File file = OpenFile(config, "r");
 		if( !file ) {
-			if (!strncmp(currentmap, lolcano, sizeof(lolcano), false))
+			if( !strncmp(currentmap, lolcano, sizeof(lolcano), false) )
 				this.bDoors = true;
 			return;
 		}
 		while( !file.EndOfFile() && file.ReadLine(config, sizeof(config)) ) {
 			Format(config, strlen(config)-1, config);
-			if (!strncmp(config, "//", 2, false))
+			if( !strncmp(config, "//", 2, false) )
 				continue;
-			else if (StrContains(currentmap, config, false) != -1 || !StrContains(config, "all", false)) {
+			else if( StrContains(currentmap, config, false) != -1 || !StrContains(config, "all", false) ) {
 				delete file;
 				this.bDoors = true;
 				return;
@@ -518,7 +538,7 @@ methodmap VSHGameMode { /* < StringMap { */
 		this.bTeleToSpawn = false;
 		
 		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/saxton_hale/saxton_spawn_teleport.cfg");
-		if (!FileExists(config))
+		if( !FileExists(config) )
 			return;
 		
 		File file = OpenFile(config, "r");
@@ -549,6 +569,21 @@ methodmap VSHGameMode { /* < StringMap { */
 			
 			boss = BaseBoss(i);
 			if( boss.bIsBoss )
+				bossarray[count++] = boss;
+		}
+		return count;
+	}
+	public int GetBossesByType(BaseBoss[] bossarray, const int type, const bool balive=true) {
+		int count;
+		BaseBoss boss;
+		for( int i=MaxClients; i; --i ) {
+			if( !IsClientInGame(i) )
+				continue;
+			else if( balive && !IsPlayerAlive(i) )
+				continue;
+			
+			boss = BaseBoss(i);
+			if( boss.bIsBoss && boss.iBossType==type )
 				bossarray[count++] = boss;
 		}
 		return count;

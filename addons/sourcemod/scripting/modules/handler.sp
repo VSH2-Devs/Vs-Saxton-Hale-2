@@ -90,10 +90,8 @@ public void ManageDisconnect(const int client)
 			int numbosses = gamemode.GetBosses(bosses, false);
 			if( numbosses-1 > 0 ) {	/// Exclude leaver, this is why CountBosses() can't be used
 				for( int i=0; i<numbosses; i++ ) {
-					if( bosses[i] == leaver )
+					if( bosses[i]==leaver || IsPlayerAlive(bosses[i].index) )
 						continue;
-					if( IsPlayerAlive(bosses[i].index) )
-						break;
 					
 					BaseBoss next = gamemode.FindNextBoss();
 					if( gamemode.hNextBoss ) {
@@ -137,7 +135,6 @@ public void ManageDisconnect(const int client)
 		CPrintToChatAll("{olive}[VSH 2]{red} A Boss Just Disconnected!");
 	} else {
 		RequestFrame(CheckAlivePlayers, 0);
-		//SetPawnTimer(CheckAlivePlayers, 0.2);
 		if( client == gamemode.FindNextBoss().index )
 			SetPawnTimer(_SkipBossPanel, 1.0);
 		
@@ -165,8 +162,9 @@ public void ManageOnBossSelected(const BaseBoss base)
 	if( extra_bosses > max_random_bosses )
 		extra_bosses = max_random_bosses;
 	
-	for( int i; i<extra_bosses; i++ )
+	for( int i; i<extra_bosses; i++ ) {
 		gamemode.FindNextBoss().MakeBossAndSwitch(GetRandomInt(VSH2Boss_Hale, MAXBOSS), false);
+	}
 }
 
 public Action ManageOnTouchPlayer(const BaseBoss base, const BaseBoss victim)
@@ -426,7 +424,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				/// connivers kunai
 				if( wepindex == 356 ) {
 					int health = GetClientHealth(attacker)+180;
-					if (health > 195)
+					if( health > 195 )
 						health = 250;
 					SetEntProp(attacker, Prop_Data, "m_iHealth", health);
 					SetEntProp(attacker, Prop_Send, "m_iHealth", health);
@@ -448,7 +446,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				return Plugin_Changed;
 			}
 			
-			if (damagecustom == TF_CUSTOM_BOOTS_STOMP) {
+			if( damagecustom == TF_CUSTOM_BOOTS_STOMP ) {
 				if( Call_OnBossTakeDamage_OnMantreadsStomp(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed )
 					damage = 1024.0;
 				return Plugin_Changed;
@@ -570,7 +568,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				case 14, 201, 230, 402, 526, 664, 752, 792, 801, 851, 881, 890, 899, 908, 957, 966, 1098: {
 					switch( wepindex ) {	/// cleaner to read than if wepindex == || wepindex == || etc.
 						case 14, 201, 664, 792, 801, 851, 881, 890, 899, 908, 957, 966: {	/// sniper rifles
-							if (gamemode.iRoundState != StateEnding) {
+							if( gamemode.iRoundState != StateEnding ) {
 								float bossGlow = victim.flGlowtime;
 								float chargelevel = (IsValidEntity(weapon) && weapon > MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
 								float time = (bossGlow > 10 ? 1.0 : 2.0);
@@ -598,12 +596,12 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 						bool ministatus = (TF2_IsPlayerInCondition(attacker, TFCond_CritCola) || TF2_IsPlayerInCondition(attacker, TFCond_Buffed) || TF2_IsPlayerInCondition(attacker, TFCond_CritHype));
 
 						damage *= (ministatus) ? 2.222222 : 3.0;
-						if (wepindex == 230) {
+						if( wepindex==230 ) {
 							victim.flRAGE -= (damage * 0.035);
 						}
 						return Plugin_Changed;
 					}
-					else if( wepindex == 230 )
+					else if( wepindex==230 )
 						victim.flRAGE -= (damage * 0.035);
 				}
 				*/
@@ -903,7 +901,7 @@ public Action ManageOnGoombaStomp(int attacker, int client, float& damageMultipl
 			/// Default behaviour for Goomba Stompoing the Boss
 			default: {
 				/// Prevent goomba stomp for mantreads/demo boots if being able to is disabled.
-				if (IsValidEntity(FindPlayerBack(attacker, { 444, 405, 608 }, 3)) && !g_vsh2.m_hCvars[CanMantreadsGoomba].BoolValue)
+				if( IsValidEntity(FindPlayerBack(attacker, { 444, 405, 608 }, 3)) && !g_vsh2.m_hCvars[CanMantreadsGoomba].BoolValue )
 					return Plugin_Handled;
 				
 				damageAdd = float(g_vsh2.m_hCvars[GoombaDamageAdd].IntValue);
@@ -1615,12 +1613,12 @@ public void CheckAlivePlayers(const any nil)
 		CreateTimer(1.0, Timer_DrawGame, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	}
 	
-	int Alive = g_vsh2.m_hCvars[AliveToEnable].IntValue;
-	if( !g_vsh2.m_hCvars[PointType].BoolValue && living <= Alive && !gamemode.bPointReady ) {
+	int enable_alive = g_vsh2.m_hCvars[AliveToEnable].IntValue;
+	if( !g_vsh2.m_hCvars[PointType].BoolValue && living <= enable_alive && !gamemode.bPointReady ) {
 		PrintHintTextToAll("%i players are left; control point enabled!", living);
-		if( living == Alive )
+		if( living==enable_alive )
 			EmitSoundToAll("vo/announcer_am_capenabled02.mp3");
-		else if( living < Alive ) {
+		else if( living < enable_alive ) {
 			char cap_incite_snd[PLATFORM_MAX_PATH];
 			Format(cap_incite_snd, sizeof(cap_incite_snd), "vo/announcer_am_capincite0%i.mp3", GetRandomInt(0, 1) ? 1 : 3);
 			EmitSoundToAll(cap_incite_snd);
@@ -1638,12 +1636,14 @@ public void ManageOnBossCap(char sCappers[MAXPLAYERS+1], const int CappingTeam)
 /// TODO: fix this up so it appears more often.
 public void _SkipBossPanel()
 {
-	BaseBoss upnext[3];
-	for( int j=0; j<3; ++j ) {
-		upnext[j] = gamemode.FindNextBoss();
-		if( !upnext[j].userid )
+	//BaseBoss upnext[3];
+	BaseBoss[] upnext = new BaseBoss[MaxClients];
+	gamemode.GetQueue(upnext);
+	for( int j; j<3; ++j ) {
+		//upnext[j] = gamemode.FindNextBoss();
+		if( !upnext[j] )
 			continue;
-		upnext[j].bSetOnSpawn = true;
+		//upnext[j].bSetOnSpawn = true;
 		
 		/// If up next to become a boss.
 		if( !j )
@@ -1651,7 +1651,7 @@ public void _SkipBossPanel()
 		else if( !IsFakeClient(upnext[j].index) )
 			CPrintToChat(upnext[j].index, "{olive}[VSH 2]{default} You are going to be a Boss soon! Type {olive}/halenext{default} to check/reset your queue points & !setboss to set your boss.");
 	}
-	
+	/*
 	/// Ughhh, reset shit...
 	for( int n=MaxClients; n; --n ) {
 		if( !IsValidClient(n) )
@@ -1660,6 +1660,7 @@ public void _SkipBossPanel()
 		if( !upnext[0].bIsBoss )
 			upnext[0].bSetOnSpawn = false;
 	}
+	*/
 }
 
 public void PrepPlayers(const BaseBoss player)
@@ -2064,20 +2065,20 @@ public void ManageFighterThink(const BaseBoss fighter)
 	}
 	if( validwep && weapon == GetPlayerWeaponSlot(i, TFWeaponSlot_Primary) ) /// Primary weapon crit list
 	{
-		if (StrStarts(wepclassname, "tf_weapon_compound_bow") || /// Sniper bows
+		if( StrStarts(wepclassname, "tf_weapon_compound_bow") || /// Sniper bows
 			StrStarts(wepclassname, "tf_weapon_crossbow") || /// Medic crossbows
 			StrEqual(wepclassname, "tf_weapon_shotgun_building_rescue") || /// Engineer Rescue Ranger
-			StrEqual(wepclassname, "tf_weapon_drg_pomson")) /// Engineer Pomson
+			StrEqual(wepclassname, "tf_weapon_drg_pomson") ) /// Engineer Pomson
 		{
 			addthecrit = true;
 		}
 	}
 	if( validwep && weapon == GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary) ) /// Secondary weapon crit list
 	{
-		if (StrStarts(wepclassname, "tf_weapon_pistol") || /// Engineer/Scout pistols
+		if( StrStarts(wepclassname, "tf_weapon_pistol") || /// Engineer/Scout pistols
 			StrStarts(wepclassname, "tf_weapon_handgun_scout_secondary") || /// Scout pistols
 			StrStarts(wepclassname, "tf_weapon_flaregun") || /// Flare guns
-			StrEqual(wepclassname, "tf_weapon_smg")) /// Sniper SMGs minus Cleaner's Carbine
+			StrEqual(wepclassname, "tf_weapon_smg") ) /// Sniper SMGs minus Cleaner's Carbine
 		{
 			if( TFClass == TFClass_Scout && cond == TFCond_CritOnWin )
 				cond = TFCond_Buffed;

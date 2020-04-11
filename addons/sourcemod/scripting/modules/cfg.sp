@@ -369,9 +369,9 @@ stock void DeleteCfg(ConfigMap& cfg, bool clear_only=false) {
 	
 	int entries = snap.Length;
 	for( int i; i<entries; i++ ) {
-		int strsize = snap.KeyBufferSize(i);
-		char[] key_buffer = new char[strsize + 1];
-		snap.GetKey(i, key_buffer, strsize + 1);
+		int strsize = snap.KeyBufferSize(i) + 1;
+		char[] key_buffer = new char[strsize];
+		snap.GetKey(i, key_buffer, strsize);
 		PackVal val;
 		cfg.GetArray(key_buffer, val, sizeof(val));
 		switch( val.tag ) {
@@ -395,15 +395,16 @@ stock void DeleteCfg(ConfigMap& cfg, bool clear_only=false) {
 stock void PrintCfg(ConfigMap cfg) {
 	if( cfg==null )
 		return;
+	
 	StringMapSnapshot snap = cfg.Snapshot();
 	if( !snap )
 		return;
 	
 	int entries = snap.Length;
 	for( int i; i<entries; i++ ) {
-		int strsize = snap.KeyBufferSize(i);
-		char[] key_buffer = new char[strsize + 1];
-		snap.GetKey(i, key_buffer, strsize + 1);
+		int strsize = snap.KeyBufferSize(i) + 1;
+		char[] key_buffer = new char[strsize];
+		snap.GetKey(i, key_buffer, strsize);
 		PackVal val;
 		cfg.GetArray(key_buffer, val, sizeof(val));
 		switch( val.tag ) {

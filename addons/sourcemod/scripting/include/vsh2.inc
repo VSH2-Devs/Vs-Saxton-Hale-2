@@ -664,6 +664,10 @@ native int VSH2GameMode_GetTotalRedPlayers();
 native int VSH2GameMode_GetBosses(VSH2Player[] bosses, bool balive=true);
 native int VSH2GameMode_GetFighters(VSH2Player[] redplayers, bool balive=true);
 native int VSH2GameMode_GetMinions(VSH2Player[] minions, bool balive=true);
+native int VSH2GameMode_GetBossesByType(VSH2Player[] bosses, const int type, bool balive=true);
+
+/// has the `players` array sorted by DESCENDING order (first index is highest queue).
+native int VSH2GameMode_GetQueue(VSH2Player[] players);
 
 native void VSH2GameMode_SearchForItemPacks();
 native void VSH2GameMode_UpdateBossHealth();
@@ -860,5 +864,7 @@ public void __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2GameMode_IsVSHMap");
 	MarkNativeAsOptional("VSH2GameMode_GetFighters");
 	MarkNativeAsOptional("VSH2GameMode_GetMinions");
+	MarkNativeAsOptional("VSH2GameMode_GetQueue");
+	MarkNativeAsOptional("VSH2GameMode_GetBossesByType");
 }
 #endif
