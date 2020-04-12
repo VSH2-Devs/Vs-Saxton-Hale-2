@@ -98,7 +98,7 @@ methodmap VSH2Player {
 	 * @param item			reference to use of the variable to overwrite with data from the property.
 	 * @return		value as "any".
 	 */
-	#pragma deprecated Use GetPropInt, GetPropFloat, or GetAnyProp instead.
+	#pragma deprecated Use GetPropInt, GetPropFloat, or GetPropAny instead.
 	public native any GetProperty(const char prop_name[64]);
 	
 	/**
@@ -244,7 +244,7 @@ methodmap VSH2Player {
 	public native void DoGenericStun(const float rageDist);
 	public native void StunPlayers(float rage_dist, float stun_time=5.0);
 	public native void StunBuildings(float rage_dist, float sentry_stun_time=8.0);
-	public native void RemoveAllItems();
+	public native void RemoveAllItems(bool weps=true);
 	
 	public native bool GetName(char buffer[MAX_BOSS_NAME_SIZE]);
 	public native bool SetName(const char name[MAX_BOSS_NAME_SIZE]);

@@ -704,11 +704,15 @@ stock int GetSlotFromWeapon(const int iClient, const int iWeapon)
 }
 stock bool RemoveDemoShield(int iClient) /// Taken from VSH1
 {
-	int iEnt = MaxClients + 1;
-	while( (iEnt = FindEntityByClassname(iEnt, "tf_wearable_demoshield")) != -1 ) {
-		if( GetEntPropEnt(iEnt, Prop_Send, "m_hOwnerEntity") == iClient && !GetEntProp(iEnt, Prop_Send, "m_bDisguiseWearable") ) {
-			TF2_RemoveWearable(iClient, iEnt);
-			return true; /// Returns true if Shield was removed...
+	int numwearables = TF2_GetNumWearables(iClient);
+	for( int i=numwearables-1; i>=0; --i ) {
+		int wearable = TF2_GetWearable(iClient, i);
+		if( wearable && !GetEntProp(wearable, Prop_Send, "m_bDisguiseWearable") ) {
+			char cls[32];
+			if( GetEntityClassname(wearable, cls, sizeof(cls)), !strncmp(cls, "tf_wearable_demo", 16, false) ) {
+				TF2_RemoveWearable(iClient, wearable);
+				return true; /// Returns true if Shield was removed...
+			}
 		}
 	}
 	return false; /// ...and returns False if one wasn't found.
@@ -716,53 +720,66 @@ stock bool RemoveDemoShield(int iClient) /// Taken from VSH1
 
 stock bool RemoveRazorBack(int iClient)
 {
-	int iEnt = MaxClients + 1;
-	while( (iEnt = FindEntityByClassname(iEnt, "tf_wearable_razorback")) != -1 ) {
-		if( GetEntPropEnt(iEnt, Prop_Send, "m_hOwnerEntity") == iClient && !GetEntProp(iEnt, Prop_Send, "m_bDisguiseWearable") ) {
-			TF2_RemoveWearable(iClient, iEnt);
-			return true; /// Returns true if Shield was removed...
+	int numwearables = TF2_GetNumWearables(iClient);
+	for( int i=numwearables-1; i>=0; --i ) {
+		int wearable = TF2_GetWearable(iClient, i);
+		if( wearable && !GetEntProp(wearable, Prop_Send, "m_bDisguiseWearable") ) {
+			char cls[32];
+			if( GetEntityClassname(wearable, cls, sizeof(cls)), !strncmp(cls, "tf_wearable_razo", 16, false) ) {
+				TF2_RemoveWearable(iClient, wearable);
+				return true; /// Returns true if Shield was removed...
+			}
 		}
 	}
 	return false; /// ...and returns False if one wasn't found.
+}
+
+stock int GetDemoShield(int client)
+{
+	int numwearables = TF2_GetNumWearables(client);
+	for( int i=numwearables-1; i>=0; --i ) {
+		int wearable = TF2_GetWearable(client, i);
+		if( wearable && !GetEntProp(wearable, Prop_Send, "m_bDisguiseWearable") ) {
+			char cls[32];
+			if( GetEntityClassname(wearable, cls, sizeof(cls)), !strncmp(cls, "tf_wearable_demo", 16, false) ) {
+				return wearable;
+			}
+		}
+	}
+	return -1;
+}
+
+stock int GetRazorBack(int client)
+{
+	int numwearables = TF2_GetNumWearables(client);
+	for( int i=numwearables-1; i>=0; --i ) {
+		int wearable = TF2_GetWearable(client, i);
+		if( wearable && !GetEntProp(wearable, Prop_Send, "m_bDisguiseWearable") ) {
+			char cls[32];
+			if( GetEntityClassname(wearable, cls, sizeof(cls)), !strncmp(cls, "tf_wearable_razo", 16, false) ) {
+				return wearable;
+			}
+		}
+	}
+	return -1;
 }
 
 stock void RemovePlayerBack(int client, int[] indices, int len)
 {
 	if( len <= 0 )
 		return;
-	int edict = MaxClients+1;
-	while( (edict = FindEntityByClassname(edict, "tf_wearable")) != -1 ) {
-		char netclass[32];
-		if( GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearable") ) {
-			int idx = GetItemIndex(edict);
-			if( GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable") ) {
-				for( int i; i<len; i++ )
-					if( idx==indices[i] )
-						TF2_RemoveWearable(client, edict);
-			}
-		}
-	}
-	edict = MaxClients+1;
-	while( (edict = FindEntityByClassname(edict, "tf_powerup_bottle")) != -1 ) {
-		char netclass[32];
-		if( GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFPowerupBottle") ) {
-			int idx = GetItemIndex(edict);
-			if( GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable") ) {
-				for( int i; i<len; i++ )
-					if( idx==indices[i] )
-						TF2_RemoveWearable(client, edict);
-			}
-		}
-	}
-	edict = MaxClients+1;
-	while( (edict = FindEntityByClassname(edict, "tf_wearable_razorback")) != -1 ) {
-		char netclass[32];
-		if( GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearableRazorback") ) {
-			int idx = GetItemIndex(edict);
-			if( GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable") ) {
-				for( int i; i<len; i++ )
-					if( idx==indices[i] )
-						TF2_RemoveWearable(client, edict);
+
+	int numwearables = TF2_GetNumWearables(client);
+	for( int i=numwearables-1; i>=0; --i ) {
+		int wearable = TF2_GetWearable(client, i);
+
+		if( wearable && !GetEntProp(wearable, Prop_Send, "m_bDisguiseWearable") ) {
+			int idx = GetItemIndex(wearable);
+			for( int u; u<len; u++ ) {
+				if( idx==indices[u] ) {
+					TF2_RemoveWearable(client, wearable);
+					break;
+				}
 			}
 		}
 	}
@@ -772,39 +789,16 @@ stock int FindPlayerBack(int client, int[] indices, int len)
 	if( len <= 0 )
 		return -1;
 	
-	int edict = MaxClients+1;
-	while( (edict = FindEntityByClassname(edict, "tf_wearable")) != -1 ) {
-		char netclass[32];
-		if( GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearable") ) {
-			int idx = GetItemIndex(edict);
-			if( GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable") ) {
-				for( int i; i<len; i++ )
-					if( idx==indices[i] )
-						return edict;
-			}
-		}
-	}
-	edict = MaxClients+1;
-	while( (edict = FindEntityByClassname(edict, "tf_powerup_bottle")) != -1 ) {
-		char netclass[32];
-		if( GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFPowerupBottle") ) {
-			int idx = GetItemIndex(edict);
-			if( GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable") ) {
-				for( int i; i<len; i++ )
-					if( idx==indices[i] )
-						return edict;
-			}
-		}
-	}
-	edict = MaxClients+1;
-	while( (edict = FindEntityByClassname(edict, "tf_wearable_razorback")) != -1 ) {
-		char netclass[32];
-		if( GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearableRazorback") ) {
-			int idx = GetItemIndex(edict);
-			if( GetOwner(edict) == client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable") ) {
-				for( int i; i<len; i++ )
-					if( idx==indices[i] )
-						return edict;
+	int numwearables = TF2_GetNumWearables(client);
+	for( int i=numwearables-1; i>=0; --i ) {
+		int wearable = TF2_GetWearable(client, i);
+
+		if( wearable && !GetEntProp(wearable, Prop_Send, "m_bDisguiseWearable") ) {
+			int idx = GetItemIndex(wearable);
+			for( int u; u<len; u++ ) {
+				if( idx==indices[u] ) {
+					return wearable;
+				}
 			}
 		}
 	}
@@ -1265,4 +1259,19 @@ stock void HealPlayer(const int client, const int health, bool on_hud=false)
 			}
 		}
 	}
+}
+stock int TF2_GetNumWearables(int client)
+{
+	/// 3552 linux
+	/// 3532 windows
+	int offset = FindSendPropInfo("CTFPlayer", "m_flMaxspeed") - 20 + 12;
+	return GetEntData(client, offset);
+}
+stock int TF2_GetWearable(int client, int wearableidx)
+{
+	/// 3540 linux
+	/// 3520 windows
+	int offset = FindSendPropInfo("CTFPlayer", "m_flMaxspeed") - 20;
+	Address m_hMyWearables = view_as< Address >(LoadFromAddress(GetEntityAddress(client) + view_as< Address >(offset), NumberType_Int32));
+	return LoadFromAddress(m_hMyWearables + view_as< Address >(4 * wearableidx), NumberType_Int32) & 0xFFF;
 }
