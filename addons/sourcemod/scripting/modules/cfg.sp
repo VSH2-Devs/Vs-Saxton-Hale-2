@@ -172,23 +172,22 @@ methodmap ConfigMap < StringMap {
 	 * @param     key_path : key path to the data you need.
 	 * @param     buffer : buffer to store the string value.
 	 * @param     buf_size : size of the buffer.
-	 * @return    true if successful, false otherwise.
+	 * @return    Number of chars used, 0 if error.
 	 * @note      to directly access subsections, use a '.' like "root.section.key"
 	 *            for keys that have a dot in their name, use '\\.'
 	 */
-	public bool Get(const char[] key_path, char[] buffer, int buf_size) {
+	public int Get(const char[] key_path, char[] buffer, int buf_size) {
 		if( this==null || buf_size==0 )
-			return false;
+			return 0;
 		PackVal val;
 		bool result = this.GetVal(key_path, val);
 		if( result && val.tag==KeyValType_Value ) {
 			val.data.Reset();
 			char[] src_buf = new char[val.size];
 			val.data.ReadString(src_buf, val.size);
-			strcopy(buffer, buf_size, src_buf);
-			return true;
+			return strcopy(buffer, buf_size, src_buf);
 		}
-		return false;
+		return 0;
 	}
 	
 	/**
