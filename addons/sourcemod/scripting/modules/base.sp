@@ -911,7 +911,7 @@ methodmap BaseBoss < BaseFighter {
 				AcceptEntityInput(ent, "Kill");
 			}
 		}
-		if (weps)
+		if( weps )
 			TF2_RemoveAllWeapons(client);
 	}
 	
