@@ -112,6 +112,7 @@ enum struct VSH2ConVars {
 	ConVar m_enabled;
 	ConVar m_version;
 	ConVar m_fljarate;
+	ConVar m_flmusicvol;
 }
 
 static FF2CompatPlugin ff2;
@@ -135,6 +136,7 @@ public void OnLibraryAdded(const char[] name) {
 		vsh2cvars.m_enabled = FindConVar("vsh2_enabled");
 		vsh2cvars.m_version = FindConVar("vsh2_version");
 		vsh2cvars.m_fljarate = FindConVar("vsh2_jarate_rage");
+		vsh2cvars.m_flmusicvol = FindConVar("vsh2_music_volume");
 		
 		ff2.m_subplugins = new ArrayList(MAX_SUBPLUGIN_NAME);
 		ff2.m_bosscfgs = new ArrayList();
@@ -903,7 +905,7 @@ public any Native_FF2_StartMusic(Handle plugin, int numParams)
 	if( !IsClientValid(client) )
 		return 0;
 	FF2Player player = FF2Player(client);
-	player.PlayMusic();
+	player.PlayMusic(vsh2cvars.m_flmusicvol.FloatValue);
 	return 0;
 }
 
