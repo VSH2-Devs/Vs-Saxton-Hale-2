@@ -896,15 +896,25 @@ public any Native_FF2_RandomSound(Handle plugin, int numParams)
 	return 0;
 }
 
-/** TODO void FF2_StartMusic(int client=0); */
+/** void FF2_StartMusic(int client=0); */
 public any Native_FF2_StartMusic(Handle plugin, int numParams)
 {
+	int client = GetNativeCell(1);
+	if( !IsClientValid(client) )
+		return 0;
+	FF2Player player = FF2Player(client);
+	player.PlayMusic();
 	return 0;
 }
 
-/** TODO void FF2_StopMusic(int client=0); */
+/** void FF2_StopMusic(int client=0); */
 public any Native_FF2_StopMusic(Handle plugin, int numParams)
 {
+	int client = GetNativeCell(1);
+	if( !IsClientValid(client) )
+		return 0;
+	FF2Player player = FF2Player(client);
+	player.StopMusic();
 	return 0;
 }
 
