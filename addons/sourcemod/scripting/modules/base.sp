@@ -893,7 +893,7 @@ methodmap BaseBoss < BaseFighter {
 		}
 	}
 	
-	public void RemoveAllItems() {
+	public void RemoveAllItems(bool weps = true) {
 		int client = this.index;
 		TF2_RemovePlayerDisguise(client);
 		
@@ -911,7 +911,8 @@ methodmap BaseBoss < BaseFighter {
 				AcceptEntityInput(ent, "Kill");
 			}
 		}
-		TF2_RemoveAllWeapons(client);
+		if( weps )
+			TF2_RemoveAllWeapons(client);
 	}
 	
 	public bool GetName(char buffer[MAX_BOSS_NAME_SIZE]) {

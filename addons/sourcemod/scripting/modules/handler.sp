@@ -290,31 +290,7 @@ public void ManageMinionTransition(const BaseBoss base)
 		return;
 	
 	base.ForceTeamChange(VSH2Team_Boss); /// Force our guy to the dark side lmao
-	int ent = -1;
-	while( (ent = FindEntityByClassname(ent, "tf_wearable")) != -1 ) {
-		if( GetOwner(ent) == base.index ) {
-			int index = GetItemIndex(ent);
-			switch( index ) {
-				case 438, 463, 167, 477, 493, 233, 234, 241, 280, 281, 282, 283, 284, 286, 288, 362, 364, 365, 536, 542, 577, 599, 673, 729, 791, 839, 1015, 5607: {}
-				default: TF2_RemoveWearable(base.index, ent); //AcceptEntityInput(ent, "kill");
-			}
-		}
-	}
-	ent = -1;
-	while( (ent = FindEntityByClassname(ent, "tf_powerup_bottle")) != -1 ) {
-		if( GetOwner(ent) == base.index ) {
-			int index = GetItemIndex(ent);
-			switch( index ) {
-				case 438, 463, 167, 477, 493, 233, 234, 241, 280, 281, 282, 283, 284, 286, 288, 362, 364, 365, 536, 542, 577, 599, 673, 729, 791, 839, 1015, 5607: {}
-				default: TF2_RemoveWearable(base.index, ent); //AcceptEntityInput(ent, "kill");
-			}
-		}
-	}
-	ent = -1;
-	while( (ent = FindEntityByClassname(ent, "tf_wearable_demoshield")) != -1 ) {
-		if( GetOwner(ent) == base.index )
-			TF2_RemoveWearable(base.index, ent);
-	}
+	base.RemoveAllItems(false);
 	
 	BaseBoss master = BaseBoss(base.iOwnerBoss, true);
 	Call_OnMinionInitialized(base, master);
@@ -844,44 +820,37 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 				}
 			}
 			
-			/// TODO: Fix up this code into a separate stock. Same with Razorback one.
-			int ent = -1;
-			while( (ent = FindEntityByClassname(ent, "tf_wearable_demoshield")) != -1 ) {
-				if( GetOwner(ent) == client
-					&& !TF2_IsPlayerInCondition(client, TFCond_Ubercharged)
-					&& !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable")
-					&& (weapon == GetPlayerWeaponSlot(attacker, 2)
-					|| damage >= GetClientHealth(client)+0.0) )
-				{
-					if( Call_OnBossDealDamage_OnHitShield(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
-						/// Patch: Nov 14, 2017 - removing post-bonk slowdown.
-						TF2_AddCondition(client, TFCond_PasstimeInterception, 0.1);
-						TF2_AddCondition(client, TFCond_SpeedBuffAlly, 1.0);
-						TF2_RemoveWearable(client, ent);
-						EmitSoundToAll("player/spy_shield_break.wav", client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
-						return Plugin_Continue;
-					}
-					return Plugin_Changed;
+			int ent = GetDemoShield(client);
+			if( ent != -1
+				&& !TF2_IsPlayerInCondition(client, TFCond_Ubercharged)
+				&& (weapon == GetPlayerWeaponSlot(attacker, 2)
+				|| damage >= GetClientHealth(client)+0.0) )	/// FIXME; crit damage is calculated after this and can kill regardless of shield!
+			{
+				if( Call_OnBossDealDamage_OnHitShield(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
+					/// Patch: Nov 14, 2017 - removing post-bonk slowdown.
+					TF2_AddCondition(client, TFCond_PasstimeInterception, 0.1);
+					TF2_AddCondition(client, TFCond_SpeedBuffAlly, 1.0);
+					TF2_RemoveWearable(client, ent);
+					EmitSoundToAll("player/spy_shield_break.wav", client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
+					return Plugin_Continue;
 				}
+				return Plugin_Changed;
 			}
-			ent = -1;
-			while( (ent = FindEntityByClassname(ent, "tf_wearable_razorback")) != -1 ) {
-				if( GetOwner(ent) == client
-					&& !TF2_IsPlayerInCondition(client, TFCond_Ubercharged)
-					&& !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable")
-					&& (weapon == GetPlayerWeaponSlot(attacker, 2)
-					|| damage >= GetClientHealth(client)+0.0) )
-				{
-					if( Call_OnBossDealDamage_OnHitShield(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
-						/// Patch: Nov 14, 2017 - removing post-bonk slowdown.
-						TF2_AddCondition(client, TFCond_PasstimeInterception, 0.1);
-						TF2_AddCondition(client, TFCond_SpeedBuffAlly, 1.0);
-						TF2_RemoveWearable(client, ent);
-						EmitSoundToAll("player/spy_shield_break.wav", client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
-						return Plugin_Continue;
-					}
-					return Plugin_Changed;
+			ent = GetRazorBack(client);
+			if( ent != -1
+				&& !TF2_IsPlayerInCondition(client, TFCond_Ubercharged)
+				&& (weapon == GetPlayerWeaponSlot(attacker, 2)
+				|| damage >= GetClientHealth(client)+0.0) )
+			{
+				if( Call_OnBossDealDamage_OnHitShield(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
+					/// Patch: Nov 14, 2017 - removing post-bonk slowdown.
+					TF2_AddCondition(client, TFCond_PasstimeInterception, 0.1);
+					TF2_AddCondition(client, TFCond_SpeedBuffAlly, 1.0);
+					TF2_RemoveWearable(client, ent);
+					EmitSoundToAll("player/spy_shield_break.wav", client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, true, 0.0);
+					return Plugin_Continue;
 				}
+				return Plugin_Changed;
 			}
 			return Call_OnBossDealDamage(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 		}

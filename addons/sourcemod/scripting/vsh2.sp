@@ -1645,7 +1645,8 @@ public int Native_VSH2_StunBuildings(Handle plugin, int numParams)
 public int Native_VSH2_RemoveAllItems(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
-	player.RemoveAllItems();
+	bool weps = numParams <= 1 ? true : GetNativeCell(2);
+	player.RemoveAllItems(weps);
 }
 
 public any Native_VSH2_GetName(Handle plugin, int numParams)
