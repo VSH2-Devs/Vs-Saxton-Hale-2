@@ -25,6 +25,7 @@ enum struct VSHGameMode {
 methodmap VSHGameMode { /* < StringMap { */
 	public VSHGameMode() {
 		g_vsh2.m_hGameModeFields = new StringMap();
+		return view_as< VSHGameMode >(true);
 	}
 	property int iRoundState {
 		public get() {
