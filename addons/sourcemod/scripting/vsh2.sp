@@ -1286,6 +1286,8 @@ public int Native_VSH2_getProperty(Handle plugin, int numParams)
 	char prop_name[64]; GetNativeString(2, prop_name, 64);
 	if( StrEqual(prop_name, "iHealth") ) {
 		return player.iHealth;
+	} else if( StrEqual(prop_name, "iQueue") ) {
+		return player.iQueue;
 	}
 	any item;
 	if( g_vsh2.m_hPlayerFields[player.index].GetValue(prop_name, item) )
@@ -1299,6 +1301,8 @@ public int Native_VSH2_setProperty(Handle plugin, int numParams)
 	any item = GetNativeCell(3);
 	if( StrEqual(prop_name, "iHealth") ) {
 		player.iHealth = view_as< int >(item);
+	} else if( StrEqual(prop_name, "iQueue") ) {
+		player.iQueue = view_as< int >(item);
 	}
 	else g_vsh2.m_hPlayerFields[player.index].SetValue(prop_name, item);
 }
@@ -1309,6 +1313,8 @@ public int Native_VSH2_getIntProp(Handle plugin, int numParams)
 	char prop_name[64]; GetNativeString(2, prop_name, 64);
 	if( StrEqual(prop_name, "iHealth") ) {
 		return player.iHealth;
+	} else if( StrEqual(prop_name, "iQueue") ) {
+		return player.iQueue;
 	}
 	int item;
 	if( g_vsh2.m_hPlayerFields[player.index].GetValue(prop_name, item) )
@@ -1322,6 +1328,9 @@ public int Native_VSH2_setIntProp(Handle plugin, int numParams)
 	int item = GetNativeCell(3);
 	if( StrEqual(prop_name, "iHealth") ) {
 		player.iHealth = item;
+		return true;
+	} else if( StrEqual(prop_name, "iQueue") ) {
+		player.iQueue = item;
 		return true;
 	}
 	return g_vsh2.m_hPlayerFields[player.index].SetValue(prop_name, item);
@@ -1351,6 +1360,9 @@ public int Native_VSH2_setProp(Handle plugin, int numParams)
 	any item = GetNativeCell(3);
 	if( StrEqual(prop_name, "iHealth") ) {
 		SetEntityHealth(player.index, view_as< int >(item));
+		return true;
+	} else if( StrEqual(prop_name, "iQueue") ) {
+		player.iQueue = view_as< int >(item);
 		return true;
 	}
 	return g_vsh2.m_hPlayerFields[player.index].SetValue(prop_name, item);
