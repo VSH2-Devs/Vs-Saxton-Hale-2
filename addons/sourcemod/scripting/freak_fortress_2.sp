@@ -75,6 +75,15 @@ methodmap FF2Player < VSH2Player {
 			this.SetPropFloat("iShieldHP", val);
 		}
 	}
+	
+	property int iFlags {
+		public get() {
+			return this.GetPropInt("iFlags");
+		}
+		public set(int flag) {
+			this.SetPropInt("iFlags", flag);
+		}
+	}
 }
 
 stock FF2Player ToFF2Player(VSH2Player p)
@@ -162,6 +171,7 @@ public void OnClientPutInServer(int client)
 	player.iRageDmg = 0;
 	player.iShieldId = -1;
 	player.iShieldHP = 0.0;
+	player.iFlags = 0;
 }
 
 public void OnLibraryRemoved(const char[] name) {
@@ -367,7 +377,7 @@ public Action OnHurtShieldFF2(VSH2Player victim, int& attacker, int& inflictor, 
 	Call_Finish(act);
 	if( act==Plugin_Stop )
 		return Plugin_Changed;
-	else if( act==Plugin_Handled )
+	else if( act!=Plugin_Continue )
 		damage = damage2;
 	
 	return Plugin_Continue;
@@ -507,7 +517,7 @@ public int Native_FF2_GetBossSpecial(Handle plugin, int numParams)
 	
 	ConfigMap cfg = GetFF2Config(index, view_as<bool>(meaning));
 	if( cfg != null ) {
-		bool result = cfg.Get("character.name", name, buflen);
+		bool result = view_as<bool>(cfg.Get("character.name", name, buflen));
 		if( result )
 			SetNativeString(2, name, buflen);
 		return result;
@@ -799,13 +809,12 @@ public int Native_FF2_SetClientDamage(Handle plugin, int numParams)
 public any Native_FF2_GetRageDist(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
-	if( !IsClientValid(boss) )
+	if( boss < 0 || boss > MaxClients )
 		return 0.0;
 	
 	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
 	char ability_name[64]; GetNativeString(3, ability_name, sizeof(ability_name));
 	
-	FF2Player player = FF2Player(boss);
 	ConfigMap cfg = GetFF2Config(boss);
 	
 	if( ability_name[0]==0 ) {
@@ -814,40 +823,29 @@ public any Native_FF2_GetRageDist(Handle plugin, int numParams)
 		return( cfg.GetFloat("character.ragedist", f) > 0 ) ? f : 0.0;
 	}
 	
-	char ability[64];
-	Format(ability, sizeof(ability), "character.ability%i", i);
-	ConfigMap ability_sect = cfg.GetSection(ability);
-	if( ability_sect != null ) {
-		char sect_ability_name[64];
-		
+	ConfigMap section = JumpToAbility(cfg.GetSection("character"), plugin_name, ability_name);
+	float see;
+	if( !section.GetFloat("dist", see) ) {
+		section.GetFloat("ragedist", see);
 	}
 	
-	/*
-	if(KvJumpToKey(BossKV[Special[index]],s))
-	{
-		char ability_name2[64];
-		KvGetString(BossKV[Special[index]], "name",ability_name2,64);
-		if(strcmp(ability_name,ability_name2))
-		{
-			KvGoBack(BossKV[Special[index]]);
-			continue;
-		}
-		if((see=KvGetFloat(BossKV[Special[index]],"dist",-1.0))<0)
-		{
-			KvRewind(BossKV[Special[index]]);
-			see=KvGetFloat(BossKV[Special[index]],"ragedist",400.0);
-		}
-		return view_as<int>(see);
-	}
-	return 0.0;
-	*/
-	return 0.0;
+	return view_as<int>(see);
 }
 
-/** TODO bool FF2_HasAbility(int boss, const char[] pluginName, const char[] abilityName); */
+/** bool FF2_HasAbility(int boss, const char[] pluginName, const char[] abilityName); */
 public any Native_FF2_HasAbility(Handle plugin, int numParams)
 {
-	return 0;
+	int boss = GetNativeCell(1);
+	if( boss < 0 || boss > MaxClients ) {
+		return false;
+	}
+	
+	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
+	char ability_name[64]; GetNativeString(3, ability_name, sizeof(ability_name));
+	
+	bool result = JumpToAbility(GetFF2Config(boss).GetSection("character"), plugin_name, ability_name) != null;
+	
+	return result;
 }
 
 /** TODO void FF2_DoAbility(int boss, const char[] pluginName, const char[] abilityName, int slot, int buttonMode=0); */
@@ -856,40 +854,102 @@ public any Native_FF2_DoAbility(Handle plugin, int numParams)
 	return 0;
 }
 
-/** TODO int FF2_GetAbilityArgument(int boss, const char[] pluginName, const char[] abilityName, int argument, int defValue=0); */
-public any Native_FF2_GetAbilityArgument(Handle plugin, int numParams)
+/** int FF2_GetAbilityArgument(int boss, const char[] pluginName, const char[] abilityName, int argument, int defValue=0); */
+public int Native_FF2_GetAbilityArgument(Handle plugin, int numParams)
 {
-	return 0;
+	int boss = GetNativeCell(1);
+	if( boss < 0 || boss > MaxClients )
+		return 0;
+	
+	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
+	char ability_name[64]; GetNativeString(3, ability_name, sizeof(ability_name));
+	char argument[8]; int key = GetNativeCell(4); FormatEx(argument, sizeof(argument), "arg%i", key);
+	
+	int defval = GetNativeCell(5);
+	
+	return GetArgNamedI(boss, plugin_name, ability_name, argument, defval);
 }
 
-/** TODO float FF2_GetAbilityArgumentFloat(int boss, const char[] plugin_name, const char[] ability_name, int argument, float defValue=0.0); */
+/** float FF2_GetAbilityArgumentFloat(int boss, const char[] plugin_name, const char[] ability_name, int argument, float defValue=0.0); */
 public any Native_FF2_GetAbilityArgumentFloat(Handle plugin, int numParams)
 {
-	return 0;
+	int boss = GetNativeCell(1);
+	if( boss < 0 || boss > MaxClients )
+		return 0.0;
+	
+	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
+	char ability_name[64]; GetNativeString(3, ability_name, sizeof(ability_name));
+	char argument[8]; int key = GetNativeCell(4); FormatEx(argument, sizeof(argument), "arg%i", key);
+	
+	float defval = GetNativeCell(5);
+	
+	return GetArgNamedF(boss, plugin_name, ability_name, argument, defval);
 }
 
-/** TODO void FF2_GetAbilityArgumentString(int boss, const char[] pluginName, const char[] abilityName, int argument, char[] buffer, int bufferLength); */
+/** void FF2_GetAbilityArgumentString(int boss, const char[] pluginName, const char[] abilityName, int argument, char[] buffer, int bufferLength); */
 public any Native_FF2_GetAbilityArgumentString(Handle plugin, int numParams)
 {
-	return 0;
+	int boss = GetNativeCell(1);
+	if( boss < 0 || boss > MaxClients )
+		return;
+	
+	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
+	char ability_name[64]; GetNativeString(3, ability_name, sizeof(ability_name));
+	char argument[8]; int key = GetNativeCell(4); FormatEx(argument, sizeof(argument), "arg%i", key);
+	int length; length = GetNativeCell(6);
+	char[] result = new char[length];
+	
+	GetArgNamedS(boss, plugin_name, ability_name, argument, result, length);
+	SetNativeString(5, result, length);
 }
 
-/** TODO int FF2_GetArgNamedI(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, int defValue=0); */
-public any Native_FF2_GetArgNamedI(Handle plugin, int numParams)
+/** int FF2_GetArgNamedI(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, int defValue=0); */
+public int Native_FF2_GetArgNamedI(Handle plugin, int numParams)
 {
-	return 0;
+	int boss = GetNativeCell(1);
+	if( boss < 0 || boss > MaxClients )
+		return 0;
+	
+	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
+	char ability_name[64]; GetNativeString(3, ability_name, sizeof(ability_name));
+	char argument[32]; GetNativeString(4, argument, sizeof(argument));
+	
+	int defval = GetNativeCell(5);
+	
+	return GetArgNamedI(boss, plugin_name, ability_name, argument, defval);
 }
 
-/** TODO float FF2_GetArgNamedF(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, float defValue=0.0); */
+/** float FF2_GetArgNamedF(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, float defValue=0.0); */
 public any Native_FF2_GetArgNamedF(Handle plugin, int numParams)
 {
-	return 0;
+	int boss = GetNativeCell(1);
+	if( boss < 0 || boss > MaxClients )
+		return 0.0;
+	
+	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
+	char ability_name[64]; GetNativeString(3, ability_name, sizeof(ability_name));
+	char argument[32]; GetNativeString(4, argument, sizeof(argument));
+	
+	float defval = GetNativeCell(5);
+	
+	return GetArgNamedF(boss, plugin_name, ability_name, argument, defval);
 }
 
-/** TODO void FF2_GetArgNamedS(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, char[] buffer, int bufferLength); */
+/** void FF2_GetArgNamedS(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, char[] buffer, int bufferLength); */
 public any Native_FF2_GetArgNamedS(Handle plugin, int numParams)
 {
-	return 0;
+	int boss = GetNativeCell(1);
+	if( boss < 0 || boss > MaxClients )
+		return;
+	
+	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
+	char ability_name[64]; GetNativeString(3, ability_name, sizeof(ability_name));
+	char argument[32]; GetNativeString(4, argument, sizeof(argument));
+	int length; length = GetNativeCell(6);
+	char[] result = new char[length];
+	
+	GetArgNamedS(boss, plugin_name, ability_name, argument, result, length);
+	SetNativeString(5, result, length);
 }
 
 /** TODO bool FF2_RandomSound(const char[] keyvalue, char[] buffer, int bufferLength, int boss=0, int slot=0); */
@@ -934,16 +994,28 @@ public any Native_FF2_GetSpecialKV(Handle plugin, int numParams)
 	return 0;
 }
 
-/** TODO int FF2_GetFF2flags(int client); */
-public any Native_FF2_GetFF2flags(Handle plugin, int numParams)
+/** int FF2_GetFF2flags(int client); */
+public int Native_FF2_GetFF2flags(Handle plugin, int numParams)
 {
-	return 0;
+	int client = GetNativeCell(1);
+	if( !IsClientValid(client) )
+		return 0;
+	
+	FF2Player player = FF2Player(client);
+	return player.iFlags;
 }
 
-/** TODO void FF2_SetFF2flags(int client, int flags); */
+/** void FF2_SetFF2flags(int client, int flags); */
 public any Native_FF2_SetFF2flags(Handle plugin, int numParams)
 {
-	return 0;
+	int client = GetNativeCell(1);
+	if( !IsClientValid(client) )
+		return 0;
+	
+	int flags = GetNativeCell(2);
+	
+	FF2Player player = FF2Player(client);
+	return player.iFlags = flags;
 }
 
 /** float FF2_GetClientGlow(int client); */
@@ -1108,6 +1180,68 @@ stock ConfigMap GetFF2Config(const int index=0, const bool is_cfg_index=false)
 			cfg_index = player.iCfg;
 	}
 	return( cfg_index != -1 ) ? ff2.m_bosscfgs.Get(cfg_index) : view_as<ConfigMap>(null);
+}
+
+stock ConfigMap JumpToAbility(const ConfigMap section, const char[] plugin_name, const char[] ability_name)
+{
+	int i;
+	char[] key = new char[64];
+	char key_name[64];
+	while( i < MAX_SUBPLUGIN_NAME ) {
+		
+		FormatEx(key, 64, "ability%i.name", ++i);
+		if( !section.Get(key, key_name, sizeof(key_name)) )
+			break;
+		else if( strcmp(key_name, ability_name) )
+			continue;
+		
+		ReplaceString(key, 64, ".name", ".plugin_name");
+		if( !section.Get(key, key_name, sizeof(key_name)) )
+			break;
+		else if( strcmp(key_name, plugin_name) )
+			continue;
+		
+		FormatEx(key, 64, "ability%i", i);
+		return section.GetSection(key);
+	}
+	return null;
+}
+
+stock int GetArgNamedI(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, int defval = 0)
+{
+	ConfigMap section = JumpToAbility(GetFF2Config(boss).GetSection("character"), plugin_name, ability_name);
+	
+	if( section==null ) {
+		return defval;
+	}
+	
+	int result;
+	bool found = view_as<bool>(section.GetInt(argument, result));
+	
+	return found ? result:defval;
+}
+
+stock float GetArgNamedF(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, float defval = 0.0)
+{
+	ConfigMap section = JumpToAbility(GetFF2Config(boss).GetSection("character"), plugin_name, ability_name);
+	if( section==null ) {
+		return defval;
+	}
+	
+	float result;
+	bool found = view_as<bool>(section.GetFloat(argument, result));
+	
+	return found ? result:defval;
+}
+
+stock int GetArgNamedS(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, char[] result, int &size)
+{
+	ConfigMap section = JumpToAbility(GetFF2Config(boss).GetSection("character"), plugin_name, ability_name);
+	if( section==null ) {
+		return 0;
+	}
+	
+	return section.Get(argument, result, size);
 }
 
 
