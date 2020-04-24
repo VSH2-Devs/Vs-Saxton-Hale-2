@@ -802,7 +802,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 						if( Call_OnBossDealDamage_OnHitDeadRinger(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
 							if( damagetype & DMG_CRIT )
 								damagetype &= ~DMG_CRIT;
-							if( damagetype & DMG_CLUB )
+							if( damagetype & (DMG_CLUB|DMG_SLASH) )
 								damage = g_vsh2.m_hCvars[DeadRingerDamage].FloatValue / FindConVar("tf_feign_death_damage_scale").FloatValue;
 							return Plugin_Changed;
 						}
@@ -811,7 +811,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 						if( Call_OnBossDealDamage_OnHitCloakedSpy(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
 							if( damagetype & DMG_CRIT )
 								damagetype &= ~DMG_CRIT;
-							if( damagetype & DMG_CLUB )
+							if( damagetype & (DMG_CLUB|DMG_SLASH) )
 								damage = g_vsh2.m_hCvars[CloakDamage].FloatValue / FindConVar("tf_stealth_damage_reduction").FloatValue;
 							return Plugin_Changed;
 						}
