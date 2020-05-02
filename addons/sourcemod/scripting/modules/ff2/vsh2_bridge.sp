@@ -108,8 +108,6 @@ void FF2_LoadCharacter(const char[] character)
 		}
 	}
 	
-	ArrayStack nModels;
-	
 	static ConfigMap stacks;
 	stacks = this_char.GetSection("download");
 	if( stacks!=null ) {
