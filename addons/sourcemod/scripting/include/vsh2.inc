@@ -255,7 +255,7 @@ methodmap VSH2Player {
 	/** use the VSH2_VOICE_* flags above^^^. */
 	public native void PlayVoiceClip(const char[] voiceclip, const int flags);
 	
-	public native void PlayMusic(const float vol=100.0);
+	public native void PlayMusic(const float vol=100.0, const char[] override="");
 	public native void StopMusic();
 	
 	public void SpeedThink(const float iota, const float minspeed=100.0) {
