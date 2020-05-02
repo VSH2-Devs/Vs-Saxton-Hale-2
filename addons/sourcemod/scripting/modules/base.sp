@@ -592,10 +592,13 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		HealPlayer(this.index, health, on_hud);
 	}
 	
-	public void PlayMusic(const float vol) {
+	public void PlayMusic(const float vol, const char[] override = "") {
 		if( this.bNoMusic )
 			return;
 		
+		if( override[0]!=0 ) {
+			strcopy(g_vsh2.m_strBackgroundSong, sizeof(g_vsh2.m_strBackgroundSong), override);
+		}
 		EmitSoundToClient(this.index, g_vsh2.m_strBackgroundSong, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
 	}
 	
