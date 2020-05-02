@@ -707,6 +707,12 @@ stock void PrecacheSoundList(const char[][] file_list, int size)
 		PrecacheSound(file_list[i], true);
 }
 
+stock void PrecacheScriptList(const char[][] file_list, int size)
+{
+	for( int i; i<size; i++ )
+		PrecacheScriptSound(file_list[i]);
+}
+
 /// For single custom materials, omit file extensions as it prepares VMT + VTF
 stock void PrepareMaterial(const char[] matpath)
 {
