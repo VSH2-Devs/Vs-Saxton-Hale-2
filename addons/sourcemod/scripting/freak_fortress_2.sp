@@ -6,6 +6,9 @@
 #define REQUIRE_PLUGIN
 #include <sdkhooks>
 
+#define MAX_SUBPLUGIN_NAME    64
+#define PLYR                  35
+
 #include "modules/cfg.sp"
 #include "modules/stocks.inc"
 
@@ -13,6 +16,8 @@
 #pragma newdecls         required
 
 #define IsClientValid(%1)    ( 0 < (%1) && (%1) <= MaxClients && IsClientInGame((%1)) )
+#define IsBossValid(%1)    ( 0 <= (%1) && (%1) <= MaxClients && IsClientInGame((%1)) )
+
 
 public Plugin myinfo = {
 	name           = "VSH2/FF2 Compatibility Engine",
@@ -22,74 +27,11 @@ public Plugin myinfo = {
 	url            = "https://github.com/VSH2-Devs/Vs-Saxton-Hale-2"
 };
 
-
-#define MAX_SUBPLUGIN_NAME    64
-#define PLYR                  35
-
-methodmap FF2Player < VSH2Player {
-	public FF2Player(const int index, bool userid=false) {
-		return view_as< FF2Player >(VSH2Player(index, userid));
-	}
-	
-	property int iMaxLives {
-		public get() {
-			return this.GetPropInt("iMaxLives");
-		}
-		public set(int val) {
-			this.SetPropInt("iMaxLives", val);
-		}
-	}
-	
-	property int iRageDmg {
-		public get() {
-			return this.GetPropInt("iRageDmg");
-		}
-		public set(int val) {
-			this.SetPropInt("iRageDmg", val);
-		}
-	}
-	
-	property int iCfg {
-		public get() {
-			return this.GetPropInt("iCfg");
-		}
-		public set(int val) {
-			this.SetPropInt("iCfg", val);
-		}
-	}
-	
-	property int iShieldId {
-		public get() {
-			return this.GetPropInt("iShieldId");
-		}
-		public set(int val) {
-			this.SetPropInt("iShieldId", val);
-		}
-	}
-	
-	property float iShieldHP {
-		public get() {
-			return this.GetPropFloat("iShieldHP");
-		}
-		public set(float val) {
-			this.SetPropFloat("iShieldHP", val);
-		}
-	}
-	
-	property int iFlags {
-		public get() {
-			return this.GetPropInt("iFlags");
-		}
-		public set(int flag) {
-			this.SetPropInt("iFlags", flag);
-		}
-	}
-}
-
-stock FF2Player ToFF2Player(VSH2Player p)
-{
-	return view_as< FF2Player >(p);
-}
+enum m_iRageInfo {
+	iRageMode,
+	iRageMin,
+	iRageMax
+};
 
 enum {
 	FF2OnMusic,
@@ -124,8 +66,13 @@ enum struct VSH2ConVars {
 	ConVar m_flmusicvol;
 }
 
-static FF2CompatPlugin ff2;
-static VSH2ConVars     vsh2cvars;
+FF2CompatPlugin ff2;
+VSH2ConVars     vsh2cvars;
+
+#include "modules/ff2/utils.sp"
+#include "modules/ff2/handles.sp"
+#include "modules/ff2/formula_parser.sp"
+#include "modules/ff2/vsh2_bridge.sp"
 
 public void OnPluginStart()
 {
@@ -137,7 +84,6 @@ public void OnPluginStart()
 	/// GameData
 	Prep_GameDataFF2();
 }
-
 
 public void OnLibraryAdded(const char[] name) {
 	if( StrEqual(name, "VSH2") ) {
@@ -158,6 +104,9 @@ public void OnLibraryAdded(const char[] name) {
 		VSH2_Hook(OnBossDealDamage_OnHitShield, OnHurtShieldFF2);
 		VSH2_Hook(OnRoundStart, PostRoundStartFF2);
 		VSH2_Hook(OnBossJarated, OnBossJaratedFF2);
+		
+		VSH2_Hook(OnCallDownloads, OnCallDownloadsFF2);
+		
 		for( int i=MaxClients; i; i-- )
 			if( 0 < i <= MaxClients && IsClientInGame(i) )
 				OnClientPutInServer(i);
@@ -479,7 +428,7 @@ public int Native_FF2_GetRoundState(Handle plugin, int numParams)
 public int Native_FF2_GetBossUserId(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
-	if( boss < 0 || boss > MaxClients )
+	if( !IsBossValid(boss) )
 		return -1;
 	else if( boss==0 ) {
 		FF2Player player;
@@ -529,7 +478,7 @@ public int Native_FF2_GetBossSpecial(Handle plugin, int numParams)
 public int Native_FF2_GetBossHealth(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
-	if( boss < 0 || boss > MaxClients )
+	if( !IsBossValid(boss) )
 		return 0;
 	else if( boss==0 ) {
 		FF2Player player;
@@ -543,7 +492,7 @@ public int Native_FF2_GetBossHealth(Handle plugin, int numParams)
 public any Native_FF2_SetBossHealth(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
-	if( boss < 0 || boss > MaxClients )
+	if( !IsBossValid(boss) )
 		return false;
 	
 	int new_health = GetNativeCell(2);
@@ -559,7 +508,7 @@ public any Native_FF2_SetBossHealth(Handle plugin, int numParams)
 public int Native_FF2_GetBossMaxHealth(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
-	if( boss < 0 || boss > MaxClients )
+	if( !IsBossValid(boss) )
 		return 0;
 	else if( boss==0 ) {
 		FF2Player player;
@@ -573,7 +522,7 @@ public int Native_FF2_GetBossMaxHealth(Handle plugin, int numParams)
 public any Native_FF2_SetBossMaxHealth(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
-	if( boss < 0 || boss > MaxClients )
+	if( !IsBossValid(boss) )
 		return 0;
 	
 	int new_maxhealth = GetNativeCell(2);
@@ -589,7 +538,7 @@ public any Native_FF2_SetBossMaxHealth(Handle plugin, int numParams)
 public int Native_FF2_GetBossLives(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
-	if( boss < 0 || boss > MaxClients )
+	if( !IsBossValid(boss) )
 		return 0;
 	else if( boss==0 ) {
 		FF2Player player;
@@ -603,7 +552,7 @@ public int Native_FF2_GetBossLives(Handle plugin, int numParams)
 public any Native_FF2_SetBossLives(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
-	if( boss < 0 || boss > MaxClients )
+	if( !IsBossValid(boss) )
 		return 0;
 	
 	int lives = GetNativeCell(2);
@@ -619,7 +568,7 @@ public any Native_FF2_SetBossLives(Handle plugin, int numParams)
 public int Native_FF2_GetBossMaxLives(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
-	if( boss < 0 || boss > MaxClients )
+	if( !IsBossValid(boss) )
 		return 0;
 	else if( boss==0 ) {
 		FF2Player player;
@@ -633,7 +582,7 @@ public int Native_FF2_GetBossMaxLives(Handle plugin, int numParams)
 public any Native_FF2_SetBossMaxLives(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
-	if( boss < 0 || boss > MaxClients )
+	if( !IsBossValid(boss) )
 		return 0;
 	
 	int lives = GetNativeCell(2);
@@ -649,7 +598,7 @@ public any Native_FF2_SetBossMaxLives(Handle plugin, int numParams)
 public any Native_FF2_SetQueuePoints(Handle plugin, int numParams)
 {
 	int client = GetNativeCell(1);
-	if( client <= 0 || client > MaxClients )
+	if( !IsClientValid(client) )
 		return 0;
 	int q = GetNativeCell(2);
 	FF2Player player = FF2Player(client);
@@ -660,7 +609,7 @@ public any Native_FF2_SetQueuePoints(Handle plugin, int numParams)
 public any Native_FF2_GetQueuePoints(Handle plugin, int numParams)
 {
 	int client = GetNativeCell(1);
-	if( client <= 0 || client > MaxClients )
+	if( !IsClientValid(client) )
 		return -1;    /// Batfoxkid: In FF2, invalid client throws an error
 	
 	FF2Player player = FF2Player(client);
@@ -670,12 +619,14 @@ public any Native_FF2_GetQueuePoints(Handle plugin, int numParams)
 /** void FF2_LogError(const char[] message, any ...); */
 public any Native_FF2_LogError(Handle plugin, int numParams)
 {
-	char buffer[MAX_BUFFER_LENGTH], buffer2[MAX_BUFFER_LENGTH], message[192];
-	SetNativeString(1, message, sizeof(message));
-	Format(buffer, sizeof(buffer), "%s", message);
-	VFormat(buffer2, sizeof(buffer2), buffer, 2);
-	LogError(buffer2);
-	return 0;
+	char buffer[MAX_BUFFER_LENGTH];
+	int error = FormatNativeString(0, 1, 2, sizeof(buffer), .fmt_string=buffer);
+	if( error != SP_ERROR_NONE ) {
+		ThrowNativeError(error, "Failed to format");
+		return;
+	}
+	LogError(buffer);
+	return;
 }
 
 /** bool FF2_Debug(); */
@@ -700,71 +651,39 @@ public any Native_FF2_GetCheats(Handle plugin, int numParams)
 public any Native_FF2_GetBossCharge(Handle plugin, int numParams)
 {
 	int client = GetNativeCell(1);
-	if( !IsClientValid(client) )
+	if( !IsBossValid(client) )
 		return 0.0;
 	
-	FF2Player player = FF2Player(client);
 	int slot = GetNativeCell(2);
 	switch( slot ) {
 		case 0: { /// Rage
+			FF2Player player = FF2Player(client);
 			return player.GetPropFloat("flRAGE");
 		}
 		default: {
-			char ability_key[64];
-			Format(ability_key, sizeof(ability_key), "character.ability%i.name", slot);
-			ConfigMap config = GetFF2Config(client);
-			int len = config.GetSize(ability_key);
-			char[] ability_name = new char[len];
-			if( config.Get(ability_key, ability_name, len) ) {
-				if( StrContains(ability_name, "weighdown", false) != -1 ) {
-					return player.GetPropFloat("flWeighDown");
-				} else if( StrContains(ability_name, "bravejump", false) != -1 ) {
-					return player.GetPropFloat("flCharge");
-				} else {
-					char new_ability[64];
-					Format(new_ability, sizeof(ability_key), "flCharge%i", slot);
-					return player.GetPropFloat(new_ability);
-				}
-			}
+			return FF2_GetCustomCharge(client, slot);
 		}
 	}
-	return 0.0;
 }
 
 /** void FF2_SetBossCharge(int boss, int slot, float value); */
 public any Native_FF2_SetBossCharge(Handle plugin, int numParams)
 {
 	int client = GetNativeCell(1);
-	if( !IsClientValid(client) )
+	if( !IsBossValid(client) )
 		return 0;
 	
-	FF2Player player = FF2Player(client);
 	int slot = GetNativeCell(2);
 	float value = GetNativeCell(3);
 	switch( slot ) {
 		case 0: { /// Rage
+			FF2Player player = FF2Player(client);
 			return player.SetPropFloat("flRAGE", value);
 		}
 		default: {
-			char ability_key[64];
-			Format(ability_key, sizeof(ability_key), "character.ability%i.name", slot);
-			ConfigMap config = GetFF2Config(client);
-			int len = config.GetSize(ability_key);
-			char[] ability_name = new char[len];
-			if( config.Get(ability_key, ability_name, len) ) {
-				if( StrContains(ability_name, "weighdown", false) != -1 ) {
-					return player.SetPropFloat("flWeighDown", value);
-				} else if( StrContains(ability_name, "bravejump", false) != -1 ) {
-					return player.SetPropFloat("flCharge", value);
-				} else {
-					char new_ability[64];
-					Format(new_ability, sizeof(ability_key), "flCharge%i", slot);
-					return player.SetPropFloat(new_ability, value);
-				}
-			}
+			return FF2_SetCustomCharge(client, slot, value);
 		}
 	}
-	return 0;
 }
 
 /** int FF2_GetBossRageDamage(int boss); */
@@ -809,7 +728,7 @@ public int Native_FF2_SetClientDamage(Handle plugin, int numParams)
 public any Native_FF2_GetRageDist(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
-	if( boss < 0 || boss > MaxClients )
+	if( !IsBossValid(boss) )
 		return 0.0;
 	
 	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
@@ -836,29 +755,41 @@ public any Native_FF2_GetRageDist(Handle plugin, int numParams)
 public any Native_FF2_HasAbility(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
-	if( boss < 0 || boss > MaxClients ) {
+	if( !IsBossValid(boss) ) {
 		return false;
 	}
 	
 	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
 	char ability_name[64]; GetNativeString(3, ability_name, sizeof(ability_name));
 	
-	bool result = JumpToAbility(GetFF2Config(boss).GetSection("character"), plugin_name, ability_name) != null;
+	bool result = JumpToAbility(GetMyCharacterCfg(boss), plugin_name, ability_name) != null;
 	
 	return result;
 }
 
-/** TODO void FF2_DoAbility(int boss, const char[] pluginName, const char[] abilityName, int slot, int buttonMode=0); */
+/** bool FF2_DoAbility(int boss, const char[] pluginName, const char[] abilityName, int slot, int buttonMode=0); */
 public any Native_FF2_DoAbility(Handle plugin, int numParams)
 {
-	return 0;
+	int boss = GetNativeCell(1);
+	if( !IsBossValid(boss) ) {
+		LogError("[VSH2/FF2] Invalid boss index (%d) for FF2_DoAbility()!", boss);
+		return false;
+	}
+	
+	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
+	char ability_name[64]; GetNativeString(3, ability_name, sizeof(ability_name));
+	
+	int slot = GetNativeCell(4);
+	int button = GetNativeCell(5);
+	
+	return UseAbility(plugin_name, ability_name, boss, slot, button);
 }
 
 /** int FF2_GetAbilityArgument(int boss, const char[] pluginName, const char[] abilityName, int argument, int defValue=0); */
 public int Native_FF2_GetAbilityArgument(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
-	if( boss < 0 || boss > MaxClients )
+	if( !IsBossValid(boss) )
 		return 0;
 	
 	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
@@ -874,7 +805,7 @@ public int Native_FF2_GetAbilityArgument(Handle plugin, int numParams)
 public any Native_FF2_GetAbilityArgumentFloat(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
-	if( boss < 0 || boss > MaxClients )
+	if( !IsBossValid(boss) )
 		return 0.0;
 	
 	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
@@ -890,7 +821,7 @@ public any Native_FF2_GetAbilityArgumentFloat(Handle plugin, int numParams)
 public any Native_FF2_GetAbilityArgumentString(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
-	if( boss < 0 || boss > MaxClients )
+	if( !IsBossValid(boss) )
 		return;
 	
 	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
@@ -907,7 +838,7 @@ public any Native_FF2_GetAbilityArgumentString(Handle plugin, int numParams)
 public int Native_FF2_GetArgNamedI(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
-	if( boss < 0 || boss > MaxClients )
+	if( !IsBossValid(boss) )
 		return 0;
 	
 	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
@@ -923,7 +854,7 @@ public int Native_FF2_GetArgNamedI(Handle plugin, int numParams)
 public any Native_FF2_GetArgNamedF(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
-	if( boss < 0 || boss > MaxClients )
+	if( !IsBossValid(boss) )
 		return 0.0;
 	
 	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
@@ -939,7 +870,7 @@ public any Native_FF2_GetArgNamedF(Handle plugin, int numParams)
 public any Native_FF2_GetArgNamedS(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
-	if( boss < 0 || boss > MaxClients )
+	if( !IsBossValid(boss) )
 		return;
 	
 	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
@@ -952,10 +883,36 @@ public any Native_FF2_GetArgNamedS(Handle plugin, int numParams)
 	SetNativeString(5, result, length);
 }
 
-/** TODO bool FF2_RandomSound(const char[] keyvalue, char[] buffer, int bufferLength, int boss=0, int slot=0); */
+/** bool FF2_RandomSound(const char[] keyvalue, char[] buffer, int bufferLength, int boss=0, int slot=0); */
 public any Native_FF2_RandomSound(Handle plugin, int numParams)
 {
-	return 0;
+	int boss = GetNativeCell(4);
+	
+	if( !IsBossValid(boss) ) {
+		LogError("[VSH2/FF2] Invalid boss index (%d) for FF2_DoAbility()!", boss);
+		return false;
+	}
+	
+	int slot = GetNativeCell(5);
+	int size = GetNativeCell(3); ++size;
+	char[] sound = new char[size];
+	
+	int key_size; GetNativeStringLength(1, key_size); ++key_size;
+
+	char[] key = new char[key_size];
+	GetNativeString(1, key, key_size);
+
+	bool soundExists;
+	if( !strncmp(key, "sound_ability", 13, false) ) {
+		soundExists = RandomSoundAbility(key, sound, size, boss, slot);
+	} else {
+		soundExists = RandomSound(key, sound, size, boss);
+	}
+	
+	if( !soundExists )
+		return false;
+	
+	return SetNativeString(2, sound, size) == SP_ERROR_NONE;
 }
 
 /** void FF2_StartMusic(int client=0); */
@@ -1139,117 +1096,12 @@ public any Native_ZZZ(Handle plugin, int numParams)
 }
 */
 
-/**
- * Stocks
- */
-
-stock int ClientToBossIndex(int client)
-{
-	FF2Player[] players = new FF2Player[MaxClients];
-	int amount_of_bosses = VSH2GameMode_GetBosses(players, false);
-	if( amount_of_bosses > 0 ) {
-		for( int i; i<amount_of_bosses; i++ ) {
-			if( players[i].index==client ) {
-				if( i==0 )
-					return 0;
-				else return players[i].index;
-			}
-		}
-	}
-	return -1;
-}
-
-stock bool ZeroBossToFF2Player(FF2Player& player)
-{
-	FF2Player[] players = new FF2Player[MaxClients];
-	if( VSH2GameMode_GetBosses(players, false) < 1 )
-		return false;
-	
-	player = players[0];
-	return true;
-}
-
-stock ConfigMap GetFF2Config(const int index=0, const bool is_cfg_index=false)
-{
-	int cfg_index = -1;
-	if( is_cfg_index && index > -1 && index < ff2.m_bosscfgs.Length ) {
-		cfg_index = index;
-	} else if( IsClientValid(index) ) {
-		FF2Player player = FF2Player(index);
-		if( player.iCfg > -1 && player.iCfg < ff2.m_bosscfgs.Length )
-			cfg_index = player.iCfg;
-	}
-	return( cfg_index != -1 ) ? ff2.m_bosscfgs.Get(cfg_index) : view_as<ConfigMap>(null);
-}
-
-stock ConfigMap JumpToAbility(const ConfigMap section, const char[] plugin_name, const char[] ability_name)
-{
-	int i;
-	char[] key = new char[64];
-	char key_name[64];
-	while( i < MAX_SUBPLUGIN_NAME ) {
-		
-		FormatEx(key, 64, "ability%i.name", ++i);
-		if( !section.Get(key, key_name, sizeof(key_name)) )
-			break;
-		else if( strcmp(key_name, ability_name) )
-			continue;
-		
-		ReplaceString(key, 64, ".name", ".plugin_name");
-		if( !section.Get(key, key_name, sizeof(key_name)) )
-			break;
-		else if( strcmp(key_name, plugin_name) )
-			continue;
-		
-		FormatEx(key, 64, "ability%i", i);
-		return section.GetSection(key);
-	}
-	return null;
-}
-
-stock int GetArgNamedI(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, int defval = 0)
-{
-	ConfigMap section = JumpToAbility(GetFF2Config(boss).GetSection("character"), plugin_name, ability_name);
-	
-	if( section==null ) {
-		return defval;
-	}
-	
-	int result;
-	bool found = view_as<bool>(section.GetInt(argument, result));
-	
-	return found ? result:defval;
-}
-
-stock float GetArgNamedF(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, float defval = 0.0)
-{
-	ConfigMap section = JumpToAbility(GetFF2Config(boss).GetSection("character"), plugin_name, ability_name);
-	if( section==null ) {
-		return defval;
-	}
-	
-	float result;
-	bool found = view_as<bool>(section.GetFloat(argument, result));
-	
-	return found ? result:defval;
-}
-
-stock int GetArgNamedS(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, char[] result, int &size)
-{
-	ConfigMap section = JumpToAbility(GetFF2Config(boss).GetSection("character"), plugin_name, ability_name);
-	if( section==null ) {
-		return 0;
-	}
-	
-	return section.Get(argument, result, size);
-}
-
 
 /**
  * GameDataFF2, SDKCalls
  */
 
-static Handle SDKCall_GetEquippedWearable = null;
+Handle hGetEquippedWearable = null;
 
 static void Prep_GameDataFF2()
 {
@@ -1263,317 +1115,13 @@ static void Prep_GameDataFF2()
 	PrepSDKCall_SetFromConf(config, SDKConf_Signature, "CTFPlayer::GetEquippedWearableForLoadoutSlot");
 	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 	PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity, SDKPass_Pointer);
-	if( (SDKCall_GetEquippedWearable = EndPrepSDKCall()) == null ) {
+	if( (hGetEquippedWearable = EndPrepSDKCall()) == null ) {
 		LogError("[VSH/FF2] Invalid SDKCall Handle for \"CTFPlayer::GetEquippedWearableForLoadoutSlot()\"!");
 	}
 	delete config;
 }
 
-///int wearable = CTFPlayer::GetEquippedWearableForLoadoutSlot(client, slot)
-static stock int GetEquippedWearableForLoadoutSlot(int client, int slot)
+stock int GetEquippedWearableForLoadoutSlot(int client, int slot)
 {
-	if( SDKCall_GetEquippedWearable != null ) {
-		return SDKCall(SDKCall_GetEquippedWearable, client, slot);
-	}
-	else return -1;
-}
-
-
-
-/**
- * Remade FF2 formula parser by Nergal.
- */
-
-enum {
-	TokenInvalid,
-	TokenNum,
-	TokenLParen, TokenRParen,
-	TokenLBrack, TokenRBrack,
-	TokenPlus, TokenSub,
-	TokenMul, TokenDiv,
-	TokenPow,
-	TokenVar
-};
-
-enum {
-	LEXEME_SIZE=64,
-	dot_flag = 1,
-};
-
-enum struct Token {
-	char lexeme[LEXEME_SIZE];
-	int size;
-	int tag;
-	float val;
-}
-
-enum struct LexState {
-	Token tok;
-	int i;
-}
-
-
-/**
- * formula grammar (hint PEMDAS):
- * expr = <add_expr> ;
- * add_expr = <mult_expr> [('+' | '-') <add_expr>] ;
- * mult_expr = <pow_expr> [('*' | '/') <mult_expr>] ;
- * pow_expr = <factor> [('^') <pow_expr>] ;
- * factor = <number> | <var> | '(' <expr> ')' | '[' <expr> ']' ;
- */
-
-float ParseFormula(const char[] formula, const int players)
-{
-	LexState ls;
-	GetToken(ls, formula);
-	return ParseAddExpr(ls, formula, players + 0.0);
-}
-
-float ParseAddExpr(LexState ls, const char[] formula, const float n)
-{
-	float val = ParseMulExpr(ls, formula, n);
-	if( ls.tok.tag==TokenPlus ) {
-		GetToken(ls, formula);
-		float a = ParseAddExpr(ls, formula, n);
-		return val + a;
-	} else if( ls.tok.tag==TokenSub ) {
-		GetToken(ls, formula);
-		float a = ParseAddExpr(ls, formula, n);
-		return val - a;
-	}
-	return val;
-}
-
-float ParseMulExpr(LexState ls, const char[] formula, const float n)
-{
-	float val = ParsePowExpr(ls, formula, n);
-	if( ls.tok.tag==TokenMul ) {
-		GetToken(ls, formula);
-		float m = ParseMulExpr(ls, formula, n);
-		return val * m;
-	} else if( ls.tok.tag==TokenDiv ) {
-		GetToken(ls, formula);
-		float m = ParseMulExpr(ls, formula, n);
-		return val / m;
-	}
-	return val;
-}
-
-float ParsePowExpr(LexState ls, const char[] formula, const float n)
-{
-	float val = ParseFactor(ls, formula, n);
-	if( ls.tok.tag==TokenPow ) {
-		GetToken(ls, formula);
-		float e = ParsePowExpr(ls, formula, n);
-		float p = Pow(val, e);
-		return p;
-	}
-	return val;
-}
-
-float ParseFactor(LexState ls, const char[] formula, const float n)
-{
-	switch( ls.tok.tag ) {
-		case TokenNum: {
-			float f = ls.tok.val;
-			GetToken(ls, formula);
-			return f;
-		}
-		case TokenVar: {
-			GetToken(ls, formula);
-			return n;
-		}
-		case TokenLParen: {
-			GetToken(ls, formula);
-			float f = ParseAddExpr(ls, formula, n);
-			if( ls.tok.tag != TokenRParen ) {
-				LogError("VSH2/FF2 :: expected ')' bracket but got '%s'", ls.tok.lexeme);
-				return 0.0;
-			}
-			GetToken(ls, formula);
-			return f;
-		}
-		case TokenLBrack: {
-			GetToken(ls, formula);
-			float f = ParseAddExpr(ls, formula, n);
-			if( ls.tok.tag != TokenRBrack ) {
-				LogError("VSH2/FF2 :: expected ']' bracket but got '%s'", ls.tok.lexeme);
-				return 0.0;
-			}
-			GetToken(ls, formula);
-			return f;
-		}
-	}
-	return 0.0;
-}
-
-
-bool LexOctal(LexState ls, const char[] formula)
-{
-	int lit_flags = 0;
-	while( formula[ls.i] != 0 && (IsCharNumeric(formula[ls.i])) ) {
-		switch( formula[ls.i] ) {
-			case '0', '1', '2', '3', '4', '5', '6', '7': {
-				ls.tok.lexeme[ls.tok.size++] = formula[ls.i++];
-			}
-			default: {
-				ls.tok.lexeme[ls.tok.size++] = formula[ls.i++];
-				LogError("VSH2/FF2 :: invalid octal literal: '%s'", ls.tok.lexeme);
-				return false;
-			}
-		}
-	}
-	return true;
-}
-
-bool LexHex(LexState ls, const char[] formula)
-{
-	int lit_flags = 0;
-	while( formula[ls.i] != 0 && (IsCharNumeric(formula[ls.i]) || IsCharAlpha(formula[ls.i])) ) {
-		switch( formula[ls.i] ) {
-			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-				'a', 'b', 'c', 'd', 'e', 'f',
-				'A', 'B', 'C', 'D', 'E', 'F': {
-				ls.tok.lexeme[ls.tok.size++] = formula[ls.i++];
-			}
-			default: {
-				ls.tok.lexeme[ls.tok.size++] = formula[ls.i++];
-				LogError("VSH2/FF2 :: invalid hex literal: '%s'", ls.tok.lexeme);
-				return false;
-			}
-		}
-	}
-	return true;
-}
-
-bool LexDec(LexState ls, const char[] formula)
-{
-	int lit_flags = 0;
-	while( formula[ls.i] != 0 && (IsCharNumeric(formula[ls.i]) || formula[ls.i]=='.') ) {
-		switch( formula[ls.i] ) {
-			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9': {
-				ls.tok.lexeme[ls.tok.size++] = formula[ls.i++];
-			}
-			case '.': {
-				if( lit_flags & dot_flag ) {
-					LogError("VSH2/FF2 :: extra dot in decimal literal");
-					return false;
-				}
-				ls.tok.lexeme[ls.tok.size++] = formula[ls.i++];
-				lit_flags |= dot_flag;
-			}
-			default: {
-				ls.tok.lexeme[ls.tok.size++] = formula[ls.i++];
-				LogError("VSH2/FF2 :: invalid decimal literal: '%s'", ls.tok.lexeme);
-				return false;
-			}
-		}
-	}
-	return true;
-}
-
-void GetToken(LexState ls, const char[] formula)
-{
-	int len = strlen(formula);
-	Token empty;
-	ls.tok = empty;
-	while( ls.i<len ) {
-		switch( formula[ls.i] ) {
-			case ' ', '\t', '\n': {
-				ls.i++;
-			}
-			case '0': { /// possible hex, octal, binary, or float.
-				ls.tok.tag = TokenNum;
-				ls.i++;
-				switch( formula[ls.i] ) {
-					case 'o', 'O': {
-						/// Octal.
-						ls.i++;
-						if( LexOctal(ls, formula) ) {
-							ls.tok.val = StringToInt(ls.tok.lexeme, 8) + 0.0;
-						}
-						return;
-					}
-					case 'x', 'X': {
-						/// Hex.
-						ls.i++;
-						if( LexHex(ls, formula) ) {
-							ls.tok.val = StringToInt(ls.tok.lexeme, 16) + 0.0;
-						}
-						return;
-					}
-					case '.', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9': {
-						/// Decimal/Float.
-						if( LexDec(ls, formula) ) {
-							ls.tok.val = StringToFloat(ls.tok.lexeme);
-						}
-						return;
-					}
-				}
-			}
-			case '.', '1', '2', '3', '4', '5', '6', '7', '8', '9': {
-				ls.tok.tag = TokenNum;
-				/// Decimal/Float.
-				if( LexDec(ls, formula) ) {
-					ls.tok.val = StringToFloat(ls.tok.lexeme);
-				}
-				return;
-			}
-			case '(': {
-				ls.tok.lexeme[ls.tok.size++] = formula[ls.i++];
-				ls.tok.tag = TokenLParen;
-				return;
-			}
-			case ')': {
-				ls.tok.lexeme[ls.tok.size++] = formula[ls.i++];
-				ls.tok.tag = TokenRParen;
-				return;
-			}
-			case '[': {
-				ls.tok.lexeme[ls.tok.size++] = formula[ls.i++];
-				ls.tok.tag = TokenLBrack;
-				return;
-			}
-			case ']': {
-				ls.tok.lexeme[ls.tok.size++] = formula[ls.i++];
-				ls.tok.tag = TokenRBrack;
-				return;
-			}
-			case '+': {
-				ls.tok.lexeme[ls.tok.size++] = formula[ls.i++];
-				ls.tok.tag = TokenPlus;
-				return;
-			}
-			case '-': {
-				ls.tok.lexeme[ls.tok.size++] = formula[ls.i++];
-				ls.tok.tag = TokenSub;
-				return;
-			}
-			case '*': {
-				ls.tok.lexeme[ls.tok.size++] = formula[ls.i++];
-				ls.tok.tag = TokenMul;
-				return;
-			}
-			case '/': {
-				ls.tok.lexeme[ls.tok.size++] = formula[ls.i++];
-				ls.tok.tag = TokenDiv;
-				return;
-			}
-			case '^': {
-				ls.tok.lexeme[ls.tok.size++] = formula[ls.i++];
-				ls.tok.tag = TokenPow;
-				return;
-			}
-			case 'x', 'n', 'X', 'N': {
-				ls.tok.lexeme[ls.tok.size++] = formula[ls.i++];
-				ls.tok.tag = TokenVar;
-				return;
-			}
-			default: {
-				ls.tok.lexeme[ls.tok.size++] = formula[ls.i++];
-				LogError("VSH2/FF2 :: invalid formula token '%s'.", ls.tok.lexeme);
-				return;
-			}
-		}
-	}
+	return ( hGetEquippedWearable == null ) ? -1:SDKCall(hGetEquippedWearable, client, slot);
 }
