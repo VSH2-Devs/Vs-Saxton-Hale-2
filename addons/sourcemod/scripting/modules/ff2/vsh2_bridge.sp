@@ -137,11 +137,11 @@ void FF2_LoadCharacter(const char[] character)
 			
 			for( int i; i < sizeof(modelT); i++ ) {
 				FormatEx(key_name, PLATFORM_MAX_PATH, "%s%s", path, modelT[i]);
-				if( FileExists(key, true) ) {
-					AddFileToDownloadsTable(key);
+				if( FileExists(key_name, true) ) {
+					AddFileToDownloadsTable(key_name);
 				}
-				else if( StrContains(key, ".phy") == -1 ) {
-					LogError("[VSH2/FF2] Character \"%s\" is missing file \"%s\"!", character, key);
+				else if( StrContains(key_name, ".phy") == -1 ) {
+					LogError("[VSH2/FF2] Character \"%s\" is missing file \"%s\"!", character, key_name);
 				}
 			}
 		}
@@ -155,18 +155,18 @@ void FF2_LoadCharacter(const char[] character)
 				if( this_char.Get(key_name, path, sizeof(path)) == null )
 					break;
 					
-				FormatEx(key_name, sizeof(key_name), "%s.vtf", path);
-				if( !FileExists(key, true) ) {
-					LogError("[VSH2/FF2] Character \"%s\" is missing file \"%s\"!", character, key);
+				FormatEx(key_name, sizeof(key_name), "%s.vmt", path);
+				if( !FileExists(key_name, true) ) {
+					LogError("[VSH2/FF2] Character \"%s\" is missing file \"%s\"!", character, key_name);
 				} else {
-					AddFileToDownloadsTable(path);
+					AddFileToDownloadsTable(key_name);
 				}
 				
 				FormatEx(key_name, sizeof(key_name), "%s.vtf", path);
-				if( !FileExists(key, true) ) {
-					LogError("[VSH2/FF2] Character \"%s\" is missing file \"%s\"!", character, key);
+				if( !FileExists(key_name, true) ) {
+					LogError("[VSH2/FF2] Character \"%s\" is missing file \"%s\"!", character, key_name);
 				} else {
-					AddFileToDownloadsTable(path);
+					AddFileToDownloadsTable(key_name);
 				}
 			}
 		}
