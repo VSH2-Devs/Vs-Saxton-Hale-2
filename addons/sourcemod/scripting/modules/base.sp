@@ -93,7 +93,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			}
 			char setboss[6];
 			g_vsh2.m_hCookies[BossOpt].Get(player, setboss, sizeof(setboss));
-			int bossType = StringToInt(setboss);
+			int bossType = (setboss[0] != '\0') ? StringToInt(setboss) : -1; /// fallback to -1 aka random/unset on empty-string
 			g_vsh2.m_hPlayerFields[player].SetValue("iPresetType", bossType);
 			return bossType;
 		}
