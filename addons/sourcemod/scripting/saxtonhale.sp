@@ -52,7 +52,7 @@ public Action VSH_OnBossSuperJump(const VSH2Player player)
 {
 	Action act = Plugin_Continue;
 	bool super = player.GetPropAny("bSuperCharge");
-	Call_StartForward(g_vsh_forwards[OnHaleRage]);
+	Call_StartForward(g_vsh_forwards[OnHaleJump]);
 	Call_PushCellRef(super);
 	Call_Finish(act);
 	if( act==Plugin_Changed )
