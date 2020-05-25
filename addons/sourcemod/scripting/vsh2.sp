@@ -573,11 +573,12 @@ public void OnClientPostAdminCheck(int client)
 public void ConnectionMessage(const int userid)
 {
 	int client = GetClientOfUserId(userid);
-	if( IsValidClient(client) )
+	if( IsValidClient(client) ) {
 		CPrintToChat(client, "{olive}[VSH 2]{default} Welcome to VSH2, type /bosshelp for help!");
-	
-	if( gamemode.iRoundState==StateRunning )
-		BaseBoss(client).PlayMusic(g_vsh2.m_hCvars[MusicVolume].FloatValue);
+		
+		if( gamemode.iRoundState==StateRunning )
+			BaseBoss(client).PlayMusic(g_vsh2.m_hCvars[MusicVolume].FloatValue);
+	}
 }
 
 public Action OnTouch(int client, int other)
