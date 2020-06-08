@@ -739,7 +739,7 @@ stock int GetDemoShield(int client)
 	int numwearables = TF2_GetNumWearables(client);
 	for( int i=numwearables-1; i>=0; --i ) {
 		int wearable = TF2_GetWearable(client, i);
-		if( wearable && !GetEntProp(wearable, Prop_Send, "m_bDisguiseWearable") ) {
+		if( wearable && HasEntProp(wearable, Prop_Send, "m_bDisguiseWearable") && !GetEntProp(wearable, Prop_Send, "m_bDisguiseWearable") ) {
 			char cls[32];
 			if( GetEntityClassname(wearable, cls, sizeof(cls)), !strncmp(cls, "tf_wearable_demo", 16, false) ) {
 				return wearable;
