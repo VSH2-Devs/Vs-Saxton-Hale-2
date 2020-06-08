@@ -324,38 +324,6 @@ stock void DoExplosion(const int owner, const int damage, const int radius, floa
 	AcceptEntityInput(explode, "Kill");
 }
 
-stock float[] nSubtractVectors(const float vec1[3], const float vec2[3])
-{
-	float result[3];
-	result[0] = vec1[0] - vec2[0];
-	result[1] = vec1[1] - vec2[1];
-	result[2] = vec1[2] - vec2[2];
-	return result;
-}
-stock float[] nAddVectors(const float vec1[3], const float vec2[3])
-{
-	float result[3];
-	result[0] = vec1[0] + vec2[0];
-	result[1] = vec1[1] + vec2[1];
-	result[2] = vec1[2] + vec2[2];
-	return result;
-}
-stock float[] nScaleVector(const float vec[3], const float scale)
-{
-	float result[3];
-	result[0] = vec[0] * scale;
-	result[1] = vec[1] * scale;
-	result[2] = vec[2] * scale;
-	return result;
-}
-stock float[] nNegateVector(const float vec[3])
-{
-	float result[3];
-	result[0] = -vec[0];
-	result[1] = -vec[1];
-	result[2] = -vec[2];
-	return result;
-}
 stock bool VectorCompare(const float v1[3], const float v2[3])
 {
 	for( int i=0; i<3; i++ )
