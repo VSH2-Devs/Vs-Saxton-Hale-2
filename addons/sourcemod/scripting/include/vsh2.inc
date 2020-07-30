@@ -597,6 +597,14 @@ native int VSH2_GetRandomBossType(int[] boss_filter, int filter_size=0);
 native StringMap VSH2_GetBossIDs(bool registered_only=false);
 
 /**
+ * Returns the ID of a specific bossname, useful for example finding IDs of companions bosses at runtime.
+ * @param boss_name: short name of the boss you want to find
+ * @return           boss ID as an integer
+ * @note             returns -1 if boss was not found
+ */
+native int VSH2_GetBossID(const char boss_name[MAX_BOSS_NAME_SIZE])
+
+/**
  * Stops the VSH2 background music at will.
  * @param reset_time: resets the music time so that 'OnMusic' hook can be called again.
  * @noreturn
@@ -851,6 +859,7 @@ public void __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2_GetMaxBosses");
 	MarkNativeAsOptional("VSH2_GetRandomBossType");
 	MarkNativeAsOptional("VSH2_GetBossIDs");
+	MarkNativeAsOptional("VSH2_GetBossID");
 	MarkNativeAsOptional("VSH2_StopMusic");
 	
 	MarkNativeAsOptional("VSH2GameMode_GetProperty");
