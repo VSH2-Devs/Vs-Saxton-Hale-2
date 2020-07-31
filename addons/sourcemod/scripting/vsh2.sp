@@ -1163,6 +1163,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2_UnhookEx", Native_UnhookEx);
 	CreateNative("VSH2_GetRandomBossType", Native_GetRandomBossType);
 	CreateNative("VSH2_GetBossIDs", Native_GetBossIDs);
+	CreateNative("VSH2_GetBossID", Native_GetBossID);
 	CreateNative("VSH2_StopMusic", Native_StopMusic);
 	
 	CreateNative("VSH2Player.VSH2Player", Native_VSH2Instance);
@@ -1429,6 +1430,22 @@ public any Native_GetBossIDs(Handle plugin, int numParams)
 	if( !boss_map.Size )
 		delete boss_map;
 	return boss_map;
+}
+
+public int Native_GetBossID(Handle plugin, int numParams)
+{
+	char bossname[MAX_BOSS_NAME_SIZE]; GetNativeString(1, bossname, MAX_BOSS_NAME_SIZE);
+
+	for( int i; i<g_vsh2.m_hBossesRegistered.Length; i++ ) {
+		BossModule module;
+		g_vsh2.m_hBossesRegistered.GetArray(i, module, sizeof(module));
+
+		if( !strcmp(module.name, bossname) )
+			return i + MaxDefaultVSH2Bosses;
+	}
+
+	/// -1 == boss not found
+	return -1;
 }
 
 public int Native_StopMusic(Handle plugin, int numParams)

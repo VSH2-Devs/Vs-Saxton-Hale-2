@@ -1343,6 +1343,7 @@ public void ManageResetVariables(const BaseBoss base)
 	base.iMaxHealth = 0;
 	base.iShieldDmg = 0;
 	base.iClimbs = 0;
+	base.bSuperCharge = false;
 }
 public void ManageEntityCreated(const int entity, const char[] classname)
 {
