@@ -602,7 +602,7 @@ native StringMap VSH2_GetBossIDs(bool registered_only=false);
  * @return           boss ID as an integer
  * @note             returns -1 if boss was not found
  */
-native int VSH2_GetBossID(const char boss_name[MAX_BOSS_NAME_SIZE])
+native int VSH2_GetBossID(const char boss_name[MAX_BOSS_NAME_SIZE]);
 
 /**
  * Stops the VSH2 background music at will.
