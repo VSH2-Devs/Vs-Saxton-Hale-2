@@ -543,6 +543,7 @@ typeset VSH2HookCB {
 	
 	/// OnBossMenu
 	function void (Menu& menu);
+	function void (Menu& menu, const VSH2Player player);
 	
 	/// OnScoreTally
 	function Action (const VSH2Player player, int& points_earned, int& queue_earned);

@@ -117,7 +117,7 @@ public Action SetNextSpecial(int client, int args)
 		Menu bossmenu = new Menu(MenuHandler_PickBossSpecial);
 		bossmenu.SetTitle("Set Next Boss Type Menu: ");
 		bossmenu.AddItem("-1", "None (Random Boss)");
-		ManageMenu(bossmenu); /// in handler.sp
+		ManageMenu(bossmenu, client); /// in handler.sp
 		bossmenu.Display(client, MENU_TIME_FOREVER);
 	}
 	return Plugin_Handled;
@@ -188,7 +188,7 @@ public Action SetBossMenu(int client, int args)
 	Menu bossmenu = new Menu(MenuHandler_PickBosses);
 	bossmenu.SetTitle("Set Boss Menu: ");
 	bossmenu.AddItem("-1", "None (Random Boss)");
-	ManageMenu(bossmenu); /// in handler.sp
+	ManageMenu(bossmenu, client); /// in handler.sp
 	bossmenu.Display(client, MENU_TIME_FOREVER);
 	return Plugin_Handled;
 }

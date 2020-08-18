@@ -71,14 +71,14 @@ public void ManageDownloads()
 	AddBunnyToDownloads  ();
 }
 
-public void ManageMenu(Menu& menu)
+public void ManageMenu(Menu& menu, const int client)
 {
 	AddHaleToMenu(menu);
 	AddVagToMenu(menu);
 	AddCBSToMenu(menu);
 	AddHHHToMenu(menu);
 	AddBunnyToMenu(menu);
-	Call_OnBossMenu(menu);
+	Call_OnBossMenu(menu, BaseBoss(client));
 }
 
 public void ManageDisconnect(const int client)
