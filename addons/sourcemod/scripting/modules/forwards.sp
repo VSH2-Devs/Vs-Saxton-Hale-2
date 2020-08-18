@@ -33,7 +33,7 @@ void InitializeForwards()
 	g_vsh2.m_hForwards[OnPrepRedTeam] = new PrivateForward( ET_Event, Param_Cell );
 	g_vsh2.m_hForwards[OnRedPlayerThink] = new PrivateForward( ET_Event, Param_Cell );
 	g_vsh2.m_hForwards[OnPlayerHurt] = new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_Cell );
-	g_vsh2.m_hForwards[OnBossMenu] = new PrivateForward( ET_Ignore, Param_CellByRef );
+	g_vsh2.m_hForwards[OnBossMenu] = new PrivateForward( ET_Ignore, Param_CellByRef, Param_Cell );
 	g_vsh2.m_hForwards[OnScoreTally] = new PrivateForward( ET_Event, Param_Cell, Param_CellByRef, Param_CellByRef );
 	g_vsh2.m_hForwards[OnItemOverride] = new PrivateForward( ET_Hook, Param_Cell, Param_String, Param_Cell, Param_CellByRef );
 	
@@ -397,10 +397,11 @@ Action Call_OnRedPlayerThink(const BaseBoss player)
 	Call_Finish(act);
 	return act;
 }
-void Call_OnBossMenu(Menu& menu)
+void Call_OnBossMenu(Menu& menu, const BaseBoss player)
 {
 	Call_StartForward(g_vsh2.m_hForwards[OnBossMenu]);
 	Call_PushCellRef(menu);
+	Call_PushCell(player);
 	Call_Finish();
 }
 Action Call_OnScoreTally(const BaseBoss player, int& points_earned, int& queue_earned)
