@@ -9,14 +9,14 @@
 #define MAX_SUBPLUGIN_NAME    64
 #define PLYR                  35
 
-#include "modules/cfg.sp"
+#include <cfgmap>
 #include "modules/stocks.inc"
 
 #pragma semicolon        1
 #pragma newdecls         required
 
 #define IsClientValid(%1)    ( 0 < (%1) && (%1) <= MaxClients && IsClientInGame((%1)) )
-#define IsBossValid(%1)    ( 0 <= (%1) && (%1) <= MaxClients && IsClientInGame((%1)) )
+#define IsBossValid(%1)      ( 0 <= (%1) && (%1) <= MaxClients && IsClientInGame((%1)) )
 
 
 public Plugin myinfo = {
@@ -26,6 +26,7 @@ public Plugin myinfo = {
 	version        = "1.0b",
 	url            = "https://github.com/VSH2-Devs/Vs-Saxton-Hale-2"
 };
+
 
 enum m_iRageInfo {
 	iRageMode,
@@ -204,10 +205,13 @@ public void OnPlayerKilledFF2(const VSH2Player player, const VSH2Player victim, 
 	
 	/// TODO: FF2_OnAlivePlayersChanged is called more ways, OnClientDisconnect, player_spawn, arena_round_start
 	Call_StartForward(ff2.m_forwards[FF2OnAlive]);
+	
 	FF2Player[] array = new FF2Player[MaxClients];
 	Call_PushCell(VSH2GameMode_GetFighters(array, true));
+	
 	int bosses = VSH2GameMode_GetBosses(array, true);
-	Call_PushCell(bosses+VSH2GameMode_GetMinions(array, true));
+	Call_PushCell(bosses + VSH2GameMode_GetMinions(array, true));
+	
 	Call_Finish();
 }
 
@@ -997,24 +1001,25 @@ public any Native_FF2_SetClientGlow(Handle plugin, int numParams)
 	float time1 = GetNativeCell(2);
 	float time2 = GetNativeCell(3);
 	float glowt = player.GetPropFloat("flGlowtime");
-	player.SetPropFloat("fl_GLowTime", glowt + time1);
+	player.SetPropFloat("flGlowtime", glowt + time1);
 	
 	if( time2 > 0.0 )
-		player.SetPropFloat("fl_GLowTime", time2);
+		player.SetPropFloat("flGlowtime", time2);
 	
 	return 0;
 }
 
-/** TODO int FF2_GetAlivePlayers(); */
+/** int FF2_GetAlivePlayers(); */
 public any Native_FF2_GetAlivePlayers(Handle plugin, int numParams)
 {
-	return 0;
+	return VSH2GameMode_GetTotalRedPlayers();
 }
 
-/** TODO int FF2_GetBossPlayers(); */
+/** int FF2_GetBossPlayers(); */
 public any Native_FF2_GetBossPlayers(Handle plugin, int numParams)
 {
-	return 0;
+	FF2Player[] bosses = new FF2Player[MaxClients];
+	return VSH2GameMode_GetBosses(bosses);
 }
 
 /** float FF2_GetClientShield(int client); */

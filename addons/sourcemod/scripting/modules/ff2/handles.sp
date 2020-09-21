@@ -3,13 +3,12 @@ stock void ActivateAbilitySlot(int boss, int slot, bool buttonmodeactive=true)
 	ConfigMap character = GetMyCharacterCfg(boss);
 	if( character==null )
 		return;
-		
+	
 	int i;
 	char[] key = new char[64]; 
 	char lives[MAX_SUBPLUGIN_NAME][3];
 	ConfigMap ability;
 	while( i < MAX_SUBPLUGIN_NAME ) {
-		
 		FormatEx(key, 64, "ability%i", ++i);
 		ability = character.GetSection(key);
 		if( ability==null )
@@ -19,10 +18,10 @@ stock void ActivateAbilitySlot(int boss, int slot, bool buttonmodeactive=true)
 		if( !ability.GetInt("slot", _var) && !_var)
 			ability.GetInt("arg0", _var);
 		
-		if( _var!=slot )
+		if( _var != slot )
 			continue;
 		
-		_var = buttonmodeactive && ability.GetInt("buttonmode", _var) ? _var:0;
+		_var = buttonmodeactive && ability.GetInt("buttonmode", _var) ? _var : 0;
 		static char ability_name[64], plugin_name[64];
 		
 		if( !ability.Get("life", key, 64) ) {
@@ -35,7 +34,7 @@ stock void ActivateAbilitySlot(int boss, int slot, bool buttonmodeactive=true)
 			int count = ExplodeString(key, " ", lives, sizeof(lives[]), sizeof(lives[][]));
 			FF2Player player = FF2Player(boss);
 			int iLives = player.GetPropInt("iLives");
-			while( --count >=0 ) {
+			while( --count >= 0 ) {
 				if( StringToInt(lives[count])==iLives ) {
 					ability.Get("name", ability_name, sizeof(ability_name));
 					ability.Get("plugin_name", plugin_name, sizeof(plugin_name));
@@ -76,8 +75,8 @@ stock bool RandomSound(const char[] sound, char[] file, int size, int boss=0)
 		FormatEx(key, sizeof(key), "%i_overlay_time", rand);
 		float time; section.GetFloat(key, time);
 		
-		for (int i = 1; i <= MaxClients; i++) {
-			if(IsValidClient(i) && TF2_GetClientTeam(i)!=iteam ) {
+		for( int i=1; i<=MaxClients; i++ ) {
+			if( IsValidClient(i) && TF2_GetClientTeam(i) != iteam ) {
 				player.SetTimedOverlay(path, time);
 			}
 		}
@@ -98,7 +97,7 @@ stock bool RandomSound(const char[] sound, char[] file, int size, int boss=0)
 		FormatEx(key, sizeof(key), "%iartist", rand);
 		section.Get(key, artist, sizeof(artist));
 		
-		for (int i = 1; i < MaxClients; i++) {
+		for( int i=1; i<=MaxClients; i++ ) {
 			if( i && IsValidClient(i) ) {
 				PlayBGM(i, path, time, name, artist);
 			}
@@ -107,7 +106,7 @@ stock bool RandomSound(const char[] sound, char[] file, int size, int boss=0)
 	}
 	
 	IntToString(rand, key, sizeof(key));
-	return view_as<bool>(section.Get(key, file, size));
+	return view_as< bool >(section.Get(key, file, size));
 }
 
 stock bool RandomSoundAbility(const char[] sound, char[] file, int length, int boss=0, int slot=0)
@@ -126,8 +125,7 @@ stock bool RandomSoundAbility(const char[] sound, char[] file, int length, int b
 	int total;
 	int found;
 	
-	while( ++sounds )
-	{
+	while( ++sounds ) {
 		IntToString(sounds, key, 4);
 		if( !section.Get(key, file, length) ) {
 			sounds--;
@@ -157,10 +155,10 @@ stock bool UseAbility(const char[] plugin_name, const char[] ability_name, int b
 	bool enabled = true;
 	Call_PushCellRef(enabled);
 	Call_Finish();
-
-	if(!enabled)
+	
+	if( !enabled )
 		return false;
-
+	
 	Action action = Plugin_Continue;
 	Call_StartForward(ff2.m_forwards[FF2OnAbility]);
 	Call_PushCell(boss);
@@ -169,8 +167,7 @@ stock bool UseAbility(const char[] plugin_name, const char[] ability_name, int b
 	
 	FF2Player player = FF2Player(boss);
 	
-	switch(slot)
-	{
+	switch( slot ) {
 		case 0: {
 			player.iFlags &=~ (1<<5);
 			Call_PushCell(3);
@@ -182,8 +179,7 @@ stock bool UseAbility(const char[] plugin_name, const char[] ability_name, int b
 					if( charge <= 0 )
 						charge = 0.0;
 					FF2_SetCustomCharge(boss, slot, charge);
-				}
-				else if( !player.GetRageInfo(iRageMode) ) {
+				} else if( !player.GetRageInfo(iRageMode) ) {
 					FF2_SetCustomCharge(boss, slot, 0.0);
 				}
 			}
@@ -191,33 +187,19 @@ stock bool UseAbility(const char[] plugin_name, const char[] ability_name, int b
 		case 1, 2, 3: {
 			SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
 			int button;
-			switch( buttonMode )
-			{
-				case 1:
-					button = IN_DUCK|IN_ATTACK2;
-	
-				case 2:
-					button = IN_RELOAD;
-	
-				case 3:
-					button = IN_ATTACK3;
-	
-				case 4:
-					button = IN_DUCK;
-	
-				case 5:
-					button = IN_SCORE;
-	
-				default:
-					button = IN_ATTACK2;
+			switch( buttonMode ) {
+				case 1: button = IN_DUCK|IN_ATTACK2;
+				case 2: button = IN_RELOAD;
+				case 3: button = IN_ATTACK3;
+				case 4: button = IN_DUCK;
+				case 5: button = IN_SCORE;
+				default: button = IN_ATTACK2;
 			}
 			
 			int client = player.index;
 			float charge = FF2_GetCustomCharge(boss, slot);
-			if( GetClientButtons(client) & button )
-			{
-				if( charge >= 0.0 )
-				{
+			if( GetClientButtons(client) & button ) {
+				if( charge >= 0.0 ) {
 					Call_PushCell(2);
 					Call_Finish(action);
 					float add;
@@ -236,13 +218,10 @@ stock bool UseAbility(const char[] plugin_name, const char[] ability_name, int b
 					Call_Finish(action);
 					FF2_SetCustomCharge(boss, slot, charge + 0.2);
 				}
-			}
-			
-			else if( charge > 0.3 ) {
+			} else if( charge > 0.3 ) {
 				float vecAng[3];
 				GetClientEyeAngles(client, vecAng);
-				if( vecAng[0] < -5.0 )
-				{
+				if( vecAng[0] < -5.0 ) {
 					///VSH2Player::SuperJumpThink?
 					///TODO
 					Call_PushCell(3);
@@ -256,24 +235,21 @@ stock bool UseAbility(const char[] plugin_name, const char[] ability_name, int b
 					} else {
 						data.WriteFloat(-1.0*GetArgNamedF(boss, plugin_name, ability_name, "arg2", 5.0));
 					}
-				}
-				else {
+				} else {
 					Call_PushCell(0);
 					Call_Finish(action);
 					FF2_SetCustomCharge(boss, slot, 0.0);
 				}
-			}
-			else if( charge >= 0.0 ) {
+			} else if( charge >= 0.0 ) {
 				Call_PushCell(0);
 				Call_Finish(action);
-			}
-			else {
+			} else {
 				Call_PushCell(1);
 				Call_Finish(action);
 				FF2_SetCustomCharge(boss, slot, charge + 0.2);
 			}
 		}
-		default : {
+		default: {
 			Call_PushCell(3);
 			Call_Finish(action);
 		}

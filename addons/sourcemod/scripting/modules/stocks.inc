@@ -599,8 +599,8 @@ stock void SpawnRandomAmmo()
 	int iEnt = MaxClients+1;
 	float vPos[3], vAng[3];
 	int spawned;
-	int maxlim = g_vsh2.m_hCvars[AmmoKitLimitMax].IntValue;
-	int minlim = g_vsh2.m_hCvars[AmmoKitLimitMin].IntValue;
+	int maxlim = g_vsh2.m_hCvars.AmmoKitLimitMax.IntValue;
+	int minlim = g_vsh2.m_hCvars.AmmoKitLimitMin.IntValue;
 	while( (iEnt = FindEntityByClassname(iEnt, "info_player_teamspawn")) != -1 ) {
 		if( spawned >= minlim )
 			if( GetRandomInt(0, 3) )
@@ -613,7 +613,7 @@ stock void SpawnRandomAmmo()
 		int ammo = CreateEntityByName("item_ammopack_small");
 		TeleportEntity(ammo, vPos, vAng, NULL_VECTOR);
 		DispatchSpawn(ammo);
-		SetEntProp(ammo, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+		SetEntProp(ammo, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars.Enabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 		++spawned;
 	}
 }
@@ -622,8 +622,8 @@ stock void SpawnRandomHealth()
 	int iEnt = MaxClients+1;
 	float vPos[3], vAng[3];
 	int spawned;
-	int maxlim = g_vsh2.m_hCvars[HealthKitLimitMax].IntValue;
-	int minlim = g_vsh2.m_hCvars[HealthKitLimitMin].IntValue;
+	int maxlim = g_vsh2.m_hCvars.HealthKitLimitMax.IntValue;
+	int minlim = g_vsh2.m_hCvars.HealthKitLimitMin.IntValue;
 	while( (iEnt = FindEntityByClassname(iEnt, "info_player_teamspawn")) != -1 ) {
 		if( spawned >= minlim )
 			if( GetRandomInt(0, 3) )
@@ -635,7 +635,7 @@ stock void SpawnRandomHealth()
 		int healthkit = CreateEntityByName("item_healthkit_small");
 		TeleportEntity(healthkit, vPos, vAng, NULL_VECTOR);
 		DispatchSpawn(healthkit);
-		SetEntProp(healthkit, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+		SetEntProp(healthkit, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars.Enabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 		++spawned;
 	}
 }
@@ -947,7 +947,7 @@ stock int GetClip(const int client, const int slot)
 
 stock void SkipBossPanelNotify(const int client/*, bool newchoice = true*/)
 {
-	if( !g_vsh2.m_hCvars[Enabled].BoolValue || !IsValidClient(client) || IsFakeClient(client) || IsVoteInProgress() )
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || !IsValidClient(client) || IsFakeClient(client) || IsVoteInProgress() )
 		return;
 	
 	Panel panel = new Panel();
@@ -1210,11 +1210,11 @@ stock void HealPlayer(const int client, const int health, bool on_hud=false)
 	int hp = GetEntProp(client, Prop_Data, "m_iHealth");
 	int maxhp = GetEntProp(client, Prop_Data, "m_iMaxHealth");
 	int to_set = health;
-
+	
 	int max_overheal = RoundFloat(FindConVar("tf_max_health_boost").FloatValue * maxhp);
 	if( to_set > max_overheal - hp )
 		to_set = max_overheal - hp;
-
+	
 	if( to_set > 0 ) {
 		SetEntityHealth(client, hp + to_set);
 		if( on_hud ) {
@@ -1242,4 +1242,11 @@ stock int TF2_GetWearable(int client, int wearableidx)
 	int offset = FindSendPropInfo("CTFPlayer", "m_flMaxspeed") - 20;
 	Address m_hMyWearables = view_as< Address >(LoadFromAddress(GetEntityAddress(client) + view_as< Address >(offset), NumberType_Int32));
 	return LoadFromAddress(m_hMyWearables + view_as< Address >(4 * wearableidx), NumberType_Int32) & 0xFFF;
+}
+
+stock int int_hash(int h)
+{
+	h ^= (h >> 20) ^ (h >> 12);
+	h = h ^ (h >> 7) ^ (h >> 4);
+	return h < 0 ? -h : h;
 }

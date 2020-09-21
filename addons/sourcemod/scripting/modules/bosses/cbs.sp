@@ -40,7 +40,7 @@ methodmap CChristian < BaseBoss {
 		}
 		
 		if( OnlyScoutsLeft(VSH2Team_Red) )
-			this.flRAGE += g_vsh2.m_hCvars[ScoutRageGen].FloatValue;
+			this.flRAGE += g_vsh2.m_hCvars.ScoutRageGen.FloatValue;
 		
 		this.WeighDownThink(HALE_WEIGHDOWN_TIME);
 		

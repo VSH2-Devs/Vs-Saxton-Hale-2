@@ -454,18 +454,37 @@ public void fwdOnBossCalcHealth(VSH2Player player, int& max_health, const int bo
 {
 	PrintToChat(player.index, "fwdOnBossCalcHealth:: ==> boss name: %N | max health: %i, boss count: %i, players: %i", player.index, max_health, boss_count, red_players);
 }
-
+/* /// trust me this works lol.
 public void fwdOnSoundHook(const VSH2Player player, char sample[PLATFORM_MAX_PATH], int& channel, float& volume, int& level, int& pitch, int& flags)
 {
 	PrintToChat(player.index, "fwdOnSoundHook:: ==> boss name: %N | sample: %s, channel: %i, volume: %f, level: %i, pitch: %i, flags: %i", player.index, sample, channel, volume, level, pitch, flags);
 }
-
+*/
 public void fwdOnRoundStart(const VSH2Player[] bosses, const int boss_count, const VSH2Player[] red_players, const int red_count)
 {
 	for( int i; i<boss_count; i++ )
 		PrintToChatAll("fwdOnRoundStart :: boss name: %N", bosses[i].index);
 	for( int i; i<red_count; i++ )
 		PrintToChatAll("fwdOnRoundStart :: red name: %N", red_players[i].index);
+}
+
+public void fwdOnHelpMenu(const VSH2Player player, Menu menu)
+{
+	PrintToConsole(player.index, "fwdOnHelpMenu:: ==> player name: %N", player.index);
+	menu.AddItem("-1", "Item from OnHelpMenu. (nativestest)");
+}
+
+public void fwdOnHelpMenuSelect(const VSH2Player player, Menu menu, int selection)
+{
+	PrintToConsole(player.index, "fwdOnHelpMenuSelect:: ==> player name: %N | selection: %i", player.index, selection);
+	char info[10];
+	char classname[64];
+	menu.GetItem(selection, info, sizeof(info), _, classname, sizeof(classname));
+}
+
+public void fwdOnDrawGameTimer(int& seconds)
+{
+	PrintToChatAll("fwdOnDrawGameTimer :: seconds: %d", seconds);
 }
 
 public void LoadVSH2Hooks()
@@ -677,9 +696,18 @@ public void LoadVSH2Hooks()
 	if( !VSH2_HookEx(OnPlayerTakeFallDamage, fwdOnPlayerTakeFallDamage) )
 		LogError("Error Hooking OnPlayerTakeFallDamage forward for VSH2 Test plugin.");
 		
-	if( !VSH2_HookEx(OnSoundHook, fwdOnSoundHook) )
-		LogError("Error Hooking OnSoundHook forward for VSH2 Test plugin.");
+	//if( !VSH2_HookEx(OnSoundHook, fwdOnSoundHook) )
+	//	LogError("Error Hooking OnSoundHook forward for VSH2 Test plugin.");
 		
 	if( !VSH2_HookEx(OnRoundStart, fwdOnRoundStart) )
 		LogError("Error Hooking OnRoundStart forward for VSH2 Test plugin.");
+		
+	if( !VSH2_HookEx(OnHelpMenu, fwdOnHelpMenu) )
+		LogError("Error Hooking OnHelpMenu forward for VSH2 Test plugin.");
+		
+	if( !VSH2_HookEx(OnHelpMenuSelect, fwdOnHelpMenuSelect) )
+		LogError("Error Hooking OnHelpMenuSelect forward for VSH2 Test plugin.");
+		
+	if( !VSH2_HookEx(OnDrawGameTimer, fwdOnDrawGameTimer) )
+		LogError("Error Hooking OnDrawGameTimer forward for VSH2 Test plugin.");
 }

@@ -7,6 +7,7 @@
 #pragma semicolon        1
 #pragma newdecls         required
 
+
 public Plugin myinfo = {
 	name           = "VSH2/VSH1 Compatibility Engine",
 	author         = "Nergal/Assyrianic",
@@ -26,13 +27,11 @@ enum {
 };
 
 GlobalForward g_vsh_forwards[MaxVSHForwards];
-ConVar vsh2_enabled;
-bool g_vsh2;
+ConVar        vsh2_enabled;
 
 
 public void OnLibraryAdded(const char[] name) {
 	if( StrEqual(name, "VSH2") ) {
-		g_vsh2 = true;
 		vsh2_enabled = FindConVar("vsh2_enabled");
 		VSH2_Hook(OnBossSuperJump, VSH_OnBossSuperJump);
 		VSH2_Hook(OnBossDoRageStun, VSH_OnBossDoRageStun);
@@ -44,7 +43,11 @@ public void OnLibraryAdded(const char[] name) {
 
 public void OnLibraryRemoved(const char[] name) {
 	if( StrEqual(name, "VSH2") ) {
-		g_vsh2 = false;
+		VSH2_Unhook(OnBossSuperJump, VSH_OnBossSuperJump);
+		VSH2_Unhook(OnBossDoRageStun, VSH_OnBossDoRageStun);
+		VSH2_Unhook(OnBossWeighDown, VSH_OnBossWeighDown);
+		VSH2_Unhook(OnMusic, VSH_OnMusic);
+		VSH2_Unhook(OnVariablesReset, VSH_OnNextHale);
 	}
 }
 
@@ -52,7 +55,7 @@ public Action VSH_OnBossSuperJump(const VSH2Player player)
 {
 	Action act = Plugin_Continue;
 	bool super = player.GetPropAny("bSuperCharge");
-	Call_StartForward(g_vsh_forwards[OnHaleJump]);
+	Call_StartForward(g_vsh_forwards[OnHaleRage]);
 	Call_PushCellRef(super);
 	Call_Finish(act);
 	if( act==Plugin_Changed )
@@ -107,24 +110,21 @@ public Action VSH_OnNextHale(const VSH2Player player)
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-	if( !g_vsh2 || !vsh2_enabled.BoolValue )
-		return APLRes_Failure;
-	
-	CreateNative("VSH_IsSaxtonHaleModeMap", Native_IsVSHMap);
+	CreateNative("VSH_IsSaxtonHaleModeMap",     Native_IsVSHMap);
 	CreateNative("VSH_IsSaxtonHaleModeEnabled", Native_IsEnabled);
-	CreateNative("VSH_GetSaxtonHaleUserId", Native_GetHale);
-	CreateNative("VSH_GetSaxtonHaleTeam", Native_GetTeam);
-	CreateNative("VSH_GetSpecialRoundIndex", Native_GetSpecial);
-	CreateNative("VSH_GetSaxtonHaleHealth", Native_GetHealth);
-	CreateNative("VSH_GetSaxtonHaleHealthMax", Native_GetHealthMax);
-	CreateNative("VSH_GetClientDamage", Native_GetDamage);
-	CreateNative("VSH_GetRoundState", Native_GetRoundState);
+	CreateNative("VSH_GetSaxtonHaleUserId",     Native_GetHale);
+	CreateNative("VSH_GetSaxtonHaleTeam",       Native_GetTeam);
+	CreateNative("VSH_GetSpecialRoundIndex",    Native_GetSpecial);
+	CreateNative("VSH_GetSaxtonHaleHealth",     Native_GetHealth);
+	CreateNative("VSH_GetSaxtonHaleHealthMax",  Native_GetHealthMax);
+	CreateNative("VSH_GetClientDamage",         Native_GetDamage);
+	CreateNative("VSH_GetRoundState",           Native_GetRoundState);
 	
-	g_vsh_forwards[OnHaleJump] = new GlobalForward("VSH_OnDoJump", ET_Hook, Param_CellByRef);
-	g_vsh_forwards[OnHaleRage] = new GlobalForward("VSH_OnDoRage", ET_Hook, Param_FloatByRef);
+	g_vsh_forwards[OnHaleJump]      = new GlobalForward("VSH_OnDoJump", ET_Hook, Param_CellByRef);
+	g_vsh_forwards[OnHaleRage]      = new GlobalForward("VSH_OnDoRage", ET_Hook, Param_FloatByRef);
 	g_vsh_forwards[OnHaleWeighdown] = new GlobalForward("VSH_OnDoWeighdown", ET_Hook);
-	g_vsh_forwards[OnVSHMusic] = new GlobalForward("VSH_OnMusic", ET_Hook, Param_String, Param_FloatByRef);
-	g_vsh_forwards[OnHaleNext] = new GlobalForward("VSH_OnHaleNext", ET_Hook, Param_Cell);
+	g_vsh_forwards[OnVSHMusic]      = new GlobalForward("VSH_OnMusic", ET_Hook, Param_String, Param_FloatByRef);
+	g_vsh_forwards[OnHaleNext]      = new GlobalForward("VSH_OnHaleNext", ET_Hook, Param_Cell);
 	
 	RegPluginLibrary("saxtonhale");
 	return APLRes_Success;

@@ -4,6 +4,7 @@
 #define _vsh2_included
 
 #include <tf2items_stocks>
+#include <cfgmap>
 
 
 #define MAXMESSAGE            512
@@ -135,10 +136,6 @@ methodmap VSH2Player {
 	** please use userid on this; convert to client index if you want but userid is safer **
 	* Use 'hUberTarget' property instead this
 	 * int iUberTarget
-	
-	** use like a bool **
-	 * int bGlow -> will not set glowing like in internal VSH2.
-	
 	 * bool bIsMinion
 	 * bool bInJump
 	 * float flGlowtime
@@ -418,6 +415,9 @@ enum { /// VSH2HookType
 	OnPlayerTakeFallDamage,
 	OnSoundHook,
 	OnRoundStart,
+	OnHelpMenu,
+	OnHelpMenuSelect,
+	OnDrawGameTimer,
 	MaxVSH2Forwards
 };
 
@@ -577,6 +577,16 @@ typeset VSH2HookCB {
 	
 	/// OnRoundStart
 	function void (const VSH2Player[] bosses, const int boss_count, const VSH2Player[] red_players, const int red_count);
+	
+	/// OnHelpMenu
+	function void (const VSH2Player player, Menu menu);
+	
+	/// OnHelpMenuSelect
+	function void (const VSH2Player player, Menu menu, int selection);
+	
+	/// OnDrawGameTimer
+	function Action (int& seconds);
+	function void (int& seconds);
 };
 
 /// Use hooktype enum on these.
@@ -690,10 +700,10 @@ native bool VSH2GameMode_IsVSHMap();
 /**
  * VSH2 Misc. Useful stocks.
  */
-stock void CheckDownload(const char[] dlpath)
+stock void CheckDownload(const char[] file)
 {
-	if( FileExists(dlpath, true) )
-		AddFileToDownloadsTable(dlpath);
+	if( FileExists(file, true) )
+		AddFileToDownloadsTable(file);
 }
 
 stock void PrepareSound(const char[] sound_path)

@@ -19,6 +19,14 @@ enum struct VSHGameMode {
 	float    flHealthTime;
 	float    flMusicTime;
 	BaseBoss hNextBoss;
+	
+	
+	
+	
+	
+	
+	
+	
 }
 */
 
@@ -265,7 +273,7 @@ methodmap VSHGameMode { /* < StringMap { */
 	}
 	public void CheckArena(const bool type) {
 		if( type )
-			SetArenaCapEnableTime( float(45+g_vsh2.m_hCvars[PointDelay].IntValue*(this.iPlaying-1)) );
+			SetArenaCapEnableTime( float(45+g_vsh2.m_hCvars.PointDelay.IntValue*(this.iPlaying-1)) );
 		else {
 			SetArenaCapEnableTime(0.0);
 			SetControlPoint(false);
@@ -279,9 +287,8 @@ methodmap VSHGameMode { /* < StringMap { */
 				continue;
 			
 			BaseBoss boss = BaseBoss(i);
-			if( boss.bSetOnSpawn )
+			if( boss.bIsBoss )
 				continue;
-			
 			players[k++] = boss;
 		}
 		
@@ -387,7 +394,7 @@ methodmap VSHGameMode { /* < StringMap { */
 		ent = -1;
 		count = 0;
 		while( (ent = FindEntityByClassname(ent, "item_healthkit_small")) != -1 ) {
-			SetEntProp(ent, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+			SetEntProp(ent, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars.Enabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 			count++;
 			if( !foundHealth )
 				foundHealth = (count > 4); //true;
@@ -395,7 +402,7 @@ methodmap VSHGameMode { /* < StringMap { */
 		ent = -1;
 		count = 0;
 		while( (ent = FindEntityByClassname(ent, "item_healthkit_medium")) != -1 ) {
-			SetEntProp(ent, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+			SetEntProp(ent, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars.Enabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 			count++;
 			if( !foundHealth )
 				foundHealth = (count > 2);//true;
@@ -403,7 +410,7 @@ methodmap VSHGameMode { /* < StringMap { */
 		ent = -1;
 		count = 0;
 		while( (ent = FindEntityByClassname(ent, "item_healthkit_full")) != -1 ) {
-			SetEntProp(ent, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars[Enabled].BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+			SetEntProp(ent, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars.Enabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 			count++;
 			if( !foundHealth )
 				foundHealth = (count > 2); //true;

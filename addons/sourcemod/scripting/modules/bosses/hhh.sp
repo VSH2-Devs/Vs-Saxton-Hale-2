@@ -91,7 +91,7 @@ methodmap CHHHJr < BaseBoss {
 					EmitSoundToClient(target, "misc/halloween/spell_teleport.wav");
 					PrintCenterText(target, "You've been teleported!");
 					
-					this.flCharge = g_vsh2.m_hCvars[HHHTeleCooldown].FloatValue;
+					this.flCharge = g_vsh2.m_hCvars.HHHTeleCooldown.FloatValue;
 				}
 				if( this.bSuperCharge )
 					this.bSuperCharge = false;
@@ -100,7 +100,7 @@ methodmap CHHHJr < BaseBoss {
 		}
 		
 		if( OnlyScoutsLeft(VSH2Team_Red) )
-			this.flRAGE += g_vsh2.m_hCvars[ScoutRageGen].FloatValue;
+			this.flRAGE += g_vsh2.m_hCvars.ScoutRageGen.FloatValue;
 		
 		if( flags & FL_ONGROUND ) {
 			this.flWeighDown = 0.0;
@@ -116,7 +116,7 @@ methodmap CHHHJr < BaseBoss {
 		}
 		SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
 		float jmp = this.flCharge;
-		int max_climbs = g_vsh2.m_hCvars[HHHMaxClimbs].IntValue;
+		int max_climbs = g_vsh2.m_hCvars.HHHMaxClimbs.IntValue;
 		if( this.flRAGE >= 100.0 )
 			ShowSyncHudText(this.index, g_vsh2.m_hHUDs[PlayerHUD], "Teleport: %i%% | Climbs: %i / %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 2, this.iClimbs, max_climbs);
 		else ShowSyncHudText(this.index, g_vsh2.m_hHUDs[PlayerHUD], "Teleport: %i%% | Climbs: %i / %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 2, this.iClimbs, max_climbs, this.flRAGE);
@@ -142,7 +142,7 @@ methodmap CHHHJr < BaseBoss {
 		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.1; 259; 1.0; 252; 0.6; 551; 1");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_sword", 266, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
-		this.flCharge = g_vsh2.m_hCvars[HHHTeleCooldown].FloatValue * 0.9091;
+		this.flCharge = g_vsh2.m_hCvars.HHHTeleCooldown.FloatValue * 0.9091;
 	}
 	public void RageAbility()
 	{

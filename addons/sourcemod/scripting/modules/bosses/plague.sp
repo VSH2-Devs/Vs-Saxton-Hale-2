@@ -55,7 +55,7 @@ methodmap CPlague < BaseBoss {
 			else this.flCharge = 0.0;
 		}
 		if( OnlyScoutsLeft(VSH2Team_Red) )
-			this.flRAGE += g_vsh2.m_hCvars[ScoutRageGen].FloatValue;
+			this.flRAGE += g_vsh2.m_hCvars.ScoutRageGen.FloatValue;
 		
 		if( flags & FL_ONGROUND )
 			this.flWeighDown = 0.0;

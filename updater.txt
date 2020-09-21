@@ -4,15 +4,23 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.8.17"
+			"Latest"	"2.8.20"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.8.17:"
-		"Notes"	"Changed placement for `Play/StopMusic` methods and `flMusicTime` property."
-		"Notes"	"Finally(?) brought all code formatting to contribution standards."
-		"Notes"	"Added `VSH2GameMode_GetQueue` native."
-		"Notes"	"Added `VSH2GameMode_GetBossesByType` native."
-		"Notes"	"Improved `SetPawnTimer` stock function, including a better version that allows for more than 2 arguments."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.8.20:"
+		"Notes"	"Changed `ConfigMap::Get` to return numbers of chars written instead of boolean (recommended by BatFoxKid)."
+		"Notes"	"Fixing SP compiler v1.11 warning for VSHGameMode methodmap not returning a value."
+		"Notes"	"Removed 'bSetOnSpawn', 'bGlow' properties as it was unnecessary (closes issue #133)."
+		"Notes"	"Changed 'bIsBoss' property to be read-only (closes issue #140)."
+		"Notes"	"Added two Forward hooks for the main VSH2 help menu (closes issue #142)."
+		"Notes"	"Replaced Cvar enum with enum struct (closes issue #138)."
+		"Notes"	"Added cvar to enable or disable snipers being able to climb with their melee (default enabled) (closes issue #134)."
+		"Notes"	"Implemented forward bi-system where addons get first priority over boss modules (semi-resolves issue #132, closes issue #131, )."
+		"Notes"	"Added forward for Last player timer, fires every second (closes issue #130)."
+		"Notes"	"Added local and global enumerators for the ConfigMap."
+		"Notes"	"Converted ConfigMap into an include file and vsh2.inc includes, making it available for other plugins to widely use."
+		"Notes"	"Formatted syntax in some of the FF2 compatibility engine code to follow the code formatting rules."
+		"Notes"	"Implemented a couple of FF2 compatibility engine natives."
 	}
 	
 	"Files"
@@ -31,7 +39,6 @@
 		"Source"	"Path_SM/scripting/modules/forwards.sp"
 		"Source"	"Path_SM/scripting/modules/gamemode.sp"
 		"Source"	"Path_SM/scripting/modules/handler.sp"
-		"Source"	"Path_SM/scripting/modules/cfg.sp"
 		"Source"	"Path_SM/scripting/modules/stocks.inc"
 		"Source"	"Path_SM/scripting/modules/bosses/bunny.sp"
 		"Source"	"Path_SM/scripting/modules/bosses/cbs.sp"
@@ -41,6 +48,7 @@
 		"Source"	"Path_SM/scripting/modules/bosses/vagineer.sp"
 		
 		"Source"	"Path_SM/scripting/include/vsh2.inc"
+		"Source"	"Path_SM/scripting/include/cfgmap.inc"
 		"Source"	"Path_SM/scripting/include/steamtools.inc"
 		"Source"	"Path_SM/scripting/include/tf2items_stocks.inc"
 	}

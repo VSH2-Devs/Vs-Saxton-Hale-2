@@ -2,7 +2,7 @@
 	ALL NON-BOSS AND NON-MINION RELATED CODE IS AT THE BOTTOM. HAVE FUN CODING!
 */
 
-#define MAXBOSS    (MaxDefaultVSH2Bosses + (g_vsh2.m_hBossesRegistered.Length - 1))
+#define MAXBOSS    (MaxDefaultVSH2Bosses + (g_modsys.m_hBossesRegistered.Length - 1))
 
 #include "modules/bosses.sp"
 
@@ -154,8 +154,8 @@ public void ManageOnBossSelected(const BaseBoss base)
 	
 	/// random multibosses code.
 	int playing = gamemode.iPlaying;
-	int max_random_bosses = g_vsh2.m_hCvars[MaxRandomMultiBosses].IntValue;
-	if( !g_vsh2.m_hCvars[AllowRandomMultiBosses].BoolValue || playing < 10 || GetRandomInt(0, 3) > 0 || gamemode.CountBosses(false) >= max_random_bosses )
+	int max_random_bosses = g_vsh2.m_hCvars.MaxRandomMultiBosses.IntValue;
+	if( !g_vsh2.m_hCvars.AllowRandomMultiBosses.BoolValue || playing < 10 || GetRandomInt(0, 3) > 0 || gamemode.CountBosses(false) >= max_random_bosses )
 		return;
 	
 	int extra_bosses = GetRandomInt(1, playing / 12);
@@ -181,11 +181,11 @@ public void ManageBossHelp(const BaseBoss base)
 {
 	switch( base.iBossType ) {
 		case -1: {}
-		case VSH2Boss_Hale:		ToCHale(base).Help();
-		case VSH2Boss_Vagineer:		ToCVagineer(base).Help();
-		case VSH2Boss_CBS:		ToCChristian(base).Help();
-		case VSH2Boss_HHHjr:		ToCHHHJr(base).Help();
-		case VSH2Boss_Bunny:		ToCBunny(base).Help();
+		case VSH2Boss_Hale:     ToCHale(base).Help();
+		case VSH2Boss_Vagineer: ToCVagineer(base).Help();
+		case VSH2Boss_CBS:      ToCChristian(base).Help();
+		case VSH2Boss_HHHjr:    ToCHHHJr(base).Help();
+		case VSH2Boss_Bunny:    ToCBunny(base).Help();
 	}
 }
 
@@ -440,7 +440,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				return Plugin_Changed;
 			}
 			
-			if( g_vsh2.m_hCvars[Anchoring].BoolValue ) {
+			if( g_vsh2.m_hCvars.Anchoring.BoolValue ) {
 				int iFlags = GetEntityFlags(victim.index);
 #if defined _tf2attributes_included
 				if( gamemode.bTF2Attribs ) {
@@ -494,7 +494,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				}
 				
 				if( wepindex == 230 )
-					victim.flRAGE -= (damage * g_vsh2.m_hCvars[SydneySleeperRageRemove].FloatValue);
+					victim.flRAGE -= (damage * g_vsh2.m_hCvars.SydneySleeperRageRemove.FloatValue);
 				
 				if( !(damagetype & DMG_CRIT) ) {
 					bool ministatus = (TF2_IsPlayerInCondition(attacker, TFCond_CritCola) || TF2_IsPlayerInCondition(attacker, TFCond_Buffed) || TF2_IsPlayerInCondition(attacker, TFCond_CritHype));
@@ -583,21 +583,21 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				*/
 				/// Swords
 				case 132, 266, 482, 1082: {
-					IncrementHeadCount(attacker);
 					if( Call_OnBossTakeDamage_OnHitSword(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) == Plugin_Changed )
 						return Plugin_Changed;
+					IncrementHeadCount(attacker);
 				}
 				/// Fan O War
 				case 355: {
-					victim.flRAGE -= g_vsh2.m_hCvars[FanoWarRage].FloatValue;
 					if( Call_OnBossTakeDamage_OnHitFanOWar(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) == Plugin_Changed )
 						return Plugin_Changed;
+					victim.flRAGE -= g_vsh2.m_hCvars.FanoWarRage.FloatValue;
 				}
 				/// Candy Cane
 				case 317: {
-					BaseBoss(attacker).SpawnSmallHealthPack(GetClientTeam(attacker));
 					if( Call_OnBossTakeDamage_OnHitCandyCane(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) == Plugin_Changed )
 						return Plugin_Changed;
+					BaseBoss(attacker).SpawnSmallHealthPack(GetClientTeam(attacker));
 				}
 				/// Chdata's Market Gardener backstab
 				case 416: {
@@ -696,7 +696,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				}
 				/// Tickle Hoovy Fists.
 				case 656: {
-					SetPawnTimer(_StopTickle, g_vsh2.m_hCvars[StopTickleTime].FloatValue, victim.userid);
+					SetPawnTimer(_StopTickle, g_vsh2.m_hCvars.StopTickleTime.FloatValue, victim.userid);
 					if( TF2_IsPlayerInCondition(attacker, TFCond_Dazed) )
 						TF2_RemoveCondition(attacker, TFCond_Dazed);
 					
@@ -714,7 +714,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				TR_TraceRayFilter(damagePosition, ray_angle, MASK_PLAYERSOLID_BRUSHONLY, RayType_Infinite, TraceRayIgnoreEnts);
 				if( TR_DidHit() ) {
 					float end_pos[3]; TR_GetEndPosition(end_pos);
-					if( GetVectorDistance(damagePosition, end_pos) >= g_vsh2.m_hCvars[AirShotDist].FloatValue )
+					if( GetVectorDistance(damagePosition, end_pos) >= g_vsh2.m_hCvars.AirShotDist.FloatValue )
 						if( Call_OnBossAirShotProj(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) )
 							return Plugin_Changed;
 				}
@@ -782,7 +782,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 					Entire team is pretty much screwed if all the medics just die.
 				*/
 				if( Call_OnBossDealDamage_OnHitMedic(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
-					if( g_vsh2.m_hCvars[MedicUberShield].BoolValue && GetMediCharge(medigun) >= 0.90 ) {
+					if( g_vsh2.m_hCvars.MedicUberShield.BoolValue && GetMediCharge(medigun) >= 0.90 ) {
 						SetMediCharge(medigun, 0.1);
 						ScaleVector(damageForce, 9.0);
 						damage *= 0.1;
@@ -803,7 +803,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 							if( damagetype & DMG_CRIT )
 								damagetype &= ~DMG_CRIT;
 							if( damagetype & (DMG_CLUB|DMG_SLASH) )
-								damage = g_vsh2.m_hCvars[DeadRingerDamage].FloatValue / FindConVar("tf_feign_death_damage_scale").FloatValue;
+								damage = g_vsh2.m_hCvars.DeadRingerDamage.FloatValue / FindConVar("tf_feign_death_damage_scale").FloatValue;
 							return Plugin_Changed;
 						}
 						return Plugin_Changed;
@@ -812,7 +812,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 							if( damagetype & DMG_CRIT )
 								damagetype &= ~DMG_CRIT;
 							if( damagetype & (DMG_CLUB|DMG_SLASH) )
-								damage = g_vsh2.m_hCvars[CloakDamage].FloatValue / FindConVar("tf_stealth_damage_reduction").FloatValue;
+								damage = g_vsh2.m_hCvars.CloakDamage.FloatValue / FindConVar("tf_stealth_damage_reduction").FloatValue;
 							return Plugin_Changed;
 						}
 						return Plugin_Changed;
@@ -870,12 +870,12 @@ public Action ManageOnGoombaStomp(int attacker, int client, float& damageMultipl
 			/// Default behaviour for Goomba Stompoing the Boss
 			default: {
 				/// Prevent goomba stomp for mantreads/demo boots if being able to is disabled.
-				if( IsValidEntity(FindPlayerBack(attacker, { 444, 405, 608 }, 3)) && !g_vsh2.m_hCvars[CanMantreadsGoomba].BoolValue )
+				if( IsValidEntity(FindPlayerBack(attacker, { 444, 405, 608 }, 3)) && !g_vsh2.m_hCvars.CanMantreadsGoomba.BoolValue )
 					return Plugin_Handled;
 				
-				damageAdd = float(g_vsh2.m_hCvars[GoombaDamageAdd].IntValue);
-				damageMultiplier = g_vsh2.m_hCvars[GoombaLifeMultiplier].FloatValue;
-				JumpPower = g_vsh2.m_hCvars[GoombaReboundPower].FloatValue;
+				damageAdd = float(g_vsh2.m_hCvars.GoombaDamageAdd.IntValue);
+				damageMultiplier = g_vsh2.m_hCvars.GoombaLifeMultiplier.FloatValue;
+				JumpPower = g_vsh2.m_hCvars.GoombaReboundPower.FloatValue;
 				
 				//PrintToChatAll("%N Just Goomba stomped %N(The Boss)!", attacker, client);
 				CPrintToChatAllEx(attacker, "{olive}>> {teamcolor}%N {default}just goomba stomped {unique}%N{default}!", attacker, client);
@@ -894,7 +894,7 @@ public Action ManageOnGoombaStomp(int attacker, int client, float& damageMultipl
 			/// Default behaviour for the Boss Goomba Stomping other players.
 			default: {
 				/// Block the Boss from Goomba Stomping if disabled.
-				if( !g_vsh2.m_hCvars[CanBossGoomba].BoolValue )
+				if( !g_vsh2.m_hCvars.CanBossGoomba.BoolValue )
 					return Plugin_Handled;
 				/// If the demo had a shield to break
 				if( RemoveDemoShield(client) || RemoveRazorBack(client) ) {
@@ -979,7 +979,7 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 		&& GetPlayerWeaponSlot(attacker.index, TFWeaponSlot_Secondary) <= 0
 		&& TF2_GetPlayerClass(attacker.index) == TFClass_DemoMan )
 	{
-		int iReqDmg = g_vsh2.m_hCvars[ShieldRegenDmgReq].IntValue;
+		int iReqDmg = g_vsh2.m_hCvars.ShieldRegenDmgReq.IntValue;
 		if( iReqDmg>0 ) {
 			attacker.iShieldDmg += damage;
 			if( attacker.iShieldDmg >= iReqDmg ) {
@@ -1018,7 +1018,7 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 	if( GetIndexOfWeaponSlot(attacker.index, TFWeaponSlot_Primary) == 1104 ) {
 		if( weapon == TF_WEAPON_ROCKETLAUNCHER )
 			attacker.iAirDamage += damage;
-		int div = g_vsh2.m_hCvars[AirStrikeDamage].IntValue;
+		int div = g_vsh2.m_hCvars.AirStrikeDamage.IntValue;
 		SetEntProp(attacker.index, Prop_Send, "m_iDecapitations", attacker.iAirDamage/div);
 	}
 	
@@ -1062,15 +1062,15 @@ public void ManagePlayerAirblast(const BaseBoss airblaster, const BaseBoss airbl
 	switch( airblasted.iBossType ) {
 		case -1: {}
 		case VSH2Boss_Hale, VSH2Boss_CBS, VSH2Boss_HHHjr, VSH2Boss_Bunny:
-			airblasted.flRAGE += g_vsh2.m_hCvars[AirblastRage].FloatValue;
+			airblasted.flRAGE += g_vsh2.m_hCvars.AirblastRage.FloatValue;
 		case VSH2Boss_Vagineer: {
 			if( TF2_IsPlayerInCondition(airblasted.index, TFCond_Ubercharged) ) {
 				float dur = GetConditionDuration(airblasted.index, TFCond_Ubercharged);
-				float max_dur = g_vsh2.m_hCvars[VagineerUberTime].FloatValue;
-				float increase = g_vsh2.m_hCvars[VagineerUberAirBlast].FloatValue;
+				float max_dur = g_vsh2.m_hCvars.VagineerUberTime.FloatValue;
+				float increase = g_vsh2.m_hCvars.VagineerUberAirBlast.FloatValue;
 				SetConditionDuration(airblasted.index, TFCond_Ubercharged, dur + increase < max_dur ? dur + increase : max_dur);
 			}
-			else airblasted.flRAGE += g_vsh2.m_hCvars[AirblastRage].FloatValue;
+			else airblasted.flRAGE += g_vsh2.m_hCvars.AirblastRage.FloatValue;
 		}
 	}
 }
@@ -1081,7 +1081,7 @@ public Action ManageTraceHit(const BaseBoss victim, const BaseBoss attacker, int
 }
 public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
 {
-	if( !g_vsh2.m_hCvars[Enabled].BoolValue || !IsPlayerAlive(client) )
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || !IsPlayerAlive(client) )
 		return Plugin_Continue;
 
 	BaseBoss base = BaseBoss(client);
@@ -1169,13 +1169,13 @@ public void ManagePlayerJarated(const BaseBoss attacker, const BaseBoss victim)
 	switch( victim.iBossType ) {
 		case -1: {}
 		case VSH2Boss_Hale, VSH2Boss_Vagineer, VSH2Boss_CBS, VSH2Boss_HHHjr, VSH2Boss_Bunny:
-			victim.flRAGE -= g_vsh2.m_hCvars[JarateRage].FloatValue;
+			victim.flRAGE -= g_vsh2.m_hCvars.JarateRage.FloatValue;
 	}
 }
 
 public Action HookSound(int clients[64], int& numClients, char sample[PLATFORM_MAX_PATH], int& entity, int& channel, float& volume, int& level, int& pitch, int& flags)
 {
-	if( !g_vsh2.m_hCvars[Enabled].BoolValue || !IsValidClient(entity) )
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || !IsValidClient(entity) )
 		return Plugin_Continue;
 	
 	BaseBoss base = BaseBoss(entity);
@@ -1231,7 +1231,7 @@ public Action HookSound(int clients[64], int& numClients, char sample[PLATFORM_M
 
 public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname, bool& result)
 {
-	if( !g_vsh2.m_hCvars[Enabled].BoolValue )
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue )
 		return Plugin_Continue;
 	
 	BaseBoss base = BaseBoss(client);
@@ -1239,8 +1239,8 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 		switch( base.iBossType ) {
 			case -1: {}
 			case VSH2Boss_HHHjr: {
-				if( base.iClimbs < g_vsh2.m_hCvars[HHHMaxClimbs].IntValue ) {
-					if( base.ClimbWall(weapon, g_vsh2.m_hCvars[HHHClimbVelocity].FloatValue, 0.0, false) ) {
+				if( base.iClimbs < g_vsh2.m_hCvars.HHHMaxClimbs.IntValue ) {
+					if( base.ClimbWall(weapon, g_vsh2.m_hCvars.HHHClimbVelocity.FloatValue, 0.0, false) ) {
 						base.flWeighDown = 0.0;
 					}
 				}
@@ -1254,8 +1254,8 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 		return Plugin_Changed;
 	}
 	if( !base.bIsBoss && !base.bIsMinion ) {
-		if( TF2_GetPlayerClass(base.index) == TFClass_Sniper && IsWeaponSlotActive(base.index, TFWeaponSlot_Melee) )
-			base.ClimbWall(weapon, g_vsh2.m_hCvars[SniperClimbVelocity].FloatValue, 15.0, true);
+		if( TF2_GetPlayerClass(base.index) == TFClass_Sniper && IsWeaponSlotActive(base.index, TFWeaponSlot_Melee) && g_vsh2.m_hCvars.AllowSniperClimbing.BoolValue )
+			base.ClimbWall(weapon, g_vsh2.m_hCvars.SniperClimbVelocity.FloatValue, 15.0, true);
 	}
 	return Plugin_Continue;
 }
@@ -1318,7 +1318,6 @@ public void ManageResetVariables(const BaseBoss base)
 	if( act > Plugin_Changed )
 		return;
 	
-	base.bIsBoss = base.bSetOnSpawn = false;
 	base.iBossType = -1;
 	base.iStabbed = 0;
 	base.iMarketted = 0;
@@ -1328,7 +1327,6 @@ public void ManageResetVariables(const BaseBoss base)
 	base.iAirDamage = 0;
 	base.iUberTarget = 0;
 	base.flCharge = 0.0;
-	base.bGlow = 0;
 	base.flGlowtime = 0.0;
 	base.bUsedUltimate = false;
 	base.iOwnerBoss = 0;
@@ -1338,7 +1336,7 @@ public void ManageResetVariables(const BaseBoss base)
 	base.flLastHit = 0.0;
 	base.iState = -1;
 	base.iHits = 0;
-	base.iLives = ((gamemode.bMedieval || g_vsh2.m_hCvars[ForceLives].BoolValue) ? g_vsh2.m_hCvars[MedievalLives].IntValue : 0);
+	base.iLives = ((gamemode.bMedieval || g_vsh2.m_hCvars.ForceLives.BoolValue) ? g_vsh2.m_hCvars.MedievalLives.IntValue : 0);
 	//base.iHealth = 0;
 	base.iMaxHealth = 0;
 	base.iShieldDmg = 0;
@@ -1350,7 +1348,7 @@ public void ManageEntityCreated(const int entity, const char[] classname)
 	if( StrContains(classname, "rune") != -1 )
 		CreateTimer( 0.1, RemoveEnt, EntIndexToEntRef(entity) );
 	/// Remove dropped weapons to avoid bad things
-	else if( !g_vsh2.m_hCvars[DroppedWeapons].BoolValue && StrEqual(classname, "tf_dropped_weapon") ) {
+	else if( !g_vsh2.m_hCvars.DroppedWeapons.BoolValue && StrEqual(classname, "tf_dropped_weapon") ) {
 		AcceptEntityInput(entity, "kill");
 		return;
 	} else if( !strcmp(classname, "tf_projectile_cleaver", false) ) {
@@ -1558,7 +1556,7 @@ public void CheckAlivePlayers(const any nil)
 	
 	if( living == 1 && gamemode.CountBosses(true) > 0 && gamemode.iTimeLeft <= 0 ) {
 		ManageLastPlayer();	/// in handler.sp
-		gamemode.iTimeLeft = g_vsh2.m_hCvars[LastPlayerTime].IntValue;
+		gamemode.iTimeLeft = g_vsh2.m_hCvars.LastPlayerTime.IntValue;
 		
 		/// maybe some day :/ ...
 		/*
@@ -1568,14 +1566,14 @@ public void CheckAlivePlayers(const any nil)
 			round_timer = CreateEntityByName("team_round_timer");
 		
 		if( round_timer > MaxClients && IsValidEntity(round_timer) ) {
-			SetVariantInt(g_vsh2.m_hCvars[LastPlayerTime].IntValue);
+			SetVariantInt(g_vsh2.m_hCvars.LastPlayerTime.IntValue);
 			//DispatchKeyValue(round_timer, "targetname", TIMER_NAME);
 			//DispatchKeyValue(round_timer, "setup_length", setupLength);
 			//DispatchKeyValue(round_timer, "setup_length", "30");
 			DispatchKeyValue(round_timer, "reset_time", "1");
 			DispatchKeyValue(round_timer, "auto_countdown", "1");
 			char time[5];
-			IntToString(g_vsh2.m_hCvars[LastPlayerTime].IntValue, time, sizeof(time));
+			IntToString(g_vsh2.m_hCvars.LastPlayerTime.IntValue, time, sizeof(time));
 			DispatchKeyValue(round_timer, "timer_length", time);
 			DispatchSpawn(round_timer);
 		}
@@ -1583,8 +1581,8 @@ public void CheckAlivePlayers(const any nil)
 		CreateTimer(1.0, Timer_DrawGame, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	}
 	
-	int enable_alive = g_vsh2.m_hCvars[AliveToEnable].IntValue;
-	if( !g_vsh2.m_hCvars[PointType].BoolValue && living <= enable_alive && !gamemode.bPointReady ) {
+	int enable_alive = g_vsh2.m_hCvars.AliveToEnable.IntValue;
+	if( !g_vsh2.m_hCvars.PointType.BoolValue && living <= enable_alive && !gamemode.bPointReady ) {
 		PrintHintTextToAll("%i players are left; control point enabled!", living);
 		if( living==enable_alive )
 			EmitSoundToAll("vo/announcer_am_capenabled02.mp3");
@@ -1606,14 +1604,11 @@ public void ManageOnBossCap(char sCappers[MAXPLAYERS+1], const int CappingTeam)
 /// TODO: fix this up so it appears more often.
 public void _SkipBossPanel()
 {
-	//BaseBoss upnext[3];
 	BaseBoss[] upnext = new BaseBoss[MaxClients];
 	gamemode.GetQueue(upnext);
 	for( int j; j<3; ++j ) {
-		//upnext[j] = gamemode.FindNextBoss();
 		if( !upnext[j] )
 			continue;
-		//upnext[j].bSetOnSpawn = true;
 		
 		/// If up next to become a boss.
 		if( !j )
@@ -1621,16 +1616,6 @@ public void _SkipBossPanel()
 		else if( !IsFakeClient(upnext[j].index) )
 			CPrintToChat(upnext[j].index, "{olive}[VSH 2]{default} You are going to be a Boss soon! Type {olive}/halenext{default} to check/reset your queue points & !setboss to set your boss.");
 	}
-	/*
-	/// Ughhh, reset shit...
-	for( int n=MaxClients; n; --n ) {
-		if( !IsValidClient(n) )
-			continue;
-		upnext[0] = BaseBoss(n);
-		if( !upnext[0].bIsBoss )
-			upnext[0].bSetOnSpawn = false;
-	}
-	*/
 }
 
 public void PrepPlayers(const BaseBoss player)
@@ -1744,7 +1729,7 @@ public void PrepPlayers(const BaseBoss player)
 			}
 			case 357: SetPawnTimer(_NoHonorBound, 1.0, player.userid);
 			case 589: {	/// eureka effect
-				if( !g_vsh2.m_hCvars[BlockEureka].BoolValue ) {
+				if( !g_vsh2.m_hCvars.BlockEureka.BoolValue ) {
 					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
 					weapon = player.SpawnWeapon("tf_weapon_wrench", 7, 1, 0, "");
 				}
@@ -1763,7 +1748,7 @@ public void PrepPlayers(const BaseBoss player)
 			//int mediquality = GetItemQuality(weapon);
 			//if( mediquality != 10 ) {
 			//	TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-			//	if( g_vsh2.m_hCvars[PermOverheal].BoolValue )
+			//	if( g_vsh2.m_hCvars.PermOverheal.BoolValue )
 			//		weapon = player.SpawnWeapon("tf_weapon_medigun", 35, 5, 10, "14; 0.0; 18; 0.0; 10; 1.25; 178; 0.75");
 			//	else weapon = player.SpawnWeapon("tf_weapon_medigun", 35, 5, 10, "18; 0.0; 10; 1.25; 178; 0.75");
 			/// 200; 1 for area of effect healing, 178; 0.75 Faster switch-to, 14; 0.0 perm overheal, 11; 1.25 Higher overheal
@@ -1773,16 +1758,16 @@ public void PrepPlayers(const BaseBoss player)
 		}
 	}
 #if defined _tf2attributes_included
-	if( gamemode.bTF2Attribs && g_vsh2.m_hCvars[HealthRegenForPlayers].BoolValue ) {
+	if( gamemode.bTF2Attribs && g_vsh2.m_hCvars.HealthRegenForPlayers.BoolValue ) {
 		int max_health = GetEntProp(client, Prop_Data, "m_iMaxHealth");
-		TF2Attrib_SetByDefIndex(client, 57, max_health / 50.0 + g_vsh2.m_hCvars[HealthRegenAmount].FloatValue);
+		TF2Attrib_SetByDefIndex(client, 57, max_health / 50.0 + g_vsh2.m_hCvars.HealthRegenAmount.FloatValue);
 	}
 #endif
 }
 
 public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDefinitionIndex, Handle &hItem)
 {
-	if( !g_vsh2.m_hCvars[Enabled].BoolValue )
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue )
 		return Plugin_Continue;
 	
 	TF2Item hItemOverride = null;
@@ -1871,7 +1856,7 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case TFClass_Medic: {
 			/// Medic mediguns
 			if( !StrContains(classname, "tf_weapon_medigun", false) ) {
-				if( g_vsh2.m_hCvars[PermOverheal].BoolValue ) {
+				if( g_vsh2.m_hCvars.PermOverheal.BoolValue ) {
 					/// Kritzkrieg
 					if( iItemDefinitionIndex==35 )
 						hItemOverride = TF2Item_PrepareItemHandle(hItemCast, _, _, "14; 0.0; 10 ; 2.26 ; 178 ; 0.75 ; 18 ; 0");
@@ -1923,7 +1908,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 	}
 	
 	if( !(buttons & IN_SCORE) ) {
-		if( gamemode.bMedieval || g_vsh2.m_hCvars[ForceLives].BoolValue )
+		if( gamemode.bMedieval || g_vsh2.m_hCvars.ForceLives.BoolValue )
 			Format(HUDText, 300, "Damage: %d | Lives: %d", fighter.iDamage, fighter.iLives);
 		else Format(HUDText, 300, "Damage: %d", fighter.iDamage);
 		ShowSyncHudText(i, g_vsh2.m_hHUDs[PlayerHUD], HUDText);
@@ -2078,11 +2063,11 @@ public void ManageFighterThink(const BaseBoss fighter)
 	
 	if( TFClass == TFClass_DemoMan && !IsValidEntity(GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary)) ) {
 		float flShieldMeter = GetEntPropFloat(i, Prop_Send, "m_flChargeMeter");
-		if( g_vsh2.m_hCvars[DemoShieldCrits].IntValue >= 1 ) {
+		if( g_vsh2.m_hCvars.DemoShieldCrits.IntValue >= 1 ) {
 			addthecrit = true;
-			if( g_vsh2.m_hCvars[DemoShieldCrits].IntValue == 1 || (g_vsh2.m_hCvars[DemoShieldCrits].IntValue == 3 && flShieldMeter < 100.0) )
+			if( g_vsh2.m_hCvars.DemoShieldCrits.IntValue == 1 || (g_vsh2.m_hCvars.DemoShieldCrits.IntValue == 3 && flShieldMeter < 100.0) )
 				cond = TFCond_Buffed;
-			if( g_vsh2.m_hCvars[DemoShieldCrits].IntValue == 3 && (flShieldMeter < 35.0 || !GetEntProp(i, Prop_Send, "m_bShieldEquipped")) )
+			if( g_vsh2.m_hCvars.DemoShieldCrits.IntValue == 3 && (flShieldMeter < 35.0 || !GetEntProp(i, Prop_Send, "m_bShieldEquipped")) )
 				addthecrit = false;
 		}
 	}

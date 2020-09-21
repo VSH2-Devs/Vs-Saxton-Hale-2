@@ -2,7 +2,7 @@
 
 #### Current STABLE Version: *2.0.5*
 [![Master Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=master)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
-#### Current DEVELOPMENT Version: *2.8.17*
+#### Current DEVELOPMENT Version: *2.8.20*
 [![Develop Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=develop)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
 
 **[VSH2 Addons Repository](https://github.com/VSH2-Devs/VSH2-Addons)**
@@ -29,7 +29,7 @@ If you do require help in setting up the bosses or at least need some info on th
 
 * Compile with spcomp
 * VSH2 uses the same map configurations as FF2 and VSH1 and this is for compatibility reasons.
-* Dependencies: TF2Items, MoreColors
+* Dependencies: TF2Items, MoreColors, ConfigMap.
 * Optional Dependencies: TF2Attributes (https://github.com/FlaminSarge/tf2attributes), SteamTools (https://forums.alliedmods.net/showthread.php?t=170630)
 * Compile plugin into .smx and put in addons/sourcemod/plugins folder
 * Take a look at the [Wiki](https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki) to get started making your own boss!

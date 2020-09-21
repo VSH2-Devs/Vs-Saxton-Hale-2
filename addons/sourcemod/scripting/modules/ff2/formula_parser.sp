@@ -31,11 +31,11 @@ enum struct LexState {
 }
 /**
  * formula grammar (hint PEMDAS):
- * expr = <add_expr> ;
- * add_expr = <mult_expr> [('+' | '-') <add_expr>] ;
- * mult_expr = <pow_expr> [('*' | '/') <mult_expr>] ;
- * pow_expr = <factor> [('^') <pow_expr>] ;
- * factor = <number> | <var> | '(' <expr> ')' | '[' <expr> ']' ;
+ * expr      = <add_expr> ;
+ * add_expr  = <mult_expr> [ ('+' | '-') <add_expr> ] ;
+ * mult_expr = <pow_expr> [ ('*' | '/') <mult_expr> ] ;
+ * pow_expr  = <factor> [ '^' <pow_expr> ] ;
+ * factor    = <number> | <var> | '(' <expr> ')' | '[' <expr> ']' ;
  */
 
 float ParseFormula(const char[] formula, const int players)

@@ -58,8 +58,7 @@ methodmap FF2Player < VSH2Player {
 	}
 	
 	public any GetRageInfo(m_iRageInfo Info) {
-		switch( Info )
-		{
+		switch( Info ) {
 			case iRageMode: {
 				return this.GetPropInt("iRageMode");
 			}
@@ -69,15 +68,14 @@ methodmap FF2Player < VSH2Player {
 			case iRageMax: {
 				return this.GetPropInt("iRageMax");
 			}
-			default :{
+			default: {
 				return 0;
 			}
 		}
 	}
 	
 	public bool SetRageInfo(m_iRageInfo Info, any val) {
-		switch( Info )
-		{
+		switch( Info ) {
 			case iRageMode: {
 				return this.SetPropInt("iRageMode", val);
 			}
@@ -87,7 +85,7 @@ methodmap FF2Player < VSH2Player {
 			case iRageMax: {
 				return this.SetPropFloat("iRageMax", val);
 			}
-			default :{
+			default: {
 				return false;
 			}
 		}
@@ -99,7 +97,8 @@ methodmap FF2Player < VSH2Player {
 	
 	public void SetTimedOverlay(const char[] path, float time=0.0) {
 		this.SetOverlay(path);
-		if( time ) CreateTimer(time, Timer_RemoveOverlay, GetClientSerial(this.index), TIMER_FLAG_NO_MAPCHANGE);
+		if( time )
+			CreateTimer(time, Timer_RemoveOverlay, GetClientSerial(this.index), TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
 
@@ -157,7 +156,6 @@ stock ConfigMap JumpToAbility(const ConfigMap section, const char[] plugin_name,
 	char[] key = new char[64];
 	char key_name[64];
 	while( i < MAX_SUBPLUGIN_NAME ) {
-		
 		FormatEx(key, 64, "ability%i.name", ++i);
 		if( !section.Get(key, key_name, sizeof(key_name)) )
 			break;
@@ -205,7 +203,6 @@ stock int GetArgNamedS(int boss, const char[] plugin_name, const char[] ability_
 	if( section==null ) {
 		return 0;
 	}
-	
 	return section.Get(argument, result, size);
 }
 

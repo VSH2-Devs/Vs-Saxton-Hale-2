@@ -192,16 +192,6 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			g_vsh2.m_hPlayerFields[this.index].SetValue("iUberTarget", val);
 		}
 	}
-	property int bGlow {
-		public get() {
-			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("bGlow", i);
-			return i;
-		}
-		public set( const int val ) {
-			g_vsh2.m_hPlayerFields[this.index].SetValue("bGlow", val);
-			SetEntProp(this.index, Prop_Send, "m_bGlowEnabled", val);
-		}
-	}
 	property int iShieldDmg {
 		public get() {
 			int i; g_vsh2.m_hPlayerFields[this.index].GetValue("iShieldDmg", i);
@@ -427,8 +417,8 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 				continue;
 			
 			/// if the client is a boss, allow them to use ANY valid spawn!
-			bool is_boss; g_vsh2.m_hPlayerFields[this.index].GetValue("bIsBoss", is_boss);
-			if( team <= 1 || is_boss )
+			int is_boss; g_vsh2.m_hPlayerFields[this.index].GetValue("iBossType", is_boss);
+			if( team <= 1 || is_boss > -1 )
 				hArray.Push(spawn);
 			else {
 				int spawn_team = GetEntProp(spawn, Prop_Data, "m_iTeamNum");
@@ -686,20 +676,7 @@ methodmap BaseBoss < BaseFighter {
 	
 	property bool bIsBoss {
 		public get() {
-			bool i; g_vsh2.m_hPlayerFields[this.index].GetValue("bIsBoss", i);
-			return i;
-		}
-		public set( const bool val ) {
-			g_vsh2.m_hPlayerFields[this.index].SetValue("bIsBoss", val);
-		}
-	}
-	property bool bSetOnSpawn {
-		public get() {
-			bool i; g_vsh2.m_hPlayerFields[this.index].GetValue("bSetOnSpawn", i);
-			return i;
-		}
-		public set( const bool val ) {
-			g_vsh2.m_hPlayerFields[this.index].SetValue("bSetOnSpawn", val);
+			return this.iBossType >= 0;
 		}
 	}
 	property bool bUsedUltimate {
@@ -772,7 +749,6 @@ methodmap BaseBoss < BaseFighter {
 	}
 	
 	public void ConvertToBoss() {
-		this.bIsBoss = this.bSetOnSpawn;
 		this.flRAGE = 0.0;
 		SetPawnTimer(_MakePlayerBoss, 0.1, this.userid);
 	}
@@ -788,7 +764,6 @@ methodmap BaseBoss < BaseFighter {
 		this.flRAGE += rage_amount;
 	}
 	public void MakeBossAndSwitch(const int type, const bool callEvent) {
-		this.bSetOnSpawn = true;
 		this.iBossType = type;
 		if( callEvent )
 			ManageOnBossSelected(this);
@@ -984,10 +959,10 @@ methodmap BaseBoss < BaseFighter {
 	}
 	public void GlowThink(const float decrease) {
 		if( this.flGlowtime > 0.0 ) {
-			this.bGlow = 1;
+			SetEntProp(this.index, Prop_Send, "m_bGlowEnabled", 1);
 			this.flGlowtime -= decrease;
 		} else if( this.flGlowtime <= 0.0 )
-			this.bGlow = 0;
+			SetEntProp(this.index, Prop_Send, "m_bGlowEnabled", 0);
 	}
 	public bool SuperJumpThink(const float charging, const float jumpcharge) {
 		int buttons = GetClientButtons(this.index);
