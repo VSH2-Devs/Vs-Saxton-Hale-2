@@ -24,7 +24,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.8.20"
+#define PLUGIN_VERSION       "2.8.21"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -313,7 +313,7 @@ public void OnPluginStart()
 	g_vsh2.m_hCvars.MedicUberShield = CreateConVar("vsh2_use_uber_as_shield", "0", "If a medic has nearly full uber (90%+), use the uber as a shield to prevent the medic from getting killed.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_vsh2.m_hCvars.HHHClimbVelocity = CreateConVar("vsh2_hhh_climb_velocity", "600.0", "in hammer units, how high of a velocity HHH Jr. will climb.", FCVAR_NONE, true, 0.0, true, 9999.0);
 	g_vsh2.m_hCvars.SniperClimbVelocity = CreateConVar("vsh2_sniper_climb_velocity", "600.0", "in hammer units, how high of a velocity sniper melees will climb.", FCVAR_NONE, true, 0.0, false);
-	g_vsh2.m_hCvars.ShowBossHPLiving = CreateConVar("vsh2_show_boss_hp_alive_players", "1", "How many players must be alive for total boss hp to show.", FCVAR_NONE, true, 1.0, true, 64.0);
+	g_vsh2.m_hCvars.ShowBossHPLiving = CreateConVar("vsh2_show_boss_hp_alive_players", "1", "How many players must be alive for total boss hp to show.", FCVAR_NONE, true, 0.0, true, 64.0);
 	g_vsh2.m_hCvars.HHHTeleCooldown = CreateConVar("vsh2_hhh_tele_cooldown", "-1100.0", "Teleportation cooldown for HHH Jr. after teleporting. formula is '-seconds * 25' so -1100.0 is 44 seconds", FCVAR_NONE, true, -999999.0, true, 25.0);
 	g_vsh2.m_hCvars.MaxRandomMultiBosses = CreateConVar("vsh2_random_multibosses_limit", "2", "The maximum limit of random multibosses", FCVAR_NONE, true, 1.0, true, 30.0);
 	g_vsh2.m_hCvars.VagineerUberTime = CreateConVar("vsh2_vagineer_uber_time", "10.0", "The maximum length of the Vagineer boss' uber.", FCVAR_NONE, true, 1.0, false);
@@ -718,13 +718,9 @@ public Action Timer_PlayerThink(Handle hTimer)
 		/** If player is a boss, force Boss think on them; if not boss or on blue team, force fighter think! */
 		if( player.bIsBoss ) {
 			ManageBossThink(player);    /// in handler.sp
-			//SetEntityHealth(i, player.iHealth);
-			
-			/// BUG PATCH: Bosses are not being 100% dead when the iHealth is at 0...
-			//if( player.iHealth <= 0 )
-			//	SDKHooks_TakeDamage(player.index, 0, 0, 100.0, DMG_DIRECT, _, _, _); //ForcePlayerSuicide(i);
+		} else {
+			ManageFighterThink(player);
 		}
-		else ManageFighterThink(player);
 		
 		if( gamemode.iPlaying <= g_vsh2.m_hCvars.ShowBossHPLiving.IntValue ) {
 			SetHudTextParams(-1.0, 0.20, 0.11, 255, 255, 255, 255);
@@ -782,7 +778,7 @@ public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& dam
 {
 	if( !g_vsh2.m_hCvars.Enabled.BoolValue || !IsClientValid(victim) )
 		return Plugin_Continue;
-	else if( gamemode.iRoundState == StateStarting ) {
+	else if( gamemode.iRoundState==StateStarting ) {
 		damage = 0.0;
 		return Plugin_Changed;
 	}

@@ -30,8 +30,7 @@ public void ManageDownloads()
 		ConfigMap download_map = g_vsh2.m_hCfg.GetSection(download_keys[i]);
 		if( download_map != null ) {
 			for( int n; n<download_map.Size; n++ ) {
-				char index[10];
-				Format(index, sizeof(index), "%i", n);
+				char index[10]; Format(index, sizeof(index), "%i", n);
 				int value_size = download_map.GetSize(index);
 				char[] filepath = new char[value_size];
 				if( download_map.Get(index, filepath, value_size) ) {
@@ -90,7 +89,7 @@ public void ManageDisconnect(const int client)
 			int numbosses = gamemode.GetBosses(bosses, false);
 			if( numbosses-1 > 0 ) {	/// Exclude leaver, this is why CountBosses() can't be used
 				for( int i=0; i<numbosses; i++ ) {
-					if( bosses[i]==leaver || IsPlayerAlive(bosses[i].index) )
+					if( bosses[i]==leaver || (IsClientValid(bosses[i].index) && IsPlayerAlive(bosses[i].index)) )
 						continue;
 					
 					BaseBoss next = gamemode.FindNextBoss();
@@ -1139,11 +1138,11 @@ public void ManageBossTaunt(const BaseBoss base)
 	
 	switch( base.iBossType ) {
 		case -1: {}
-		case VSH2Boss_Hale:	ToCHale(base).RageAbility();
-		case VSH2Boss_Vagineer:	ToCVagineer(base).RageAbility();
-		case VSH2Boss_CBS:	ToCChristian(base).RageAbility();
-		case VSH2Boss_HHHjr:	ToCHHHJr(base).RageAbility();
-		case VSH2Boss_Bunny:	ToCBunny(base).RageAbility();
+		case VSH2Boss_Hale:     ToCHale(base).RageAbility();
+		case VSH2Boss_Vagineer: ToCVagineer(base).RageAbility();
+		case VSH2Boss_CBS:      ToCChristian(base).RageAbility();
+		case VSH2Boss_HHHjr:    ToCHHHJr(base).RageAbility();
+		case VSH2Boss_Bunny:    ToCBunny(base).RageAbility();
 	}
 }
 public void ManageBuildingDestroyed(const BaseBoss base, const int building, const int objecttype, Event event)

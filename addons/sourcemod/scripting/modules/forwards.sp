@@ -94,6 +94,8 @@ Action Call_OnCallDownloads()
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnCallDownloads]);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -105,6 +107,8 @@ Action Call_OnBossSelected(const BaseBoss player)
 		Call_StartForward(g_hForwards[i][OnBossSelected]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -116,6 +120,8 @@ Action Call_OnTouchPlayer(const BaseBoss boss, const BaseBoss otherguy)
 		Call_PushCell(boss);
 		Call_PushCell(otherguy);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -128,6 +134,8 @@ Action Call_OnTouchBuilding(const BaseBoss player, const int buildRef)
 		Call_PushCell(player);
 		Call_PushCell(buildRef);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -139,6 +147,8 @@ Action Call_OnBossThink(const BaseBoss player)
 		Call_StartForward(g_hForwards[i][OnBossThink]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -150,6 +160,8 @@ Action Call_OnBossModelTimer(const BaseBoss player)
 		Call_StartForward(g_hForwards[i][OnBossModelTimer]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -161,6 +173,8 @@ Action Call_OnBossDeath(const BaseBoss player)
 		Call_StartForward(g_hForwards[i][OnBossDeath]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -171,6 +185,8 @@ Action Call_OnBossEquipped(const BaseBoss player)
 		Call_StartForward(g_hForwards[i][OnBossEquipped]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -181,6 +197,8 @@ Action Call_OnBossInitialized(const BaseBoss player)
 		Call_StartForward(g_hForwards[i][OnBossInitialized]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -192,6 +210,8 @@ Action Call_OnMinionInitialized(const BaseBoss player, const BaseBoss master)
 		Call_PushCell(player);
 		Call_PushCell(master);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -202,12 +222,14 @@ Action Call_OnBossPlayIntro(const BaseBoss player)
 		Call_StartForward(g_hForwards[i][OnBossPlayIntro]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossTakeDamage(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTakeDamage]);
 		Call_PushCell(player);
@@ -219,13 +241,15 @@ Action Call_OnBossTakeDamage(const BaseBoss player, int& attacker, int& inflicto
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossDealDamage(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossDealDamage]);
 		Call_PushCell(player);
@@ -237,9 +261,11 @@ Action Call_OnBossDealDamage(const BaseBoss player, int& attacker, int& inflicto
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnPlayerKilled(const BaseBoss player, const BaseBoss victim, Event event)
 {
@@ -250,6 +276,8 @@ Action Call_OnPlayerKilled(const BaseBoss player, const BaseBoss victim, Event e
 		Call_PushCell(victim);
 		Call_PushCell(event);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -262,6 +290,8 @@ Action Call_OnPlayerAirblasted(const BaseBoss player, const BaseBoss victim, Eve
 		Call_PushCell(victim);
 		Call_PushCell(event);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -274,6 +304,8 @@ Action Call_OnPlayerHurt(const BaseBoss player, const BaseBoss victim, Event eve
 		Call_PushCell(victim);
 		Call_PushCell(event);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -291,6 +323,8 @@ Action Call_OnTraceAttack(const BaseBoss player, const BaseBoss attacker, int& i
 		Call_PushCell(hitbox);
 		Call_PushCell(hitgroup);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -301,6 +335,8 @@ Action Call_OnBossMedicCall(const BaseBoss player)
 		Call_StartForward(g_hForwards[i][OnBossMedicCall]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -311,6 +347,8 @@ Action Call_OnBossTaunt(const BaseBoss player)
 		Call_StartForward(g_hForwards[i][OnBossTaunt]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -323,6 +361,8 @@ Action Call_OnBossKillBuilding(const BaseBoss player, const int building, Event 
 		Call_PushCell(building);
 		Call_PushCell(event);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -334,6 +374,8 @@ Action Call_OnBossJarated(const BaseBoss player, const BaseBoss attacker)
 		Call_PushCell(player);
 		Call_PushCell(attacker);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -346,6 +388,8 @@ Action Call_OnMessageIntro(const BaseBoss player, char message[MAXMESSAGE])
 		Call_PushCell(player);
 		Call_PushStringEx(message, MAXMESSAGE, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -357,6 +401,8 @@ Action Call_OnBossPickUpItem(const BaseBoss player, const char item[64])
 		Call_PushCell(player);
 		Call_PushString(item);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -367,6 +413,8 @@ Action Call_OnVariablesReset(const BaseBoss player)
 		Call_StartForward(g_hForwards[i][OnVariablesReset]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -378,6 +426,8 @@ Action Call_OnUberDeployed(const BaseBoss medic, const BaseBoss target)
 		Call_PushCell(medic);
 		Call_PushCell(target);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -389,6 +439,8 @@ Action Call_OnUberLoop(const BaseBoss medic, const BaseBoss target)
 		Call_PushCell(medic);
 		Call_PushCell(target);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -401,6 +453,8 @@ Action Call_OnMusic(char song[PLATFORM_MAX_PATH], float& time, const BaseBoss pl
 		Call_PushFloatRef(time);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -413,6 +467,8 @@ Action Call_OnRoundEndInfo(const BaseBoss player, bool bosswin, char message[MAX
 		Call_PushCell(bosswin);
 		Call_PushStringEx(message, MAXMESSAGE, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -423,6 +479,8 @@ Action Call_OnLastPlayer(const BaseBoss player)
 		Call_StartForward(g_hForwards[i][OnLastPlayer]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -435,6 +493,8 @@ Action Call_OnBossHealthCheck(const BaseBoss player, const bool isBoss, char mes
 		Call_PushCell(isBoss);
 		Call_PushStringEx(message, MAXMESSAGE, SM_PARAM_STRING_UTF8|SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -446,6 +506,8 @@ Action Call_OnControlPointCapped(char cappers[MAXPLAYERS+1], const int team)
 		Call_PushString(cappers);
 		Call_PushCell(team);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -456,6 +518,8 @@ Action Call_OnPrepRedTeam(const BaseBoss player)
 		Call_StartForward(g_hForwards[i][OnPrepRedTeam]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -466,6 +530,8 @@ Action Call_OnRedPlayerThink(const BaseBoss player)
 		Call_StartForward(g_hForwards[i][OnRedPlayerThink]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -487,25 +553,29 @@ Action Call_OnScoreTally(const BaseBoss player, int& points_earned, int& queue_e
 		Call_PushCellRef(points_earned);
 		Call_PushCellRef(queue_earned);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnItemOverride(const BaseBoss player, const char[] classname, int itemdef, Handle& item)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnItemOverride]);
 		Call_PushCell(player);
 		Call_PushString(classname);
 		Call_PushCell(itemdef);
 		Call_PushCellRef(item);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossDealDamage_OnStomp(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnStomp]);
 		Call_PushCell(player);
@@ -517,13 +587,15 @@ Action Call_OnBossDealDamage_OnStomp(const BaseBoss player, int& attacker, int& 
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossDealDamage_OnHitDefBuff(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnHitDefBuff]);
 		Call_PushCell(player);
@@ -535,13 +607,15 @@ Action Call_OnBossDealDamage_OnHitDefBuff(const BaseBoss player, int& attacker, 
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossDealDamage_OnHitCritMmmph(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnHitCritMmmph]);
 		Call_PushCell(player);
@@ -553,13 +627,15 @@ Action Call_OnBossDealDamage_OnHitCritMmmph(const BaseBoss player, int& attacker
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossDealDamage_OnHitMedic(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnHitMedic]);
 		Call_PushCell(player);
@@ -571,13 +647,15 @@ Action Call_OnBossDealDamage_OnHitMedic(const BaseBoss player, int& attacker, in
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossDealDamage_OnHitDeadRinger(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnHitDeadRinger]);
 		Call_PushCell(player);
@@ -589,13 +667,15 @@ Action Call_OnBossDealDamage_OnHitDeadRinger(const BaseBoss player, int& attacke
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossDealDamage_OnHitCloakedSpy(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnHitCloakedSpy]);
 		Call_PushCell(player);
@@ -607,13 +687,15 @@ Action Call_OnBossDealDamage_OnHitCloakedSpy(const BaseBoss player, int& attacke
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossDealDamage_OnHitShield(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnHitShield]);
 		Call_PushCell(player);
@@ -625,16 +707,18 @@ Action Call_OnBossDealDamage_OnHitShield(const BaseBoss player, int& attacker, i
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 
 
 /// OnBossTakeDamage forwards.
 Action Call_OnBossTakeDamage_OnStabbed(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnStabbed]);
 		Call_PushCell(player);
@@ -646,13 +730,15 @@ Action Call_OnBossTakeDamage_OnStabbed(const BaseBoss player, int& attacker, int
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossTakeDamage_OnTelefragged(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnTelefragged]);
 		Call_PushCell(player);
@@ -664,13 +750,15 @@ Action Call_OnBossTakeDamage_OnTelefragged(const BaseBoss player, int& attacker,
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossTakeDamage_OnSwordTaunt(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnSwordTaunt]);
 		Call_PushCell(player);
@@ -682,13 +770,15 @@ Action Call_OnBossTakeDamage_OnSwordTaunt(const BaseBoss player, int& attacker, 
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossTakeDamage_OnHeavyShotgun(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnHeavyShotgun]);
 		Call_PushCell(player);
@@ -700,13 +790,15 @@ Action Call_OnBossTakeDamage_OnHeavyShotgun(const BaseBoss player, int& attacker
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossTakeDamage_OnSniped(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnSniped]);
 		Call_PushCell(player);
@@ -718,13 +810,15 @@ Action Call_OnBossTakeDamage_OnSniped(const BaseBoss player, int& attacker, int&
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossTakeDamage_OnThirdDegreed(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnThirdDegreed]);
 		Call_PushCell(player);
@@ -736,13 +830,15 @@ Action Call_OnBossTakeDamage_OnThirdDegreed(const BaseBoss player, int& attacker
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossTakeDamage_OnHitSword(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnHitSword]);
 		Call_PushCell(player);
@@ -754,13 +850,15 @@ Action Call_OnBossTakeDamage_OnHitSword(const BaseBoss player, int& attacker, in
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossTakeDamage_OnHitFanOWar(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnHitFanOWar]);
 		Call_PushCell(player);
@@ -772,13 +870,15 @@ Action Call_OnBossTakeDamage_OnHitFanOWar(const BaseBoss player, int& attacker, 
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossTakeDamage_OnHitCandyCane(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnHitCandyCane]);
 		Call_PushCell(player);
@@ -790,13 +890,15 @@ Action Call_OnBossTakeDamage_OnHitCandyCane(const BaseBoss player, int& attacker
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossTakeDamage_OnMarketGardened(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnMarketGardened]);
 		Call_PushCell(player);
@@ -808,13 +910,15 @@ Action Call_OnBossTakeDamage_OnMarketGardened(const BaseBoss player, int& attack
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossTakeDamage_OnPowerJack(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnPowerJack]);
 		Call_PushCell(player);
@@ -826,13 +930,15 @@ Action Call_OnBossTakeDamage_OnPowerJack(const BaseBoss player, int& attacker, i
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossTakeDamage_OnKatana(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnKatana]);
 		Call_PushCell(player);
@@ -844,13 +950,15 @@ Action Call_OnBossTakeDamage_OnKatana(const BaseBoss player, int& attacker, int&
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossTakeDamage_OnAmbassadorHeadshot(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnAmbassadorHeadshot]);
 		Call_PushCell(player);
@@ -862,13 +970,15 @@ Action Call_OnBossTakeDamage_OnAmbassadorHeadshot(const BaseBoss player, int& at
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossTakeDamage_OnDiamondbackManmelterCrit(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnDiamondbackManmelterCrit]);
 		Call_PushCell(player);
@@ -880,13 +990,15 @@ Action Call_OnBossTakeDamage_OnDiamondbackManmelterCrit(const BaseBoss player, i
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 Action Call_OnBossTakeDamage_OnHolidayPunch(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnHolidayPunch]);
 		Call_PushCell(player);
@@ -898,9 +1010,11 @@ Action Call_OnBossTakeDamage_OnHolidayPunch(const BaseBoss player, int& attacker
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 
 Action Call_OnBossSuperJump(const BaseBoss player)
@@ -910,6 +1024,8 @@ Action Call_OnBossSuperJump(const BaseBoss player)
 		Call_StartForward(g_hForwards[i][OnBossSuperJump]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -922,6 +1038,8 @@ Action Call_OnBossDoRageStun(const BaseBoss player, float& distance)
 		Call_PushCell(player);
 		Call_PushFloatRef(distance);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -933,6 +1051,8 @@ Action Call_OnBossWeighDown(const BaseBoss player)
 		Call_StartForward(g_hForwards[i][OnBossWeighDown]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -945,13 +1065,15 @@ Action Call_OnRPSTaunt(const BaseBoss loser, const BaseBoss winner)
 		Call_PushCell(loser);
 		Call_PushCell(winner);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
 
 Action Call_OnBossAirShotProj(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossAirShotProj]);
 		Call_PushCell(player);
@@ -963,14 +1085,16 @@ Action Call_OnBossAirShotProj(const BaseBoss player, int& attacker, int& inflict
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 
 Action Call_OnBossTakeFallDamage(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTakeFallDamage]);
 		Call_PushCell(player);
@@ -982,9 +1106,11 @@ Action Call_OnBossTakeFallDamage(const BaseBoss player, int& attacker, int& infl
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 
 Action Call_OnBossGiveRage(const BaseBoss player, const int damage, float& calcd_rage)
@@ -996,6 +1122,8 @@ Action Call_OnBossGiveRage(const BaseBoss player, const int damage, float& calcd
 		Call_PushCell(damage);
 		Call_PushFloatRef(calcd_rage);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -1010,13 +1138,15 @@ Action Call_OnBossCalcHealth(const BaseBoss player, int& max_health, const int b
 		Call_PushCell(boss_count);
 		Call_PushCell(red_players);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
 
 Action Call_OnBossTakeDamage_OnTriggerHurt(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnTriggerHurt]);
 		Call_PushCell(player);
@@ -1028,14 +1158,16 @@ Action Call_OnBossTakeDamage_OnTriggerHurt(const BaseBoss player, int& attacker,
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 
 Action Call_OnBossTakeDamage_OnMantreadsStomp(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnMantreadsStomp]);
 		Call_PushCell(player);
@@ -1047,9 +1179,11 @@ Action Call_OnBossTakeDamage_OnMantreadsStomp(const BaseBoss player, int& attack
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 
 Action Call_OnBossThinkPost(const BaseBoss player)
@@ -1059,6 +1193,8 @@ Action Call_OnBossThinkPost(const BaseBoss player)
 		Call_StartForward(g_hForwards[i][OnBossThinkPost]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
@@ -1070,13 +1206,15 @@ Action Call_OnBossEquippedPost(const BaseBoss player)
 		Call_StartForward(g_hForwards[i][OnBossEquippedPost]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
 
 Action Call_OnPlayerTakeFallDamage(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnPlayerTakeFallDamage]);
 		Call_PushCell(player);
@@ -1088,14 +1226,16 @@ Action Call_OnPlayerTakeFallDamage(const BaseBoss player, int& attacker, int& in
 		Call_PushArray(damageForce, 3);
 		Call_PushArray(damagePosition, 3);
 		Call_PushCell(damagecustom);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 
 Action Call_OnSoundHook(const BaseBoss player, char sample[PLATFORM_MAX_PATH], int& channel, float& volume, int& level, int& pitch, int& flags)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnSoundHook]);
 		Call_PushCell(player);
@@ -1105,9 +1245,11 @@ Action Call_OnSoundHook(const BaseBoss player, char sample[PLATFORM_MAX_PATH], i
 		Call_PushCellRef(level);
 		Call_PushCellRef(pitch);
 		Call_PushCellRef(flags);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
 
 void Call_OnRoundStart(BaseBoss[] bosses, const int boss_count, BaseBoss[] reds, const int red_count)
@@ -1146,11 +1288,13 @@ void Call_OnHelpMenuSelect(const BaseBoss player, Menu menu, const int selection
 
 Action Call_OnDrawGameTimer(int& time)
 {
-	Action res[2];
+	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnDrawGameTimer]);
 		Call_PushCellRef(time);
-		Call_Finish(res[i]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
 	}
-	return res[0] > res[1] ? res[0] : res[1];
+	return act[0] > act[1] ? act[0] : act[1];
 }
