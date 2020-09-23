@@ -587,13 +587,13 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			return;
 		
 		if( override[0]!=0 ) {
-			strcopy(g_vsh2.m_strBackgroundSong, sizeof(g_vsh2.m_strBackgroundSong), override);
+			strcopy(g_vsh2.m_strCurrSong, sizeof(g_vsh2.m_strCurrSong), override);
 		}
-		EmitSoundToClient(this.index, g_vsh2.m_strBackgroundSong, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+		EmitSoundToClient(this.index, g_vsh2.m_strCurrSong, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
 	}
 	
 	public void StopMusic() {
-		StopSound(this.index, SNDCHAN_AUTO, g_vsh2.m_strBackgroundSong);
+		StopSound(this.index, SNDCHAN_AUTO, g_vsh2.m_strCurrSong);
 	}
 };
 

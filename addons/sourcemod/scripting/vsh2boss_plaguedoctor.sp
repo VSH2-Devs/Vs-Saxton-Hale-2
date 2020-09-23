@@ -19,6 +19,8 @@
 #define PlagueRage2    "vo/medic_specialcompleted06.mp3"
 
 
+VSH2GameMode vsh2_gm;
+
 methodmap CPlague < VSH2Player {
 	public CPlague(const int ind, bool uid=false) {
 		return view_as<CPlague>( VSH2Player(ind, uid) );
@@ -79,7 +81,7 @@ methodmap CPlague < VSH2Player {
 			/// PATCH: only boost OUR minions, nobody elses...
 			if( IsMinion && minion.hOwnerBoss == this ) {
 			#if defined _tf2attributes_included
-				bool tf2attribs_enabled = VSH2GameMode_GetPropAny("bTF2Attribs");
+				bool tf2attribs_enabled = VSH2GameMode.GetPropAny("bTF2Attribs");
 				if( tf2attribs_enabled ) {
 					TF2Attrib_SetByDefIndex(i, attribute, value);
 					SetPawnTimer(TF2AttribsRemove, 10.0, i);
@@ -269,7 +271,7 @@ public void PlagueDoc_OnBossThink(const VSH2Player boss)
 	
 	/// hud code
 	SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
-	Handle hHudText = VSH2GameMode_GetHUDHandle();
+	Handle hHudText = vsh2_gm.hHUD;
 	float jmp = player.flCharge;
 	if( player.flRAGE >= 100.0 )
 		ShowSyncHudText(client, hHudText, "Jump: %i%% | Rage: FULL - Call Medic (default: E) to activate", player.GetPropInt("bSuperCharge") ? 1000 : RoundFloat(jmp) * 4);
@@ -327,7 +329,7 @@ public void PlagueDoc_OnPlayerKilled(const VSH2Player attacker, const VSH2Player
 		/// If 10 minions, then respawn them in 15 seconds.
 		VSH2Player owner = victim.hOwnerBoss;
 		if( IsPlagueDoctor(owner) && IsPlayerAlive(owner.index) ) {
-			int minions = VSH2GameMode_CountMinions(false);
+			int minions = VSH2GameMode.CountMinions(false);
 			victim.ConvertToMinion(minions * 1.5);
 		}
 	}
@@ -406,7 +408,7 @@ void RecruitMinion(const VSH2Player base)
 	TF2_SetPlayerClass(client, TFClass_Scout, _, false);
 	base.RemoveAllItems();
 #if defined _tf2attributes_included
-	if( VSH2GameMode_GetPropInt("bTF2Attribs") )
+	if( VSH2GameMode.GetPropInt("bTF2Attribs") )
 		TF2Attrib_RemoveAll(client);
 #endif
 	int weapon = base.SpawnWeapon("tf_weapon_bat", 572, 100, 5, "6; 0.5; 57; 15.0; 26; 75.0; 49; 1.0; 68; -2.0");

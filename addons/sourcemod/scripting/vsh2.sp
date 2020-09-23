@@ -24,7 +24,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.8.21"
+#define PLUGIN_VERSION       "2.8.25"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -149,10 +149,8 @@ enum struct VSH2Globals {
 	Handle m_hHUDs[MaxVSH2HUDs];
 	Cookie m_hCookies[MaxVSH2Cookies];
 	VSH2Cvars m_hCvars;
-	char m_strBackgroundSong[PLATFORM_MAX_PATH];
-	
-	/// 'struct' of the gamemode manager.
-	StringMap m_hGameModeFields;
+	VSHGameMode m_hGamemode;
+	char m_strCurrSong[PLATFORM_MAX_PATH];
 	
 	ConfigMap m_hCfg;
 	/// When making new properties, remember to base it off this StringMap
@@ -170,8 +168,8 @@ VSH2ModuleSys g_modsys;
 
 public void OnPluginStart()
 {
-	gamemode = VSHGameMode();
-	gamemode.Init();
+	g_vsh2.m_hGamemode = new VSHGameMode();
+	g_vsh2.m_hGamemode.Init();
 	
 	/// in forwards.sp
 	InitializeForwards();
@@ -291,7 +289,7 @@ public void OnPluginStart()
 	g_vsh2.m_hCvars.MultiBossHandicap = CreateConVar("vsh2_multiboss_handicap", "500", "How much Health is removed on every individual boss in a multiboss round at the start of said round. 0 disables it.", FCVAR_NONE, true, 0.0, true, 99999.0);
 	g_vsh2.m_hCvars.DroppedWeapons = CreateConVar("vsh2_allow_dropped_weapons", "0", "Enables/Disables dropped weapons. Recommended to keep this disabled to avoid players having weapons they shouldn't.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_vsh2.m_hCvars.BlockEureka = CreateConVar("vsh2_allow_eureka_effect", "0", "Enables/Disables the Eureka Effect for Engineers", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_vsh2.m_hCvars.ForceLives = CreateConVar("vsh2_force_player_lives", "0", "Forces the gamemode to apply Medieval Mode lives on players, whether or not medieval mode is enabled", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars.ForceLives = CreateConVar("vsh2_force_player_lives", "0", "Forces the g_vsh2.m_hGamemode to apply Medieval Mode lives on players, whether or not medieval mode is enabled", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_vsh2.m_hCvars.Anchoring = CreateConVar("vsh2_allow_boss_anchor", "1", "When enabled, reduces all knockback bosses experience when crouching.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_vsh2.m_hCvars.BlockRageSuicide = CreateConVar("vsh2_block_raged_suicide", "1", "when enabled, stops raged players from suiciding.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_vsh2.m_hCvars.HealthKitLimitMax = CreateConVar("vsh2_spawn_health_kit_limit_max", "6", "max amount of health kits that can be produced in RED spawn. -1 for unlimited amount", FCVAR_NONE, true, 0.0, true, 50.0);
@@ -321,8 +319,8 @@ public void OnPluginStart()
 	g_vsh2.m_hCvars.CapReenableTime = CreateConVar("vsh2_multiple_cp_capture_reenable_time", "30.0", "time to reenable the control pointer after being captured, does nothing is 'vsh2_multiple_cp_captures' is disabled.", FCVAR_NONE, true, 1.0, false);
 	g_vsh2.m_hCvars.AllowSniperClimbing = CreateConVar("vsh2_allow_sniper_climb", "1", "allow snipers to be able to climb using melee.", FCVAR_NONE, true, 0.0, true, 1.0);
 	
-	gamemode.bSteam = LibraryExists("SteamTools");
-	gamemode.bTF2Attribs = LibraryExists("tf2attributes");
+	g_vsh2.m_hGamemode.bSteam = LibraryExists("SteamTools");
+	g_vsh2.m_hGamemode.bTF2Attribs = LibraryExists("tf2attributes");
 	
 	AutoExecConfig(true, "VSHv2");
 	HookEvent("player_death", PlayerDeath, EventHookMode_Pre);
@@ -404,7 +402,7 @@ public bool NextHaleTargetFilter(const char[] pattern, ArrayList clients)
 	bool non = StrContains(pattern, "!", false) != -1;
 	for( int i=MaxClients; i; i-- ) {
 		if( IsClientValid(i) && clients.FindValue(i) == -1 ) {
-			if( g_vsh2.m_hCvars.Enabled.BoolValue && BaseBoss(i)==gamemode.FindNextBoss() ) {
+			if( g_vsh2.m_hCvars.Enabled.BoolValue && BaseBoss(i)==VSHGameMode.FindNextBoss() ) {
 				if( !non )
 					clients.Push(i);
 			} else if( non )
@@ -416,7 +414,7 @@ public bool NextHaleTargetFilter(const char[] pattern, ArrayList clients)
 
 public Action CheckLateSpawn(int client, const char[] command, int argc)
 {
-	if( !g_vsh2.m_hCvars.Enabled.BoolValue || gamemode.iRoundState != StateRunning )
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2.m_hGamemode.iRoundState != StateRunning )
 		return Plugin_Continue;
 	
 	/// deal with late spawners, force them to spectator.
@@ -432,7 +430,7 @@ public Action CheckLateSpawn(int client, const char[] command, int argc)
 
 public Action BlockSuicide(int client, const char[] command, int argc)
 {
-	if( g_vsh2.m_hCvars.Enabled.BoolValue && gamemode.iRoundState == StateRunning ) {
+	if( g_vsh2.m_hCvars.Enabled.BoolValue && g_vsh2.m_hGamemode.iRoundState == StateRunning ) {
 		BaseBoss player = BaseBoss(client);
 		if( player.bIsBoss ) {
 			/// Allow bosses to suicide if their total health is under a certain percentage.
@@ -456,9 +454,9 @@ public Action BlockSuicide(int client, const char[] command, int argc)
 public void OnLibraryAdded(const char[] name)
 {
 	if( !strcmp(name, "SteamTools", false) )
-		gamemode.bSteam = true;
+		g_vsh2.m_hGamemode.bSteam = true;
 	if( !strcmp(name, "tf2attributes", false) )
-		gamemode.bTF2Attribs = true;
+		g_vsh2.m_hGamemode.bTF2Attribs = true;
 #if defined _updater_included
 	if( !strcmp(name, "updater") )
 		Updater_AddPlugin(UPDATE_URL);
@@ -467,9 +465,9 @@ public void OnLibraryAdded(const char[] name)
 public void OnLibraryRemoved(const char[] name)
 {
 	if( !strcmp(name, "SteamTools", false) )
-		gamemode.bSteam = false;
+		g_vsh2.m_hGamemode.bSteam = false;
 	if( !strcmp(name, "tf2attributes", false) )
-		gamemode.bTF2Attribs = false;
+		g_vsh2.m_hGamemode.bTF2Attribs = false;
 }
 
 /// UPDATER Stuff
@@ -501,7 +499,7 @@ public void OnConfigsExecuted()
 		LogMessage("[VSH2] Warning: your config is outdated. Back up your tf/cfg/sourcemod/VSHv2.cfg file and delete it, and this plugin will generate a new one that you can then modify to your original values.");
 	g_vsh2.m_hCvars.VersionNumber.SetString(PLUGIN_VERSION, false, true);
 	
-	if( gamemode.IsVSHMap() ) {
+	if( VSHGameMode.IsVSHMap() ) {
 		g_oldcvar_vals.tf_arena_use_queue = FindConVar("tf_arena_use_queue").IntValue;
 		g_oldcvar_vals.mp_teams_unbalance_limit = FindConVar("mp_teams_unbalance_limit").IntValue;
 		g_oldcvar_vals.tf_arena_first_blood = FindConVar("tf_arena_first_blood").IntValue;
@@ -517,10 +515,10 @@ public void OnConfigsExecuted()
 		FindConVar("mp_forcecamera").IntValue =  0;
 		FindConVar("tf_scout_hype_pep_max").FloatValue =  100.0;
 		
-		gamemode.CheckDoors();
-		gamemode.CheckTeleToSpawn();
+		g_vsh2.m_hGamemode.CheckDoors();
+		g_vsh2.m_hGamemode.CheckTeleToSpawn();
 #if defined _steamtools_included
-		if( gamemode.bSteam ) {
+		if( g_vsh2.m_hGamemode.bSteam ) {
 			char gameDesc[64];
 			Format(gameDesc, sizeof(gameDesc), "%s (v%s)", PLUGIN_DESCRIPT, PLUGIN_VERSION);
 			Steam_SetGameDescription(gameDesc);
@@ -592,7 +590,7 @@ public void ConnectionMessage(const int userid)
 	if( IsValidClient(client) ) {
 		CPrintToChat(client, "{olive}[VSH 2]{default} Welcome to VSH2, type /bosshelp for help!");
 		
-		if( gamemode.iRoundState==StateRunning )
+		if( g_vsh2.m_hGamemode.iRoundState==StateRunning )
 			BaseBoss(client).PlayMusic(g_vsh2.m_hCvars.MusicVolume.FloatValue);
 	}
 }
@@ -620,26 +618,23 @@ public Action OnTouch(int client, int other)
 public void OnMapStart()
 {
 	ManageDownloads();    /// in handler.sp
-	//gamemode.hMusic = null;
+	//g_vsh2.m_hGamemode.hMusic = null;
 	CreateTimer(0.1, Timer_PlayerThink, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(1.0, MakeModelTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	
-	gamemode.iHealthBar = FindEntityByClassname(-1, "monster_resource");
-	if( gamemode.iHealthBar == -1 ) {
-		gamemode.iHealthBar = CreateEntityByName("monster_resource");
-		if( gamemode.iHealthBar != -1 )
-			DispatchSpawn(gamemode.iHealthBar);
-	}
-	gamemode.iRoundCount = 0;
-	gamemode.iRoundState = StateDisabled;
-	gamemode.hNextBoss = view_as< BaseBoss >(0);
+	g_vsh2.m_hGamemode.iHealthBar = VSHHealthBar();
+	g_vsh2.m_hGamemode.iRoundCount = 0;
+	g_vsh2.m_hGamemode.iRoundState = StateDisabled;
+	g_vsh2.m_hGamemode.hNextBoss = view_as< BaseBoss >(0);
 	
 	if( g_vsh2.m_hCfg != null )
 		DeleteCfg(g_vsh2.m_hCfg);
+	
 	g_vsh2.m_hCfg = new ConfigMap("configs/saxton_hale/vsh2.cfg");
 	if( g_vsh2.m_hCfg==null )
 		LogError("[VSH 2] ERROR :: **** couldn't find 'configs/saxton_hale/vsh2.cfg' ****");
 }
+
 public void OnMapEnd()
 {
 	FindConVar("tf_arena_use_queue").IntValue = g_oldcvar_vals.tf_arena_use_queue;
@@ -702,11 +697,11 @@ public Action MakeModelTimer(Handle hTimer)
 /// the main 'mechanics' of bosses
 public Action Timer_PlayerThink(Handle hTimer)
 {
-	if( !g_vsh2.m_hCvars.Enabled.BoolValue || gamemode.iRoundState != StateRunning )
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2.m_hGamemode.iRoundState != StateRunning )
 		return Plugin_Continue;
 	
-	gamemode.UpdateBossHealth();
-	if( gamemode.flMusicTime <= GetGameTime() )
+	g_vsh2.m_hGamemode.UpdateBossHealth();
+	if( g_vsh2.m_hGamemode.flMusicTime <= GetGameTime() )
 		_MusicPlay();
 	
 	BaseBoss player;
@@ -722,14 +717,14 @@ public Action Timer_PlayerThink(Handle hTimer)
 			ManageFighterThink(player);
 		}
 		
-		if( gamemode.iPlaying <= g_vsh2.m_hCvars.ShowBossHPLiving.IntValue ) {
+		if( GetLivingPlayers(VSH2Team_Red) <= g_vsh2.m_hCvars.ShowBossHPLiving.IntValue ) {
 			SetHudTextParams(-1.0, 0.20, 0.11, 255, 255, 255, 255);
-			ShowSyncHudText(i, g_vsh2.m_hHUDs[HealthHUD], "Total Boss Health: %i", gamemode.GetTotalBossHealth());
+			ShowSyncHudText(i, g_vsh2.m_hHUDs[HealthHUD], "Total Boss Health: %i", VSHGameMode.GetTotalBossHealth());
 		}
 	}
 	
 	/// If there's no active, living bosses, then force RED to win
-	if( !gamemode.CountBosses(true) )
+	if( !VSHGameMode.CountBosses(true) )
 		ForceTeamWin(VSH2Team_Red);
 	
 	return Plugin_Continue;
@@ -778,7 +773,7 @@ public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& dam
 {
 	if( !g_vsh2.m_hCvars.Enabled.BoolValue || !IsClientValid(victim) )
 		return Plugin_Continue;
-	else if( gamemode.iRoundState==StateStarting ) {
+	else if( g_vsh2.m_hGamemode.iRoundState==StateStarting ) {
 		damage = 0.0;
 		return Plugin_Changed;
 	}
@@ -997,16 +992,16 @@ public void CalcScores()
 
 public Action Timer_DrawGame(Handle timer)
 {
-	if( gamemode.iHealthBarPercent < g_vsh2.m_hCvars.HealthPercentForLastGuy.IntValue || gamemode.iRoundState != StateRunning || gamemode.iTimeLeft < 0 )
+	if( g_vsh2.m_hGamemode.iHealthBar.iPercent < g_vsh2.m_hCvars.HealthPercentForLastGuy.IntValue || g_vsh2.m_hGamemode.iRoundState != StateRunning || g_vsh2.m_hGamemode.iTimeLeft < 0 )
 		return Plugin_Stop;
 	
-	int time = gamemode.iTimeLeft;
+	int time = g_vsh2.m_hGamemode.iTimeLeft;
 	Action act = Call_OnDrawGameTimer(time);
 	if( act > Plugin_Changed )
 		return act;
 	else if( act==Plugin_Changed )
-		gamemode.iTimeLeft = time;
-	else gamemode.iTimeLeft--;
+		g_vsh2.m_hGamemode.iTimeLeft = time;
+	else g_vsh2.m_hGamemode.iTimeLeft--;
 	
 	char strTime[10];
 	
@@ -1058,7 +1053,7 @@ public void _ResetMediCharge(const int entid)
 public Action Timer_UberLoop(Handle timer, any medigunid)
 {
 	int medigun = EntRefToEntIndex(medigunid);
-	if( medigun && IsValidEntity(medigun) && gamemode.iRoundState == StateRunning ) {
+	if( medigun && IsValidEntity(medigun) && g_vsh2.m_hGamemode.iRoundState == StateRunning ) {
 		int medic = GetOwner(medigun);
 		float charge = GetMediCharge(medigun);
 		if( charge > 0.05 ) {
@@ -1085,11 +1080,11 @@ public Action Timer_UberLoop(Handle timer, any medigunid)
 
 public void _MusicPlay()
 {
-	if( !g_vsh2.m_hCvars.Enabled.BoolValue || !g_vsh2.m_hCvars.EnableMusic.BoolValue || gamemode.iRoundState != StateRunning )
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || !g_vsh2.m_hCvars.EnableMusic.BoolValue || g_vsh2.m_hGamemode.iRoundState != StateRunning )
 		return;
 	
 	float currtime = GetGameTime();
-	if( gamemode.flMusicTime > currtime )
+	if( g_vsh2.m_hGamemode.flMusicTime > currtime )
 		return;
 	
 	char bg_music[PLATFORM_MAX_PATH];
@@ -1098,7 +1093,7 @@ public void _MusicPlay()
 	
 	float vol = g_vsh2.m_hCvars.MusicVolume.FloatValue;
 	if( bg_music[0] != 0 ) {
-		strcopy(g_vsh2.m_strBackgroundSong, PLATFORM_MAX_PATH, bg_music);
+		strcopy(g_vsh2.m_strCurrSong, PLATFORM_MAX_PATH, bg_music);
 		for( int i=MaxClients; i; --i ) {
 			if( !IsClientValid(i) )
 				continue;
@@ -1107,7 +1102,7 @@ public void _MusicPlay()
 	}
 	
 	if( time != -1.0 ) {
-		gamemode.flMusicTime = currtime+time;
+		g_vsh2.m_hGamemode.flMusicTime = currtime+time;
 	}
 }
 
@@ -1488,7 +1483,7 @@ public int Native_StopMusic(Handle plugin, int numParams)
 	bool reset_time = GetNativeCell(1);
 	StopBackGroundMusic();
 	if( reset_time )
-		gamemode.flMusicTime = -1.0;
+		g_vsh2.m_hGamemode.flMusicTime = -1.0;
 	return 0;
 }
 
@@ -1777,7 +1772,7 @@ public int Native_VSH2GameMode_GetProperty(Handle plugin, int numParams)
 {
 	char prop_name[64]; GetNativeString(1, prop_name, sizeof(prop_name));
 	any item;
-	if( g_vsh2.m_hGameModeFields.GetValue(prop_name, item) ) {
+	if( g_vsh2.m_hGamemode.GetValue(prop_name, item) ) {
 		return item;
 	}
 	return 0;
@@ -1786,53 +1781,53 @@ public int Native_VSH2GameMode_SetProperty(Handle plugin, int numParams)
 {
 	char prop_name[64]; GetNativeString(1, prop_name, sizeof(prop_name));
 	any item = GetNativeCell(2);
-	g_vsh2.m_hGameModeFields.SetValue(prop_name, item);
+	g_vsh2.m_hGamemode.SetValue(prop_name, item);
 }
 public any Native_VSH2GameMode_GetRandomBoss(Handle plugin, int numParams)
 {
 	bool alive = GetNativeCell(1);
-	return gamemode.GetRandomBoss(alive);
+	return VSHGameMode.GetRandomBoss(alive);
 }
 public any Native_VSH2GameMode_GetBossByType(Handle plugin, int numParams)
 {
 	bool alive = GetNativeCell(1);
 	int bossid = GetNativeCell(2);
-	return gamemode.GetBossByType(alive, bossid);
+	return VSHGameMode.GetBossByType(alive, bossid);
 }
 public any Native_VSH2GameMode_FindNextBoss(Handle plugin, int numParams)
 {
-	return gamemode.FindNextBoss();
+	return VSHGameMode.FindNextBoss();
 }
 public int Native_VSH2GameMode_CountMinions(Handle plugin, int numParams)
 {
 	bool alive = GetNativeCell(1);
-	return gamemode.CountMinions(alive);
+	return VSHGameMode.CountMinions(alive);
 }
 public int Native_VSH2GameMode_CountBosses(Handle plugin, int numParams)
 {
 	bool alive = GetNativeCell(1);
-	return gamemode.CountBosses(alive);
+	return VSHGameMode.CountBosses(alive);
 }
 public int Native_VSH2GameMode_GetTotalBossHealth(Handle plugin, int numParams)
 {
-	return gamemode.GetTotalBossHealth();
+	return VSHGameMode.GetTotalBossHealth();
 }
 public int Native_VSH2GameMode_SearchForItemPacks(Handle plugin, int numParams)
 {
-	gamemode.SearchForItemPacks();
+	VSHGameMode.SearchForItemPacks();
 }
 public int Native_VSH2GameMode_UpdateBossHealth(Handle plugin, int numParams)
 {
-	gamemode.UpdateBossHealth();
+	g_vsh2.m_hGamemode.UpdateBossHealth();
 }
 public int Native_VSH2GameMode_GetBossType(Handle plugin, int numParams)
 {
-	gamemode.GetBossType();
+	g_vsh2.m_hGamemode.GetBossType();
 }
 
 public int Native_VSH2GameMode_GetTotalRedPlayers(Handle plugin, int numParams)
 {
-	return gamemode.iPlaying;
+	return GetLivingPlayers(VSH2Team_Red);
 }
 
 public any Native_VSH2GameMode_GetHUDHandle(Handle plugin, int numParams)
@@ -1844,14 +1839,14 @@ public int Native_VSH2GameMode_GetBosses(Handle plugin, int numParams)
 {
 	BaseBoss[] bosses = new BaseBoss[MaxClients];
 	bool balive = GetNativeCell(2);
-	int numbosses = gamemode.GetBosses(bosses, balive);
+	int numbosses = VSHGameMode.GetBosses(bosses, balive);
 	SetNativeArray(1, bosses, MaxClients);
 	return numbosses;
 }
 
 public int Native_VSH2GameMode_IsVSHMap(Handle plugin, int numParams)
 {
-	return gamemode.IsVSHMap();
+	return VSHGameMode.IsVSHMap();
 }
 
 public int Native_VSH2_GetMaxBosses(Handle plugin, int numParams)
@@ -1863,7 +1858,7 @@ public int Native_VSH2GameMode_GetFighters(Handle plugin, int numParams)
 {
 	BaseBoss[] reds = new BaseBoss[MaxClients];
 	bool balive = GetNativeCell(2);
-	int numreds = gamemode.GetFighters(reds, balive);
+	int numreds = VSHGameMode.GetFighters(reds, balive);
 	SetNativeArray(1, reds, MaxClients);
 	return numreds;
 }
@@ -1872,7 +1867,7 @@ public int Native_VSH2GameMode_GetMinions(Handle plugin, int numParams)
 {
 	BaseBoss[] minions = new BaseBoss[MaxClients];
 	bool balive = GetNativeCell(2);
-	int numminions = gamemode.GetMinions(minions, balive);
+	int numminions = VSHGameMode.GetMinions(minions, balive);
 	SetNativeArray(1, minions, MaxClients);
 	return numminions;
 }
@@ -1880,7 +1875,7 @@ public int Native_VSH2GameMode_GetMinions(Handle plugin, int numParams)
 public int Native_VSH2GameMode_GetQueue(Handle plugin, int numParams)
 {
 	BaseBoss[] players = new BaseBoss[MaxClients];
-	int n = gamemode.GetQueue(players);
+	int n = VSHGameMode.GetQueue(players);
 	SetNativeArray(1, players, MaxClients);
 	return n;
 }
@@ -1890,7 +1885,7 @@ public int Native_VSH2GameMode_GetBossesByType(Handle plugin, int numParams)
 	BaseBoss[] bosses = new BaseBoss[MaxClients];
 	int type = GetNativeCell(2);
 	bool alive = GetNativeCell(3);
-	int n = gamemode.GetBossesByType(bosses, type, alive);
+	int n = VSHGameMode.GetBossesByType(bosses, type, alive);
 	SetNativeArray(1, bosses, MaxClients);
 	return n;
 }

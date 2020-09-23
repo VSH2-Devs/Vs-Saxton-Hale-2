@@ -110,7 +110,7 @@ stock FF2Player ToFF2Player(VSH2Player p)
 stock int ClientToBossIndex(int client)
 {
 	FF2Player[] players = new FF2Player[MaxClients];
-	int amount_of_bosses = VSH2GameMode_GetBosses(players, false);
+	int amount_of_bosses = VSH2GameMode.GetBosses(players, false);
 	if( amount_of_bosses > 0 ) {
 		for( int i; i<amount_of_bosses; i++ ) {
 			if( players[i].index==client ) {
@@ -126,7 +126,7 @@ stock int ClientToBossIndex(int client)
 stock bool ZeroBossToFF2Player(FF2Player& player)
 {
 	FF2Player[] players = new FF2Player[MaxClients];
-	if( VSH2GameMode_GetBosses(players, false) < 1 )
+	if( VSH2GameMode.GetBosses(players, false) < 1 )
 		return false;
 	
 	player = players[0];

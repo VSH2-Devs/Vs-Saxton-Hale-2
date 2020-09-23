@@ -623,6 +623,54 @@ native int VSH2_GetBossID(const char boss_name[MAX_BOSS_NAME_SIZE]);
 native void VSH2_StopMusic(bool reset_time=true);
 
 
+/**
+ * Game Mode Oriented stuff.
+ */
+
+methodmap VSHHealthBar {
+	public VSHHealthBar() {
+		int healthbar = FindEntityByClassname(-1, "monster_resource");
+		if( healthbar == -1 ) {
+			healthbar = CreateEntityByName("monster_resource");
+			if( healthbar != -1 )
+				DispatchSpawn(healthbar);
+		}
+		return view_as< VSHHealthBar >(healthbar);
+	}
+	
+	property int entity {
+		public get() {
+			return view_as< int >(this);
+		}
+	}
+	
+	property int iState {
+		public get() {
+			return GetEntProp(this.entity, Prop_Send, "m_iBossState");
+		}
+		public set(int val) {
+			SetEntProp(this.entity, Prop_Send, "m_iBossState", val);
+		}
+	}
+	property int iPercent {
+		public get() {
+			return GetEntProp(this.entity, Prop_Send, "m_iBossHealthPercentageByte");
+		}
+		public set(int val) {
+			int clamped = val;
+			if( clamped>255 )
+				clamped = 255;
+			else if( clamped<0 )
+				clamped = 0;
+			SetEntProp(this.entity, Prop_Send, "m_iBossHealthPercentageByte", clamped);
+		}
+	}
+	
+	public void SetHealthPercent(int total_health, int total_max_health) {
+		this.iPercent = RoundFloat(float(total_health) / float(total_max_health) * 255);
+	}
+};
+
 native any VSH2GameMode_GetProperty(const char prop_name[64]);
 native void VSH2GameMode_SetProperty(const char prop_name[64], any value);
 
@@ -695,6 +743,97 @@ native void VSH2GameMode_GetBossType();
 native Handle VSH2GameMode_GetHUDHandle();
 
 native bool VSH2GameMode_IsVSHMap();
+
+
+methodmap VSH2GameMode {
+	public VSH2GameMode() { return view_as< VSH2GameMode >(0); }
+	
+	property VSH2Player hNextBoss {
+		public get() {
+			return VSH2GameMode_FindNextBoss();
+		}
+	}
+	
+	property int iTotalBossHealth {
+		public get() {
+			return VSH2GameMode_GetTotalBossHealth();
+		}
+	}
+	property int iLivingReds {
+		public get() {
+			return VSH2GameMode_GetTotalRedPlayers();
+		}
+	}
+	
+	property Handle hHUD {
+		public get() {
+			return VSH2GameMode_GetHUDHandle();
+		}
+	}
+	
+	public static int GetPropInt(const char prop_name[64]) {
+		return VSH2GameMode_GetProperty(prop_name);
+	}
+	public static any GetPropAny(const char prop_name[64]) {
+		return VSH2GameMode_GetProperty(prop_name);
+	}
+	public static float GetPropFloat(const char prop_name[64]) {
+		float f = VSH2GameMode_GetProperty(prop_name);
+		return f;
+	}
+	
+	public static void SetProp(const char prop_name[64], any value) {
+		VSH2GameMode_SetProperty(prop_name, value);
+	}
+	
+	property VSHHealthBar hHealthBar {
+		public get() {
+			return VSH2GameMode.GetPropAny("iHealthBar");
+		}
+	}
+	
+	public static VSH2Player GetRandomBoss(const bool is_alive) {
+		return VSH2GameMode_GetRandomBoss(is_alive);
+	}
+	public static VSH2Player GetBossByType(const bool is_alive, const int boss_type) {
+		return VSH2GameMode_GetBossByType(is_alive, boss_type);
+	}
+	
+	public static int CountMinions(const bool is_alive) {
+		return VSH2GameMode_CountMinions(is_alive);
+	}
+	public static int CountBosses(const bool is_alive) {
+		return VSH2GameMode_CountBosses(is_alive);
+	}
+	public static int GetBosses(VSH2Player[] bosses, bool balive=true) {
+		return VSH2GameMode_GetBosses(bosses, balive);
+	}
+	public static int GetFighters(VSH2Player[] redplayers, bool balive=true) {
+		return VSH2GameMode_GetFighters(redplayers, balive);
+	}
+	public static int GetMinions(VSH2Player[] minions, bool balive=true) {
+		return VSH2GameMode_GetMinions(minions, balive);
+	}
+	public static int GetBossesByType(VSH2Player[] bosses, const int type, bool balive=true) {
+		return VSH2GameMode_GetBossesByType(bosses, type, balive);
+	}
+	public static int GetQueue(VSH2Player[] players) {
+		return VSH2GameMode_GetQueue(players);
+	}
+	
+	public static void SearchForItemPacks() {
+		VSH2GameMode_SearchForItemPacks();
+	}
+	public static void UpdateBossHealth() {
+		VSH2GameMode_UpdateBossHealth();
+	}
+	public static void SelectBossType() {
+		VSH2GameMode_GetBossType();
+	}
+	public static bool IsVSHMap() {
+		return VSH2GameMode_IsVSHMap();
+	}
+};
 
 
 /**

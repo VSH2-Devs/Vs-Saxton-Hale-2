@@ -87,7 +87,7 @@ enum struct VSH2CVars {
 }
 
 VSH2CVars g_vsh2_cvars;
-
+VSH2GameMode vsh2_gm;
 
 public void OnLibraryAdded(const char[] name) {
 	if( StrEqual(name, "VSH2") ) {
@@ -230,7 +230,7 @@ public void Template_OnBossThink(const VSH2Player player)
 	
 	/// hud code
 	SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
-	Handle hud = VSH2GameMode_GetHUDHandle();
+	Handle hud = vsh2_gm.hHUD;
 	float jmp = player.GetPropFloat("flCharge");
 	float rage = player.GetPropFloat("flRAGE");
 	if( rage >= 100.0 )
@@ -285,7 +285,7 @@ public void Template_OnPlayerKilled(const VSH2Player attacker, const VSH2Player 
 	else attacker.SetPropInt("iKills", 0);
 	attacker.PlayVoiceClip(TemplateKill[GetRandomInt(0, sizeof(TemplateKill)-1)], VSH2_VOICE_SPREE);
 	
-	if( attacker.GetPropInt("iKills") == 3 && VSH2GameMode_GetTotalRedPlayers() != 1 ) {
+	if( attacker.GetPropInt("iKills") == 3 && vsh2_gm.iLivingReds != 1 ) {
 		attacker.PlayVoiceClip(TemplateSpree[GetRandomInt(0, sizeof(TemplateSpree)-1)], VSH2_VOICE_SPREE);
 		attacker.SetPropInt("iKills", 0);
 	}

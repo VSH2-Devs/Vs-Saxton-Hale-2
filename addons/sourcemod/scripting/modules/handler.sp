@@ -84,47 +84,47 @@ public void ManageDisconnect(const int client)
 {
 	BaseBoss leaver = BaseBoss(client);
 	if( leaver.bIsBoss ) {
-		if( gamemode.iRoundState >= StateRunning ) {	/// Arena mode flips out when no one is on the other team
+		if( g_vsh2.m_hGamemode.iRoundState >= StateRunning ) {	/// Arena mode flips out when no one is on the other team
 			BaseBoss[] bosses = new BaseBoss[MaxClients];
-			int numbosses = gamemode.GetBosses(bosses, false);
+			int numbosses = VSHGameMode.GetBosses(bosses, false);
 			if( numbosses-1 > 0 ) {	/// Exclude leaver, this is why CountBosses() can't be used
 				for( int i=0; i<numbosses; i++ ) {
 					if( bosses[i]==leaver || (IsClientValid(bosses[i].index) && IsPlayerAlive(bosses[i].index)) )
 						continue;
 					
-					BaseBoss next = gamemode.FindNextBoss();
-					if( gamemode.hNextBoss ) {
-						next = gamemode.hNextBoss;
-						gamemode.hNextBoss = view_as< BaseBoss >(0);
+					BaseBoss next = VSHGameMode.FindNextBoss();
+					if( g_vsh2.m_hGamemode.hNextBoss ) {
+						next = g_vsh2.m_hGamemode.hNextBoss;
+						g_vsh2.m_hGamemode.hNextBoss = view_as< BaseBoss >(0);
 					}
 					if( IsValidClient(next.index) ) {
 						next.bIsMinion = true;	/// Dumb hack, prevents spawn hook from forcing them back to red
 						next.ForceTeamChange(VSH2Team_Boss);
 					}
 					
-					if( gamemode.iRoundState == StateRunning )
+					if( g_vsh2.m_hGamemode.iRoundState == StateRunning )
 						ForceTeamWin(VSH2Team_Red);
 					break;
 				}
 			} else {	/// No bosses left
-				BaseBoss next = gamemode.FindNextBoss();
-				if( gamemode.hNextBoss ) {
-					next = gamemode.hNextBoss;
-					gamemode.hNextBoss = view_as< BaseBoss >(0);
+				BaseBoss next = VSHGameMode.FindNextBoss();
+				if( g_vsh2.m_hGamemode.hNextBoss ) {
+					next = g_vsh2.m_hGamemode.hNextBoss;
+					g_vsh2.m_hGamemode.hNextBoss = view_as< BaseBoss >(0);
 				}
 				if( IsValidClient(next.index) ) {
 					next.bIsMinion = true;
 					next.ForceTeamChange(VSH2Team_Boss);
 				}
 				
-				if( gamemode.iRoundState == StateRunning )
+				if( g_vsh2.m_hGamemode.iRoundState == StateRunning )
 					ForceTeamWin(VSH2Team_Red);
 			}
-		} else if( gamemode.iRoundState == StateStarting ) {
-			BaseBoss replace = gamemode.FindNextBoss();
-			if( gamemode.hNextBoss ) {
-				replace = gamemode.hNextBoss;
-				gamemode.hNextBoss = view_as< BaseBoss >(0);
+		} else if( g_vsh2.m_hGamemode.iRoundState == StateStarting ) {
+			BaseBoss replace = VSHGameMode.FindNextBoss();
+			if( g_vsh2.m_hGamemode.hNextBoss ) {
+				replace = g_vsh2.m_hGamemode.hNextBoss;
+				g_vsh2.m_hGamemode.hNextBoss = view_as< BaseBoss >(0);
 			}
 			if( IsValidClient(replace.index) ) {
 				replace.MakeBossAndSwitch(replace.iPresetType == -1 ? leaver.iBossType : replace.iPresetType, true);
@@ -134,11 +134,11 @@ public void ManageDisconnect(const int client)
 		CPrintToChatAll("{olive}[VSH 2]{red} A Boss Just Disconnected!");
 	} else {
 		RequestFrame(CheckAlivePlayers, 0);
-		if( client == gamemode.FindNextBoss().index )
+		if( client == VSHGameMode.FindNextBoss().index )
 			SetPawnTimer(_SkipBossPanel, 1.0);
 		
-		if( leaver.userid == gamemode.hNextBoss.userid )
-			gamemode.hNextBoss = view_as< BaseBoss >(0);
+		if( leaver.userid == g_vsh2.m_hGamemode.hNextBoss.userid )
+			g_vsh2.m_hGamemode.hNextBoss = view_as< BaseBoss >(0);
 	}
 }
 
@@ -152,9 +152,9 @@ public void ManageOnBossSelected(const BaseBoss base)
 	ManageBossHelp(base);
 	
 	/// random multibosses code.
-	int playing = gamemode.iPlaying;
+	int playing = GetLivingPlayers(VSH2Team_Red);
 	int max_random_bosses = g_vsh2.m_hCvars.MaxRandomMultiBosses.IntValue;
-	if( !g_vsh2.m_hCvars.AllowRandomMultiBosses.BoolValue || playing < 10 || GetRandomInt(0, 3) > 0 || gamemode.CountBosses(false) >= max_random_bosses )
+	if( !g_vsh2.m_hCvars.AllowRandomMultiBosses.BoolValue || playing < 10 || GetRandomInt(0, 3) > 0 || VSHGameMode.CountBosses(false) >= max_random_bosses )
 		return;
 	
 	int extra_bosses = GetRandomInt(1, playing / 12);
@@ -162,7 +162,8 @@ public void ManageOnBossSelected(const BaseBoss base)
 		extra_bosses = max_random_bosses;
 	
 	for( int i; i<extra_bosses; i++ ) {
-		gamemode.FindNextBoss().MakeBossAndSwitch(GetRandomInt(VSH2Boss_Hale, MAXBOSS), false);
+		BaseBoss partner = VSHGameMode.FindNextBoss();
+		partner.MakeBossAndSwitch(GetRandomInt(VSH2Boss_Hale, MAXBOSS), false);
 	}
 }
 
@@ -239,7 +240,7 @@ public void ManageBossDeath(const BaseBoss base)
 		case VSH2Boss_HHHjr:		ToCHHHJr(base).Death();
 		case VSH2Boss_Bunny:		ToCBunny(base).Death();
 	}
-	gamemode.iHealthBarState = !gamemode.iHealthBarState;
+	g_vsh2.m_hGamemode.iHealthBar.iState ^= 1;
 }
 
 public void ManageBossEquipment(const BaseBoss base)
@@ -263,7 +264,7 @@ public void ManageBossEquipment(const BaseBoss base)
 public void ManageBossTransition(const BaseBoss base)
 {
 #if defined _tf2attributes_included
-	if( gamemode.bTF2Attribs )
+	if( g_vsh2.m_hGamemode.bTF2Attribs )
 		TF2Attrib_RemoveAll(base.index);
 #endif
 	switch( base.iBossType ) {
@@ -324,7 +325,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				if( act > Plugin_Changed )
 					return Plugin_Continue;
 				
-				if( gamemode.bTeleToSpawn || damage >= victim.iHealth )
+				if( g_vsh2.m_hGamemode.bTeleToSpawn || damage >= victim.iHealth )
 					victim.TeleToSpawn(VSH2Team_Boss);
 				/// TODO: add cvar for trigger_hurt threshold
 				else if( damage >= 200.0 ) {
@@ -442,7 +443,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 			if( g_vsh2.m_hCvars.Anchoring.BoolValue ) {
 				int iFlags = GetEntityFlags(victim.index);
 #if defined _tf2attributes_included
-				if( gamemode.bTF2Attribs ) {
+				if( g_vsh2.m_hGamemode.bTF2Attribs ) {
 					/// If Hale is ducking on the ground, it's harder to knock him back
 					if( (iFlags & (FL_ONGROUND|FL_DUCKING)) == (FL_ONGROUND|FL_DUCKING) )
 						TF2Attrib_SetByDefIndex(victim.index, 252, 0.0);
@@ -469,7 +470,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 			/// Heavy Shotguns heal for damage dealt
 			if( StrContains(classname, "tf_weapon_shotgun", false) > -1 && TF2_GetPlayerClass(attacker) == TFClass_Heavy ) {
 				return Call_OnBossTakeDamage_OnHeavyShotgun(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
-			} else if( StrContains(classname, "tf_weapon_sniperrifle", false) > -1 && gamemode.iRoundState != StateEnding ) {
+			} else if( StrContains(classname, "tf_weapon_sniperrifle", false) > -1 && g_vsh2.m_hGamemode.iRoundState != StateEnding ) {
 				if( wepindex != 230 && wepindex != 526 && wepindex != 752 && wepindex != 30665 ) {
 					float bossGlow = victim.flGlowtime;
 					float chargelevel = (IsValidEntity(weapon) && weapon > MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
@@ -543,7 +544,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				case 14, 201, 230, 402, 526, 664, 752, 792, 801, 851, 881, 890, 899, 908, 957, 966, 1098: {
 					switch( wepindex ) {	/// cleaner to read than if wepindex == || wepindex == || etc.
 						case 14, 201, 664, 792, 801, 851, 881, 890, 899, 908, 957, 966: {	/// sniper rifles
-							if( gamemode.iRoundState != StateEnding ) {
+							if( g_vsh2.m_hGamemode.iRoundState != StateEnding ) {
 								float bossGlow = victim.flGlowtime;
 								float chargelevel = (IsValidEntity(weapon) && weapon > MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
 								float time = (bossGlow > 10 ? 1.0 : 2.0);
@@ -559,7 +560,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 						if( damagecustom == TF_CUSTOM_HEADSHOT )
 							IncrementHeadCount(attacker, false);
 					}
-					if( wepindex == 752 && gamemode.iRoundState != StateEnding ) {
+					if( wepindex == 752 && g_vsh2.m_hGamemode.iRoundState != StateEnding ) {
 						float chargelevel = (IsValidEntity(weapon) && weapon > MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
 						float add = 10 + (chargelevel 0/ 10);
 						if( TF2_IsPlayerInCondition(attacker, view_as< TFCond >(46)) )
@@ -603,7 +604,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					if( BaseBoss(attacker).bInJump ) {
 						damage = ( Pow(float(victim.iMaxHealth), (0.74074)) - (victim.iMarketted/128*float(victim.iMaxHealth)) )/3.0;
 						
-						damage *= gamemode.CountBosses(true);
+						damage *= VSHGameMode.CountBosses(true);
 						
 						/// divide by 3 because this is basedamage and lolcrits (0.714286)) + 1024.0)
 						damagetype |= DMG_CRIT;
@@ -1261,7 +1262,7 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 
 public void ManageMessageIntro(ArrayList bosses)
 {
-	if( gamemode.bDoors ) {
+	if( g_vsh2.m_hGamemode.bDoors ) {
 		int ent = -1;
 		while( (ent = FindEntityByClassname(ent, "func_door")) != -1 ) {
 			AcceptEntityInput(ent, "Open");
@@ -1272,27 +1273,29 @@ public void ManageMessageIntro(ArrayList bosses)
 	char intro_msg[MAXMESSAGE];
 	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
 	int i;
-	BaseBoss base;
 	int len = bosses.Length;
 	for( i=0; i<len; ++i ) {
-		base = bosses.Get(i);
+		BaseBoss base = bosses.Get(i);
 		if( base == view_as< BaseBoss >(0) )
 			continue;
 		
-		char name[MAX_BOSS_NAME_SIZE];
+		char name[MAX_BOSS_NAME_SIZE], boss_msg[MAXMESSAGE];
 		base.GetName(name);
 		
 		/// TODO: add something that can prefix and suffix the intro message possibly?
-		Format(intro_msg, MAXMESSAGE, "%s\n%N has become %s with %i Health", intro_msg, base.index, name, base.iHealth);
-		Action act = Call_OnMessageIntro(base, intro_msg);
+		Format(boss_msg, sizeof boss_msg, "%N has become %s with %i Health", base.index, name, base.iHealth);
+		Action act = Call_OnMessageIntro(base, boss_msg);
 		if( act > Plugin_Changed )
 			continue;
+		
+		StrCat(intro_msg, MAXMESSAGE, boss_msg);
+		StrCat(intro_msg, MAXMESSAGE, "\n");
 	}
 	for( i=MaxClients; i; --i ) {
 		if( IsClientInGame(i) )
 			ShowHudText(i, -1, "%s", intro_msg);
 	}
-	gamemode.iRoundState = StateRunning;
+	g_vsh2.m_hGamemode.iRoundState = StateRunning;
 	delete bosses;
 }
 
@@ -1335,7 +1338,7 @@ public void ManageResetVariables(const BaseBoss base)
 	base.flLastHit = 0.0;
 	base.iState = -1;
 	base.iHits = 0;
-	base.iLives = ((gamemode.bMedieval || g_vsh2.m_hCvars.ForceLives.BoolValue) ? g_vsh2.m_hCvars.MedievalLives.IntValue : 0);
+	base.iLives = ((g_vsh2.m_hGamemode.bMedieval || g_vsh2.m_hCvars.ForceLives.BoolValue) ? g_vsh2.m_hCvars.MedievalLives.IntValue : 0);
 	//base.iHealth = 0;
 	base.iMaxHealth = 0;
 	base.iShieldDmg = 0;
@@ -1352,7 +1355,7 @@ public void ManageEntityCreated(const int entity, const char[] classname)
 		return;
 	} else if( !strcmp(classname, "tf_projectile_cleaver", false) ) {
 		SDKHook(entity, SDKHook_SpawnPost, OnCleaverSpawned);
-	} else if( gamemode.iRoundState == StateRunning ) {
+	} else if( g_vsh2.m_hGamemode.iRoundState == StateRunning ) {
 		if( !strcmp(classname, "tf_projectile_pipe", false) )
 			SDKHook(entity, SDKHook_SpawnPost, OnEggBombSpawned);
 		else if( !strcmp(classname, "item_healthkit_medium", false) || !strcmp(classname, "item_healthkit_small", false) ) {
@@ -1406,7 +1409,7 @@ public void ManageMusic(char song[PLATFORM_MAX_PATH], float& time)
 {
 	/// UNFORTUNATELY, we have to get a random boss so we can set our music, tragic I know...
 	/// Remember that you can get a random boss filtered by type as well!
-	BaseBoss currBoss = gamemode.GetRandomBoss(true);
+	BaseBoss currBoss = VSHGameMode.GetRandomBoss(true);
 	Action act = Call_OnMusic(song, time, currBoss);
 	if( act > Plugin_Changed )
 		return;
@@ -1431,7 +1434,7 @@ public void ManageMusic(char song[PLATFORM_MAX_PATH], float& time)
 }
 public void StopBackGroundMusic()
 {
-	if( g_vsh2.m_strBackgroundSong[0] != 0 ) {
+	if( g_vsh2.m_strCurrSong[0] != 0 ) {
 		for( int i=MaxClients; i; --i ) {
 			if( !IsClientValid(i) )
 				continue;
@@ -1451,12 +1454,17 @@ public void ManageRoundEndBossInfo(ArrayList bosses, bool bossWon)
 		if( base == view_as< BaseBoss >(0) )
 			continue;
 		
-		char name[MAX_BOSS_NAME_SIZE];
+		char name[MAX_BOSS_NAME_SIZE], boss_msg[MAXMESSAGE];
 		base.GetName(name);
-		Action act = Call_OnRoundEndInfo(base, bossWon, round_end_msg);
+		
+		Format(boss_msg, sizeof boss_msg, "%s (%N) had %i (of %i) health left.", name, base.index, base.iHealth, base.iMaxHealth);
+		
+		Action act = Call_OnRoundEndInfo(base, bossWon, boss_msg);
 		if( act > Plugin_Changed )
 			continue;
-		Format(round_end_msg, MAXMESSAGE, "%s\n%s (%N) had %i (of %i) health left.", round_end_msg, name, base.index, base.iHealth, base.iMaxHealth);
+		
+		StrCat(round_end_msg, MAXMESSAGE, boss_msg);
+		StrCat(round_end_msg, MAXMESSAGE, "\n");
 		
 		if( bossWon ) {
 			switch( base.iBossType ) {
@@ -1480,7 +1488,7 @@ public void ManageRoundEndBossInfo(ArrayList bosses, bool bossWon)
 }
 public void ManageLastPlayer()
 {
-	BaseBoss currBoss = gamemode.GetRandomBoss(true);
+	BaseBoss currBoss = VSHGameMode.GetRandomBoss(true);
 	Action act = Call_OnLastPlayer(currBoss);
 	if( act > Plugin_Changed )
 		return;
@@ -1512,50 +1520,52 @@ public void ManageBossCheckHealth(const BaseBoss base)
 		return;
 	}
 	/// If a non-boss is checking health, reveal all Boss' hp
-	else if( currtime >= gamemode.flHealthTime ) {
-		gamemode.iHealthChecks++;
-		BaseBoss boss;
+	else if( currtime >= g_vsh2.m_hGamemode.flHealthTime ) {
+		g_vsh2.m_hGamemode.iHealthChecks++;
 		int totalHealth;
 		char health_check[MAXMESSAGE];
-		
 		for( int i=MaxClients; i; --i ) {
 			/// exclude dead bosses for health check
 			if( !IsValidClient(i) || !IsPlayerAlive(i) )
 				continue;
-			boss = BaseBoss(i);
+			
+			BaseBoss boss = BaseBoss(i);
 			if( !boss.bIsBoss )
 				continue;
 			
-			Action act = Call_OnBossHealthCheck(boss, false, health_check);
+			char name[MAX_BOSS_NAME_SIZE], boss_msg[MAXMESSAGE];
+			boss.GetName(name);
+			Format(boss_msg, sizeof boss_msg, "%s's current health is: %i of %i", name, boss.iHealth, boss.iMaxHealth);
+			
+			Action act = Call_OnBossHealthCheck(boss, false, boss_msg);
 			if( act > Plugin_Changed )
 				continue;
 			
-			char name[MAX_BOSS_NAME_SIZE];
-			boss.GetName(name);
-			Format(health_check, MAXMESSAGE, "%s\n%s's current health is: %i of %i", health_check, name, boss.iHealth, boss.iMaxHealth);
+			StrCat(health_check, MAXMESSAGE, boss_msg);
+			StrCat(health_check, MAXMESSAGE, "\n");
 			totalHealth += boss.iHealth;
 		}
 		PrintCenterTextAll(health_check);
 		CPrintToChatAll("{olive}[VSH 2] {axis}Boss Health Check{default} %s", health_check);
 		LastBossTotalHealth = totalHealth;
-		gamemode.flHealthTime = currtime + ((gamemode.iHealthChecks < 3) ? 10.0 : 60.0);
+		g_vsh2.m_hGamemode.flHealthTime = currtime + ((g_vsh2.m_hGamemode.iHealthChecks < 3) ? 10.0 : 60.0);
 	} else {
-		CPrintToChat(base.index, "{olive}[VSH 2]{default} You cannot see the Boss HP now (wait %i seconds). Last known total boss health was %i.", RoundFloat(gamemode.flHealthTime-currtime), LastBossTotalHealth);
+		CPrintToChat(base.index, "{olive}[VSH 2]{default} You cannot see the Boss HP now (wait %i seconds). Last known total boss health was %i.", RoundFloat(g_vsh2.m_hGamemode.flHealthTime-currtime), LastBossTotalHealth);
 	}
 }
 
 public void CheckAlivePlayers(const any nil)
 {
-	if( gamemode.iRoundState != StateRunning )
+	if( g_vsh2.m_hGamemode.iRoundState != StateRunning )
 		return;
 	
-	int living = gamemode.iPlaying;
+	int living = GetLivingPlayers(VSH2Team_Red);
 	if( !living )
 		ForceTeamWin(VSH2Team_Boss);
 	
-	if( living == 1 && gamemode.CountBosses(true) > 0 && gamemode.iTimeLeft <= 0 ) {
+	if( living == 1 && VSHGameMode.CountBosses(true) > 0 && g_vsh2.m_hGamemode.iTimeLeft <= 0 ) {
 		ManageLastPlayer();	/// in handler.sp
-		gamemode.iTimeLeft = g_vsh2.m_hCvars.LastPlayerTime.IntValue;
+		g_vsh2.m_hGamemode.iTimeLeft = g_vsh2.m_hCvars.LastPlayerTime.IntValue;
 		
 		/// maybe some day :/ ...
 		/*
@@ -1581,7 +1591,7 @@ public void CheckAlivePlayers(const any nil)
 	}
 	
 	int enable_alive = g_vsh2.m_hCvars.AliveToEnable.IntValue;
-	if( !g_vsh2.m_hCvars.PointType.BoolValue && living <= enable_alive && !gamemode.bPointReady ) {
+	if( !g_vsh2.m_hCvars.PointType.BoolValue && living <= enable_alive && !g_vsh2.m_hGamemode.bPointReady ) {
 		PrintHintTextToAll("%i players are left; control point enabled!", living);
 		if( living==enable_alive )
 			EmitSoundToAll("vo/announcer_am_capenabled02.mp3");
@@ -1591,7 +1601,7 @@ public void CheckAlivePlayers(const any nil)
 			EmitSoundToAll(cap_incite_snd);
 		}
 		SetControlPoint(true);
-		gamemode.bPointReady = true;
+		g_vsh2.m_hGamemode.bPointReady = true;
 	}
 }
 
@@ -1604,7 +1614,7 @@ public void ManageOnBossCap(char sCappers[MAXPLAYERS+1], const int CappingTeam)
 public void _SkipBossPanel()
 {
 	BaseBoss[] upnext = new BaseBoss[MaxClients];
-	gamemode.GetQueue(upnext);
+	VSHGameMode.GetQueue(upnext);
 	for( int j; j<3; ++j ) {
 		if( !upnext[j] )
 			continue;
@@ -1620,7 +1630,7 @@ public void _SkipBossPanel()
 public void PrepPlayers(const BaseBoss player)
 {
 	int client = player.index;
-	if( gamemode.iRoundState == StateEnding || !IsValidClient(client) || !IsPlayerAlive(client) || player.bIsBoss )
+	if( g_vsh2.m_hGamemode.iRoundState == StateEnding || !IsValidClient(client) || !IsPlayerAlive(client) || player.bIsBoss )
 		return;
 	
 	Action act = Call_OnPrepRedTeam(player);
@@ -1628,7 +1638,7 @@ public void PrepPlayers(const BaseBoss player)
 		return;
 	
 #if defined _tf2attributes_included
-	if( gamemode.bTF2Attribs )
+	if( g_vsh2.m_hGamemode.bTF2Attribs )
 		TF2Attrib_RemoveAll(client);
 #endif
 	/// Added fix by Chdata to correct team colors
@@ -1643,7 +1653,7 @@ public void PrepPlayers(const BaseBoss player)
 	
 #if defined _tf2attributes_included
 	/// Fixes mantreads to have jump height again
-	if( gamemode.bTF2Attribs && IsValidEntity(FindPlayerBack(client, { 444 }, 1)) )
+	if( g_vsh2.m_hGamemode.bTF2Attribs && IsValidEntity(FindPlayerBack(client, { 444 }, 1)) )
 		/// "self dmg push force increased"
 		TF2Attrib_SetByDefIndex(client, 58, 1.8);
 #endif
@@ -1757,7 +1767,7 @@ public void PrepPlayers(const BaseBoss player)
 		}
 	}
 #if defined _tf2attributes_included
-	if( gamemode.bTF2Attribs && g_vsh2.m_hCvars.HealthRegenForPlayers.BoolValue ) {
+	if( g_vsh2.m_hGamemode.bTF2Attribs && g_vsh2.m_hCvars.HealthRegenForPlayers.BoolValue ) {
 		int max_health = GetEntProp(client, Prop_Data, "m_iMaxHealth");
 		TF2Attrib_SetByDefIndex(client, 57, max_health / 50.0 + g_vsh2.m_hCvars.HealthRegenAmount.FloatValue);
 	}
@@ -1907,7 +1917,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 	}
 	
 	if( !(buttons & IN_SCORE) ) {
-		if( gamemode.bMedieval || g_vsh2.m_hCvars.ForceLives.BoolValue )
+		if( g_vsh2.m_hGamemode.bMedieval || g_vsh2.m_hCvars.ForceLives.BoolValue )
 			Format(HUDText, 300, "Damage: %d | Lives: %d", fighter.iDamage, fighter.iLives);
 		else Format(HUDText, 300, "Damage: %d", fighter.iDamage);
 		ShowSyncHudText(i, g_vsh2.m_hHUDs[PlayerHUD], HUDText);
@@ -1983,7 +1993,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 	if( !(buttons & IN_SCORE) )
 		ShowSyncHudText(i, g_vsh2.m_hHUDs[PlayerHUD], HUDText);
 	
-	int living = gamemode.iPlaying;
+	int living = GetLivingPlayers(VSH2Team_Red);
 	if( living == 1 && !TF2_IsPlayerInCondition(i, TFCond_Cloaked) ) {
 		TF2_AddCondition(i, TFCond_CritOnWin, 0.2);
 		int primary = GetPlayerWeaponSlot(i, TFWeaponSlot_Primary);
@@ -2108,6 +2118,6 @@ public void ManageFighterThink(const BaseBoss fighter)
 /// too many temp funcs just to call as a timer. No wonder sourcepawn needs lambda funcs...
 public void _RespawnPlayer(const int userid)
 {
-	if( gamemode.iRoundState == StateRunning )
+	if( g_vsh2.m_hGamemode.iRoundState == StateRunning )
 		TF2_RespawnPlayer(GetClientOfUserId(userid));
 }

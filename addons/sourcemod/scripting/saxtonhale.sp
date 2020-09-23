@@ -28,6 +28,7 @@ enum {
 
 GlobalForward g_vsh_forwards[MaxVSHForwards];
 ConVar        vsh2_enabled;
+VSH2GameMode  vsh2_gm;
 
 
 public void OnLibraryAdded(const char[] name) {
@@ -99,7 +100,7 @@ public void VSH_OnMusic(char song[PLATFORM_MAX_PATH], float& time, const VSH2Pla
 
 public Action VSH_OnNextHale(const VSH2Player player)
 {
-	if( VSH2GameMode_FindNextBoss()==player ) {
+	if( vsh2_gm.hNextBoss==player ) {
 		Action act = Plugin_Continue;
 		Call_StartForward(g_vsh_forwards[OnHaleNext]);
 		Call_PushCell(player.index);
@@ -133,7 +134,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public int Native_IsVSHMap(Handle plugin, int numParams)
 {
-	return VSH2GameMode_IsVSHMap();
+	return VSH2GameMode.IsVSHMap();
 }
 
 public int Native_IsEnabled(Handle plugin, int numParams)
@@ -144,7 +145,7 @@ public int Native_IsEnabled(Handle plugin, int numParams)
 public int Native_GetHale(Handle plugin, int numParams)
 {
 	VSH2Player[] boss = new VSH2Player[MaxClients];
-	if( VSH2GameMode_GetBosses(boss) > 0 )
+	if( VSH2GameMode.GetBosses(boss) > 0 )
 		return boss[0].userid;
 	else return 0;
 }
@@ -157,7 +158,7 @@ public int Native_GetTeam(Handle plugin, int numParams)
 public int Native_GetSpecial(Handle plugin, int numParams)
 {
 	VSH2Player[] boss = new VSH2Player[MaxClients];
-	if( VSH2GameMode_GetBosses(boss) > 0 )
+	if( VSH2GameMode.GetBosses(boss) > 0 )
 		return boss[0].GetPropInt("iBossType");
 	else return 0;
 }
@@ -165,7 +166,7 @@ public int Native_GetSpecial(Handle plugin, int numParams)
 public int Native_GetHealth(Handle plugin, int numParams)
 {
 	VSH2Player[] boss = new VSH2Player[MaxClients];
-	if( VSH2GameMode_GetBosses(boss) > 0 )
+	if( VSH2GameMode.GetBosses(boss) > 0 )
 		return GetClientHealth(boss[0].index);
 	else return 0;
 }
@@ -173,7 +174,7 @@ public int Native_GetHealth(Handle plugin, int numParams)
 public int Native_GetHealthMax(Handle plugin, int numParams)
 {
 	VSH2Player[] boss = new VSH2Player[MaxClients];
-	if( VSH2GameMode_GetBosses(boss) > 0 )
+	if( VSH2GameMode.GetBosses(boss) > 0 )
 		return boss[0].GetPropInt("iMaxHealth");
 	else return 0;
 }
@@ -188,5 +189,5 @@ public int Native_GetDamage(Handle plugin, int numParams)
 
 public int Native_GetRoundState(Handle plugin, int numParams)
 {
-	return VSH2GameMode_GetPropInt("iRoundState");
+	return VSH2GameMode.GetPropInt("iRoundState");
 }

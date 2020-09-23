@@ -1,6 +1,6 @@
 public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 {
-	int roundstate = gamemode.iRoundState;
+	int roundstate = g_vsh2.m_hGamemode.iRoundState;
 	if( !g_vsh2.m_hCvars.Enabled.BoolValue || roundstate==StateDisabled )
 		return Plugin_Continue;
 	
@@ -28,7 +28,7 @@ public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 }
 public Action Resupply(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !g_vsh2.m_hCvars.Enabled.BoolValue || gamemode.iRoundState==StateDisabled )
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2.m_hGamemode.iRoundState==StateDisabled )
 		return Plugin_Continue;
 	
 	BaseBoss player = BaseBoss( event.GetInt("userid"), true );
@@ -36,7 +36,7 @@ public Action Resupply(Event event, const char[] name, bool dontBroadcast)
 		SetVariantString(""); AcceptEntityInput(player.index, "SetCustomModel");
 		player.SetOverlay("0");
 		
-		if( player.bIsBoss && (StateDisabled < gamemode.iRoundState < StateEnding) ) {
+		if( player.bIsBoss && (StateDisabled < g_vsh2.m_hGamemode.iRoundState < StateEnding) ) {
 			if( GetClientTeam(player.index) != VSH2Team_Boss )
 				player.ForceTeamChange(VSH2Team_Boss);
 			player.ConvertToBoss();		/// in base.sp
@@ -48,7 +48,7 @@ public Action Resupply(Event event, const char[] name, bool dontBroadcast)
 public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
 	/// Bug patch: first round kill immediately ends the round.
-	if( !g_vsh2.m_hCvars.Enabled.BoolValue || gamemode.iRoundState==StateDisabled )
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2.m_hGamemode.iRoundState==StateDisabled )
 		return Plugin_Continue;
 	
 	BaseBoss victim = BaseBoss( event.GetInt("userid"), true );
@@ -60,11 +60,11 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 		SetPawnTimer(CheckAlivePlayers, 0.2);
 	
 	int death_flags = event.GetInt("death_flags");
-	if( (gamemode.bMedieval || g_vsh2.m_hCvars.ForceLives.BoolValue)
+	if( (g_vsh2.m_hGamemode.bMedieval || g_vsh2.m_hCvars.ForceLives.BoolValue)
 		&& !victim.bIsBoss
 		&& !victim.bIsMinion
 		&& victim.iLives
-		&& gamemode.iRoundState==StateRunning
+		&& g_vsh2.m_hGamemode.iRoundState==StateRunning
 		&& !(death_flags & TF_DEATHFLAG_DEADRINGER) )
 	{
 		SetPawnTimer(_RespawnPlayer, g_vsh2.m_hCvars.MedievalRespawnTime.FloatValue, victim.userid);
@@ -128,12 +128,12 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 		return Plugin_Continue;
 	}
 	StopBackGroundMusic();
-	gamemode.bMedieval = (FindEntityByClassname(-1, "tf_logic_medieval") != -1 || FindConVar("tf_medieval").BoolValue);
-	gamemode.CheckArena(g_vsh2.m_hCvars.PointType.BoolValue);
-	gamemode.bPointReady = false;
-	gamemode.iTimeLeft = 0;
-	gamemode.iCaptures = 0;
-	gamemode.GetBossType();    /// in gamemode.sp
+	g_vsh2.m_hGamemode.bMedieval = (FindEntityByClassname(-1, "tf_logic_medieval") != -1 || FindConVar("tf_medieval").BoolValue);
+	VSHGameMode.CheckArena(g_vsh2.m_hCvars.PointType.BoolValue);
+	g_vsh2.m_hGamemode.bPointReady = false;
+	g_vsh2.m_hGamemode.iTimeLeft = 0;
+	g_vsh2.m_hGamemode.iCaptures = 0;
+	g_vsh2.m_hGamemode.GetBossType();    /// in g_vsh2.m_hGamemode.sp
 	
 	int playing;
 	for( int iplay=MaxClients; iplay; --iplay ) {
@@ -146,41 +146,41 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 	}
 	if( GetClientCount() <= 1 || playing < 2 ) {
 		CPrintToChatAll("{olive}[VSH 2]{default} Need more Players to Commence");
-		gamemode.iRoundState = StateDisabled;
+		g_vsh2.m_hGamemode.iRoundState = StateDisabled;
 		SetArenaCapEnableTime(60.0);
-		//SetPawnTimer(EnableCap, 71.0, gamemode.bDoors);
+		//SetPawnTimer(EnableCap, 71.0, g_vsh2.m_hGamemode.bDoors);
 		return Plugin_Continue;
-	} else if( gamemode.iRoundCount <= 0 && !g_vsh2.m_hCvars.FirstRound.BoolValue ) {
+	} else if( g_vsh2.m_hGamemode.iRoundCount <= 0 && !g_vsh2.m_hCvars.FirstRound.BoolValue ) {
 		CPrintToChatAll("{olive}[VSH 2]{default} Normal Round while Everybody is Loading");
-		gamemode.iRoundState = StateDisabled;
+		g_vsh2.m_hGamemode.iRoundState = StateDisabled;
 		SetArenaCapEnableTime(60.0);
 		FindConVar("mp_teams_unbalance_limit").IntValue = 1;
 		FindConVar("mp_forceautoteam").IntValue = 1;
-		//SetPawnTimer(EnableCap, 71.0, gamemode.bDoors);
+		//SetPawnTimer(EnableCap, 71.0, g_vsh2.m_hGamemode.bDoors);
 		return Plugin_Continue;
 	}
 	
 	FindConVar("mp_teams_unbalance_limit").IntValue = 0;
 	FindConVar("mp_forceautoteam").IntValue = 0;
 	
-	BaseBoss boss = gamemode.FindNextBoss();
+	BaseBoss boss = VSHGameMode.FindNextBoss();
 	if( boss.index <= 0 ) {
 		CPrintToChatAll("{olive}[VSH 2]{default} Boss client index was Invalid. Need more Players to Commence");
-		gamemode.iRoundState = StateDisabled;
+		g_vsh2.m_hGamemode.iRoundState = StateDisabled;
 		SetControlPoint(true);
 		return Plugin_Continue;
-	} else if( gamemode.hNextBoss ) {
-		boss = gamemode.hNextBoss;
-		gamemode.hNextBoss = view_as< BaseBoss >(0);
+	} else if( g_vsh2.m_hGamemode.hNextBoss ) {
+		boss = g_vsh2.m_hGamemode.hNextBoss;
+		g_vsh2.m_hGamemode.hNextBoss = view_as< BaseBoss >(0);
 	}
 	
 	/// Got our boss, let's prep him/her.
-	boss.iBossType = gamemode.iSpecial;
+	boss.iBossType = g_vsh2.m_hGamemode.iSpecial;
 	
 	/// Setting this here so we can intercept Boss type and other info
 	ManageOnBossSelected(boss);
 	boss.ConvertToBoss();
-	gamemode.iSpecial = -1;
+	g_vsh2.m_hGamemode.iSpecial = -1;
 	
 	if( GetClientTeam(boss.index) != VSH2Team_Boss )
 		boss.ForceTeamChange(VSH2Team_Boss);
@@ -200,7 +200,7 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 	}
 	
 	/// We got players and a valid boss, set the gamestate to Starting
-	gamemode.iRoundState = StateStarting;
+	g_vsh2.m_hGamemode.iRoundState = StateStarting;
 	//SetPawnTimer(RoundStartPost, 9.1);    /// in handler.sp
 	SetPawnTimer(ManagePlayBossIntro, 3.5, boss);    /// in handler.sp
 	
@@ -225,8 +225,8 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 		AcceptEntityInput(ent, "SetTeam");
 		AcceptEntityInput(ent, "skin");
 	}
-	gamemode.SearchForItemPacks();
-	gamemode.iHealthChecks = 0;
+	VSHGameMode.SearchForItemPacks();
+	g_vsh2.m_hGamemode.iHealthChecks = 0;
 	return Plugin_Continue;
 }
 public Action ObjectDeflected(Event event, const char[] name, bool dontBroadcast)
@@ -268,19 +268,19 @@ public Action PlayerJarated(Event event, const char[] name, bool dontBroadcast)
 }
 public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
-	gamemode.iRoundCount++;
-	if( !g_vsh2.m_hCvars.Enabled.BoolValue || gamemode.iRoundState == StateDisabled )
+	g_vsh2.m_hGamemode.iRoundCount++;
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2.m_hGamemode.iRoundState == StateDisabled )
 		return Plugin_Continue;
 	
-	gamemode.iRoundState = StateEnding;
-	gamemode.flMusicTime = 0.0;
+	g_vsh2.m_hGamemode.iRoundState = StateEnding;
+	g_vsh2.m_hGamemode.flMusicTime = 0.0;
 	BaseBoss boss;
 	int i;
 	for( i=MaxClients; i; --i ) {
 		if( !IsValidClient(i) )
 			continue;
 #if defined _tf2attributes_included
-		if( gamemode.bTF2Attribs )
+		if( g_vsh2.m_hGamemode.bTF2Attribs )
 			TF2Attrib_RemoveByDefIndex(i, 26);
 #endif
 	}
@@ -317,7 +317,7 @@ public void OnHookedEvent(Event event, const char[] name, bool dontBroadcast)
 }
 public Action ItemPickedUp(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !g_vsh2.m_hCvars.Enabled.BoolValue || gamemode.iRoundState != StateRunning )
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2.m_hGamemode.iRoundState != StateRunning )
 		return Plugin_Continue;
 	
 	BaseBoss player = BaseBoss(event.GetInt("userid"), true);
@@ -328,7 +328,7 @@ public Action ItemPickedUp(Event event, const char[] name, bool dontBroadcast)
 
 public Action UberDeployed(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !g_vsh2.m_hCvars.Enabled.BoolValue || gamemode.iRoundState == StateDisabled)
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2.m_hGamemode.iRoundState == StateDisabled)
 		return Plugin_Continue;
 	
 	BaseBoss medic = BaseBoss(event.GetInt("userid"), true);
@@ -338,7 +338,7 @@ public Action UberDeployed(Event event, const char[] name, bool dontBroadcast)
 }
 public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !g_vsh2.m_hCvars.Enabled.BoolValue || gamemode.iRoundState == StateDisabled )
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2.m_hGamemode.iRoundState == StateDisabled )
 		return Plugin_Continue;
 	
 	BaseBoss boss;
@@ -357,8 +357,8 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 			SetPawnTimer(PrepPlayers, 0.2, boss.userid);    /// in handler.sp
 		}
 	}
-	gamemode.iTotalMaxHealth = 0;
-	int bosscount = gamemode.CountBosses(false);
+	g_vsh2.m_hGamemode.iTotalMaxHealth = 0;
+	int bosscount = VSHGameMode.CountBosses(false);
 	
 	/// Loop again for bosses only
 	ArrayList bosses = new ArrayList();
@@ -375,7 +375,7 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 		if( !IsPlayerAlive(i) )
 			TF2_RespawnPlayer(i);
 		
-		int red_players = gamemode.iPlaying;
+		int red_players = GetLivingPlayers(VSH2Team_Red);
 		/// Automatically divides health based on boss count but this can be changed if necessary
 		
 		int max_health = CalcBossHealth(760.8, red_players, 1.0, 1.0341, 2046.0) / (bosscount);    /// In stocks.sp
@@ -393,20 +393,20 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 		boss.iMaxHealth = max_health;
 		if( GetClientTeam(boss.index) != VSH2Team_Boss )
 			boss.ForceTeamChange(VSH2Team_Boss);
-		gamemode.iTotalMaxHealth += boss.iMaxHealth;
+		g_vsh2.m_hGamemode.iTotalMaxHealth += boss.iMaxHealth;
 		boss.iHealth = boss.iMaxHealth;
 	}
 	RequestFrame(CheckAlivePlayers, 0);
 	//SetPawnTimer(CheckAlivePlayers, 0.2);
 	ManageMessageIntro(bosses);
-	if( gamemode.iPlaying > 5 )
+	if( GetLivingPlayers(VSH2Team_Red) > 5 )
 		SetControlPoint(false);
-	gamemode.flHealthTime = GetGameTime() + g_vsh2.m_hCvars.HealthCheckInitialDelay.FloatValue;
+	g_vsh2.m_hGamemode.flHealthTime = GetGameTime() + g_vsh2.m_hCvars.HealthCheckInitialDelay.FloatValue;
 	
 	BaseBoss[] b = new BaseBoss[MaxClients];
-	int boss_count = gamemode.GetBosses(b, true);
+	int boss_count = VSHGameMode.GetBosses(b, true);
 	BaseBoss[] r = new BaseBoss[MaxClients];
-	int red_count = gamemode.GetFighters(r, true);
+	int red_count = VSHGameMode.GetFighters(r, true);
 	Call_OnRoundStart(b, boss_count, r, red_count);
 	
 	return Plugin_Continue;
@@ -414,20 +414,20 @@ public Action ArenaRoundStart(Event event, const char[] name, bool dontBroadcast
 
 public Action PointCapture(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !g_vsh2.m_hCvars.Enabled.BoolValue || gamemode.iRoundState != StateRunning || !g_vsh2.m_hCvars.MultiCapture.BoolValue )
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2.m_hGamemode.iRoundState != StateRunning || !g_vsh2.m_hCvars.MultiCapture.BoolValue )
 		return Plugin_Continue;
 	
 	// int iCap = event.GetInt("cp"); /// Doesn't seem to give the correct origin vectors
 	int iCapTeam = event.GetInt("team");
-	gamemode.iCaptures++;
+	g_vsh2.m_hGamemode.iCaptures++;
 	
-	if( gamemode.iCaptures >= g_vsh2.m_hCvars.MultiCapAmount.IntValue ||
-		(gamemode.iPlaying == 1 && iCapTeam == VSH2Team_Red) )
+	if( g_vsh2.m_hGamemode.iCaptures >= g_vsh2.m_hCvars.MultiCapAmount.IntValue ||
+		(GetLivingPlayers(VSH2Team_Red) == 1 && iCapTeam == VSH2Team_Red) )
 	{
 		ForceTeamWin(iCapTeam);
 		return Plugin_Continue;
 	}
-	_SetCapOwner(VSH2Team_Neutral, gamemode.bDoors, g_vsh2.m_hCvars.CapReenableTime.FloatValue); /// in stocks.inc
+	_SetCapOwner(VSH2Team_Neutral, g_vsh2.m_hGamemode.bDoors, g_vsh2.m_hCvars.CapReenableTime.FloatValue); /// in stocks.inc
 	
 	/// TODO: replace index string with BaseBoss array + size.
 	char sCappers[MAXPLAYERS+1];
@@ -438,7 +438,7 @@ public Action PointCapture(Event event, const char[] name, bool dontBroadcast)
 
 public Action RPSTaunt(Event event, const char[] name, bool dontBroadcast)
 {
-	if( !g_vsh2.m_hCvars.Enabled.BoolValue || gamemode.iRoundState != StateRunning )
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2.m_hGamemode.iRoundState != StateRunning )
 		return Plugin_Continue;
 	
 	BaseBoss winner = BaseBoss(event.GetInt("winner"));

@@ -69,6 +69,7 @@ enum struct VSH2ConVars {
 
 FF2CompatPlugin ff2;
 VSH2ConVars     vsh2cvars;
+VSH2GameMode    vsh2_gm;
 
 #include "modules/ff2/utils.sp"
 #include "modules/ff2/handles.sp"
@@ -207,10 +208,10 @@ public void OnPlayerKilledFF2(const VSH2Player player, const VSH2Player victim, 
 	Call_StartForward(ff2.m_forwards[FF2OnAlive]);
 	
 	FF2Player[] array = new FF2Player[MaxClients];
-	Call_PushCell(VSH2GameMode_GetFighters(array, true));
+	Call_PushCell(VSH2GameMode.GetFighters(array, true));
 	
-	int bosses = VSH2GameMode_GetBosses(array, true);
-	Call_PushCell(bosses + VSH2GameMode_GetMinions(array, true));
+	int bosses = VSH2GameMode.GetBosses(array, true);
+	Call_PushCell(bosses + VSH2GameMode.GetMinions(array, true));
 	
 	Call_Finish();
 }
@@ -425,7 +426,7 @@ public int Native_FF2_GetForkVersion(Handle plugin, int numParams)
 /** int FF2_GetRoundState(); */
 public int Native_FF2_GetRoundState(Handle plugin, int numParams)
 {
-	return VSH2GameMode_GetPropInt("iRoundState");
+	return VSH2GameMode.GetPropInt("iRoundState");
 }
 
 /** int FF2_GetBossUserId(int boss=0); */
@@ -1012,14 +1013,14 @@ public any Native_FF2_SetClientGlow(Handle plugin, int numParams)
 /** int FF2_GetAlivePlayers(); */
 public any Native_FF2_GetAlivePlayers(Handle plugin, int numParams)
 {
-	return VSH2GameMode_GetTotalRedPlayers();
+	return vsh2_gm.iLivingReds;
 }
 
 /** int FF2_GetBossPlayers(); */
 public any Native_FF2_GetBossPlayers(Handle plugin, int numParams)
 {
 	FF2Player[] bosses = new FF2Player[MaxClients];
-	return VSH2GameMode_GetBosses(bosses);
+	return VSH2GameMode.GetBosses(bosses);
 }
 
 /** float FF2_GetClientShield(int client); */

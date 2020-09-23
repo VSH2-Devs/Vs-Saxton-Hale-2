@@ -740,7 +740,6 @@ stock void RemovePlayerBack(int client, int[] indices, int len)
 	int numwearables = TF2_GetNumWearables(client);
 	for( int i=numwearables-1; i>=0; --i ) {
 		int wearable = TF2_GetWearable(client, i);
-
 		if( wearable && !GetEntProp(wearable, Prop_Send, "m_bDisguiseWearable") ) {
 			int idx = GetItemIndex(wearable);
 			for( int u; u<len; u++ ) {
@@ -760,7 +759,6 @@ stock int FindPlayerBack(int client, int[] indices, int len)
 	int numwearables = TF2_GetNumWearables(client);
 	for( int i=numwearables-1; i>=0; --i ) {
 		int wearable = TF2_GetWearable(client, i);
-
 		if( wearable && !GetEntProp(wearable, Prop_Send, "m_bDisguiseWearable") ) {
 			int idx = GetItemIndex(wearable);
 			for( int u; u<len; u++ ) {
@@ -945,21 +943,6 @@ stock int GetClip(const int client, const int slot)
 	return 0;
 }
 
-stock void SkipBossPanelNotify(const int client/*, bool newchoice = true*/)
-{
-	if( !g_vsh2.m_hCvars.Enabled.BoolValue || !IsValidClient(client) || IsFakeClient(client) || IsVoteInProgress() )
-		return;
-	
-	Panel panel = new Panel();
-	char strNotify[64];
-	
-	panel.SetTitle("[VSH2] You're The Next Boss!");
-	Format(strNotify, sizeof(strNotify), "You are going to be a Boss soon! Type /halenext to check/reset your queue points.\nAlternatively, use !resetq.\nDon't forget to use !setboss to set your boss.");
-	
-	panel.DrawItem(strNotify);
-	panel.Send(client, SkipHalePanelH, 30); /// in commands.sp
-	delete panel;
-}
 stock void _SetCapOwner(const int iCapTeam, const bool open_doors, float flEnableTime = 30.0)
 {
 	int i = -1;
