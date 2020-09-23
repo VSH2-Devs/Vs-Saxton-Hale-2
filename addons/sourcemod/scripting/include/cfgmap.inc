@@ -67,6 +67,8 @@ enum struct KeyValState {
 	
 	int enumer_global; /// for keeping track of <ENUM> value.
 	int enumer_local;  /// for keeping track of <enum> value.
+	int iota_global;   /// for keeping track of <IOTA> value.
+	int iota_local;    /// for keeping track of <iota> value.
 }
 
 static KeyValState g_kvstate;
@@ -81,8 +83,8 @@ methodmap ConfigMap < StringMap {
 		g_kvstate.enum_stack = new ArrayStack();
 		g_kvstate.secstack = new ArrayStack(PLATFORM_MAX_PATH);
 		g_kvstate.top = new StringMap();
-		g_kvstate.enumer_global = 0;
-		g_kvstate.enumer_local = 0;
+		g_kvstate.enumer_global = g_kvstate.iota_global = 0;
+		g_kvstate.enumer_local = g_kvstate.iota_local = 0;
 		
 		g_kvstate.parser = new SMCParser();
 		g_kvstate.parser.OnEnterSection = ConfigMap_OnNewSection;
@@ -309,7 +311,8 @@ public SMCResult ConfigMap_OnNewSection(SMCParser smc, const char[] name, bool o
 	g_kvstate.top = new StringMap();
 	strcopy(g_kvstate.curr_section, sizeof(g_kvstate.curr_section), name);
 	g_kvstate.enum_stack.Push(g_kvstate.enumer_local);
-	g_kvstate.enumer_local = 0;
+	g_kvstate.enum_stack.Push(g_kvstate.iota_local);
+	g_kvstate.enumer_local = g_kvstate.iota_local = 0;
 	return SMCParse_Continue;
 }
 
@@ -317,8 +320,22 @@ public SMCResult ConfigMap_OnKeyValue(SMCParser smc, const char[] key, const cha
 {
 	PackVal val;
 	val.data = new DataPack();
-	val.data.WriteString(value);
-	val.size = strlen(value) + 1;
+	if( StrEqual(value, "<IOTA>") ) {
+		char iota_val_str[15];
+		int iota_val = g_kvstate.iota_global++;
+		IntToString(iota_val, iota_val_str, sizeof iota_val_str);
+		val.data.WriteString(iota_val_str);
+		val.size = strlen(iota_val_str) + 1;
+	} else if( StrEqual(value, "<iota>") ) {
+		char iota_val_str[15];
+		int iota_val = g_kvstate.iota_local++;
+		IntToString(iota_val, iota_val_str, sizeof iota_val_str);
+		val.data.WriteString(iota_val_str);
+		val.size = strlen(iota_val_str) + 1;
+	} else {
+		val.data.WriteString(value);
+		val.size = strlen(value) + 1;
+	}
 	val.tag = KeyValType_Value;
 	
 	if( StrEqual(key, "<ENUM>") ) {
@@ -337,6 +354,7 @@ public SMCResult ConfigMap_OnKeyValue(SMCParser smc, const char[] key, const cha
 
 public SMCResult ConfigMap_OnEndSection(SMCParser smc)
 {
+	g_kvstate.iota_local = g_kvstate.enum_stack.Pop();
 	g_kvstate.enumer_local = g_kvstate.enum_stack.Pop();
 	/// if our stack isn't empty, pop back our older top
 	/// and push the newer one into it as a new section.
