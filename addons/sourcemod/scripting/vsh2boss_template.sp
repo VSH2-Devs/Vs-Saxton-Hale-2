@@ -86,8 +86,9 @@ enum struct VSH2CVars {
 	ConVar jarate_rage;
 }
 
-VSH2CVars g_vsh2_cvars;
+VSH2CVars    g_vsh2_cvars;
 VSH2GameMode vsh2_gm;
+ConfigMap    template_boss_cfg;
 
 public void OnLibraryAdded(const char[] name) {
 	if( StrEqual(name, "VSH2") ) {
@@ -95,6 +96,7 @@ public void OnLibraryAdded(const char[] name) {
 		g_vsh2_cvars.airblast_rage = FindConVar("vsh2_airblast_rage");
 		g_vsh2_cvars.jarate_rage = FindConVar("vsh2_jarate_rage");
 		g_iTemplateID = VSH2_RegisterPlugin("template_boss");
+		template_boss_cfg = new ConfigMap("path/to/template_boss/config.cfg");
 		LoadVSH2Hooks();
 	}
 }
@@ -186,12 +188,38 @@ public void Template_OnCallDownloads()
 	PrepareMaterial("materials/models/template_snd/skin_red");
 	PrepareMaterial("materials/models/template_snd/skin_blu");
 	PrepareMaterial("materials/models/template_snd/normals");
+	
+	/// ConfigMap used for asset downloading.
+	char dl_keys[][] = { "sounds", "models", "materials" };
+	ConfigMap assets = template_boss_cfg.GetSection("assets");
+	for( int i; i<sizeof dl_keys; i++ ) {
+		ConfigMap dl_section = assets.GetSection(dl_keys[i]);
+		if( dl_section != null ) {
+			for( int n; n<dl_section.Size; n++ ) {
+				char index[10]; Format(index, sizeof index, "%i", n);
+				int path_len = dl_section.GetSize(index);
+				char[] file = new char[path_len];
+				if( dl_section.Get(index, file, path_len) > 0 ) {
+					switch( i ) {
+						case 0: PrepareSound(file);
+						case 1: PrepareModel(file);
+						case 2: PrepareMaterial(file);
+					}
+				}
+			}
+		}
+	}
 }
 
-public void Template_OnBossMenu(Menu &menu)
+public void Template_OnBossMenu(Menu& menu)
 {
 	char tostr[10]; IntToString(g_iTemplateID, tostr, sizeof(tostr));
-	menu.AddItem(tostr, "Template");
+	
+	/// ConfigMap can be used to store the boss name.
+	int name_len = template_boss_cfg.GetSize("boss_name");
+	char[] name = new char[name_len];
+	template_boss_cfg.Get("boss_name", name, name_len);
+	menu.AddItem(tostr, name);
 }
 
 public void Template_OnBossSelected(const VSH2Player player)
@@ -203,10 +231,26 @@ public void Template_OnBossSelected(const VSH2Player player)
 	player.SetPropFloat("flCustomProp", 0.0);
 	player.SetPropAny("hCustomProp", player);
 	
+	/// ConfigMap is also useful for automating custom prop creation.
+	ConfigMap custom_props = template_boss_cfg.GetSection("custom_props");
+	for( int i; i<custom_props.Size; i++ ) {
+		char index[10]; IntToString(i, index, sizeof index);
+		int prop_len = template_boss_cfg.GetSize(index);
+		char[] prop_name = new char[prop_len];
+		template_boss_cfg.Get(index, prop_name, prop_len);
+		char prop[64];
+		strcopy(prop, sizeof prop, prop_name);
+		player.SetPropInt(prop, 0);
+	}
+	
+	
 	Panel panel = new Panel();
-	panel.SetTitle("Template:\nInfo Message 1.\nInfo Message 2.\nInfo Message 3.");
+	int panel_len = template_boss_cfg.GetSize("panel_msg");
+	char[] panel_info = new char[panel_len];
+	template_boss_cfg.Get("panel_msg", panel_info, panel_len);
+	panel.SetTitle(panel_info);
 	panel.DrawItem("Exit");
-	panel.Send(player.index, HintPanel, 50);
+	panel.Send(player.index, HintPanel, 999);
 	delete panel;
 }
 
@@ -253,9 +297,18 @@ public void Template_OnBossEquipped(const VSH2Player player)
 	if( !IsTemplate(player) )
 		return;
 	
-	player.SetName("Template");
+	int boss_name_len = template_boss_cfg.GetSize("boss_name");
+	char[] boss_name = new char[boss_name_len];
+	template_boss_cfg.Get("boss_name", boss_name, boss_name_len);
+	char name[MAX_BOSS_NAME_SIZE];
+	strcopy(name, sizeof name, boss_name);
+	player.SetName(name);
+	
 	player.RemoveAllItems();
-	char attribs[128]; Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.1; 259; 1.0; 252; 0.6; 214; %d", GetRandomInt(999, 9999));
+	int attribs_len = template_boss_cfg.GetSize("melee_attribs");
+	char[] attribs = new char[attribs_len];
+	template_boss_cfg.Get("melee_attribs", attribs, attribs_len);
+	//char attribs[128]; Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.1; 259; 1.0; 252; 0.6; 214; %d", GetRandomInt(999, 9999));
 	int wep = player.SpawnWeapon("tf_weapon_shovel", 5, 100, 5, attribs);
 	SetEntPropEnt(player.index, Prop_Send, "m_hActiveWeapon", wep);
 }
@@ -264,7 +317,7 @@ public void Template_OnBossInitialized(const VSH2Player player)
 {
 	if( !IsTemplate(player) )
 		return;
-	SetEntProp(player.index, Prop_Send, "m_iClass", view_as<int>(TFClass_Soldier));
+	SetEntProp(player.index, Prop_Send, "m_iClass", view_as< int >(TFClass_Soldier));
 }
 
 public void Template_OnBossPlayIntro(const VSH2Player player)
@@ -310,12 +363,17 @@ public void Template_OnBossMedicCall(const VSH2Player player)
 	if( !IsTemplate(player) || player.GetPropFloat("flRAGE") < 100.0 )
 		return;
 	
-	player.DoGenericStun(800.0);
+	/// use ConfigMap to set how large the rage radius is!
+	float radius = 800.0; /// in case of failure, default value!
+	template_boss_cfg.GetFloat("melee_attribs", radius);
+	
+	player.DoGenericStun(radius);
 	VSH2Player[] players = new VSH2Player[MaxClients];
-	int in_range = player.GetPlayersInRange(players, 800.0);
+	int in_range = player.GetPlayersInRange(players, radius);
 	for( int i; i<in_range; i++ ) {
 		if( players[i].GetPropAny("bIsBoss") || players[i].GetPropAny("bIsMinion") )
 			continue;
+		
 		/// do a distance based thing here.
 	}
 	player.PlayVoiceClip(TemplateRage[GetRandomInt(0, sizeof(TemplateRage)-1)], VSH2_VOICE_RAGE);
@@ -392,10 +450,10 @@ stock bool IsValidClient(const int client, bool nobots=false)
 	return IsClientInGame(client); 
 }
 
-stock int GetSlotFromWeapon(const int iClient, const int iWeapon)
+stock int GetSlotFromWeapon(const int client, const int wep)
 {
 	for( int i; i<5; i++ )
-		if( iWeapon == GetPlayerWeaponSlot(iClient, i) )
+		if( wep==GetPlayerWeaponSlot(client, i) )
 			return i;
 	
 	return -1;
@@ -439,6 +497,7 @@ public Action DoThink(Handle hTimer, DataPack hndl)
 	Call_Finish();
 	return Plugin_Continue;
 }
+
 stock int SetWeaponClip(const int weapon, const int ammo)
 {
 	if( IsValidEntity(weapon) ) {
