@@ -922,27 +922,17 @@ public void ShowPlayerScores()
 	if( hTop[0].iDamage > 9000 )
 		SetPawnTimer(OverNineThousand, 1.0);    /// in stocks.inc
 	
-	char score1[PATH], score2[PATH], score3[PATH];
-	if( hTop[0].index )
-		GetClientName(hTop[0].index, score1, PATH);
-	else {
-		strcopy(score1, PATH, "nil");
-		hTop[0] = view_as< BaseBoss >(0);
+	char names[3][PATH];
+	int damages[3];
+	for( int i=0; i<3; ++i ) {
+		if( hTop[i].index && hTop[i].iDamage > 0 ) {
+			GetClientName(hTop[i].index, names[i], sizeof(names[]));
+			damages[i] = hTop[i].iDamage;
+		} else {
+			names[i] = "nil";
+		}
 	}
 	
-	if( hTop[1].index )
-		GetClientName(hTop[1].index, score2, PATH);
-	else {
-		strcopy(score2, PATH, "nil");
-		hTop[1] = view_as< BaseBoss >(0);
-	}
-	
-	if( hTop[2].index )
-		GetClientName(hTop[2].index, score3, PATH);
-	else {
-		strcopy(score3, PATH, "nil");
-		hTop[2] = view_as< BaseBoss >(0);
-	}
 	SetHudTextParams(-1.0, 0.35, 10.0, 255, 255, 255, 255);
 	
 	/// Should clear center text
@@ -953,7 +943,7 @@ public void ShowPlayerScores()
 			continue;
 		if( !(GetClientButtons(i) & IN_SCORE) ) {
 			player = BaseBoss(i);
-			ShowHudText(i, -1, "Most damage dealt by:\n1)%i - %s\n2)%i - %s\n3)%i - %s\n\nDamage Dealt: %i", hTop[0].iDamage, score1, hTop[1].iDamage, score2, hTop[2].iDamage, score3, player.iDamage);
+			ShowHudText(i, -1, "Most damage dealt by:\n1)%i - %s\n2)%i - %s\n3)%i - %s\n\nDamage Dealt: %i", damages[0], names[0], damages[1], names[1], damages[2], names[2], player.iDamage);
 		}
 	}
 }
