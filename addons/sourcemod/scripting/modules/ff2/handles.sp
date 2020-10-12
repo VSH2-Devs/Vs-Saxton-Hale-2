@@ -1,3 +1,4 @@
+/// TODO: is this really needed? 
 stock void ActivateAbilitySlot(int boss, int slot, bool buttonmodeactive=true)
 {
 	ConfigMap character = GetMyCharacterCfg(boss);
