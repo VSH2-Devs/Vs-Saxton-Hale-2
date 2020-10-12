@@ -6,8 +6,9 @@
 #define REQUIRE_PLUGIN
 #include <sdkhooks>
 
-#define MAX_SUBPLUGIN_NAME    64
-#define PLYR                  35
+#define MAX_SUBPLUGIN_NAME		64
+#define MAX_ABILITIES_PL		30
+#define PLYR					35
 
 #include <cfgmap>
 #include "modules/stocks.inc"
@@ -51,9 +52,8 @@ enum {
 };
 
 enum struct FF2CompatPlugin {
+	ConfigMap	   m_charcfg;
 	GlobalForward  m_forwards[MaxFF2Forwards];
-	ArrayList      m_subplugins;
-	ArrayList      m_bosscfgs;
 	bool           m_vsh2;
 	bool           m_cheats;
 	int            m_queuePoints[PLYR];
@@ -64,6 +64,7 @@ enum struct VSH2ConVars {
 	ConVar m_enabled;
 	ConVar m_version;
 	ConVar m_fljarate;
+	ConVar m_flairblast;
 	ConVar m_flmusicvol;
 }
 
@@ -76,38 +77,27 @@ VSH2GameMode    vsh2_gm;
 #include "modules/ff2/formula_parser.sp"
 #include "modules/ff2/vsh2_bridge.sp"
 
+
 public void OnPluginStart()
 {
 	/// ConVars subplugins depend on
 	CreateConVar("ff2_oldjump", "1", "Use old Saxton Hale jump equations", _, true, 0.0, true, 1.0);
 	CreateConVar("ff2_base_jumper_stun", "0", "Whether or not the Base Jumper should be disabled when a player gets stunned", _, true, 0.0, true, 1.0);
 	CreateConVar("ff2_solo_shame", "0", "Always insult the boss for solo raging", _, true, 0.0, true, 1.0);
-	
-	/// GameData
-	Prep_GameDataFF2();
 }
 
 public void OnLibraryAdded(const char[] name) {
 	if( StrEqual(name, "VSH2") ) {
 		ff2.m_vsh2 = true;
+		
+		ff2.m_charcfg = new ConfigMap("data/freak_fortress_2/characters.cfg");
+		InitVSH2Bridge();
+		
 		vsh2cvars.m_enabled = FindConVar("vsh2_enabled");
 		vsh2cvars.m_version = FindConVar("vsh2_version");
 		vsh2cvars.m_fljarate = FindConVar("vsh2_jarate_rage");
+		vsh2cvars.m_flairblast = FindConVar("vsh2_airblast_rage");
 		vsh2cvars.m_flmusicvol = FindConVar("vsh2_music_volume");
-		
-		ff2.m_subplugins = new ArrayList(MAX_SUBPLUGIN_NAME);
-		ff2.m_bosscfgs = new ArrayList();
-		VSH2_Hook(OnMusic, OnMusicFF2);
-		VSH2_Hook(OnBossSelected, OnBossSelectedFF2);
-		VSH2_Hook(OnPlayerKilled, OnPlayerKilledFF2);
-		VSH2_Hook(OnBossTakeDamage_OnStabbed, OnBossBackstabFF2);
-		VSH2_Hook(OnBossTaunt, OnBossTauntFF2);
-		VSH2_Hook(OnScoreTally, OnScoreTallyFF2);
-		VSH2_Hook(OnBossDealDamage_OnHitShield, OnHurtShieldFF2);
-		VSH2_Hook(OnRoundStart, PostRoundStartFF2);
-		VSH2_Hook(OnBossJarated, OnBossJaratedFF2);
-		
-		VSH2_Hook(OnCallDownloads, OnCallDownloadsFF2);
 		
 		for( int i=MaxClients; i; i-- )
 			if( 0 < i <= MaxClients && IsClientInGame(i) )
@@ -123,115 +113,17 @@ public void OnClientPutInServer(int client)
 	player.iShieldId = -1;
 	player.iShieldHP = 0.0;
 	player.iFlags = 0;
+	player.iCfg = null;
+	player.HookedAbilities = null;
 }
 
 public void OnLibraryRemoved(const char[] name) {
 	if( StrEqual(name, "VSH2") ) {
 		ff2.m_vsh2 = false;
+		
+		delete ff2.m_charcfg;
+		RemoveVSH2Bridge();
 	}
-}
-
-
-public Action OnMusicFF2(char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player)
-{
-	Action act;
-	Call_StartForward(ff2.m_forwards[FF2OnMusic2]);
-	char song2[PLATFORM_MAX_PATH]; strcopy(song2, sizeof(song2), song);
-	Call_PushStringEx(song, sizeof(song), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
-	float time2 = time;
-	Call_PushFloatRef(time2);
-	Call_PushStringEx("Unknown Song", 64, SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
-	Call_PushStringEx("Unknown Artist", 64, SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
-	Call_Finish(act);
-	if( act != Plugin_Continue ) {
-		strcopy(song, sizeof(song), song2);
-		time = time2;
-		return act;
-	}
-
-	Call_StartForward(ff2.m_forwards[FF2OnMusic]);
-	strcopy(song2, sizeof(song2), song);
-	Call_PushStringEx(song, sizeof(song), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
-	time2 = time;
-	Call_PushFloatRef(time2);
-	Call_Finish(act);
-	if( act != Plugin_Continue ) {
-		strcopy(song, sizeof(song), song2);
-		time = time2;
-	}
-	return act;
-}
-
-public Action OnBossSelectedFF2(const VSH2Player player)
-{
-	Action act;
-	Call_StartForward(ff2.m_forwards[FF2OnSpecial]);
-	int boss = player.GetPropInt("iBossType");
-	Call_PushCellRef(boss);
-	char name[MAX_BOSS_NAME_SIZE]; player.GetName(name);
-	Call_PushStringEx(name, sizeof(name), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
-	Call_PushCell(true); /// True if the boss is the primary boss
-	Call_Finish(act);
-	if( act != Plugin_Changed )
-		return Plugin_Continue;
-	
-	/// if( name[0] ) {
-		/// Here we would search boss's names to try to find the matching boss
-	/// }
-	
-	player.SetPropInt("iBossType", boss);
-	return Plugin_Changed;
-}
-
-public void OnPlayerKilledFF2(const VSH2Player player, const VSH2Player victim, Event event)
-{
-	if( event.GetInt("death_flags") & TF_DEATHFLAG_DEADRINGER )
-		return;
-	else if( victim.GetPropAny("bIsBoss") ) {
-		Action act;
-		Call_StartForward(ff2.m_forwards[FF2OnLoseLife]);
-		int boss = ClientToBossIndex(victim.index);
-		Call_PushCell(boss);
-		int lives = victim.GetPropInt("iLives");
-		Call_PushCellRef(lives);
-		int maxlives = ToFF2Player(victim).iMaxLives;
-		Call_PushCell(maxlives);
-		Call_Finish(act);
-		if( act==Plugin_Changed ) {
-			if( lives > ToFF2Player(victim).iMaxLives )
-				ToFF2Player(victim).iMaxLives = lives;
-			victim.SetPropInt("iLives", lives);
-		}
-	}
-	
-	/// TODO: FF2_OnAlivePlayersChanged is called more ways, OnClientDisconnect, player_spawn, arena_round_start
-	Call_StartForward(ff2.m_forwards[FF2OnAlive]);
-	
-	FF2Player[] array = new FF2Player[MaxClients];
-	Call_PushCell(VSH2GameMode.GetFighters(array, true));
-	
-	int bosses = VSH2GameMode.GetBosses(array, true);
-	Call_PushCell(bosses + VSH2GameMode.GetMinions(array, true));
-	
-	Call_Finish();
-}
-
-public Action OnBossBackstabFF2(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act;
-	Call_StartForward(ff2.m_forwards[FF2OnLoseLife]);
-	int client = victim.index;
-	int boss = ClientToBossIndex(client);
-	Call_PushCell(boss);
-	Call_PushCell(client);
-	Call_PushCell(attacker);
-	Call_Finish(act);
-	if( act==Plugin_Stop )
-		return Plugin_Changed;
-	else if( act==Plugin_Handled )
-		damage = 0.0;
-	
-	return Plugin_Continue;
 }
 
 public Action OnBossTiggerHurtFF2(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
@@ -255,125 +147,8 @@ public Action OnBossTiggerHurtFF2(VSH2Player victim, int& attacker, int& inflict
 	return Plugin_Changed;
 }
 
-public Action OnBossTauntFF2(const VSH2Player player)
-{
-	int boss = ClientToBossIndex(player.index);
-	Call_StartForward(ff2.m_forwards[FF2OnPreAbility]);
-	Call_PushCell(boss);
-	Call_PushString("vsh2");
-	Call_PushString("vsh2_rage");
-	Call_PushCell(0);
-	bool enabled = true;
-	Call_PushCellRef(enabled); /// TODO: Make it possible to prevent a rage
-	Call_Finish();
-	
-	Action act;
-	Call_StartForward(ff2.m_forwards[FF2OnAbility]);
-	Call_PushCell(boss);
-	Call_PushString("vsh2");
-	Call_PushString("vsh2_rage");
-	Call_PushCell(3);
-	Call_Finish(act);
-}
-
-public void OnScoreTallyFF2(const VSH2Player player, int& points_earned, int& queue_earned)
-{
-	ff2.m_queuePoints[player.index] = queue_earned;
-	if( !ff2.m_queueChecking ) {
-		RequestFrame(FinishQueueArray);
-		ff2.m_queueChecking = true;
-	}
-}
-
-public void FinishQueueArray()
-{
-	ff2.m_queueChecking = false;
-	
-	Call_StartForward(ff2.m_forwards[FF2OnQueuePoints]);
-	int[] points = new int[MaxClients];
-	for( int i=1; i<=MaxClients; i++ )
-		points[i] = ff2.m_queuePoints[i];
-	
-	Action action;
-	Call_PushArrayEx(points, MaxClients+1, SM_PARAM_COPYBACK);
-	Call_Finish(action);
-	if( action == Plugin_Changed ) {
-		for( int i=1; i<=MaxClients; i++ ) {
-			if( !IsClientInGame(i) )
-				continue;
-			
-			FF2Player player = FF2Player(i);
-			player.SetPropInt("iQueue", points[i] - ff2.m_queuePoints[i] + player.GetPropInt("iQueue"));
-		}
-	} else if( action != Plugin_Continue ) {
-		for( int i=1; i<=MaxClients; i++ ) { 
-			if( !IsClientInGame(i) )
-				continue;
-			
-			FF2Player player = FF2Player(i);
-			player.SetPropInt("iQueue", player.GetPropInt("iQueue") - ff2.m_queuePoints[i]);
-		}
-	}
-}
-
-public Action OnHurtShieldFF2(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act;
-	Call_StartForward(ff2.m_forwards[FF2OnHurtShield]);
-	Call_PushCell(victim.index);
-	int shield = GetEquippedWearableForLoadoutSlot(victim.index, TFWeaponSlot_Secondary);
-	Call_PushCellRef(shield);
-	int boss = ClientToBossIndex(attacker);
-	Call_PushCell(boss);
-	Call_PushCell(attacker);
-	float damage2 = damage;
-	Call_PushCellRef(damage2);
-	Call_Finish(act);
-	if( act==Plugin_Stop )
-		return Plugin_Changed;
-	else if( act!=Plugin_Continue )
-		damage = damage2;
-	
-	return Plugin_Continue;
-}
-
-public void PostRoundStartFF2(const VSH2Player[] bosses, const int boss_count, const VSH2Player[] red_players, const int red_count)
-{
-	Call_StartForward(ff2.m_forwards[FF2PostRoundStart]);
-	Call_PushArray(bosses, boss_count);
-	Call_PushCell(boss_count);
-	Call_PushArray(red_players, red_count);
-	Call_PushCell(red_count);
-	Call_Finish();
-}
-
-public Action OnBossJaratedFF2(const VSH2Player victim, const VSH2Player attacker)
-{
-	Action act;
-	Call_StartForward(ff2.m_forwards[FF2OnBossJarated]);
-	int boss = ClientToBossIndex(victim.index);
-	Call_PushCell(boss);
-	Call_PushCell(attacker.index);
-	float rage = victim.GetPropFloat("flRAGE");
-	Call_PushFloatRef(rage);
-	Call_Finish(act);
-	if( act==Plugin_Stop )
-		return Plugin_Changed;
-	
-	rage -= vsh2cvars.m_fljarate.FloatValue;
-	if( rage <= 0.0 )
-		rage = 0.0;
-	
-	victim.SetPropFloat("flRAGE", rage);
-	return Plugin_Continue;
-}
-
-
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-	if( !ff2.m_vsh2 )
-		return APLRes_Failure;
-	
 	CreateNative("FF2_IsFF2Enabled", Native_FF2_IsFF2Enabled);
 	CreateNative("FF2_GetFF2Version", Native_FF2_GetFF2Version);
 	
@@ -469,14 +244,20 @@ public int Native_FF2_GetBossSpecial(Handle plugin, int numParams)
 	;
 	char[] name = new char[buflen];
 	
-	ConfigMap cfg = GetFF2Config(index, view_as<bool>(meaning));
-	if( cfg != null ) {
-		bool result = view_as<bool>(cfg.Get("character.name", name, buflen));
-		if( result )
-			SetNativeString(2, name, buflen);
-		return result;
+	if ( !meaning ) {
+		ConfigMap cfg = GetFF2Config(index);
+		if( cfg ) {
+			if( cfg.Get("name", name, buflen) ) {
+				SetNativeString(2, name, buflen);
+				return true;
+			}
+		}
+		
+		return false;
+	} else {
+		/// TODO
+		return false;
 	}
-	return false;
 }
 
 /** int FF2_GetBossHealth(int boss=0); */
@@ -739,15 +520,15 @@ public any Native_FF2_GetRageDist(Handle plugin, int numParams)
 	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
 	char ability_name[64]; GetNativeString(3, ability_name, sizeof(ability_name));
 	
-	ConfigMap cfg = GetFF2Config(boss);
+	FF2Player player = FF2Player(boss);
 	
 	if( ability_name[0]==0 ) {
 		float f;
 		/// GetFloat + GetInt return number of characters used in conversion.
-		return( cfg.GetFloat("character.ragedist", f) > 0 ) ? f : 0.0;
+		return( player.iCfg.GetFloat("character.ragedist", f) > 0 ) ? f : 0.0;
 	}
 	
-	ConfigMap section = JumpToAbility(cfg.GetSection("character"), plugin_name, ability_name);
+	ConfigMap section = JumpToAbility(player, plugin_name, ability_name);
 	float see;
 	if( !section.GetFloat("dist", see) ) {
 		section.GetFloat("ragedist", see);
@@ -767,7 +548,7 @@ public any Native_FF2_HasAbility(Handle plugin, int numParams)
 	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
 	char ability_name[64]; GetNativeString(3, ability_name, sizeof(ability_name));
 	
-	bool result = JumpToAbility(GetMyCharacterCfg(boss), plugin_name, ability_name) != null;
+	bool result = JumpToAbility(FF2Player(boss), plugin_name, ability_name) != null;
 	
 	return result;
 }
@@ -1064,7 +845,7 @@ public any Native_FF2_RemoveClientShield(Handle plugin, int numParams)
 	FF2Player player = FF2Player(client);
 	player.iShieldHP = 0.0;
 	
-	int shield = GetEquippedWearableForLoadoutSlot(client, TFWeaponSlot_Secondary);
+	int shield = TF2_GetWearable(client, TFWeaponSlot_Secondary);
 	if( shield == -1 || player.iShieldId == -1 )
 		return false;
 	
@@ -1089,9 +870,10 @@ public any Native_FF2_SelectBoss(Handle plugin, int numParams)
 /** ConfigMap FF2_GetSpecialConfig(int boss=0, bool meaning=false); */
 public any Native_FF2_GetSpecialConfig(Handle plugin, int numParams)
 {
-	int index = GetNativeCell(1);
-	bool meaning = GetNativeCell(2);
-	return GetFF2Config(index, meaning);
+//	TODO
+//	int index = GetNativeCell(1);
+//	bool meaning = GetNativeCell(2);
+//	return GetFF2Config(index);
 }
 
 /** TODO ZZZZZZZZZZZZZZZZZZZZZZZZZZZ */
@@ -1101,33 +883,3 @@ public any Native_ZZZ(Handle plugin, int numParams)
 	return 0;
 }
 */
-
-
-/**
- * GameDataFF2, SDKCalls
- */
-
-Handle hGetEquippedWearable = null;
-
-static void Prep_GameDataFF2()
-{
-	GameData config = new GameData("freak_fortress_2");
-	if( config==null ) {
-		LogError("[VSH/FF2] Failed to Load \"freak_fortress_2.txt\" GameData.");
-		return;
-	}
-	
-	StartPrepSDKCall(SDKCall_Player);
-	PrepSDKCall_SetFromConf(config, SDKConf_Signature, "CTFPlayer::GetEquippedWearableForLoadoutSlot");
-	PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
-	PrepSDKCall_SetReturnInfo(SDKType_CBaseEntity, SDKPass_Pointer);
-	if( (hGetEquippedWearable = EndPrepSDKCall()) == null ) {
-		LogError("[VSH/FF2] Invalid SDKCall Handle for \"CTFPlayer::GetEquippedWearableForLoadoutSlot()\"!");
-	}
-	delete config;
-}
-
-stock int GetEquippedWearableForLoadoutSlot(int client, int slot)
-{
-	return ( hGetEquippedWearable == null ) ? -1:SDKCall(hGetEquippedWearable, client, slot);
-}
