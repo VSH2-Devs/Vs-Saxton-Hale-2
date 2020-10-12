@@ -130,62 +130,6 @@ methodmap FF2Player < VSH2Player {
 		if( time )
 			CreateTimer(time, Timer_RemoveOverlay, GetClientSerial(this.index), TIMER_FLAG_NO_MAPCHANGE);
 	}
-	
-	public bool RandomSnd(const char[] section_key, char[] file, int maxlen, char[] key = "") {
-		ConfigMap section = this.iCfg.GetSection(section_key);
-		if( section==null )
-			return false;
-	
-		int sounds;
-		int[] match = new int[16];
-		int total;
-		
-		while( ++sounds ) {
-			IntToString(sounds, key, 4);
-			if( !section.Get(key, file, maxlen) ) {
-				sounds--;
-				break;
-			}
-			match[total++] = sounds;
-		}
-		
-		if( !total )
-			return false;
-		
-		IntToString(match[GetRandomInt(0, total - 1)], key, 4);
-		return view_as<bool>(section.Get(key, file, maxlen));	
-	}
-	
-	public bool RandomAbilitySnd(const char[] section_key, char[] file, int maxlen, int slot) {
-		ConfigMap section = this.iCfg.GetSection(section_key);
-		if( section==null )
-			return false;
-	
-		char key[10];
-		int sounds;
-		int[] match = new int[16];
-		int total;
-		int found;
-		
-		while( ++sounds ) {
-			IntToString(sounds, key, 4);
-			if( !section.Get(key, file, maxlen) ) {
-				sounds--;
-				break;
-			}
-			
-			FormatEx(key, sizeof(key), "slot%i", sounds);
-			if( section.GetInt(key, found) && found == slot ) {
-				match[total++] = sounds;
-			}
-		}
-		
-		if( !total )
-			return false;
-		
-		IntToString(match[GetRandomInt(0, total - 1)], key, 4);
-		return view_as<bool>(section.Get(key, file, maxlen));	
-	}
 }
 
 
