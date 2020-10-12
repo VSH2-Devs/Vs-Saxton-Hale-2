@@ -1,3 +1,23 @@
+#define INVALID_FF2_BOSS_ID -1
+
+#define ToFF2Player(%0)		view_as<FF2Player>(%0)
+
+/// a dynamic hash map, that holds cfg path to aiblities. eg: { { "pl_name##ab_name", "ability1" }, { "pl_name##ab_name", "ability2" }, ... }
+methodmap FF2AbilityList < StringMap {
+	public FF2AbilityList() {
+		return view_as<FF2AbilityList>(new StringMap());
+	}
+	
+	public void Insert(const char[] key, const char[] str) {
+		this.SetString(key, str);
+	}
+	
+	public static void GetKeyVal(const char[] key, char[][] pl_ab)
+	{
+		ExplodeString(key, "##", pl_ab, 2, MAX_SUBPLUGIN_NAME);
+	}
+}
+
 methodmap FF2Player < VSH2Player {
 	public FF2Player(const int index, bool userid=false) {
 		return view_as< FF2Player >(VSH2Player(index, userid));
@@ -21,12 +41,12 @@ methodmap FF2Player < VSH2Player {
 		}
 	}
 	
-	property int iCfg {
+	property ConfigMap iCfg {
 		public get() {
-			return this.GetPropInt("iCfg");
+			return view_as<ConfigMap>(this.GetPropAny("iCfg"));
 		}
-		public set(int val) {
-			this.SetPropInt("iCfg", val);
+		public set(ConfigMap cfg) {
+			this.SetPropAny("iCfg", cfg);
 		}
 	}
 	
@@ -54,6 +74,16 @@ methodmap FF2Player < VSH2Player {
 		}
 		public set(int flag) {
 			this.SetPropInt("iFlags", flag);
+		}
+	}
+	
+	property FF2AbilityList HookedAbilities {
+		public get() {
+			FF2AbilityList ab;
+			return this.SetPropAny("hHookedAbilties", ab) ? ab:null;
+		}
+		public set(FF2AbilityList hk) {
+			this.SetPropAny("hHookedAbilties", hk);
 		}
 	}
 	
@@ -100,12 +130,64 @@ methodmap FF2Player < VSH2Player {
 		if( time )
 			CreateTimer(time, Timer_RemoveOverlay, GetClientSerial(this.index), TIMER_FLAG_NO_MAPCHANGE);
 	}
+	
+	public bool RandomSnd(const char[] section_key, char[] file, int maxlen, char[] key = "") {
+		ConfigMap section = this.iCfg.GetSection(section_key);
+		if( section==null )
+			return false;
+	
+		int sounds;
+		int[] match = new int[16];
+		int total;
+		
+		while( ++sounds ) {
+			IntToString(sounds, key, 4);
+			if( !section.Get(key, file, maxlen) ) {
+				sounds--;
+				break;
+			}
+			match[total++] = sounds;
+		}
+		
+		if( !total )
+			return false;
+		
+		IntToString(match[GetRandomInt(0, total - 1)], key, 4);
+		return view_as<bool>(section.Get(key, file, maxlen));	
+	}
+	
+	public bool RandomAbilitySnd(const char[] section_key, char[] file, int maxlen, int slot) {
+		ConfigMap section = this.iCfg.GetSection(section_key);
+		if( section==null )
+			return false;
+	
+		char key[10];
+		int sounds;
+		int[] match = new int[16];
+		int total;
+		int found;
+		
+		while( ++sounds ) {
+			IntToString(sounds, key, 4);
+			if( !section.Get(key, file, maxlen) ) {
+				sounds--;
+				break;
+			}
+			
+			FormatEx(key, sizeof(key), "slot%i", sounds);
+			if( section.GetInt(key, found) && found == slot ) {
+				match[total++] = sounds;
+			}
+		}
+		
+		if( !total )
+			return false;
+		
+		IntToString(match[GetRandomInt(0, total - 1)], key, 4);
+		return view_as<bool>(section.Get(key, file, maxlen));	
+	}
 }
 
-stock FF2Player ToFF2Player(VSH2Player p)
-{
-	return view_as< FF2Player >(p);
-}
 
 stock int ClientToBossIndex(int client)
 {
@@ -133,8 +215,9 @@ stock bool ZeroBossToFF2Player(FF2Player& player)
 	return true;
 }
 
-stock ConfigMap GetFF2Config(const int index=0, const bool is_cfg_index=false)
+stock ConfigMap GetFF2Config(const int index=0)
 {
+	/*
 	int cfg_index = -1;
 	if( is_cfg_index && index > -1 && index < ff2.m_bosscfgs.Length ) {
 		cfg_index = index;
@@ -144,40 +227,32 @@ stock ConfigMap GetFF2Config(const int index=0, const bool is_cfg_index=false)
 			cfg_index = player.iCfg;
 	}
 	return( cfg_index != -1 ) ? ff2.m_bosscfgs.Get(cfg_index) : view_as<ConfigMap>(null);
+	*/
+	return FF2Player(index).iCfg;
 }
 
 stock ConfigMap GetMyCharacterCfg(int boss) {
 	return GetFF2Config(boss).GetSection("character");
 }
 
-stock ConfigMap JumpToAbility(const ConfigMap section, const char[] plugin_name, const char[] ability_name)
+stock ConfigMap JumpToAbility(const FF2Player player, const char[] plugin_name, const char[] ability_name)
 {
-	int i;
-	char[] key = new char[64];
-	char key_name[64];
-	while( i < MAX_SUBPLUGIN_NAME ) {
-		FormatEx(key, 64, "ability%i.name", ++i);
-		if( !section.Get(key, key_name, sizeof(key_name)) )
-			break;
-		else if( strcmp(key_name, ability_name) )
-			continue;
-		
-		ReplaceString(key, 64, ".name", ".plugin_name");
-		if( !section.Get(key, key_name, sizeof(key_name)) )
-			break;
-		else if( strcmp(key_name, plugin_name) )
-			continue;
-		
-		FormatEx(key, 64, "ability%i", i);
-		return section.GetSection(key);
+	FF2AbilityList list = player.HookedAbilities;
+	
+	char actual_key[128];
+	FormatEx(actual_key, sizeof(actual_key), "%s##%s", plugin_name, ability_name);
+	
+	ConfigMap ability = null;
+	char pos[24];
+	if ( list.GetString(actual_key, pos, sizeof(pos)) ) {
+		ability = player.iCfg.GetSection(pos);
 	}
-	return null;
+	return ability;
 }
-
 
 stock int GetArgNamedI(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, int defval = 0)
 {
-	ConfigMap section = JumpToAbility(GetMyCharacterCfg(boss), plugin_name, ability_name);
+	ConfigMap section = JumpToAbility(FF2Player(boss), plugin_name, ability_name);
 	if( section==null ) {
 		return defval;
 	}
@@ -188,7 +263,7 @@ stock int GetArgNamedI(int boss, const char[] plugin_name, const char[] ability_
 
 stock float GetArgNamedF(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, float defval = 0.0)
 {
-	ConfigMap section = JumpToAbility(GetMyCharacterCfg(boss), plugin_name, ability_name);
+	ConfigMap section = JumpToAbility(FF2Player(boss), plugin_name, ability_name);
 	if( section==null ) {
 		return defval;
 	}
@@ -199,7 +274,7 @@ stock float GetArgNamedF(int boss, const char[] plugin_name, const char[] abilit
 
 stock int GetArgNamedS(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, char[] result, int &size)
 {
-	ConfigMap section = JumpToAbility(GetMyCharacterCfg(boss), plugin_name, ability_name);
+	ConfigMap section = JumpToAbility(FF2Player(boss), plugin_name, ability_name);
 	if( section==null ) {
 		return 0;
 	}
@@ -256,4 +331,13 @@ stock bool FF2_SetCustomCharge(int boss=0, int slot, float value)
 		}
 	}
 	return false;
+}
+
+stock int FF2_RegisterFakeBoss(const char[] name)
+{
+	if(	strlen(name) >= MAX_BOSS_NAME_SIZE - 6 )
+		return INVALID_FF2_BOSS_ID;
+	char final_name[MAX_BOSS_NAME_SIZE];
+	FormatEx(final_name, sizeof(final_name), "%s_FF2", name);
+	return VSH2_RegisterPlugin(final_name);
 }
