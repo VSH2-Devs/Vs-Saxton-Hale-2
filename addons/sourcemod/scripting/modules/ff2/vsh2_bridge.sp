@@ -1,104 +1,3 @@
-
-/// dynamic array that holds sounds for key.
-methodmap FF2SoundList < ArrayList
-{
-	property bool Empty {
-		public get() {
-			return this.Length == 0;
-		}
-	}
-	
-	public FF2SoundList()
-	{
-		return view_as<FF2SoundList>(new ArrayList(ByteCountToCells(PLATFORM_MAX_PATH)));
-	}
-	
-	public void At(int idx, char[] buffer, int maxlen)
-	{
-		this.GetString(idx, buffer, maxlen);
-	}
-	
-	public bool RandomString(char[] buffer, int maxlen)
-	{
-		if(!this.Empty) {
-			int rand = GetRandomInt(0, this.Length - 1);
-			this.GetString(rand, buffer, maxlen);
-			return true;
-		}
-		return false;
-	}
-}
-
-/// a hash map that holds keys to sound list.
-methodmap FF2SoundHash < StringMap 
-{
-	public FF2SoundHash()
-	{
-		return view_as<FF2SoundHash>(new StringMap());
-	}
-	
-	public FF2SoundList GetOrCreateList(const char[] key)
-	{
-		FF2SoundList list;
-		if(this.GetValue(key, list) && list) {
-			return list;
-		}
-		
-		list = new FF2SoundList();
-		this.SetValue(key, list);
-		return list;
-	}
-	
-	public FF2SoundList GetAssertedList(const char[] key)
-	{
-		FF2SoundList list;
-		if(this.GetValue(key, list) && list) {
-			return list;
-		}
-		
-		ThrowError("Failed to get list!");
-		return null;
-	}
-	
-	public void Delete(const char[] key)
-	{
-		FF2SoundList list;
-		if(this.GetValue(key, list)) {
-			delete list;
-		}
-		this.Remove(key);
-	}
-	
-	public void DeleteAll()
-	{
-		StringMapSnapshot snap = this.Snapshot();
-		
-		char name[48];
-		FF2SoundList list;
-		
-		for ( int i = snap.Length - 1; i >= 0; i-- ) {
-			snap.GetKey(i, name, sizeof(name));
-			if(this.GetValue(name, list)) {
-				delete list;
-			}
-		}
-		
-		this.Clear();
-		delete snap;
-	}
-}
-
-enum struct FF2Identity
-{
-	int 			VSH2ID;
-	ConfigMap 		hCfg;
-	FF2SoundHash 	sndHash;
-	FF2AbilityList 	ablist;
-	char 			szName[48];
-	char 			szPath[PLATFORM_MAX_PATH];
-}
-
-
 static const char script_sounds[][] = {
 	"Announcer.AM_CapEnabledRandom",
 	"Announcer.AM_CapIncite01.mp3",
@@ -115,324 +14,6 @@ static const char basic_sounds[][] = {
 	"ambient/lightson.wav",
 	"ambient/lightsoff.wav",
 };
-
-#define RELEASE_IDENTITY(%0) \
-		identity.sndHash.DeleteAll(); \
-		delete identity.sndHash; \
-		delete identity.hCfg; \
-		delete identity.ablist
-
-static bool FF2_LoadCharacter(FF2Identity identity)
-{
-	///Precache HERE!
-	char path[PLATFORM_MAX_PATH], key_name[PLATFORM_MAX_PATH];
-	
-	FormatEx(key_name, sizeof(key_name), "configs/freak_fortress_2/%s.cfg", identity.szName);
-	BuildPath(Path_SM, path, sizeof(path), "%s", key_name);
-	
-	if(!FileExists(path)) {
-		ThrowError("[!!!] Unable to find \"%s\"!", identity.szName);
-	}
-	
-	strcopy(identity.szPath, sizeof(FF2Identity::szPath), path);
-	ConfigMap cfg = new ConfigMap(key_name);
-	
-	if( !cfg) {
-		LogError("[VSH2/FF2] Failed to find \"%s\" character!", identity.szName);
-		return false;
-	}
-	
-	/*
-	TODO
-	if(KvJumpToKey(BossKV[Specials], "map_exclude"))
-	{
-		char item[6];
-		static char buffer[34];
-		for(int size=1; ; size++)
-		{
-			FormatEx(item, sizeof(item), "map%d", size);
-			KvGetString(BossKV[Specials], item, buffer, sizeof(buffer));
-			if(!buffer[0])
-				break;
-
-			if(!StrContains(currentmap, buffer))
-			{
-				MapBlocked[Specials] = true;
-				break;
-			}
-		}
-	}
-	*/
-	
-	char buffer[64];
-	
-	ConfigMap this_char = cfg.GetSection("character");
-	identity.ablist = new FF2AbilityList();
-	
-	{
-		ConfigMap cur_ab;
-		int i;
-		while( ++i < MAX_ABILITIES_PL ) {
-			FormatEx(key_name, sizeof(key_name), "ability%i", i);
-			
-			cur_ab = this_char.GetSection(key_name);
-			
-			if( !cur_ab || !cur_ab.Get("plugin_name", buffer, sizeof(buffer)) )
-				break;
-			
-			BuildPath(Path_SM, path, sizeof(path), "plugins/freaks/%s.ff2", buffer);
-			if( !FileExists(path) ) {
-				LogError("[VSH2/FF2] Character \"%s.cfg\" is missing \"%s\" subplugin!", identity.szName, path);
-			} 
-			else {
-				cur_ab.Get("name", path, sizeof(path));
-				Format(path, sizeof(path), "%s##%s", buffer, path);
-				identity.ablist.Insert(path, key_name);
-			}
-		}
-	}
-	
-	ConfigMap stacks = this_char.GetSection("download");
-	if( stacks ) {
-		StringMapSnapshot snap = stacks.Snapshot();
-		int size = snap.Length;
-		delete snap;
-		
-		while( size > 0 ) {
-			IntToString(size--, key_name, 4);
-			if( !this_char.Get(key_name, path, sizeof(path)) )
-				break;
-			
-			if( !FileExists(path, true) ) {
-				LogError("[VSH2/FF2] Character \"%s\" is missing file \"%s\"!", identity.szName, path);
-			} else {
-				AddFileToDownloadsTable(path);
-			}
-		}
-	}
-	
-	static const char modelT[][] = {
-		".mdl",
-		".dx80.vtx",
-		".dx90.vtx",
-		".sw.vtx",
-		".vvd",
-		".phy"
-	};
-	
-	stacks = this_char.GetSection("mod_download");
-	if( stacks ) {
-		StringMapSnapshot snap = stacks.Snapshot();
-		int size = snap.Length;
-		delete snap;
-		
-		while( size > 0 ) {
-			IntToString(size--, key_name, 4);
-			if( !stacks.Get(key_name, path, sizeof(path)) )
-				break;
-			
-			for( int i = 0; i < sizeof(modelT); i++ ) {
-				FormatEx(key_name, PLATFORM_MAX_PATH, "%s%s", path, modelT[i]);
-				if( FileExists(key_name, true) ) {
-					AddFileToDownloadsTable(key_name);
-				}
-				else if( StrContains(key_name, ".phy") == -1 ) {
-					LogError("[VSH2/FF2] Character \"%s\" is missing file \"%s\"!", identity.szName, key_name);
-				}
-			}
-		}
-	} 
-	else {
-		stacks = this_char.GetSection("mat_download");
-		if( stacks ) {
-			StringMapSnapshot snap = stacks.Snapshot();
-			int size = snap.Length;
-			delete snap;
-			
-			while( size > 0 ) {
-				IntToString(size--, key_name, 4);
-				if( stacks.Get(key_name, path, sizeof(path)) )
-					break;
-					
-				FormatEx(key_name, sizeof(key_name), "%s.vmt", path);
-				if( !FileExists(key_name, true) ) {
-					LogError("[VSH2/FF2] Character \"%s\" is missing file \"%s\"!", identity.szName, key_name);
-				} else {
-					AddFileToDownloadsTable(key_name);
-				}
-				
-				FormatEx(key_name, sizeof(key_name), "%s.vtf", path);
-				if( !FileExists(key_name, true) ) {
-					LogError("[VSH2/FF2] Character \"%s\" is missing file \"%s\"!", identity.szName, key_name);
-				} else {
-					AddFileToDownloadsTable(key_name);
-				}
-			}
-		}
-	}
-	
-	/// Prepare Sound list
-	{
-		identity.sndHash = new FF2SoundHash();
-		StringMapSnapshot snap = this_char.Snapshot();
-		ConfigMap snd_list;
-		FF2SoundList list;
-		
-		char curSection[32];
-		char strBuffer[PLATFORM_MAX_PATH];
-		
-		for(int i = snap.Length - 1; i >= 0; i--) {
-			snap.GetKey(i, curSection, sizeof(curSection));
-			
-			if(!StrContains(curSection, "sound")) {
-				snd_list = this_char.GetSection(curSection);
-				list = identity.sndHash.GetOrCreateList(curSection);
-				
-				int j;
-				while (++j && j <= 15) {
-					IntToString(j, curSection, 4);
-					if(snd_list.Get(curSection, strBuffer, sizeof(strBuffer))) {
-						list.PushString(strBuffer);
-					}
-					else break;
-				}
-				
-			}
-		}
-		
-		delete snap;
-	}
-	
-	identity.VSH2ID = FF2_RegisterFakeBoss(identity.szName);
-	identity.hCfg = cfg;
-	
-	if ( identity.VSH2ID == INVALID_FF2_BOSS_ID ) {
-		RELEASE_IDENTITY(identity);
-		return false;
-	}
-	
-	return true;
-}
-
-
-/// a hash map that holds boss' identities
-methodmap FF2BossManager < StringMap
-{
-	public bool GetIdentity(const char[] name, FF2Identity identity)
-	{
-		return this.GetArray(name, identity, sizeof(FF2Identity)) ? true:false;
-	}
-	
-	public FF2BossManager(const char[] pack_name)
-	{
-		StringMap map = new StringMap();
-		
-		/// Parse Boss CFG with pack name
-		ConfigMap cfg = ff2.m_charcfg.GetSection(pack_name);
-		
-		if( !cfg ) ThrowError("Failed to find Section for characters.cfg: \"%s\"", pack_name);
-		
-		StringMapSnapshot snap = cfg.Snapshot();
-		
-		char key[4], name[48];
-		FF2Identity curIdentity;
-		
-		/// Iter through the Pack, copy and verify boss path
-		for ( int i = snap.Length - 1; i >= 0; i-- ) {
-			snap.GetKey(i, key, sizeof(key));
-			cfg.Get(key, name, sizeof(name));
-			strcopy(curIdentity.szName, sizeof(FF2Identity::szName), name);
-			if ( FF2_LoadCharacter(curIdentity) ) {
-				map.SetArray(name, curIdentity, sizeof(FF2Identity));
-			}
-		}
-		
-		delete snap;
-		return view_as<FF2BossManager>(map);
-	}
-	
-	public void Delete(const char[] name)
-	{
-		FF2Identity identity;
-		if(this.GetArray(name, identity, sizeof(FF2Identity))) {
-			
-			RELEASE_IDENTITY(identity);
-			
-			this.Remove(name);
-		}
-	}
-	
-	public void DeleteAll()
-	{
-		StringMapSnapshot snap = this.Snapshot();
-		char name[48];
-		FF2Identity identity;
-		
-		for ( int i = snap.Length - 1; i >= 0; i-- ) {
-			snap.GetKey(i, name, sizeof(name));
-			if(this.GetIdentity(name, identity)) {
-				RELEASE_IDENTITY(identity);
-			}
-		}
-		
-		this.Clear();
-		delete snap;
-	}
-	
-	public bool FindIdentity(const int ID, FF2Identity identity)
-	{
-		StringMapSnapshot snap = this.Snapshot();
-		char name[48];
-		bool res;
-		
-		for ( int i = snap.Length - 1; i >= 0; i-- ) {
-			snap.GetKey(i, name, sizeof(name));
-			if(this.GetIdentity(name, identity) && identity.VSH2ID == ID) {
-				res = true;
-				break;
-			}
-		}
-		
-		delete snap;
-		return res;
-	}
-	
-	public bool FindIdentityByCfg(const ConfigMap cfg, FF2Identity identity)
-	{
-		StringMapSnapshot snap = this.Snapshot();
-		char name[48];
-		bool res;
-		
-		for ( int i = snap.Length - 1; i >= 0; i-- ) {
-			snap.GetKey(i, name, sizeof(name));
-			if(this.GetIdentity(name, identity) && identity.hCfg == cfg) {
-				res = true;
-				break;
-			}
-		}
-		
-		delete snap;
-		return res;
-	}
-	
-	public bool FindIdentityByName(const char[] name, FF2Identity identity)
-	{
-		StringMapSnapshot snap = this.Snapshot();
-		char key_name[48];
-		bool res;
-		
-		for ( int i = snap.Length - 1; i >= 0 && !res; i-- ) {
-			snap.GetKey(i, key_name, sizeof(key_name));
-			if(this.GetIdentity(key_name, identity) && !strcmp(name, identity.szName)) {
-				res = true;
-			}
-		}
-		
-		delete snap;
-		return res;
-	}
-}
-FF2BossManager ff2_cfgmgr;
 
 void InitVSH2Bridge()
 {
@@ -608,27 +189,25 @@ public Action OnBossSelectedFF2(const VSH2Player player)
 	
 	panel.SetTitle(help);
 	panel.DrawItem("Exit");
-	panel.Send(player.index, HintPanel, 10);
+	panel.Send(player.index, DummyHintPanel, 10);
 	
 	delete panel;
 	
 	return Plugin_Changed;
 }
 
-public void OnBossThinkFF2(const VSH2Player player)
+public void OnBossThinkFF2(const VSH2Player vsh2player)
 {
 	static FF2Identity identity;
-	if(!ff2_cfgmgr.FindIdentity(player.GetPropInt("iBossType"), identity))
+	if(!ff2_cfgmgr.FindIdentity(vsh2player.GetPropInt("iBossType"), identity))
 		return;
-		
-	ConfigMap cfg = identity.hCfg;
 	
-	if( !cfg ) return;
+	FF2Player player = ToFF2Player(vsh2player);
 	
-	float flStart; if( !cfg.GetFloat("minspeed", flStart) ) flStart = 100.0;
-	float flEnd; cfg.GetFloat("maxspeed", flEnd);
+	float flstart; if ( !player.iCfg.GetFloat("speed", flstart) && !player.iCfg.GetFloat("maxspeed", flstart)) flstart = 350.0;
+	float flmin; if ( !player.iCfg.GetFloat("minspeed", flmin) ) flmin = 100.0;
 	
-	player.SpeedThink(flStart);
+	player.SpeedThink(flstart, flmin);
 	player.GlowThink(0.1);
 }
 
@@ -653,7 +232,7 @@ public void OnBossEquippedFF2(const VSH2Player player)
 	if(!ff2_cfgmgr.FindIdentity(player.GetPropInt("iBossType"), identity))
 		return;
 	
-	ConfigMap cfg = view_as<FF2Player>(player).iCfg;
+	ConfigMap cfg = ToFF2Player(player).iCfg;
 	char name[MAX_BOSS_NAME_SIZE]; cfg.Get("name", name, sizeof(name));
 	
 	player.SetName(name);
@@ -669,7 +248,7 @@ public void OnBossEquippedFF2(const VSH2Player player)
 		if ( !wepcfg ) break;
 		
 		if ( !wepcfg.GetInt("index", index) ) 			continue;
-		if ( !wepcfg.Get("name", attr, sizeof(attr)) ) 	continue;
+		if ( !wepcfg.Get("name", name, sizeof(name)) ) 	continue;
 		if ( !wepcfg.GetInt("level", lvl) ) 			lvl = 39;
 		if ( !wepcfg.GetInt("quality", qual) ) 			qual = 5;
 		
@@ -686,9 +265,13 @@ public void OnBossInitializedFF2(const VSH2Player player)
 	static FF2Identity identity;
 	if ( !ff2_cfgmgr.FindIdentity(player.GetPropInt("iBossType"), identity) )
 		return;
-	TFClassType cls;
-	if ( !ToFF2Player(player).iCfg.GetInt("class", view_as<int>(cls)) )
-		cls = view_as<TFClassType>(GetRandomInt(1, 8));
+	
+	ToFF2Player(player).iCfg = identity.hCfg;
+	PrintToServer("Set Config");
+	
+	int cls;
+	if ( !identity.hCfg.GetInt("class", cls) )
+		cls = GetRandomInt(1, 8);
 	
 	SetEntProp(player.index, Prop_Send, "m_iClass", cls);
 }
@@ -716,15 +299,14 @@ public void OnPlayerKilledFF2(const VSH2Player attacker, const VSH2Player victim
 	static FF2Identity identity[2]; bool bState[2];
 	bState[0] = ff2_cfgmgr.FindIdentity(attacker.GetPropInt("iBossType"), identity[0]);
 	bState[1] = ff2_cfgmgr.FindIdentity(victim.GetPropInt("iBossType"), identity[1]);
-	if(!bState[0] && bState[1])
+	if(!bState[0] && !bState[1])
 		return;
 	
 	///	Victim is the boss
 	if( bState[1] ) {
 		Action act;
 		Call_StartForward(ff2.m_forwards[FF2OnLoseLife]);
-		int boss = ClientToBossIndex(victim.index);
-		Call_PushCell(boss);
+		Call_PushCell(ClientToBossIndex(victim));
 		int lives = victim.GetPropInt("iLives");
 		Call_PushCellRef(lives);
 		int maxlives = ToFF2Player(victim).iMaxLives;
@@ -795,48 +377,7 @@ public Action OnBossMedicCallFF2(const VSH2Player player)
 	if ( !ff2_cfgmgr.FindIdentity(player.GetPropInt("iBossType"), identity) )
 		return;
 	
-	static char curKey[64];
-	static char pl_ab[2][MAX_SUBPLUGIN_NAME];
-	
-#define FOR_EACH_CALLBACK \
-		static FF2AbilityList list; list = ToFF2Player(player).HookedAbilities; \
-		StringMapSnapshot snap = list.Snapshot(); \
-		for (int i = 0; i < snap.Length; i++)
-		
-	FOR_EACH_CALLBACK {
-		
-		snap.GetKey(i, curKey, sizeof(curKey));
-		
-		FF2AbilityList.GetKeyVal(curKey, pl_ab);
-		
-		int boss = ClientToBossIndex(player.index);
-		Call_StartForward(ff2.m_forwards[FF2OnPreAbility]);
-		Call_PushCell(boss);
-		Call_PushString(pl_ab[0]);
-		Call_PushString(pl_ab[1]);
-		Call_PushCell(0);
-		bool enabled = true;
-		Call_PushCellRef(enabled);
-		Call_Finish();
-		
-		if(!enabled) {
-			continue;
-		}
-		
-		Action act;
-		Call_StartForward(ff2.m_forwards[FF2OnAbility]);
-		Call_PushCell(boss);
-		Call_PushString(pl_ab[0]);
-		Call_PushString(pl_ab[1]);
-//		Call_PushCell(3);
-		Call_PushCell(0);		///  TODO: later replace it
-		Call_Finish(act);
-	
-	}
-	
-	delete snap;
-	
-	#undef FOR_EACH_CALLBACK
+	Call_FF2OnAbility(ToFF2Player(player), 0);
 }
 
 public Action OnBossJaratedFF2(const VSH2Player victim, const VSH2Player attacker)
@@ -847,8 +388,7 @@ public Action OnBossJaratedFF2(const VSH2Player victim, const VSH2Player attacke
 	
 	Action act;
 	Call_StartForward(ff2.m_forwards[FF2OnBossJarated]);
-	int boss = ClientToBossIndex(victim.index);
-	Call_PushCell(boss);
+	Call_PushCell(ClientToBossIndex(victim));
 	Call_PushCell(attacker.index);
 	float rage = victim.GetPropFloat("flRAGE");
 	Call_PushFloatRef(rage);
@@ -866,6 +406,7 @@ public Action OnBossJaratedFF2(const VSH2Player victim, const VSH2Player attacke
 
 public void PostRoundStartFF2(const VSH2Player[] bosses, const int boss_count, const VSH2Player[] red_players, const int red_count)
 {
+	/*
 	FF2Identity identity;
 	FF2Player curPlayer;
 	
@@ -876,6 +417,7 @@ public void PostRoundStartFF2(const VSH2Player[] bosses, const int boss_count, c
 			curPlayer.HookedAbilities = identity.ablist;
 		}
 	}
+	*/
 	
 	Call_StartForward(ff2.m_forwards[FF2PostRoundStart]);
 	Call_PushArray(bosses, boss_count);
@@ -894,15 +436,16 @@ public void OnRoundEndInfoFF2(const VSH2Player player, bool bossBool, char messa
 	char snd[PLATFORM_MAX_PATH];
 	if(bossBool) {
 		FF2SoundList list = identity.sndHash.GetAssertedList("sound_win");
-		if ( list.RandomString(snd, sizeof(snd)) )
+		if ( list && list.RandomString(snd, sizeof(snd)) )
 			player.PlayVoiceClip(snd, VSH2_VOICE_WIN);
 	}
 	else {
 		FF2SoundList list = identity.sndHash.GetAssertedList("sound_stalemate");
-		if ( list.RandomString(snd, sizeof(snd)) )
+		if ( list && list.RandomString(snd, sizeof(snd)) )
 			player.PlayVoiceClip(snd, VSH2_VOICE_WIN);
 	}
 	
+	PrintToServer("RoundEnd");
 	ToFF2Player(player).iCfg = null;
 	ToFF2Player(player).HookedAbilities = null;
 }
@@ -949,7 +492,7 @@ public Action OnMusicFF2(char song[PLATFORM_MAX_PATH], float& time, const VSH2Pl
 		if ( ff2_cfgmgr.FindIdentityByCfg(rand.iCfg, identity) ) {
 			
 			FF2SoundList list = identity.sndHash.GetAssertedList("sound_bgm");
-			if ( list ) {
+			if ( list && list.Length ) {
 				int idx = GetRandomInt(0, list.Length - 1);
 				
 				IntToString(idx, res, sizeof(res));
@@ -987,8 +530,7 @@ public Action OnStabbedFF2(VSH2Player victim, int& attacker, int& inflictor,
 	Action act;
 	Call_StartForward(ff2.m_forwards[FF2OnBackstab]);
 	int client = victim.index;
-	int boss = ClientToBossIndex(client);
-	Call_PushCell(boss);
+	Call_PushCell(ClientToBossIndex(victim));
 	Call_PushCell(client);
 	Call_PushCell(attacker);
 	Call_Finish(act);
@@ -1076,8 +618,7 @@ public Action OnHurtShieldFF2(VSH2Player victim, int& attacker, int& inflictor, 
 	Call_PushCell(victim.index);
 	int shield = TF2_GetWearable(victim.index, TFWeaponSlot_Secondary);
 	Call_PushCellRef(shield);
-	int boss = ClientToBossIndex(attacker);
-	Call_PushCell(boss);
+	Call_PushCell(ClientToBossIndex(victim));
 	Call_PushCell(attacker);
 	float damage2 = damage;
 	Call_PushCellRef(damage2);
@@ -1102,7 +643,27 @@ stock bool RandomSoundFromList(FF2Player player, const char[] section_key, char[
 	return list.RandomString(file, maxlen);
 }
 
-public int HintPanel(Menu menu, MenuAction action, int param1, int param2)
+public Action OnBossTiggerHurtFF2(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
+{
+	Action act;
+	Call_StartForward(ff2.m_forwards[FF2OnLoseLife]);
+	Call_PushCell(ClientToBossIndex(victim));
+	Call_PushCell(attacker);
+	float damage2 = damage;
+	Call_PushFloatRef(damage2);
+	Call_Finish(act);
+	if( act==Plugin_Continue )
+		return Plugin_Continue;
+	else if( act==Plugin_Changed ) {
+		damage = damage2;
+		return Plugin_Changed;
+	}
+	
+	damage = 0.0;
+	return Plugin_Changed;
+}
+
+public int DummyHintPanel(Menu menu, MenuAction action, int param1, int param2)
 {
 	return;
 }
