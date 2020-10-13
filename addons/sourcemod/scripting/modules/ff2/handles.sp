@@ -1,4 +1,5 @@
 /// TODO: is this really needed? 
+/// TODO: cleanup
 stock void ActivateAbilitySlot(int boss, int slot, bool buttonmodeactive=true)
 {
 	ConfigMap character = GetMyCharacterCfg(boss);
@@ -146,27 +147,60 @@ stock bool RandomSoundAbility(const char[] sound, char[] file, int length, int b
 	return view_as<bool>(section.Get(key, file, length));
 }
 
-stock bool UseAbility(const char[] plugin_name, const char[] ability_name, int boss=0, int slot, int buttonMode)
+stock void Call_FF2OnAbility(const FF2Player player, int mode)
 {
-	Call_StartForward(ff2.m_forwards[FF2OnPreAbility]);
-	Call_PushCell(boss);
-	Call_PushString(plugin_name);
-	Call_PushString(ability_name);
-	Call_PushCell(slot);
-	bool enabled = true;
-	Call_PushCellRef(enabled);
-	Call_Finish();
+	static char curKey[64];
+	static char pl_ab[2][MAX_SUBPLUGIN_NAME];
 	
-	if( !enabled )
-		return false;
+#define FOR_EACH_CALLBACK \
+		static FF2AbilityList list; list = player.HookedAbilities; \
+		StringMapSnapshot snap = list.Snapshot(); \
+		for (int i = 0; i < snap.Length; i++)
 	
-	Action action = Plugin_Continue;
-	Call_StartForward(ff2.m_forwards[FF2OnAbility]);
-	Call_PushCell(boss);
-	Call_PushString(plugin_name);
-	Call_PushString(ability_name);
 	
-	FF2Player player = FF2Player(boss);
+	int boss = ClientToBossIndex(player);
+		
+	FOR_EACH_CALLBACK {
+		
+		snap.GetKey(i, curKey, sizeof(curKey));
+		
+		FF2AbilityList.GetKeyVal(curKey, pl_ab);
+		
+		Call_StartForward(ff2.m_forwards[FF2OnPreAbility]);
+		Call_PushCell(boss);
+		Call_PushString(pl_ab[0]);
+		Call_PushString(pl_ab[1]);
+		Call_PushCell(mode);
+		bool enabled = true;
+		Call_PushCellRef(enabled);
+		Call_Finish();
+		
+		if(!enabled) {
+			continue;
+		}
+		
+		Action act;
+		Call_StartForward(ff2.m_forwards[FF2OnAbility]);
+		Call_PushCell(boss);
+		Call_PushString(pl_ab[0]);
+		Call_PushString(pl_ab[1]);
+		Call_PushCell(mode);
+		Call_Finish(act);
+	/*
+		if ( act ) {
+			/// TODO
+		}
+	*/
+	}
+	
+	delete snap;
+	
+	#undef FOR_EACH_CALLBACK
+}
+
+stock bool UseAbility(const FF2Player player, int slot)
+{
+	int boss = player.index;
 	
 	switch( slot ) {
 		case 0: {
@@ -296,7 +330,7 @@ stock void PlayBGM(int client, char[] music, float time, char[] name="", char[] 
 public Action Timer_UseBossCharge(Handle Timer, DataPack data)
 {
 	data.Reset();
-	int boss = data.ReadCell();
+	FF2Player boss = FF2Player(data.ReadCell());
 	int slot = data.ReadCell();
 	float cd = data.ReadFloat();
 	FF2_SetCustomCharge(boss, slot, cd);
