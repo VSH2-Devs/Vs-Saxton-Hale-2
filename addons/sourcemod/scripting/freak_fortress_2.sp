@@ -82,8 +82,6 @@ public void OnPluginStart()
 	CreateConVar("ff2_oldjump", "1", "Use old Saxton Hale jump equations", _, true, 0.0, true, 1.0);
 	CreateConVar("ff2_base_jumper_stun", "0", "Whether or not the Base Jumper should be disabled when a player gets stunned", _, true, 0.0, true, 1.0);
 	CreateConVar("ff2_solo_shame", "0", "Always insult the boss for solo raging", _, true, 0.0, true, 1.0);
-	
-	Reg_ConCmds();
 }
 
 public void OnLibraryAdded(const char[] name) {
@@ -123,7 +121,7 @@ public void OnLibraryRemoved(const char[] name) {
 	if( StrEqual(name, "VSH2") ) {
 		ff2.m_vsh2 = false;
 		
-		delete ff2.m_charcfg;
+		DeleteCfg(ff2.m_charcfg);
 		RemoveVSH2Bridge();
 	}
 }
