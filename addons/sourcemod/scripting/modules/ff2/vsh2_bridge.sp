@@ -267,7 +267,6 @@ public void OnBossInitializedFF2(const VSH2Player player)
 		return;
 	
 	ToFF2Player(player).iCfg = identity.hCfg;
-	PrintToServer("Set Config");
 	
 	int cls;
 	if ( !identity.hCfg.GetInt("class", cls) )
@@ -445,7 +444,6 @@ public void OnRoundEndInfoFF2(const VSH2Player player, bool bossBool, char messa
 			player.PlayVoiceClip(snd, VSH2_VOICE_WIN);
 	}
 	
-	PrintToServer("RoundEnd");
 	ToFF2Player(player).iCfg = null;
 	ToFF2Player(player).HookedAbilities = null;
 }
