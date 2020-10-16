@@ -17,7 +17,6 @@
 #pragma newdecls         required
 
 
-
 public Plugin myinfo = {
 	name           = "VSH2/FF2 Compatibility Engine",
 	author         = "Nergal/Assyrianic, BatFoxKid and 01Pollux",
@@ -82,6 +81,8 @@ public void OnPluginStart()
 	CreateConVar("ff2_oldjump", "1", "Use old Saxton Hale jump equations", _, true, 0.0, true, 1.0);
 	CreateConVar("ff2_base_jumper_stun", "0", "Whether or not the Base Jumper should be disabled when a player gets stunned", _, true, 0.0, true, 1.0);
 	CreateConVar("ff2_solo_shame", "0", "Always insult the boss for solo raging", _, true, 0.0, true, 1.0);
+	
+	Reg_ConCmds();
 }
 
 public void OnLibraryAdded(const char[] name) {
@@ -100,29 +101,35 @@ public void OnLibraryAdded(const char[] name) {
 		for( int i=MaxClients; i; i-- )
 			if( 0 < i <= MaxClients && IsClientInGame(i) )
 				OnClientPutInServer(i);
+		
+		LoadFF2Plugins();
 	}
+}
+
+public void NextFrame_InitFF2Player(int client)
+{
+	FF2Player player = FF2Player(client);
+	
+	player.iMaxLives = 0;
+	player.iRageDmg = 0;
+	player.iShieldId = -1;
+	player.flShieldHP = 0.0;
 }
 
 public void OnClientPutInServer(int client)
 {
 	if ( !ff2.m_vsh2 ) return;
 	
-	FF2Player player = FF2Player(client);
-	player.iMaxLives = 0;
-	player.iRageDmg = 0;
-	player.iShieldId = -1;
-	player.iShieldHP = 0.0;
-	player.iFlags = 0;
-	player.iCfg = null;
-	player.HookedAbilities = null;
+	RequestFrame(NextFrame_InitFF2Player, client);
 }
 
 public void OnLibraryRemoved(const char[] name) {
 	if( StrEqual(name, "VSH2") ) {
 		ff2.m_vsh2 = false;
 		
-		DeleteCfg(ff2.m_charcfg);
 		RemoveVSH2Bridge();
+		DeleteCfg(ff2.m_charcfg);
+		UnloadFF2Plugins();
 	}
 }
 
@@ -140,7 +147,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	ff2.m_forwards[FF2OnAbility] = 		new GlobalForward("FF2_OnAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell);
 	ff2.m_forwards[FF2OnQueuePoints] = 	new GlobalForward("FF2_OnAddQueuePoints", ET_Hook, Param_Array);
 	ff2.m_forwards[FF2OnHurtShield] = 	new GlobalForward("FF2_OnHurtShield", ET_Hook, Param_Cell, Param_CellByRef, Param_Cell, Param_Cell, Param_CellByRef);
-	ff2.m_forwards[FF2PostRoundStart] = new GlobalForward("FF2_OnPostRoundStart", ET_Ignore, Param_Array, Param_Cell, Param_Array, Param_Cell);
+	ff2.m_forwards[FF2PostRoundStart] = 	new GlobalForward("FF2_OnPostRoundStart", ET_Ignore, Param_Array, Param_Cell, Param_Array, Param_Cell);
 	ff2.m_forwards[FF2OnBossJarated] = 	new GlobalForward("FF2_OnBossJarated", ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef);
 	
 	RegPluginLibrary("freak_fortress_2");
