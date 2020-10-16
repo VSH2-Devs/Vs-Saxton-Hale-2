@@ -1,7 +1,7 @@
 
 /**
  * TODO: 
- * 	add sound_kill_buildable, catch_phrase, sound_ability
+ * 	add sound_kill_buildable, catch_phrase, sound_ability, FF2_OnAlivePlayersChanged...
  */
 static const char script_sounds[][] = {
 	"Announcer.AM_CapEnabledRandom",
@@ -52,8 +52,6 @@ void InitVSH2Bridge()
 	
 	VSH2_Hook(OnBossJarated, OnBossJaratedFF2);
 	
-	VSH2_Hook(OnRoundStart, OnRoundStartFF2);
-	
 	VSH2_Hook(OnRoundEndInfo, OnRoundEndInfoFF2);
 	
 	VSH2_Hook(OnMusic, OnMusicFF2);
@@ -100,8 +98,6 @@ void RemoveVSH2Bridge()
 	VSH2_Unhook(OnBossTaunt, OnBossMedicCallFF2);
 	
 	VSH2_Unhook(OnBossJarated, OnBossJaratedFF2);
-	
-	VSH2_Unhook(OnRoundStart, OnRoundStartFF2);
 	
 	VSH2_Unhook(OnRoundEndInfo, OnRoundEndInfoFF2);
 	
@@ -201,10 +197,6 @@ public Action OnBossSelectedFF2(const VSH2Player player)
 	delete panel;
 	
 	return Plugin_Changed;
-}
-
-public void OnRoundStartFF2(const VSH2Player[] bosses, const int boss_count, const VSH2Player[] red_players, const int red_count)
-{
 }
 
 public void OnBossThinkFF2(const VSH2Player vsh2player)
