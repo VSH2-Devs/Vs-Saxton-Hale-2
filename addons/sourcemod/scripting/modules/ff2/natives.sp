@@ -1,9 +1,240 @@
 void InitNatives()
 {
-	CreateNative("FF2_IsFF2Enabled", Native_FF2_IsFF2Enabled);
-	CreateNative("FF2_GetFF2Version", Native_FF2_GetFF2Version);
+	#define CREATE_NATIVE(%0) CreateNative(#%0, Native_%0)
 	
+	CREATE_NATIVE(FF2_IsFF2Enabled);
+	CREATE_NATIVE(FF2_GetFF2Version);
+	CREATE_NATIVE(FF2_GetForkVersion);
+	CREATE_NATIVE(FF2_GetRoundState);
+	
+	CREATE_NATIVE(FF2_GetBossUserId);
+	CREATE_NATIVE(FF2_GetBossIndex);
+	CREATE_NATIVE(FF2_GetBossTeam);
+	
+	CREATE_NATIVE(FF2_GetBossSpecial);
+	CREATE_NATIVE(FF2_GetBossKV);
+	CREATE_NATIVE(FF2_GetSpecialKV);
+	
+	CREATE_NATIVE(FF2_GetBossHealth);
+	CREATE_NATIVE(FF2_SetBossHealth);
+	CREATE_NATIVE(FF2_GetBossMaxHealth);
+	CREATE_NATIVE(FF2_SetBossMaxHealth);
+	CREATE_NATIVE(FF2_GetBossLives);
+	CREATE_NATIVE(FF2_SetBossLives);
+	CREATE_NATIVE(FF2_GetBossMaxLives);
+	CREATE_NATIVE(FF2_SetBossMaxLives);
+	
+	CREATE_NATIVE(FF2_SetQueuePoints);
+	CREATE_NATIVE(FF2_GetQueuePoints);
+	
+	CREATE_NATIVE(FF2_LogError);
+	CREATE_NATIVE(FF2_Debug);
+	
+	CREATE_NATIVE(FF2_GetCheats);
+	CREATE_NATIVE(FF2_SetCheats);
+	
+	CREATE_NATIVE(FF2_GetBossCharge);
+	CREATE_NATIVE(FF2_SetBossCharge);
+	CREATE_NATIVE(FF2_GetBossRageDamage);
+	CREATE_NATIVE(FF2_SetBossRageDamage);
+	CREATE_NATIVE(FF2_GetClientDamage);
+	CREATE_NATIVE(FF2_SetClientDamage);
+	
+	CREATE_NATIVE(FF2_GetRageDist);
+	CREATE_NATIVE(FF2_HasAbility);
+	CREATE_NATIVE(FF2_DoAbility);
+	CREATE_NATIVE(FF2_GetAbilityArgument);
+	CREATE_NATIVE(FF2_GetAbilityArgumentFloat);
+	CREATE_NATIVE(FF2_GetAbilityArgumentString);
+	CREATE_NATIVE(FF2_GetArgNamedI);
+	CREATE_NATIVE(FF2_GetArgNamedF);
+	CREATE_NATIVE(FF2_GetArgNamedS);
+	
+	CREATE_NATIVE(FF2_RandomSound);
+	CREATE_NATIVE(FF2_StartMusic);
+	CREATE_NATIVE(FF2_StopMusic);
+	
+	
+	CREATE_NATIVE(FF2_GetFF2flags);
+	CREATE_NATIVE(FF2_SetFF2flags);
+	CREATE_NATIVE(FF2_GetClientGlow);
+	CREATE_NATIVE(FF2_SetClientGlow);
+	
+	CREATE_NATIVE(FF2_GetBossPlayers);
+	CREATE_NATIVE(FF2_GetClientShield);
+	CREATE_NATIVE(FF2_SetClientShield);
+	CREATE_NATIVE(FF2_RemoveClientShield);
+	
+	CREATE_NATIVE(FF2_MakeBoss);
+	CREATE_NATIVE(FF2_SelectBoss);
+	CREATE_NATIVE(FF2_GetSpecialConfig);
+	
+	#undef CREATE_NATIVE
+	#define CREATE_NATIVE(%0)		CreateNative("FF2Player."...#%0			, Native_FF2Player_%0		)
+	#define CREATE_NATIVE_GET(%0)	CreateNative("FF2Player."...#%0...".get", Native_FF2Player_%0_Get	)
+	#define CREATE_NATIVE_SET(%0)	CreateNative("FF2Player."...#%0...".set", Native_FF2Player_%0_Set	)
+	
+
+	CREATE_NATIVE(FF2Player);
+	CREATE_NATIVE(GetArgI);
+	CREATE_NATIVE(GetArgF);
+	CREATE_NATIVE(GetArgS);
+	CREATE_NATIVE_GET(iCfg);
+	CREATE_NATIVE_GET(iMaxLives); 	CREATE_NATIVE_SET(iMaxLives);
+	CREATE_NATIVE_GET(iRageDmg); 	CREATE_NATIVE_SET(iRageDmg);
+	CREATE_NATIVE_GET(iShieldId); 	CREATE_NATIVE_SET(iShieldId);
+	CREATE_NATIVE_GET(flShieldHP); 	CREATE_NATIVE_SET(flShieldHP);
+	CREATE_NATIVE_GET(HookedAbilities);
+	CREATE_NATIVE_GET(bNoSuperJump);CREATE_NATIVE_SET(bNoSuperJump);
+	CREATE_NATIVE_GET(bHideHUD); 	CREATE_NATIVE_SET(bHideHUD);
+	CREATE_NATIVE(PlayBGM);
+	
+	#undef CREATE_NATIVE
+	#undef CREATE_NATIVE_GET
+	#undef CREATE_NATIVE_SET
 }
+
+/* FF2Player methodmaps */
+public any Native_FF2Player_FF2Player(Handle plugin, int numParams)
+{
+	return FF2Player(GetNativeCell(1), GetNativeCell(2));
+}
+
+public any Native_FF2Player_GetArgI(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	char pl_name[64], ab_name[64], key_name[32];
+	GetNativeString(2, pl_name, sizeof(pl_name));
+	GetNativeString(3, ab_name, sizeof(ab_name));
+	GetNativeString(4, key_name, sizeof(key_name));
+	
+	int def = GetNativeCell(5);
+	return GetArgNamedI(player, pl_name, ab_name, key_name, def);
+}
+
+public any Native_FF2Player_GetArgF(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	char pl_name[64], ab_name[64], key_name[32];
+	GetNativeString(2, pl_name, sizeof(pl_name));
+	GetNativeString(3, ab_name, sizeof(ab_name));
+	GetNativeString(4, key_name, sizeof(key_name));
+	
+	float def = GetNativeCell(5);
+	return GetArgNamedF(player, pl_name, ab_name, key_name, def);
+}
+
+public any Native_FF2Player_GetArgS(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	char pl_name[64], ab_name[64], key_name[32];
+	GetNativeString(2, pl_name, sizeof(pl_name));
+	GetNativeString(3, ab_name, sizeof(ab_name));
+	
+	GetNativeString(4, key_name, sizeof(key_name));
+	
+	int maxlen = GetNativeCell(6);
+	char[] result = new char[maxlen];
+	int written = GetArgNamedS(player, pl_name, ab_name, key_name, result, maxlen);
+	
+	SetNativeString(5, result, maxlen);
+	return written;
+}
+
+public any Native_FF2Player_iCfg_Get(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	return player.iCfg;
+}
+
+public any Native_FF2Player_iMaxLives_Get(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	return player.iMaxLives;
+}
+
+public any Native_FF2Player_iMaxLives_Set(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	return player.iMaxLives;
+}
+
+public any Native_FF2Player_iRageDmg_Get(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	return player.iMaxLives;
+}
+
+public any Native_FF2Player_iRageDmg_Set(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	return player.iRageDmg;
+}
+
+public any Native_FF2Player_iShieldId_Get(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	return player.iShieldId;
+}
+
+public any Native_FF2Player_iShieldId_Set(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	player.iShieldId = GetNativeCell(2);
+}
+
+public any Native_FF2Player_flShieldHP_Get(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	return player.flShieldHP;
+}
+
+public any Native_FF2Player_flShieldHP_Set(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	player.flShieldHP = GetNativeCell(2);
+}
+
+public any Native_FF2Player_HookedAbilities_Get(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	return player.HookedAbilities;
+}
+
+public any Native_FF2Player_bNoSuperJump_Get(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	return player.bNoSuperJump;
+}
+
+public any Native_FF2Player_bNoSuperJump_Set(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	player.bNoSuperJump = GetNativeCell(2);
+}
+
+public any Native_FF2Player_bHideHUD_Get(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	return player.bHideHUD;
+}
+
+public any Native_FF2Player_bHideHUD_Set(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	player.bHideHUD = GetNativeCell(2);
+}
+
+public any Native_FF2Player_PlayBGM(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	char bgm[PLATFORM_MAX_PATH]; GetNativeString(2, bgm, sizeof(bgm));
+	player.PlayBGM(bgm);
+}
+
+/* end FF2Player methodmaps */
+
+
 
 /** bool FF2_IsFF2Enabled(); */
 public int Native_FF2_IsFF2Enabled(Handle plugin, int numParams)
@@ -44,14 +275,14 @@ public int Native_FF2_GetRoundState(Handle plugin, int numParams)
 public int Native_FF2_GetBossUserId(Handle plugin, int numParams)
 {
 	FF2Player player = FF2Player(GetNativeCell(1));
-	return player.Valid ? player.userid:-1;
+	return ( player.Valid && player.GetPropInt("bIsBoss") ? player.userid:-1 );
 }
 
 /** int FF2_GetBossIndex(int client); */
 public any Native_FF2_GetBossIndex(Handle plugin, int numParams)
 {
 	FF2Player player = FF2Player(GetNativeCell(1));
-	return player;
+	return ( player.Valid && player.GetPropInt("bIsBoss") ? player.index:-1 );
 }
 
 /** int FF2_GetBossTeam(); */
@@ -293,6 +524,7 @@ public any Native_FF2_GetRageDist(Handle plugin, int numParams)
 	
 	ConfigMap section = JumpToAbility(player, plugin_name, ability_name);
 	float see;
+	if ( !section ) return 0.0;
 	if( !section.GetFloat("dist", see) ) {
 		section.GetFloat("ragedist", see);
 	}
@@ -344,7 +576,7 @@ public int Native_FF2_GetAbilityArgument(Handle plugin, int numParams)
 	
 	int defval = GetNativeCell(5);
 	
-	return GetArgNamedI(boss, plugin_name, ability_name, argument, defval);
+	return GetArgNamedI(FF2Player(boss), plugin_name, ability_name, argument, defval);
 }
 
 /** float FF2_GetAbilityArgumentFloat(int boss, const char[] plugin_name, const char[] ability_name, int argument, float defValue=0.0); */
@@ -358,7 +590,7 @@ public any Native_FF2_GetAbilityArgumentFloat(Handle plugin, int numParams)
 	
 	float defval = GetNativeCell(5);
 	
-	return GetArgNamedF(boss, plugin_name, ability_name, argument, defval);
+	return GetArgNamedF(FF2Player(boss), plugin_name, ability_name, argument, defval);
 }
 
 /** void FF2_GetAbilityArgumentString(int boss, const char[] pluginName, const char[] abilityName, int argument, char[] buffer, int bufferLength); */
@@ -372,7 +604,7 @@ public any Native_FF2_GetAbilityArgumentString(Handle plugin, int numParams)
 	int length; length = GetNativeCell(6);
 	char[] result = new char[length];
 	
-	int res = GetArgNamedS(boss, plugin_name, ability_name, argument, result, length);
+	int res = GetArgNamedS(FF2Player(boss), plugin_name, ability_name, argument, result, length);
 	if ( res )
 		SetNativeString(5, result, length);
 	
@@ -390,7 +622,7 @@ public int Native_FF2_GetArgNamedI(Handle plugin, int numParams)
 	
 	int defval = GetNativeCell(5);
 	
-	return GetArgNamedI(boss, plugin_name, ability_name, argument, defval);
+	return GetArgNamedI(FF2Player(boss), plugin_name, ability_name, argument, defval);
 }
 
 /** float FF2_GetArgNamedF(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, float defValue=0.0); */
@@ -404,7 +636,7 @@ public any Native_FF2_GetArgNamedF(Handle plugin, int numParams)
 	
 	float defval = GetNativeCell(5);
 	
-	return GetArgNamedF(boss, plugin_name, ability_name, argument, defval);
+	return GetArgNamedF(FF2Player(boss), plugin_name, ability_name, argument, defval);
 }
 
 /** void FF2_GetArgNamedS(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, char[] buffer, int bufferLength); */
@@ -415,10 +647,10 @@ public any Native_FF2_GetArgNamedS(Handle plugin, int numParams)
 	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
 	char ability_name[64]; GetNativeString(3, ability_name, sizeof(ability_name));
 	char argument[32]; GetNativeString(4, argument, sizeof(argument));
-	int length; length = GetNativeCell(6);
+	int length = GetNativeCell(6);
 	char[] result = new char[length];
 	
-	int res = GetArgNamedS(boss, plugin_name, ability_name, argument, result, length);
+	int res = GetArgNamedS(FF2Player(boss), plugin_name, ability_name, argument, result, length);
 	if ( res )
 		SetNativeString(5, result, length);
 	
@@ -434,7 +666,6 @@ public any Native_FF2_RandomSound(Handle plugin, int numParams)
 	
 //	int slot = GetNativeCell(5);
 	int size = GetNativeCell(3) + 1;
-	char[] sound = new char[size];
 	
 	int key_size; GetNativeStringLength(1, key_size); ++key_size;
 
@@ -446,12 +677,15 @@ public any Native_FF2_RandomSound(Handle plugin, int numParams)
 		return 0;
 	
 	bool soundExists;
+	
+	FF2SoundIdentity snd_id;
 	FF2SoundList list = identity.sndHash.GetAssertedList(key);
+	
 	if ( list ) {
-		soundExists = list.RandomString(sound, size);
+		soundExists = list.RandomSound(snd_id);
 	}
 	if ( !soundExists ) return false;
-	return SetNativeString(2, sound, size) == SP_ERROR_NONE;
+	return SetNativeString(2, snd_id.path, size) == SP_ERROR_NONE;
 }
 
 /** void FF2_StartMusic(int client=0); */
@@ -491,22 +725,28 @@ public any Native_FF2_GetSpecialKV(Handle plugin, int numParams)
 /** int FF2_GetFF2flags(int client); */
 public int Native_FF2_GetFF2flags(Handle plugin, int numParams)
 {
+	return 0;
+	/*
 	FF2Player player = FF2Player(GetNativeCell(1));
 	if( !player.Valid )
 		return 0;
 	
 	return player.iFlags;
+	*/
 }
 
 /** void FF2_SetFF2flags(int client, int flags); */
 public any Native_FF2_SetFF2flags(Handle plugin, int numParams)
 {
+	return 0;
+	/*
 	FF2Player player = FF2Player(GetNativeCell(1));
 	if( !player.Valid )
 		return 0;
 	
 	int flags = GetNativeCell(2);
 	return player.iFlags = flags;
+	*/
 }
 
 /** float FF2_GetClientGlow(int client); */
@@ -554,13 +794,13 @@ public any Native_FF2_GetBossPlayers(Handle plugin, int numParams)
 }
 
 /** float FF2_GetClientShield(int client); */
-public any Native_FF2_GetClientShieldHealth(Handle plugin, int numParams)
+public any Native_FF2_GetClientShield(Handle plugin, int numParams)
 {
 	FF2Player player = FF2Player(GetNativeCell(1));
 	if( !player.Valid )
 		return 0;
 	
-	return (player.iShieldId == -1) ? -1:RoundFloat(player.iShieldHP);
+	return (player.iShieldId == -1) ? -1:RoundFloat(player.flShieldHP);
 }
 
 /** void FF2_SetClientShield(int client, int entity=0, float health=0.0, float reduction=-1.0); */
@@ -577,7 +817,7 @@ public any Native_FF2_SetClientShield(Handle plugin, int numParams)
 	float health = GetNativeCell(3);
 	
 	player.iShieldId = ( GetOwner(shield)!=player.index || shield==0 ) ? player.iShieldId : EntIndexToEntRef(shield);
-	player.iShieldHP = health;
+	player.flShieldHP = health;
 	
 	return true;
 }
@@ -589,7 +829,7 @@ public any Native_FF2_RemoveClientShield(Handle plugin, int numParams)
 	if( !player.Valid )
 		return 0;
 	
-	player.iShieldHP = 0.0;
+	player.flShieldHP = 0.0;
 	
 	int shield = TF2_GetWearable(player.index, TFWeaponSlot_Secondary);
 	if( shield == -1 || player.iShieldId == -1 )
@@ -629,3 +869,41 @@ public any Native_ZZZ(Handle plugin, int numParams)
 	return 0;
 }
 */
+
+public Action Musics_Print(int client, int argc)
+{
+	FF2Identity id;
+	ff2_cfgmgr.GetIdentity("gentlespy", id);
+	
+	FF2SoundHash map = id.sndHash;
+	
+	StringMapSnapshot snap = map.Snapshot();
+	
+	char key[100];
+	FF2SoundList list;
+	FF2SoundIdentity cur;
+	int x;
+	for(; x < snap.Length; x++) 
+	{
+		snap.GetKey(x, key, sizeof(key));
+		list = map.GetAssertedList(key);
+		PrintToServer("[%i] = %s, HNDL: %x", x, key, list);
+		if(list) {
+			for(int j = 0; j < list.Length; j++)
+			{
+				if(list.At(j, cur)) {
+					PrintToServer("\t<||[%i]||> <%s> <%s> <%s> %.3f", j, cur.path, cur.name, cur.artist, cur.time);
+				}
+			}
+		}
+	}
+	
+	
+	delete snap;
+}
+
+void Reg_ConCmds()
+{
+	/// remove me
+	RegConsoleCmd("sm_print_musics", Musics_Print);
+}
