@@ -12,12 +12,12 @@
 
 enum FF2CallType_t
 {
-	CT_NONE			= 0b000000000,	// 	Inactive, default to CT_RAGE
-	CT_LIFE_LOSS 	= 0b000000001,	//	Life-loss
-	CT_RAGE		 	= 0b000000010,	//	generic E / taunt rage
-	CT_CHARGE		= 0b000000100,	//	charged and ready to super jump
+	CT_NONE		= 0b000000000,	// 	Inactive, default to CT_RAGE
+	CT_LIFE_LOSS 	= 0b000000001,
+	CT_RAGE		= 0b000000010,
+	CT_CHARGE	= 0b000000100,
 	CT_UNUSED_DEMO 	= 0b000001000,	//	UNUSED
-	CT_WEIGHDOWN	= 0b000010000,	//	
+	CT_WEIGHDOWN	= 0b000010000,
 	CT_PLAYER_KILLED= 0b000100000,
 	CT_BOSS_KILLED	= 0b001000000,
 	CT_BOSS_STABBED	= 0b010000000,
@@ -1203,6 +1203,7 @@ public void __pl_FF2_SetNTVOptional()
 #endif
 
 
+
 #if defined FF2_USING_AUTO_PLUGIN
 char this_plugin_name[64];
 
@@ -1248,6 +1249,53 @@ public void FF2_OnAbility(const FF2Player player, const char[] pluginName, const
 		FF2_OnAbility2(player, abilityName, calltype);
 	}
 }
+
+#elseif defined FF2_USING_AUTO_PLUGIN__OLD
+char this_plugin_name[64];
+
+static void GetThisPluginName()
+{
+	char pluginName[80];
+	GetPluginFilename(INVALID_HANDLE, pluginName, sizeof(pluginName));
+	ReplaceString(pluginName, sizeof(pluginName), ".ff2", "", false);
+	int forwardSlash = -1;
+	int backwardSlash = -1;
+	int finalPluginName = -1;
+	for(;;)
+	{
+		forwardSlash = StrContains(pluginName[finalPluginName+1], "/");
+		backwardSlash = StrContains(pluginName[finalPluginName+1], "\\");
+		if((backwardSlash<forwardSlash && backwardSlash!=-1) || forwardSlash==-1)
+		{
+			if(backwardSlash == -1)
+				break;
+
+			finalPluginName = backwardSlash;
+		}
+		else if((forwardSlash<backwardSlash && forwardSlash!=-1) || backwardSlash==-1)
+		{
+			if(forwardSlash == -1)
+				break;
+
+			finalPluginName = forwardSlash;
+		}
+	}
+	strcopy(this_plugin_name, sizeof(this_plugin_name), pluginName[finalPluginName+1]);
+}
+
+public void OnPluginStart()
+{
+	GetThisPluginName();
+	OnPluginStart2();
+}
+
+public void FF2_OnAbility(const FF2Player player, const char[] pluginName, const char[] abilityName, FF2CallType_t calltype)
+{
+	if( !strcmp(pluginName, this_plugin_name) ) {
+		FF2_OnAbility2(player.userid, pluginName, abilityName, view_as<int>(calltype));
+	}
+}
+
 #endif
 
 #file "Freak Fortress 2 Include"
