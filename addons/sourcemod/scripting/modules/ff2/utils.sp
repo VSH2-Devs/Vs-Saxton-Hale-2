@@ -7,6 +7,28 @@
 #define IsClientValid(%1)    ( 0 < (%1) && (%1) <= MaxClients && IsClientInGame((%1)) )
 
 
+enum FF2CallType_t
+{
+	CT_NONE			= 0b000000000,	// 	Inactive, default to CT_RAGE
+	CT_LIFE_LOSS 	= 0b000000001,	//	Life-loss
+	CT_RAGE		 	= 0b000000010,	//	generic E / taunt rage
+	CT_CHARGE		= 0b000000100,	//	charged and ready to super jump
+	CT_UNUSED_DEMO 	= 0b000001000,	//	UNUSED
+	CT_WEIGHDOWN	= 0b000010000,	//	
+	CT_PLAYER_KILLED= 0b000100000,
+	CT_BOSS_KILLED	= 0b001000000,
+	CT_BOSS_STABBED	= 0b010000000,
+	CT_BOSS_MG		= 0b100000000,
+};
+
+enum FF2RageType_t
+{
+	RT_RAGE = 0,
+	RT_WEIGHDOWN,
+	RT_CHARGE
+};
+
+
 methodmap FF2AbilityList < StringMap {
 	public FF2AbilityList() {
 		return view_as<FF2AbilityList>(new StringMap());
@@ -24,7 +46,7 @@ methodmap FF2AbilityList < StringMap {
 
 methodmap FF2Player < VSH2Player {
 	property bool Valid {
-		public get() { return this != INVALID_FF2PLAYER; }
+		public get() { return this != INVALID_FF2PLAYER && this.index; }
 	}
 	
 	public FF2Player(const int index, bool userid = false) {
@@ -40,39 +62,16 @@ methodmap FF2Player < VSH2Player {
 		}
 	}
 	
+	property int iBossType {
+		public get() { return this.GetPropInt("iBossType"); }
+	}
+	
 	property int iMaxLives {
 		public get() {
 			return this.GetPropInt("iMaxLives");
 		}
 		public set(int val) {
 			this.SetPropInt("iMaxLives", val);
-		}
-	}
-	
-	property int iRageDmg {
-		public get() {
-			return this.GetPropInt("iRageDmg");
-		}
-		public set(int val) {
-			this.SetPropInt("iRageDmg", val);
-		}
-	}
-	
-	property int iShieldId {
-		public get() {
-			return this.GetPropInt("iShieldId");
-		}
-		public set(int val) {
-			this.SetPropInt("iShieldId", val);
-		}
-	}
-	
-	property float flShieldHP {
-		public get() {
-			return this.GetPropFloat("iShieldHP");
-		}
-		public set(float val) {
-			this.SetPropFloat("iShieldHP", val);
 		}
 	}
 	
@@ -91,6 +90,15 @@ methodmap FF2Player < VSH2Player {
 		}
 	}
 	
+	property bool bNoWeighdown {
+		public get() { 
+			return this.GetPropAny("bNoWeighdown");
+		}
+		public set(bool state) {
+			this.SetPropAny("bNoWeighdown", state);
+		}
+	}
+	
 	property bool bHideHUD {
 		public get() { 
 			return this.GetPropAny("bHideHUD");
@@ -100,42 +108,32 @@ methodmap FF2Player < VSH2Player {
 		}
 	}
 	
-	public any GetRageInfo(m_iRageInfo Info) {
-		switch( Info ) {
-			case iRageMode: {
-				return this.GetPropInt("iRageMode");
-			}
-			case iRageMin: {
-				return this.GetPropFloat("iRageMin");
-			}
-			case iRageMax: {
-				return this.GetPropInt("iRageMax");
-			}
+	public float GetRageVar(FF2RageType_t type) {
+		switch( type ) {
+			case RT_RAGE: 		return this.GetPropFloat("flRAGE");
+			case RT_CHARGE: 	return this.GetPropFloat("flCharge");
+			case RT_WEIGHDOWN: 	return this.GetPropFloat("flWeighDown");
 			default: {
-				return 0;
+				static char key[64]; FormatEx(key, sizeof(key), "flCharge%i", type);
+				return this.GetPropFloat(key);
 			}
 		}
 	}
 	
-	public bool SetRageInfo(m_iRageInfo Info, any val) {
-		switch( Info ) {
-			case iRageMode: {
-				return this.SetPropInt("iRageMode", val);
-			}
-			case iRageMin: {
-				return this.SetPropFloat("iRageMin", val);
-			}
-			case iRageMax: {
-				return this.SetPropFloat("iRageMax", val);
-			}
+	public void SetRageVar(FF2RageType_t type, float val) {
+		switch( type ) {
+			case RT_RAGE: 		this.SetPropFloat("flRAGE", val);
+			case RT_CHARGE: 	this.SetPropFloat("flCharge", val);
+			case RT_WEIGHDOWN: 	this.SetPropFloat("flWeighDown", val);
 			default: {
-				return false;
+				static char key[64]; FormatEx(key, sizeof(key), "flCharge%i", type);
+				this.SetPropFloat(key, val);
 			}
 		}
 	}
 	
 	public void PlayBGM(const char[] music) {
-		this.PlayMusic(vsh2cvars.m_flmusicvol.FloatValue, music);
+		this.PlayMusic(ff2.m_cvars.m_flmusicvol.FloatValue, music);
 	}
 }
 
@@ -220,7 +218,7 @@ methodmap FF2SoundHash < StringMap
 		return list;
 	}
 	
-	public FF2SoundList GetAssertedList(const char[] key)
+	public FF2SoundList GetList(const char[] key)
 	{
 		FF2SoundList list;
 		if(this.GetValue(key, list) && list) {
@@ -268,8 +266,7 @@ methodmap FF2SoundHash < StringMap
  * szName = boss config name in character.cfg
  * szPath = pull path name
  */
-enum struct FF2Identity
-{
+enum struct FF2Identity {
 	int 			VSH2ID;
 	ConfigMap 		hCfg;
 	FF2SoundHash 	sndHash;
@@ -311,30 +308,9 @@ static bool FF2_LoadCharacter(FF2Identity identity)
 		return false;
 	}
 	
-	/*
-	TODO
-	if(KvJumpToKey(BossKV[Specials], "map_exclude"))
-	{
-		char item[6];
-		static char buffer[34];
-		for(int size=1; ; size++)
-		{
-			FormatEx(item, sizeof(item), "map%d", size);
-			KvGetString(BossKV[Specials], item, buffer, sizeof(buffer));
-			if(!buffer[0])
-				break;
-
-			if(!StrContains(currentmap, buffer))
-			{
-				MapBlocked[Specials] = true;
-				break;
-			}
-		}
-	}
-	*/
-	
 	char buffer[64];
 	
+	identity.hCfg = cfg;
 	ConfigMap this_char = cfg.GetSection("character");
 	identity.ablist = new FF2AbilityList();
 	
@@ -365,28 +341,6 @@ static bool FF2_LoadCharacter(FF2Identity identity)
 		}
 		
 		delete snap;
-		
-		/*
-		int i;
-		while( ++i < MAX_ABILITIES_PL ) {
-			FormatEx(key_name, sizeof(key_name), "ability%i", i);
-			
-			cur_ab = this_char.GetSection(key_name);
-			
-			if( !cur_ab || !cur_ab.Get("plugin_name", buffer, sizeof(buffer)) )
-				break;
-			
-			BuildPath(Path_SM, path, sizeof(path), "plugins/freaks/%s.ff2", buffer);
-			if( !FileExists(path) ) {
-				LogError("[VSH2/FF2] Character \"%s.cfg\" is missing \"%s\" subplugin!", identity.szName, path);
-			} 
-			else {
-				cur_ab.Get("name", path, sizeof(path));
-				Format(path, sizeof(path), "%s##%s", buffer, path);
-				identity.ablist.Insert(path, key_name);
-			}
-		}
-		*/
 	}
 	
 	ConfigMap stacks;
@@ -555,10 +509,7 @@ static bool FF2_LoadCharacter(FF2Identity identity)
 		}
 		
 		delete snap;
-	}
-	
-	identity.hCfg = this_char;
-	
+	}	
 	return true;
 }
 
@@ -697,15 +648,16 @@ stock ConfigMap JumpToAbility(const FF2Player player, const char[] plugin_name, 
 {
 	FF2AbilityList list = player.HookedAbilities;
 	
-	char actual_key[128];
+	static char actual_key[128];
 	FormatEx(actual_key, sizeof(actual_key), "%s##%s", plugin_name, ability_name);
 	
 	ConfigMap ability = null;
-	char pos[24];
+	static char pos[64];
 	
 	if ( list && list.GetString(actual_key, pos, sizeof(pos)) ) {
 		ability = player.iCfg.GetSection(pos);
 	}
+	
 	return ability;
 }
 
@@ -748,57 +700,6 @@ stock void FPrintToChat(int client, const char[] message, any ...)
 	CPrintToChat(client, "{olive}[VSH2/FF2]{default} %s",  buffer);
 }
 
-//TODO
-/*
-enum ChargeType_t {
-	RAGE = 0,
-	JUMP,
-	WDOWN,
-	DEMO,
-}
-*/
-stock float FF2_GetCustomCharge(const FF2Player player, int slot)
-{
-	char ability_key[64];
-	Format(ability_key, sizeof(ability_key), "ability%i.name", slot);
-	ConfigMap config = player.iCfg;
-	int len = config.GetSize(ability_key);
-	char[] ability_name = new char[len];
-	if( config.Get(ability_key, ability_name, len) ) {
-		if( StrContains(ability_name, "weighdown", false) != -1 ) {
-			return player.GetPropFloat("flWeighDown");
-		} else if( StrContains(ability_name, "bravejump", false) != -1 ) {
-			return player.GetPropFloat("flCharge");
-		} else {
-			char new_ability[64];
-			Format(new_ability, sizeof(ability_key), "flCharge%i", slot);
-			return player.GetPropFloat(new_ability);
-		}
-	}
-	return 0.0;
-}
-
-stock bool FF2_SetCustomCharge(const FF2Player player, int slot, float value)
-{
-	char ability_key[64];
-	Format(ability_key, sizeof(ability_key), "ability%i.name", slot);
-	ConfigMap config = player.iCfg;
-	int len = config.GetSize(ability_key);
-	char[] ability_name = new char[len];
-	if( config.Get(ability_key, ability_name, len) ) {
-		if( StrContains(ability_name, "weighdown", false) != -1 ) {
-			return player.SetPropFloat("flWeighDown", value);
-		} else if( StrContains(ability_name, "bravejump", false) != -1 ) {
-			return player.SetPropFloat("flCharge", value);
-		} else {
-			char new_ability[64];
-			Format(new_ability, sizeof(ability_key), "flCharge%i", slot);
-			return player.SetPropFloat(new_ability, value);
-		}
-	}
-	return false;
-}
-
 stock int FF2_RegisterFakeBoss(const char[] name)
 {
 	if(	strlen(name) >= MAX_BOSS_NAME_SIZE - 6 )
@@ -812,11 +713,11 @@ stock int FF2_RegisterFakeBoss(const char[] name)
 static ConfigMap GetFF2Config(FF2Player player)
 {
 	static FF2Identity id;
-	return ( ff2_cfgmgr.FindIdentity(player.GetPropInt("iBossType"), id) ? id.hCfg: null );
+	return ( ff2_cfgmgr.FindIdentity(player.iBossType, id) ? id.hCfg.GetSection("character"):null );
 }
 
 static FF2AbilityList GetFF2AbilityList(FF2Player player)
 {
 	static FF2Identity id;
-	return ( ff2_cfgmgr.FindIdentity(player.GetPropInt("iBossType"), id) ? id.ablist:null );
+	return ( ff2_cfgmgr.FindIdentity(player.iBossType, id) ? id.ablist:null );
 }
