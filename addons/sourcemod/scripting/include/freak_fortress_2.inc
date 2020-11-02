@@ -33,23 +33,32 @@ enum FF2RageType_t
 
 #if defined FF2_USING_AUTO_PLUGIN__OLD
 
-#define FF2FLAG_UBERREADY			(1<<1)		//Used when medic says "I'm charged!"
-#define FF2FLAG_ISBUFFED			(1<<2)		//Used when soldier uses the Battalion's Backup
-#define FF2FLAG_CLASSTIMERDISABLED 		(1<<3)		//Used to prevent clients' timer
-#define FF2FLAG_HUDDISABLED			(1<<4)		//Used to prevent custom hud from clients' timer
-#define FF2FLAG_BOTRAGE				(1<<5)		//Used by bots to use Boss's rage
-#define FF2FLAG_TALKING				(1<<6)		//Used by Bosses with "sound_block_vo" to disable block for some lines
-#define FF2FLAG_ALLOWSPAWNINBOSSTEAM		(1<<7)		//Used to allow spawn players in Boss's team
-#define FF2FLAG_USEBOSSTIMER			(1<<8)		//Used to prevent Boss's timer
-#define FF2FLAG_USINGABILITY			(1<<9)		//Used to prevent Boss's hints about abilities buttons
-#define FF2FLAG_CLASSHELPED			(1<<10)
-#define FF2FLAG_HASONGIVED			(1<<11)
-#define FF2FLAG_CHANGECVAR			(1<<12)		//Used to prevent SMAC from kicking bosses who are using certain rages (NYI)
-#define FF2FLAG_ALLOW_HEALTH_PICKUPS		(1<<13)		//Used to prevent bosses from picking up health
-#define FF2FLAG_ALLOW_AMMO_PICKUPS		(1<<14)		//Used to prevent bosses from picking up ammo
-#define FF2FLAG_ROCKET_JUMPING			(1<<15)		//Used when a soldier is rocket jumping
-#define FF2FLAG_ALLOW_BOSS_WEARABLES		(1<<16)		//Used to allow boss having wearables (only for Official FF2)
-#define FF2FLAGS_SPAWN				~FF2FLAG_UBERREADY & ~FF2FLAG_ISBUFFED & ~FF2FLAG_TALKING & ~FF2FLAG_ALLOWSPAWNINBOSSTEAM & ~FF2FLAG_CHANGECVAR & ~FF2FLAG_ROCKET_JUMPING & FF2FLAG_USEBOSSTIMER & FF2FLAG_USINGABILITY
+enum {
+	FF2FLAG_UBERREADY 				= (1<<1),		//Used when medic says "I'm charged!"				
+	FF2FLAG_ISBUFFED 				= (1<<2),		//Used when soldier uses the Battalion's Backup	
+	FF2FLAG_CLASSTIMERDISABLED 		= (1<<3),		//Used to prevent clients' timer		
+	FF2FLAG_HUDDISABLED 			= (1<<4),		//Used to prevent custom hud from clients' timer	
+	FF2FLAG_BOTRAGE 				= (1<<5),		//Used by bots to use Boss's rage
+	FF2FLAG_TALKING 				= (1<<6),		//Used by Bosses with "sound_block_vo" to disable block for some lines			
+	FF2FLAG_ALLOWSPAWNINBOSSTEAM	= (1<<7),		//Used to allow spawn players in Boss's team			
+	FF2FLAG_USEBOSSTIMER 			= (1<<8),		//Used to prevent Boss's timer		
+	FF2FLAG_USINGABILITY 			= (1<<9),		//Used to prevent Boss's hints about abilities buttons	
+	FF2FLAG_CLASSHELPED 			= (1<<10),					
+	FF2FLAG_HASONGIVED 				= (1<<11),					
+	FF2FLAG_CHANGECVAR				= (1<<12),		//Used to prevent SMAC from kicking bosses who are using certain rages (NYI)		
+	FF2FLAG_ALLOW_HEALTH_PICKUPS	= (1<<13),		//Used to prevent bosses from picking up health
+	FF2FLAG_ALLOW_AMMO_PICKUPS		= (1<<14),		//Used to prevent bosses from picking up ammo		
+	FF2FLAG_ROCKET_JUMPING			= (1<<15),		//Used when a soldier is rocket jumping
+	FF2FLAG_ALLOW_BOSS_WEARABLES	= (1<<16),		//Used to allow boss having wearables (only for Official FF2)
+	FF2FLAGS_SPAWN 					= ~FF2FLAG_UBERREADY 
+									& ~FF2FLAG_ISBUFFED 
+									& ~FF2FLAG_TALKING 
+									& ~FF2FLAG_ALLOWSPAWNINBOSSTEAM 
+									& ~FF2FLAG_CHANGECVAR 
+									& ~FF2FLAG_ROCKET_JUMPING 
+									& FF2FLAG_USEBOSSTIMER 
+									& FF2FLAG_USINGABILITY,					
+}
 
 #endif
 
@@ -424,9 +433,10 @@ stock void FF2_SetBossLives(int boss, int lives)
 stock int FF2_GetBossMaxLives(int boss)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
-	if( player.SetPropInt("bIsBoss") ) {
-		player.SetPropInt("iMaxLives", health);
+	if( player.GetPropInt("bIsBoss") ) {
+		return player.GetPropInt("iMaxLives");
 	}
+	return 0;
 }
 
 /**
@@ -441,7 +451,7 @@ stock void FF2_SetBossMaxLives(int boss, int lives)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 	if( player.SetPropInt("bIsBoss") ) {
-		player.SetPropInt("iMaxLives", health);
+		player.SetPropInt("iMaxLives", lives);
 	}
 }
 
