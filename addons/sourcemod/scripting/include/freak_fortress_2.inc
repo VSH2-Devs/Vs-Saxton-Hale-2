@@ -21,7 +21,7 @@ enum FF2CallType_t
 	CT_PLAYER_KILLED= 0b000100000,
 	CT_BOSS_KILLED	= 0b001000000,
 	CT_BOSS_STABBED	= 0b010000000,
-	CT_BOSS_MG		= 0b100000000,
+	CT_BOSS_MG	= 0b100000000,
 };
 
 enum FF2RageType_t
@@ -261,7 +261,7 @@ stock int FF2_GetRoundState()
 stock int FF2_GetBossUserId(int boss=0)
 {
 	FF2Player player = FF2Player(boss, true);
-	return player.userid;
+	return player.GetPropInt("bIsBoss") ? player.userid:-1;
 }
 
 /**
@@ -275,7 +275,7 @@ stock int FF2_GetBossUserId(int boss=0)
 stock int FF2_GetBossIndex(int client)
 {
 	FF2Player player = FF2Player(client);
-	return player.userid;
+	return player.GetPropInt("bIsBoss") ? player.userid:-1;
 }
 
 /**
@@ -1204,7 +1204,7 @@ public void __pl_FF2_SetNTVOptional()
 
 
 
-#if defined FF2_USING_AUTO_PLUGIN
+#if defined FF2_USING_AUTO_PLUGIN || defined FF2_USING_AUTO_PLUGIN__OLD
 char this_plugin_name[64];
 
 static void GetThisPluginName()
@@ -1243,6 +1243,7 @@ public void OnPluginStart()
 	OnPluginStart2();
 }
 
+#if defined FF2_USING_AUTO_PLUGIN
 public void FF2_OnAbility(const FF2Player player, const char[] pluginName, const char[] abilityName, FF2CallType_t calltype)
 {
 	if( !strcmp(pluginName, this_plugin_name) ) {
@@ -1250,44 +1251,7 @@ public void FF2_OnAbility(const FF2Player player, const char[] pluginName, const
 	}
 }
 
-#elseif defined FF2_USING_AUTO_PLUGIN__OLD
-char this_plugin_name[64];
-
-static void GetThisPluginName()
-{
-	char pluginName[80];
-	GetPluginFilename(INVALID_HANDLE, pluginName, sizeof(pluginName));
-	ReplaceString(pluginName, sizeof(pluginName), ".ff2", "", false);
-	int forwardSlash = -1;
-	int backwardSlash = -1;
-	int finalPluginName = -1;
-	for(;;)
-	{
-		forwardSlash = StrContains(pluginName[finalPluginName+1], "/");
-		backwardSlash = StrContains(pluginName[finalPluginName+1], "\\");
-		if((backwardSlash<forwardSlash && backwardSlash!=-1) || forwardSlash==-1)
-		{
-			if(backwardSlash == -1)
-				break;
-
-			finalPluginName = backwardSlash;
-		}
-		else if((forwardSlash<backwardSlash && forwardSlash!=-1) || backwardSlash==-1)
-		{
-			if(forwardSlash == -1)
-				break;
-
-			finalPluginName = forwardSlash;
-		}
-	}
-	strcopy(this_plugin_name, sizeof(this_plugin_name), pluginName[finalPluginName+1]);
-}
-
-public void OnPluginStart()
-{
-	GetThisPluginName();
-	OnPluginStart2();
-}
+#else 
 
 public void FF2_OnAbility(const FF2Player player, const char[] pluginName, const char[] abilityName, FF2CallType_t calltype)
 {
@@ -1296,6 +1260,7 @@ public void FF2_OnAbility(const FF2Player player, const char[] pluginName, const
 	}
 }
 
+#endif
 #endif
 
 #file "Freak Fortress 2 Include"
