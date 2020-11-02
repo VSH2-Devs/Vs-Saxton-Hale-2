@@ -31,6 +31,28 @@ enum FF2RageType_t
 	RT_CHARGE
 };
 
+#if defined FF2_USING_AUTO_PLUGIN__OLD
+
+#define FF2FLAG_UBERREADY			(1<<1)		//Used when medic says "I'm charged!"
+#define FF2FLAG_ISBUFFED			(1<<2)		//Used when soldier uses the Battalion's Backup
+#define FF2FLAG_CLASSTIMERDISABLED 		(1<<3)		//Used to prevent clients' timer
+#define FF2FLAG_HUDDISABLED			(1<<4)		//Used to prevent custom hud from clients' timer
+#define FF2FLAG_BOTRAGE				(1<<5)		//Used by bots to use Boss's rage
+#define FF2FLAG_TALKING				(1<<6)		//Used by Bosses with "sound_block_vo" to disable block for some lines
+#define FF2FLAG_ALLOWSPAWNINBOSSTEAM		(1<<7)		//Used to allow spawn players in Boss's team
+#define FF2FLAG_USEBOSSTIMER			(1<<8)		//Used to prevent Boss's timer
+#define FF2FLAG_USINGABILITY			(1<<9)		//Used to prevent Boss's hints about abilities buttons
+#define FF2FLAG_CLASSHELPED			(1<<10)
+#define FF2FLAG_HASONGIVED			(1<<11)
+#define FF2FLAG_CHANGECVAR			(1<<12)		//Used to prevent SMAC from kicking bosses who are using certain rages (NYI)
+#define FF2FLAG_ALLOW_HEALTH_PICKUPS		(1<<13)		//Used to prevent bosses from picking up health
+#define FF2FLAG_ALLOW_AMMO_PICKUPS		(1<<14)		//Used to prevent bosses from picking up ammo
+#define FF2FLAG_ROCKET_JUMPING			(1<<15)		//Used when a soldier is rocket jumping
+#define FF2FLAG_ALLOW_BOSS_WEARABLES		(1<<16)		//Used to allow boss having wearables (only for Official FF2)
+#define FF2FLAGS_SPAWN				~FF2FLAG_UBERREADY & ~FF2FLAG_ISBUFFED & ~FF2FLAG_TALKING & ~FF2FLAG_ALLOWSPAWNINBOSSTEAM & ~FF2FLAG_CHANGECVAR & ~FF2FLAG_ROCKET_JUMPING & FF2FLAG_USEBOSSTIMER & FF2FLAG_USINGABILITY
+
+#endif
+
 #define INVALID_FF2PLAYER ToFF2Player(-1)
 #define ToFF2Player(%0)	view_as<FF2Player>(%0)
 #define FF2_PREFIX		"{olive}[FF2]{default} "
@@ -487,7 +509,7 @@ stock void FF2_SetClientDamage(int client, int damage)
  */
 stock float FF2_GetRageDist(int boss=0, const char[] pluginName="", const char[] abilityName="")
 {
-	return FF2Player(boss).RageDist(plugin_name, ability_name);
+	return FF2Player(boss).RageDist(pluginName, abilityName);
 }
 
 /**
@@ -653,7 +675,7 @@ stock void FF2_GetArgNamedS(int boss, const char[] pluginName, const char[] abil
  */
 stock bool FF2_RandomSound(const char[] keyvalue, char[] buffer, int bufferLength, int boss=0, int slot=0)
 {
-	return FF2Player(boss).RandomSound(keyvalue, buffer, bufferlength);
+	return FF2Player(boss).RandomSound(keyvalue, buffer, bufferLength);
 }
 
 /**
@@ -718,7 +740,6 @@ stock Handle FF2_GetSpecialKV(int boss, int specialIndex=0)
 
 /**
  * Gets a client's flags for FF2
- * UNUSED
  *
  * @param client	Client's index
  *
@@ -726,13 +747,15 @@ stock Handle FF2_GetSpecialKV(int boss, int specialIndex=0)
  */
 stock int FF2_GetFF2flags(int client)
 {
+#if defined FF2_USING_AUTO_PLUGIN__OLD
+	#warning this doesn't return what you think it does, use FF2Player.GetProp[Int, Float, Any] instead. 
+#endif
 	FF2Player player = FF2Player(client);
 	return player.GetPropInt("iFlags");
 }
 
 /**
  * Sets a client's flags for FF2
- * UNUSED
  *
  * @param client	Client's index
  * @param flags		New flag values
@@ -741,6 +764,9 @@ stock int FF2_GetFF2flags(int client)
  */
 stock void FF2_SetFF2flags(int client, int flags)
 {
+#if defined FF2_USING_AUTO_PLUGIN__OLD
+	#warning this doesn't return what you think it does, use FF2Player.SetProp[Int, Float, Any] instead.
+#endif
 	FF2Player player = FF2Player(client);
 	player.SetPropInt("iFlags", flags);
 }
