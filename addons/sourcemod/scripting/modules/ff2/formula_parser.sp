@@ -44,7 +44,6 @@ float ParseFormula(const char[] formula, const int players)
 	GetToken(ls, formula);
 	return ParseAddExpr(ls, formula, players + 0.0);
 }
-#pragma unused ParseFormula	///REMOVE ME
 
 float ParseAddExpr(LexState ls, const char[] formula, const float n)
 {
@@ -60,7 +59,6 @@ float ParseAddExpr(LexState ls, const char[] formula, const float n)
 	}
 	return val;
 }
-#pragma unused ParseAddExpr
 
 float ParseMulExpr(LexState ls, const char[] formula, const float n)
 {
@@ -76,7 +74,6 @@ float ParseMulExpr(LexState ls, const char[] formula, const float n)
 	}
 	return val;
 }
-#pragma unused ParseMulExpr
 
 float ParsePowExpr(LexState ls, const char[] formula, const float n)
 {
@@ -89,7 +86,6 @@ float ParsePowExpr(LexState ls, const char[] formula, const float n)
 	}
 	return val;
 }
-#pragma unused ParsePowExpr
 
 float ParseFactor(LexState ls, const char[] formula, const float n)
 {
@@ -126,11 +122,9 @@ float ParseFactor(LexState ls, const char[] formula, const float n)
 	}
 	return 0.0;
 }
-#pragma unused ParseFactor
 
 bool LexOctal(LexState ls, const char[] formula)
 {
-	int lit_flags = 0;
 	while( formula[ls.i] != 0 && (IsCharNumeric(formula[ls.i])) ) {
 		switch( formula[ls.i] ) {
 			case '0', '1', '2', '3', '4', '5', '6', '7': {
@@ -145,11 +139,9 @@ bool LexOctal(LexState ls, const char[] formula)
 	}
 	return true;
 }
-#pragma unused LexOctal
 
 bool LexHex(LexState ls, const char[] formula)
 {
-	int lit_flags = 0;
 	while( formula[ls.i] != 0 && (IsCharNumeric(formula[ls.i]) || IsCharAlpha(formula[ls.i])) ) {
 		switch( formula[ls.i] ) {
 			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
@@ -166,7 +158,6 @@ bool LexHex(LexState ls, const char[] formula)
 	}
 	return true;
 }
-#pragma unused LexHex
 
 bool LexDec(LexState ls, const char[] formula)
 {
@@ -193,7 +184,6 @@ bool LexDec(LexState ls, const char[] formula)
 	}
 	return true;
 }
-#pragma unused LexDec
 
 void GetToken(LexState ls, const char[] formula)
 {
@@ -300,4 +290,3 @@ void GetToken(LexState ls, const char[] formula)
 		}
 	}
 }
-#pragma unused GetToken

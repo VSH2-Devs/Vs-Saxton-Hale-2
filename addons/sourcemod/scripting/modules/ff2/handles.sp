@@ -48,7 +48,7 @@ void ProcessOnCallDownload()
 			
 			for (int j = snap_list.Length - 1; j >= 0; j--) {
 				snap_list.GetKey(j, _key, sizeof(_key));
-				list = identity.sndHash.GetAssertedList(_key);
+				list = identity.sndHash.GetList(_key);
 				
 				for (int k = list.Length - 1; k >= 0; k--) {
 					list.At(k, snd_id);
@@ -65,10 +65,14 @@ void ProcessOnCallDownload()
 	}
 }
 
-void Call_FF2OnAbility(const FF2Player player, int mode)
+
+void Call_FF2OnAbility(const FF2Player player, FF2CallType_t call_type)
 {
 	static char curKey[64];
 	static char pl_ab[2][MAX_SUBPLUGIN_NAME];
+	
+	
+	ConfigMap cfg = player.iCfg;
 	
 #define FOR_EACH_CALLBACK \
 		static FF2AbilityList list; list = player.HookedAbilities; \
@@ -76,19 +80,29 @@ void Call_FF2OnAbility(const FF2Player player, int mode)
 		for (int i = 0; i < snap.Length; i++)
 	
 	
-	int boss = player.index;
-		
+	FF2CallType_t cur_type;
+	
 	FOR_EACH_CALLBACK {
 		
 		snap.GetKey(i, curKey, sizeof(curKey));
-		
 		FF2AbilityList.GetKeyVal(curKey, pl_ab);
 		
+		cur_type = CT_NONE;
+		Format(curKey, sizeof(curKey), "%s.slot", curKey);
+		if( !cfg.GetInt(curKey, view_as<int>(cur_type)) ) {
+			Format(curKey, sizeof(curKey), "%s.arg0", curKey);
+			if ( !cfg.GetInt(curKey, view_as<int>(cur_type)) )
+				cur_type = CT_RAGE;
+		}
+		
+		if( !(cur_type & call_type) )
+			continue;
+		
 		Call_StartForward(ff2.m_forwards[FF2OnPreAbility]);
-		Call_PushCell(boss);
+		Call_PushCell(player);
 		Call_PushString(pl_ab[0]);
 		Call_PushString(pl_ab[1]);
-		Call_PushCell(mode);
+		Call_PushCell(call_type);
 		bool enabled = true;
 		Call_PushCellRef(enabled);
 		Call_Finish();
@@ -97,25 +111,17 @@ void Call_FF2OnAbility(const FF2Player player, int mode)
 			continue;
 		}
 		
-		Action act;
 		Call_StartForward(ff2.m_forwards[FF2OnAbility]);
-		Call_PushCell(boss);
+		Call_PushCell(player);
 		Call_PushString(pl_ab[0]);
 		Call_PushString(pl_ab[1]);
-		Call_PushCell(mode);
-		Call_Finish(act);
-	/*
-		if ( act ) {
-			/// TODO
-		}
-	*/
+		Call_PushCell(call_type);
+		Call_Finish();
 	}
 	
 	delete snap;
 	
 	#undef FOR_EACH_CALLBACK
-	
-	player.SetPropFloat("flRAGE", 0.0);
 }
 
 bool RandomAbilitySound(FF2SoundList list, int slot, char[] res, int maxlen)
