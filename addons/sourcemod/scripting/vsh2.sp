@@ -1133,9 +1133,11 @@ public int RegisterBoss(Handle plugin, const char modulename[MAX_BOSS_NAME_SIZE]
 		/// if we already have a module of the name, let's check if its plugin is valid.
 		if( !strcmp(module.name, modulename) ) {
 			/// iterate through all plugins and see if it actually exists.
-			for( Handle iter=GetPluginIterator(), p=ReadPlugin(iter); MorePlugins(iter); p = ReadPlugin(iter) ) {
+			Handle iter = GetPluginIterator();
+			for( Handle p=ReadPlugin(iter); MorePlugins(iter); p = ReadPlugin(iter) ) {
 				if( p==module.plugin ) {
 					LogError("VSH2 :: Boss Registrar: **** Plugin '%s' Already Registered ****", modulename);
+					delete iter;
 					return -1;
 				}
 			}
@@ -1143,6 +1145,7 @@ public int RegisterBoss(Handle plugin, const char modulename[MAX_BOSS_NAME_SIZE]
 			/// override its plugin ID then, it was probably reloaded.
 			module.plugin = plugin;
 			g_modsys.m_hBossesRegistered.SetArray(i, module, sizeof(module));
+			delete iter;
 			return i + MaxDefaultVSH2Bosses;
 		}
 	}
