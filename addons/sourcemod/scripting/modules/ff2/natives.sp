@@ -6,8 +6,6 @@ void InitNatives()
 	CREATE_NATIVE(FF2_GetFF2Version);
 	CREATE_NATIVE(FF2_GetForkVersion);
 	
-	CREATE_NATIVE(FF2_GetBossSpecial);
-	
 	CREATE_NATIVE(FF2_LogError);
 	CREATE_NATIVE(FF2_ReportError);
 	
@@ -21,7 +19,7 @@ void InitNatives()
 	CREATE_NATIVE(FF2_MakeBoss);
 	
 	#undef CREATE_NATIVE
-	#define CREATE_NATIVE(%0)		CreateNative("FF2Player."...#%0			, Native_FF2Player_%0		)
+	#define CREATE_NATIVE(%0)	CreateNative("FF2Player."...#%0		, Native_FF2Player_%0		)
 	#define CREATE_NATIVE_GET(%0)	CreateNative("FF2Player."...#%0...".get", Native_FF2Player_%0_Get	)
 	#define CREATE_NATIVE_SET(%0)	CreateNative("FF2Player."...#%0...".set", Native_FF2Player_%0_Set	)
 	
@@ -35,11 +33,15 @@ void InitNatives()
 	CREATE_NATIVE(GetString);
 	CREATE_NATIVE(GetFloat);
 	
+	CREATE_NATIVE(GetConfigName);
+	
 	CREATE_NATIVE(HasAbility);
 	CREATE_NATIVE(DoAbility);
+	CREATE_NATIVE(ForceAbility);
 	CREATE_NATIVE(RandomSound);
 	CREATE_NATIVE(RageDist);
 	
+	CREATE_NATIVE_GET(SoundCache);
 	CREATE_NATIVE_GET(HookedAbilities);
 	CREATE_NATIVE(PlayBGM);
 	
@@ -122,20 +124,27 @@ public any Native_FF2Player_DoAbility(Handle plugin, int numParams)
 	Call_Finish();
 }
 
+public any Native_FF2Player_ForceAbility(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	FF2CallType_t type = GetNativeCell(4);
+	Call_FF2OnAbility(player, type);
+}
+
 public any Native_FF2Player_RandomSound(Handle plugin, int numParams)
 {
-	FF2Player player = ToFF2Player(GetNativeCell(4));
+	FF2Player player = ToFF2Player(GetNativeCell(1));
 	
-	int size = GetNativeCell(3) + 1;
-	
-	int key_size; GetNativeStringLength(1, key_size); ++key_size;
-
-	char[] key = new char[key_size];
-	GetNativeString(1, key, key_size);
-
 	static FF2Identity identity;
 	if ( !ff2_cfgmgr.FindIdentity(player.GetPropInt("iBossType"), identity) )
 		return 0;
+	
+	int size = GetNativeCell(4);
+	
+	int key_size; GetNativeStringLength(2, key_size); ++key_size;
+
+	char[] key = new char[key_size];
+	GetNativeString(2, key, key_size);
 	
 	bool soundExists;
 	
@@ -143,10 +152,15 @@ public any Native_FF2Player_RandomSound(Handle plugin, int numParams)
 	FF2SoundList list = identity.sndHash.GetList(key);
 	
 	if ( list ) {
-		soundExists = list.RandomSound(snd_id);
+		if( !StrContains(key, "sound_ability") ) {
+			FF2CallType_t slot = GetNativeCell(5);
+			soundExists = RandomAbilitySound(list, slot, snd_id.path, size);
+		} 
+		else soundExists = list.RandomSound(snd_id);
 	}
+	
 	if ( !soundExists ) return false;
-	return SetNativeString(2, snd_id.path, size) == SP_ERROR_NONE;
+	return SetNativeString(3, snd_id.path, size) == SP_ERROR_NONE;
 }
 
 public any Native_FF2Player_RageDist(Handle plugin, int numParams)
@@ -172,6 +186,18 @@ public any Native_FF2Player_RageDist(Handle plugin, int numParams)
 	}
 	
 	return see;
+}
+
+public any Native_FF2Player_GetConfigName(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+	
+	FF2Identity id;
+	if( !ff2_cfgmgr.FindIdentity(player.iBossType, id) )
+		return;
+	
+	SetNativeString(2, id.szName, GetNativeCell(3));
+	return;
 }
 
 public any Native_FF2Player_GetInt(Handle plugin, int numParams)
@@ -222,6 +248,16 @@ public any Native_FF2Player_HookedAbilities_Get(Handle plugin, int numParams)
 	return player.HookedAbilities;
 }
 
+public any Native_FF2Player_SoundCache_Get(Handle plugin, int numParams)
+{
+	FF2Player player = GetNativeCell(1);
+	static FF2Identity identity;
+	if ( !ff2_cfgmgr.FindIdentity(player.iBossType, identity) )
+		return 0;
+	
+	return identity.sndHash;
+}
+
 public any Native_FF2Player_PlayBGM(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
@@ -260,35 +296,6 @@ public int Native_FF2_GetForkVersion(Handle plugin, int numParams)
 {
 	int version_ints[3]; SetNativeArray(1, version_ints, sizeof(version_ints));
 	return 1;
-}
-
-/** bool FF2_GetBossSpecial(int boss=0, char[] buffer, int bufferLength, int bossMeaning=0); */
-public int Native_FF2_GetBossSpecial(Handle plugin, int numParams)
-{
-	int index = GetNativeCell(1),
-		buflen = GetNativeCell(3),
-		meaning = GetNativeCell(4);
-	
-	FF2Player player = ToFF2Player(index);
-	
-	FF2Identity id;
-	if( !ff2_cfgmgr.FindIdentity(player.iBossType, id) )
-		return false;
-	
-	char[] name = new char[buflen];
-	if ( !meaning ) {
-		ConfigMap cfg = id.hCfg;
-		if( cfg ) {
-			if( cfg.Get("character.name", name, buflen) ) {
-				SetNativeString(2, name, buflen);
-				return true;
-			}
-		}
-		return false;
-	} else {
-		SetNativeString(2, id.szName, sizeof(FF2Identity::szName));
-		return true;
-	}
 }
 
 /** void FF2_LogError(const char[] message, any ...); */
@@ -394,6 +401,7 @@ public any Native_FF2_MakeBoss(Handle plugin, int numParams)
 	
 	return true;
 }
+
 
 /** TODO ZZZZZZZZZZZZZZZZZZZZZZZZZZZ */
 /*
