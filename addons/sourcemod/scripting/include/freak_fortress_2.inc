@@ -259,7 +259,7 @@ methodmap FF2Player < VSH2Player {
 	 *
 	 * @return		True if sound has been found, false otherwise
 	 */
-	public native bool RandomSound(const char[] key_name, char[] buffer, int maxlen, FF2CallType_t slot=0);
+	public native bool RandomSound(const char[] key_name, char[] buffer, int maxlen, FF2CallType_t slot=CT_NONE);
 }
 
 
