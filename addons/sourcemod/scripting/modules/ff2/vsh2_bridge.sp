@@ -343,12 +343,9 @@ public void OnBossInitializedFF2(const VSH2Player vsh2player)
 	
 	{
 		int tmp;
-		cfg.GetInt("No Superjump", tmp);
-		player.bNoSuperJump = tmp != 0;
-		cfg.GetInt("No Weighdown", tmp);
-		player.bNoWeighdown = tmp != 0;
-		cfg.GetInt("No HUD", tmp);
-		player.bHideHUD = tmp != 0;
+		if( cfg.GetInt("No Superjump", tmp) ) 	player.bNoSuperJump = tmp != 0;
+		if( cfg.GetInt("No Weighdown", tmp) ) 	player.bNoWeighdown = tmp != 0;
+		if( cfg.GetInt("No HUD", tmp) )		player.bHideHUD = tmp != 0;
 	}
 	
 	
