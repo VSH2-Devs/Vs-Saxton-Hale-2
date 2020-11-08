@@ -460,9 +460,6 @@ stock void FF2_SetBossMaxHealth(int boss, int health)
 stock int FF2_GetBossLives(int boss)
 {
 	FF2Player player = FF2Player(boss, true);
-	if( player.bIsBoss ) {
-		return player.GetPropInt("iLives");
-	}
 	return player.bIsBoss ? player.GetPropInt("iLives"):0;
 }
 
@@ -478,7 +475,7 @@ stock void FF2_SetBossLives(int boss, int lives)
 {
 	FF2Player player = FF2Player(boss, true);
 	if( player.bIsBoss ) {
-		player.SetPropInt("iLives", health);
+		player.SetPropInt("iLives", lives);
 	}
 }
 
@@ -492,10 +489,7 @@ stock void FF2_SetBossLives(int boss, int lives)
 stock int FF2_GetBossMaxLives(int boss)
 {
 	FF2Player player = FF2Player(boss, true);
-	if( player.bIsBoss ) {
-		return player.GetPropInt("iMaxLives");
-	}
-	return 0;
+	return player.bIsBoss ? player.GetPropInt("iMaxLives"):0;
 }
 
 /**
@@ -1212,7 +1206,7 @@ stock void FReplyToCommand(int client, const char[] message, any ...)
  *
  * @return		Entity index of the weapon, -1 on failure
  */
-stock int FF2_SpawnWeapon(int client, char[] name, int index, int level, int qual, const char[] att, bool visible=true)
+stock int FF2_SpawnWeapon(int client, char[] name, int index, int level, int qual, char[] att, bool visible=true)
 {
 	FF2Player player = FF2Player(client);
 	return player.SpawnWeapon(name, index, level, qual, att);
