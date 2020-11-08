@@ -237,7 +237,7 @@ public any Native_FF2Player_GetString(Handle plugin, int numParams)
 	int len = GetNativeCell(4);
 	char[] res = new char[len];
 	if( player.iCfg.Get(key_name, res, len) ) {
-		return SetNativeString(3, res, len);
+		return SetNativeString(3, res, len)==SP_ERROR_NONE;
 	}
 	return 0;
 }
