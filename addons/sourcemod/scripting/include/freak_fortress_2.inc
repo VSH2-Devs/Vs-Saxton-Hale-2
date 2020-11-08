@@ -147,9 +147,9 @@ methodmap FF2Player < VSH2Player {
 	 * @param res			output buffer
 	 * @param maxlen		size of output
 	 *
-	 * @return				number of bytes written, 0 if key doesn't exists
+	 * @return			true on sucess, false otherwise
 	 */
-	public native int GetString(const char[] key_name, char[] res, int maxlen);
+	public native bool GetString(const char[] key_name, char[] res, int maxlen);
 	
 	/**
 	 * Gets boss' name in characters.cfg
@@ -259,7 +259,7 @@ methodmap FF2Player < VSH2Player {
 	 *
 	 * @return		True if sound has been found, false otherwise
 	 */
-	public native bool RandomSound(const char[] key_name, char[] buffer, int maxlen, FF2CallType_t slot=CT_NONE);
+	public native bool RandomSound(const char[] key_name, char[] buffer, int maxlen, FF2CallType_t slot=view_as<FF2CallType_t>(2));
 }
 
 
