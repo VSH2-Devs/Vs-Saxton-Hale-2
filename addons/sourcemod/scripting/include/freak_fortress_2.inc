@@ -704,7 +704,7 @@ stock int FF2_GetArgNamedI(int boss, const char[] pluginName, const char[] abili
 stock float FF2_GetArgNamedF(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, float defValue=0.0)
 {
 	FF2Player player = FF2Player(boss, true);
-	return player.GetArgI(pluginName, abilityName, argument, defValue);
+	return player.GetArgF(pluginName, abilityName, argument, defValue);
 }
 
 /**
