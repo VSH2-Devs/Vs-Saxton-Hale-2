@@ -685,7 +685,7 @@ stock void FF2_GetAbilityArgumentString(int boss, const char[] pluginName, const
 stock int FF2_GetArgNamedI(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, int defValue=0)
 {
 	FF2Player player = FF2Player(boss, true);
-	return player.GetArgS(pluginName, abilityName, argument, defValue);
+	return player.GetArgI(pluginName, abilityName, argument, defValue);
 }
 
 /**
@@ -701,10 +701,10 @@ stock int FF2_GetArgNamedI(int boss, const char[] pluginName, const char[] abili
  *
  * @return		Value of argument
  */
-stock float FF2_GetArgNamedF(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, float defValue=0.0)
+stock float FF2_GetArgNamedF(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, float defValue=0.0)
 {
 	FF2Player player = FF2Player(boss, true);
-	return player.GetArgS(pluginName, abilityName, argument, defValue);
+	return player.GetArgI(pluginName, abilityName, argument, defValue);
 }
 
 /**
