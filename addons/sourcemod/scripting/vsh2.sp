@@ -1823,9 +1823,9 @@ public any Native_VSH2GameMode_GetHUDHandle(Handle plugin, int numParams)
 {
 	int hud_type = GetNativeCell(1);
 	if( hud_type >= MaxVSH2HUDs ) {
-		hud_type = HealthHUD
+		hud_type = HealthHUD;
 	} else if( hud_type < PlayerHUD ) {
-		hud_type = PlayerHUD
+		hud_type = PlayerHUD;
 	}
 	return g_vsh2.m_hHUDs[hud_type];
 }
