@@ -4,19 +4,11 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.8.25"
+			"Latest"	"2.8.26"
 		}
 		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.8.25:"
-		"Notes"	"Created separate methodmap for the VSH2 Boss Health Bar, located in vsh2.inc for easier manipulation."
-		"Notes"	"Moved 'SkipBossPanelNotify' to commands.sp."
-		"Notes"	"Changed VSHGameMode to inherit from StringMap."
-		"Notes"	"Removed the StringMap gamemode fields from VSH2 Globals struct."
-		"Notes"	"Replaced 'iPlaying' property from VSHGameMode with 'GetLivingPlayers'."
-		"Notes"	"Marked certain gamemode methods static since they don't use any properties or other methods."
-		"Notes"	"Created VSH2GameMode methodmap in vsh2.inc."
-		"Notes"	"renamed 'm_strBackgroundSong' to 'm_strCurrSong' to make it shorter."
-		"Notes"	"Improved customizability for the string messaging code for Health checking, Boss introductions, and Round Ending."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.8.26:"
+		"Notes"	"Updated 'VSH2GameMode_GetHudHandle' to take an int to a specific HUD."
 	}
 	
 	"Files"
