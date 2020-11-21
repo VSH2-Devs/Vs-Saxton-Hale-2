@@ -65,6 +65,14 @@ enum { /** Voice Clip Flags */
 #define VSH2_VOICE_LASTGUY (VSH2_VOICE_BOSSPOS)
 
 
+enum { /** HUDs */
+	PlayerHUD,
+	TimeLeftHUD,
+	HealthHUD,
+	MaxVSH2HUDs
+};
+
+
 methodmap VSH2Player {
 	/** [ C O N S T R U C T O R ]
 	 * Constructs an instance of the BaseBoss internal methodmap
@@ -740,7 +748,7 @@ native void VSH2GameMode_SearchForItemPacks();
 native void VSH2GameMode_UpdateBossHealth();
 native void VSH2GameMode_GetBossType();
 
-native Handle VSH2GameMode_GetHUDHandle();
+native Handle VSH2GameMode_GetHUDHandle(int HUDType=PlayerHUD);
 
 native bool VSH2GameMode_IsVSHMap();
 
