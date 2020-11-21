@@ -24,7 +24,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.8.25"
+#define PLUGIN_VERSION       "2.8.26"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -111,10 +111,6 @@ enum struct VSH2Cvars {
 	ConVar AllowSniperClimbing;
 	ConVar VersionNumber;
 }
-
-enum /** HUDs */ {
-	PlayerHUD, TimeLeftHUD, HealthHUD, MaxVSH2HUDs
-};
 
 enum /** Cookies */ {
 	Points, BossOpt, MusicOpt, MaxVSH2Cookies
@@ -1825,7 +1821,13 @@ public int Native_VSH2GameMode_GetTotalRedPlayers(Handle plugin, int numParams)
 
 public any Native_VSH2GameMode_GetHUDHandle(Handle plugin, int numParams)
 {
-	return g_vsh2.m_hHUDs[PlayerHUD];
+	int hud_type = GetNativeCell(1);
+	if( hud_type >= MaxVSH2HUDs ) {
+		hud_type = HealthHUD
+	} else if( hud_type < PlayerHUD ) {
+		hud_type = PlayerHUD
+	}
+	return g_vsh2.m_hHUDs[hud_type];
 }
 
 public int Native_VSH2GameMode_GetBosses(Handle plugin, int numParams)
