@@ -2,6 +2,7 @@ void InitNatives()
 {
 	#define CREATE_NATIVE(%0) CreateNative(#%0, Native_%0)
 	
+	
 	CREATE_NATIVE(FF2_IsFF2Enabled);
 	CREATE_NATIVE(FF2_GetFF2Version);
 	CREATE_NATIVE(FF2_GetForkVersion);
@@ -17,6 +18,15 @@ void InitNatives()
 	
 	CREATE_NATIVE(FF2_GetBossPlayers);
 	CREATE_NATIVE(FF2_MakeBoss);
+	
+	
+	#undef CREATE_NATIVE
+	#define CREATE_NATIVE(%0)	CreateNative("FF2GameMode."...#%0		, Native_FF2GameMode_%0		)
+	
+	
+	CREATE_NATIVE(LoadAbility);
+	CREATE_NATIVE(SubPlugins);
+	
 	
 	#undef CREATE_NATIVE
 	#define CREATE_NATIVE(%0)	CreateNative("FF2Player."...#%0		, Native_FF2Player_%0		)
@@ -38,12 +48,14 @@ void InitNatives()
 	CREATE_NATIVE(HasAbility);
 	CREATE_NATIVE(DoAbility);
 	CREATE_NATIVE(ForceAbility);
+	
 	CREATE_NATIVE(RandomSound);
 	CREATE_NATIVE(RageDist);
 	
 	CREATE_NATIVE_GET(SoundCache);
 	CREATE_NATIVE_GET(HookedAbilities);
 	CREATE_NATIVE(PlayBGM);
+	
 	
 	#undef CREATE_NATIVE
 	#undef CREATE_NATIVE_GET
@@ -53,7 +65,7 @@ void InitNatives()
 /* FF2Player methodmaps */
 public any Native_FF2Player_FF2Player(Handle plugin, int numParams)
 {
-	return FF2Player(GetNativeCell(1), GetNativeCell(2));
+	return( FF2Player(GetNativeCell(1), GetNativeCell(2)) );
 }
 
 public any Native_FF2Player_GetArgI(Handle plugin, int numParams)
@@ -65,7 +77,7 @@ public any Native_FF2Player_GetArgI(Handle plugin, int numParams)
 	GetNativeString(4, key_name, sizeof(key_name));
 	
 	int def = GetNativeCell(5);
-	return GetArgNamedI(player, pl_name, ab_name, key_name, def);
+	return( GetArgNamedI(player, pl_name, ab_name, key_name, def) );
 }
 
 public any Native_FF2Player_GetArgF(Handle plugin, int numParams)
@@ -77,7 +89,7 @@ public any Native_FF2Player_GetArgF(Handle plugin, int numParams)
 	GetNativeString(4, key_name, sizeof(key_name));
 	
 	float def = GetNativeCell(5);
-	return GetArgNamedF(player, pl_name, ab_name, key_name, def);
+	return( GetArgNamedF(player, pl_name, ab_name, key_name, def) );
 }
 
 public any Native_FF2Player_GetArgS(Handle plugin, int numParams)
@@ -94,7 +106,7 @@ public any Native_FF2Player_GetArgS(Handle plugin, int numParams)
 	int written = GetArgNamedS(player, pl_name, ab_name, key_name, result, maxlen);
 	
 	SetNativeString(5, result, maxlen);
-	return written;
+	return( written );
 }
 
 public any Native_FF2Player_HasAbility(Handle plugin, int numParams)
@@ -104,7 +116,7 @@ public any Native_FF2Player_HasAbility(Handle plugin, int numParams)
 	char ability_name[64]; GetNativeString(3, ability_name, sizeof(ability_name));
 	
 	bool result = JumpToAbility(player, plugin_name, ability_name) != null;
-	return result;
+	return( result );
 }
 
 public any Native_FF2Player_DoAbility(Handle plugin, int numParams)
@@ -160,7 +172,7 @@ public any Native_FF2Player_RandomSound(Handle plugin, int numParams)
 	}
 	
 	if ( !soundExists ) return false;
-	return SetNativeString(3, snd_id.path, size) == SP_ERROR_NONE;
+	return( SetNativeString(3, snd_id.path, size) == SP_ERROR_NONE );
 }
 
 public any Native_FF2Player_RageDist(Handle plugin, int numParams)
@@ -185,7 +197,7 @@ public any Native_FF2Player_RageDist(Handle plugin, int numParams)
 		cfg.GetFloat("ragedist", see);
 	}
 	
-	return see;
+	return( see );
 }
 
 public any Native_FF2Player_GetConfigName(Handle plugin, int numParams)
@@ -197,7 +209,6 @@ public any Native_FF2Player_GetConfigName(Handle plugin, int numParams)
 		return;
 	
 	SetNativeString(2, id.szName, GetNativeCell(3));
-	return;
 }
 
 public any Native_FF2Player_GetInt(Handle plugin, int numParams)
@@ -245,7 +256,7 @@ public any Native_FF2Player_GetString(Handle plugin, int numParams)
 public any Native_FF2Player_HookedAbilities_Get(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
-	return player.HookedAbilities;
+	return( player.HookedAbilities );
 }
 
 public any Native_FF2Player_SoundCache_Get(Handle plugin, int numParams)
@@ -255,7 +266,7 @@ public any Native_FF2Player_SoundCache_Get(Handle plugin, int numParams)
 	if ( !ff2_cfgmgr.FindIdentity(player.iBossType, identity) )
 		return 0;
 	
-	return identity.sndHash;
+	return( identity.sndHash );
 }
 
 public any Native_FF2Player_PlayBGM(Handle plugin, int numParams)
@@ -272,7 +283,7 @@ public any Native_FF2Player_PlayBGM(Handle plugin, int numParams)
 /** bool FF2_IsFF2Enabled(); */
 public int Native_FF2_IsFF2Enabled(Handle plugin, int numParams)
 {
-	return ff2.m_cvars.m_enabled.BoolValue;
+	return( ff2.m_cvars.m_enabled.BoolValue );
 }
 
 /** bool FF2_GetFF2Version(int[] version=0); */
@@ -304,7 +315,7 @@ public any Native_FF2_LogError(Handle plugin, int numParams)
 	char buffer[MAX_BUFFER_LENGTH];
 	int error = FormatNativeString(0, 1, 2, sizeof(buffer), .fmt_string=buffer);
 	if( error != SP_ERROR_NONE ) {
-		return ThrowNativeError(error, "Failed to format");
+		return( ThrowNativeError(error, "Failed to format") );
 	}
 	
 	LogError(buffer);
@@ -327,7 +338,7 @@ public any Native_FF2_ReportError(Handle plugin, int numParams)
 	
 	int error;
 	if( (error = FormatNativeString(0, 2, 3, sizeof(actual), .out_string=actual)) != SP_ERROR_NONE )
-		return ThrowNativeError(error, "Failed to format");
+		return( ThrowNativeError(error, "Failed to format") );
 	
 	Format(actual, sizeof(actual), "[FF2] %s", actual);
 	LogError(actual);
@@ -344,7 +355,7 @@ public any Native_FF2_SetCheats(Handle plugin, int numParams)
 /** bool FF2_GetCheats(); */
 public any Native_FF2_GetCheats(Handle plugin, int numParams)
 {
-	return ff2.m_cheats;
+	return( ff2.m_cheats );
 }
 
 /** float FF2_GetBossCharge(int boss, int slot); */
@@ -355,7 +366,7 @@ public any Native_FF2_GetBossCharge(Handle plugin, int numParams)
 		return 0.0;
 	
 	FF2RageType_t slot = GetNativeCell(2);
-	return player.GetRageVar(slot);
+	return( player.GetRageVar(slot) );
 }
 
 /** void FF2_SetBossCharge(int boss, int slot, float value); */
@@ -375,14 +386,14 @@ public any Native_FF2_SetBossCharge(Handle plugin, int numParams)
 /** int FF2_GetAlivePlayers(); */
 public any Native_FF2_GetAlivePlayers(Handle plugin, int numParams)
 {
-	return vsh2_gm.iLivingReds;
+	return( vsh2_gm.iLivingReds );
 }
 
 /** int FF2_GetBossPlayers(); */
 public any Native_FF2_GetBossPlayers(Handle plugin, int numParams)
 {
 	FF2Player[] bosses = new FF2Player[MaxClients];
-	return VSH2GameMode.GetBosses(bosses);
+	return( VSH2GameMode.GetBosses(bosses) );
 }
 
 /** void FF2_MakeBoss(int client, const char[] boss_name, bool call_event = true); */
@@ -400,6 +411,32 @@ public any Native_FF2_MakeBoss(Handle plugin, int numParams)
 	player.MakeBossAndSwitch(id.VSH2ID, GetNativeCell(3));
 	
 	return true;
+}
+
+
+public any Native_FF2GameMode_LoadAbility(Handle plugins, int numParams)
+{
+	char pl_name[FF2_MAX_PLUGIN_NAME];
+	GetNativeString(1, pl_name, sizeof(pl_name));
+	
+	return ff2.m_plugins.TryLoadSubPlugin(pl_name);
+}
+
+public any Native_FF2GameMode_SubPlugins(Handle plugins, int numParams)
+{
+	FF2PluginList list = ff2.m_plugins;
+	if( !list.Length )
+		return 0;
+	
+	StringMap map = new StringMap();
+	
+	FF2SubPlugin info;
+	for( int i; i < list.Length; i++ ) {
+		list.GetInfo(i, info);
+		map.SetValue(info.name, info.hndl);
+	}
+	
+	return map;
 }
 
 

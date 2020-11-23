@@ -162,6 +162,7 @@ public Action OnBossSelectedFF2(const VSH2Player player)
 		}		
 	}
 	
+	ff2.m_plugins.LoadPlugins(identity.ablist);
 	
 	static char help[128] = ""; 
 	{
@@ -334,7 +335,7 @@ public void OnBossInitializedFF2(const VSH2Player vsh2player)
 		return;
 	
 	ConfigMap cfg = player.iCfg;
-	
+		
 	int cls;
 	if ( !cfg.GetInt("class", cls) )
 		cls = GetRandomInt(1, 8);
@@ -343,9 +344,9 @@ public void OnBossInitializedFF2(const VSH2Player vsh2player)
 	
 	{
 		int tmp;
-		if( cfg.GetInt("No Superjump", tmp) ) 	player.bNoSuperJump = tmp != 0;
-		if( cfg.GetInt("No Weighdown", tmp) ) 	player.bNoWeighdown = tmp != 0;
-		if( cfg.GetInt("No HUD", tmp) )		player.bHideHUD = tmp != 0;
+		player.bNoSuperJump = cfg.GetInt("No Superjump", tmp) && tmp;
+		player.bNoWeighdown = cfg.GetInt("No Weighdown", tmp) && tmp;
+		player.bHideHUD 	= cfg.GetInt("No HUD", tmp) && tmp;
 	}
 	
 	
@@ -687,15 +688,15 @@ public void OnLastPlayerFF2(const VSH2Player player)
 public void OnScoreTallyFF2(const VSH2Player player, int& points_earned, int& queue_earned)
 {
 	ff2.m_queuePoints[player.index] = queue_earned;
-	if( !ff2.m_queueChecking ) {
+	if( !VSH2GameMode.GetPropInt("bQueueChecking") ) {
 		RequestFrame(FinishQueueArray);
-		ff2.m_queueChecking = true;
+		VSH2GameMode.SetProp("bQueueChecking", true);
 	}
 }
 
 public void FinishQueueArray()
 {
-	ff2.m_queueChecking = false;
+	VSH2GameMode.SetProp("bQueueChecking", false);
 	
 	int[] points = new int[MaxClients];
 	for ( int i=1; i<=MaxClients; i++ )
@@ -720,6 +721,8 @@ public void FinishQueueArray()
 			player.SetPropInt("iQueue", player.GetPropInt("iQueue") - ff2.m_queuePoints[i]);
 		}
 	}
+	
+	ff2.m_plugins.UnloadAllSubPlugins();
 }
 
 public Action OnBossTriggerHurtFF2(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)

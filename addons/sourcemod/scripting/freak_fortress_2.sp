@@ -7,8 +7,6 @@
 #define REQUIRE_PLUGIN
 #include <sdkhooks>
 
-#define MAX_SUBPLUGIN_NAME		64
-#define MAX_ABILITIES_PL		30
 #define PLYR					35
 
 #include <cfgmap>
@@ -59,13 +57,13 @@ enum {
 
 enum struct FF2CompatPlugin {
 	FF2ConVars	m_cvars;
+	FF2PluginList m_plugins;
 	ConfigMap	m_charcfg;
 	GlobalForward	m_forwards[MaxFF2Forwards];
 	Handle		m_hud[HUD_TYPES];
 	bool		m_vsh2;
 	bool		m_cheats;
 	int		m_queuePoints[PLYR];
-	bool		m_queueChecking;
 }
 
 FF2CompatPlugin ff2;
@@ -82,7 +80,7 @@ VSH2GameMode    vsh2_gm;
 
 static void LoadFF2()
 {
-	ff2.m_charcfg = new ConfigMap("data/freak_fortress_2/characters.cfg");
+	ff2.m_charcfg = new ConfigMap(PATH_TO_CHAR_CFG);
 
 	ff2.m_hud[HUD_Jump] = vsh2_gm.hHUD;
 	ff2.m_hud[HUD_Weighdown] = CreateHudSynchronizer();
@@ -92,16 +90,24 @@ static void LoadFF2()
 	for( int i=MaxClients; i > 0; i-- )
 		if( IsClientInGame(i) )
 			OnClientPutInServer(i);
-		
-	LoadFF2Plugins();
+	
+	ff2.m_plugins = new FF2PluginList();
 }
 
-static void UnloadFF2()
+static void LateLoadSubPlugins()
 {
-	UnloadFF2Plugins();
+	if( VSH2GameMode.GetPropAny("iRoundState") == StateRunning ) {
+		FF2Player[] bosses = new FF2Player[MaxClients]; 
+		int count = VSH2GameMode.GetBosses(view_as<VSH2Player>(bosses), false);
 		
-	RemoveVSH2Bridge();
-	DeleteCfg(ff2.m_charcfg);
+		FF2Player player;
+		for(int i; i < count && !ff2.m_plugins.IsFull; i++ ) {
+			player = bosses[i];
+			FF2AbilityList list = player.HookedAbilities;
+			if( list )
+				ff2.m_plugins.LoadPlugins(list);
+		}
+	}
 }
 
 
@@ -109,7 +115,8 @@ public void OnPluginEnd()
 {
 	if( ff2.m_vsh2 ) {
 		ff2.m_vsh2 = false;
-		UnloadFF2();
+		ff2.m_plugins.UnloadAllSubPlugins();
+		RemoveVSH2Bridge();
 	}
 }
 
@@ -119,12 +126,16 @@ public void OnLibraryAdded(const char[] name) {
 		InitConVars();
 		ff2.m_vsh2 = true;
 		LoadFF2();
+		
+		LateLoadSubPlugins();
 	}
 }
 
 public void OnMapEnd()
 {
 	if( ff2.m_vsh2 ) {
+		ff2.m_plugins.UnloadAllSubPlugins();
+		
 		ff2_cfgmgr.DeleteAll();
 		delete ff2_cfgmgr;
 		
@@ -137,9 +148,7 @@ public void OnMapEnd()
 
 public void OnLibraryRemoved(const char[] name) {
 	if( StrEqual(name, "VSH2") && ff2.m_vsh2) {
-		
-		ff2.m_vsh2 = false;
-		UnloadFF2();
+		ServerCommand("sm plugins unload \"freak_fortress_2\"");
 	}
 }
 
