@@ -8,6 +8,7 @@
 enum struct FF2SubPlugin {
 	char name[FF2_MAX_PLUGIN_NAME];
 	Handle hndl;
+	bool loading;
 }
 
 methodmap FF2PluginList < ArrayList {
@@ -41,6 +42,9 @@ methodmap FF2PluginList < ArrayList {
 			if( strcmp(infos.name, name) )
 				continue;
 			
+			if( infos.loading )
+				return true;
+			
 			Handle iter = GetPluginIterator();
 			for( Handle pl=ReadPlugin(iter); MorePlugins(iter); pl=ReadPlugin(iter) ) {
 				if( pl==infos.hndl ) {
@@ -49,7 +53,7 @@ methodmap FF2PluginList < ArrayList {
 				}
 			}
 			
-			infos.hndl = null;
+			infos.loading = true;
 			this.SetInfo(i, infos);
 			RequestFrame(QuerySetPluginHandle, i);
 			return true;
@@ -60,11 +64,11 @@ methodmap FF2PluginList < ArrayList {
 		
 		ServerCommand("sm plugins load \"freaks\\%s.ff2\"", name);
 		
+		infos.loading = true;
 		strcopy(infos.name, sizeof(FF2SubPlugin::name), name);
 		this.PushArray(infos, sizeof(FF2SubPlugin));
-		infos.hndl = null;
 		RequestFrame(QuerySetPluginHandle, i);
-		
+	
 		return true;
 	}
 	
@@ -112,6 +116,7 @@ void QuerySetPluginHandle(int pos)
 {
 	FF2SubPlugin info; ff2.m_plugins.GetInfo(pos, info);
 	info.hndl = _FindPlugin(info.name);
+	info.loading = false;
 	ff2.m_plugins.SetInfo(pos, info);
 }
 
@@ -126,5 +131,5 @@ static Handle _FindPlugin(const char[] name)
 	if( !pl )
 		LogError("[VSH2/FF2] Failed to find plugin: %s", pl_name);
 	
-	return null;
+	return pl;
 }
