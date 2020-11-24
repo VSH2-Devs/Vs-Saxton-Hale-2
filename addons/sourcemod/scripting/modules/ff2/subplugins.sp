@@ -101,14 +101,14 @@ methodmap FF2PluginList < ArrayList {
 	
 	public void UnloadAllSubPlugins()
 	{
-		FF2SubPlugin infos;
+		FF2SubPlugin info;
 		
-		while( this.Length ) {
-			this.GetInfo(0, infos);
-			this.Erase(0);
-			
-			ServerCommand("sm plugins unload \"freaks\\%s.ff2\"", infos.name);
+		for( int i; i < this.Length; i++ ) {
+			this.GetInfo(i, infos);
+			ServerCommand("sm plugins unload \"freaks\\%s.ff2\"", info.name);
 		}
+		
+		this.Clear();
 	}
 }
 
