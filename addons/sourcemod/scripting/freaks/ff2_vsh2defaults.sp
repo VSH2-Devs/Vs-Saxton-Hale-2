@@ -33,7 +33,7 @@
 #include <sdkhooks>
 #include <morecolors>
 #include <freak_fortress_2>
-#include "modules/ff2/formula_parser.sp"
+#include "../modules/ff2/formula_parser.sp"
 
 #undef REQUIRE_PLUGIN
 #tryinclude <smac>

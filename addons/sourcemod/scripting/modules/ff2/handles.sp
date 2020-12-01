@@ -1,37 +1,3 @@
-void LoadFF2Plugins()
-{
-	char path[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, path, sizeof(path), "plugins/freaks");
-	
-	DirectoryListing hDir = OpenDirectory(path);
-	FileType fileType;
-	
-	while ( hDir.GetNext(path, sizeof(path), fileType) ) {
-		if ( fileType == FileType_File && StrContains(path, ".ff2") != -1 ) {
-			ServerCommand("sm plugins load freaks\\%s", path);
-		}
-	}
-	
-	delete hDir;
-}
-
-void UnloadFF2Plugins()
-{
-	char path[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, path, sizeof(path), "plugins/freaks");
-	
-	DirectoryListing hDir = OpenDirectory(path);
-	FileType fileType;
-	
-	while ( hDir.GetNext(path, sizeof(path), fileType) ) {
-		if ( fileType == FileType_File && StrContains(path, ".ff2") != -1 ) {
-			ServerCommand("sm plugins unload freaks\\%s", path);
-		}
-	}
-	
-	delete hDir;
-}
-
 void ProcessOnCallDownload()
 {
 	///	Precache Sounds
@@ -88,9 +54,9 @@ void ProcessOnCallDownload()
 
 void Call_FF2OnAbility(const FF2Player player, FF2CallType_t call_type)
 {
-	static char cfg_key[64];
-	static char curKey[64];
-	static char pl_ab[2][MAX_SUBPLUGIN_NAME];
+	char curKey[FF2_MAX_LIST_KEY];
+	char cfg_key[FF2_MAX_ABILITY_KEY];
+	static char pl_ab[2][FF2_MAX_PLUGIN_NAME];
 	
 	ConfigMap cfg = player.iCfg;
 	
@@ -100,8 +66,9 @@ void Call_FF2OnAbility(const FF2Player player, FF2CallType_t call_type)
 	if( !list ) return;
 	
 	StringMapSnapshot snap = list.Snapshot();
-	for ( int i = 0; i < snap.Length; i++ ) {
 	
+	for ( int i = 0; i < snap.Length; i++ ) {
+		
 		snap.GetKey(i, curKey, sizeof(curKey));
 		list.GetString(curKey, cfg_key, sizeof(cfg_key));
 		

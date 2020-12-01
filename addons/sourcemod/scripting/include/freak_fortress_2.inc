@@ -289,6 +289,10 @@ methodmap FF2GameMode < VSH2GameMode
 	public static bool Validate(const VSH2Player player) {
 		return ToFF2Player(player).HookedAbilities != null;
 	}
+	
+	public static native bool LoadAbility(const char[] plugin_name);
+	
+	public static native StringMap SubPlugins();
 }
 
 
@@ -1276,6 +1280,9 @@ public void __pl_FF2_SetNTVOptional()
 	#undef MARK_OPTIONAL
 	#undef MARK_OPTIONAL_MGET
 	#undef MARK_OPTIONAL_MSET
+	
+	MarkNativeAsOptional("FF2GameMode.LoadAbility");
+	MarkNativeAsOptional("FF2GameMode.SubPlugins");
 }
 #endif
 

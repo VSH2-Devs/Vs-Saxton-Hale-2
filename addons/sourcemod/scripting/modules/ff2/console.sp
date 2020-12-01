@@ -18,6 +18,9 @@ void InitConVars()
 	ff2.m_cvars.m_pack_scramble	= CreateConVar("ff2_pack_scramble", "1", "Minimum players required to enable duos", FCVAR_NOTIFY);
 	
 	ff2.m_cvars.m_nextmap.AddChangeHook(_OnNextMap);
+	
+	RegAdminCmd("sm_ff2_reload_plugin", Reload_Plugin, ADMFLAG_RCON, "Load/Reload a FF2 SubPlugin");
+	RegAdminCmd("sm_ff2_unload_plugin", Unload_Plugin, ADMFLAG_RCON, "Unload FF2 SubPlugin");
 }
 
 
@@ -92,7 +95,6 @@ int Handle_PackSelect(Menu menu,  MenuAction action, int param1, int param2)
 	}
 }
 
-
 static bool IsVSHMap(const char[] nextmap)
 {
 	if( !ff2.m_vsh2 )
@@ -136,4 +138,36 @@ static bool IsVSHMap(const char[] nextmap)
 	}
 	delete file;
 	return false;
+}
+
+
+public Action Reload_Plugin(int client, int argc)
+{
+	char pl_name[FF2_MAX_PLUGIN_NAME];
+	char path[PLATFORM_MAX_PATH];
+	
+	GetCmdArgString(pl_name, sizeof(pl_name));
+	
+	BuildPath(Path_SM, path, sizeof(path), "plugins\\freaks\\%s.ff2", pl_name);
+	if( !FileExists(path) ) {
+		ReplyToCommand(client, "[VSH2/FF2] Plugin: \"%s\" doesn't exists", pl_name);
+		return Plugin_Handled;
+	}
+	
+	if( !ff2.m_plugins.TryLoadSubPlugin(pl_name) ) {
+		ReplyToCommand(client, "[VSH2/FF2] Failed to reload SubPlugin: \"%s\"", pl_name);
+	}
+	
+	return Plugin_Handled;
+}
+
+public Action Unload_Plugin(int client, int argc)
+{
+	char pl_name[FF2_MAX_PLUGIN_NAME];
+	
+	GetCmdArgString(pl_name, sizeof(pl_name));
+	ff2.m_plugins.FindAndErase(pl_name);
+	
+	ServerCommand("sm plugins unload \"freaks\\%s.ff2\"", pl_name);
+	return Plugin_Handled;
 }
