@@ -42,7 +42,7 @@ public Action Resupply(Event event, const char[] name, bool dontBroadcast)
 			player.ConvertToBoss();		/// in base.sp
 		}
 	}
-		return Plugin_Continue;
+	return Plugin_Continue;
 }
 
 public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
@@ -123,7 +123,7 @@ public Action PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 public Action DelaySpawn(BaseBoss boss)
 {
 	/// check if they preset something and if its not the same boss
-	if( boss.iPresetType > -1 && boss.iBossType != boss.iPresetType ) {
+	if( boss.iPresetType > -1 && boss.iBossType != boss.iPresetType ){
 		boss.iBossType = boss.iPresetType;
 		ManageOnBossSelected(boss);
 		boss.ConvertToBoss();
@@ -195,7 +195,6 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 	g_vsh2.m_hGamemode.iSpecial = -1;
 	
 	/// If player has used /setboss before round started, swap their boss to their new selection
-	/// this allows players to pick a boss as round is starting ( last second change of mind for example )
 	SetPawnTimer(DelaySpawn,3.5+5.0,boss);
 	
 	if( GetClientTeam(boss.index) != VSH2Team_Boss )
@@ -203,21 +202,21 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 	
 	BaseBoss player;
 	for( int i=MaxClients; i; --i ) {
-			if( !IsValidClient(i) || GetClientTeam(i) <= VSH2Team_Spectator )
-				continue;
+		if( !IsValidClient(i) || GetClientTeam(i) <= VSH2Team_Spectator )
+			continue;
 		
 		player = BaseBoss(i);
-			if( player.bIsBoss )
-				continue;
+		if( player.bIsBoss )
+			continue;
 		
 		/// Forceteamchange does respawn.
-			if( GetClientTeam(i) == VSH2Team_Boss )
-				player.ForceTeamChange(VSH2Team_Red);
+		if( GetClientTeam(i) == VSH2Team_Boss )
+			player.ForceTeamChange(VSH2Team_Red);
 	}
 	
 	/// We got players and a valid boss, set the gamestate to Starting
 	g_vsh2.m_hGamemode.iRoundState = StateStarting;
-	///SetPawnTimer(RoundStartPost, 9.1);    /// in handler.sp
+	//SetPawnTimer(RoundStartPost, 9.1);    /// in handler.sp
 	
 	/// add 7 seconds and wait for round to start first before playing sound, boss may have changed
 	SetPawnTimer(ManagePlayBossIntro, 3.5+7.0, boss);    /// in handler.sp
