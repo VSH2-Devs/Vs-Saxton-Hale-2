@@ -2,7 +2,7 @@ public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 {
 	int roundstate = g_vsh2.m_hGamemode.iRoundState;
 	if( !g_vsh2.m_hCvars.Enabled.BoolValue || roundstate==StateDisabled )
-	return Plugin_Continue;
+			return Plugin_Continue;
 	
 	BaseBoss player = BaseBoss(event.GetInt("userid"), true);
 	if( player && IsClientInGame(player.index) ) {
@@ -11,16 +11,16 @@ public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 		
 		if( player.bIsBoss && (StateDisabled < roundstate < StateEnding) ) {
 			if( GetClientTeam(player.index) != VSH2Team_Boss )
-			player.ForceTeamChange(VSH2Team_Boss);
+					player.ForceTeamChange(VSH2Team_Boss);
 			
 			player.ConvertToBoss();    /// in base.sp
 			if( player.iHealth <= 0 )
-			player.iHealth = player.iMaxHealth;
+					player.iHealth = player.iMaxHealth;
 		}
 		
 		if( !player.bIsBoss && (StateDisabled < roundstate < StateEnding) && !player.bIsMinion) {
 			if( GetClientTeam(player.index) == VSH2Team_Boss )
-			player.ForceTeamChange(VSH2Team_Red);
+					player.ForceTeamChange(VSH2Team_Red);
 			SetPawnTimer(PrepPlayers, 0.2, player);
 		}
 	}
@@ -29,7 +29,7 @@ public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 public Action Resupply(Event event, const char[] name, bool dontBroadcast)
 {
 	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2.m_hGamemode.iRoundState==StateDisabled )
-	return Plugin_Continue;
+			return Plugin_Continue;
 	
 	BaseBoss player = BaseBoss( event.GetInt("userid"), true );
 	if( player && IsClientInGame(player.index) ) {
@@ -38,18 +38,18 @@ public Action Resupply(Event event, const char[] name, bool dontBroadcast)
 		
 		if( player.bIsBoss && (StateDisabled < g_vsh2.m_hGamemode.iRoundState < StateEnding) ) {
 			if( GetClientTeam(player.index) != VSH2Team_Boss )
-			player.ForceTeamChange(VSH2Team_Boss);
+					player.ForceTeamChange(VSH2Team_Boss);
 			player.ConvertToBoss();		/// in base.sp
 		}
 	}
-	return Plugin_Continue;
+		return Plugin_Continue;
 }
 
 public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
 	/// Bug patch: first round kill immediately ends the round.
 	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2.m_hGamemode.iRoundState==StateDisabled )
-	return Plugin_Continue;
+			return Plugin_Continue;
 	
 	BaseBoss victim = BaseBoss( event.GetInt("userid"), true );
 	BaseBoss fighter = BaseBoss( event.GetInt("attacker"), true );
@@ -57,7 +57,7 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	
 	/// Patch: Don't want multibosses playing last-player sound clips when a BOSS dies...
 	if( !victim.bIsBoss && !victim.bIsMinion )
-	SetPawnTimer(CheckAlivePlayers, 0.2);
+			SetPawnTimer(CheckAlivePlayers, 0.2);
 	
 	int death_flags = event.GetInt("death_flags");
 	if( (g_vsh2.m_hGamemode.bMedieval || g_vsh2.m_hCvars.ForceLives.BoolValue)
@@ -84,9 +84,9 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 				case 2: {
 					for( int ent=MaxClients+1; ent<2048; ++ent ) {
 						if( !IsValidEntity(ent) || !HasEntProp(ent, Prop_Send, "m_hBuilder") ) 
-						continue;
+							continue;
 						else if( GetBuilder(ent) != victim.index )
-						continue;
+							continue;
 						
 						SetVariantInt(GetEntProp(ent, Prop_Send, "m_iMaxHealth")+8);
 						AcceptEntityInput(ent, "RemoveHealth");
@@ -100,7 +100,7 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 public Action PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 {
 	if( !g_vsh2.m_hCvars.Enabled.BoolValue )
-	return Plugin_Continue;
+		return Plugin_Continue;
 	
 	BaseBoss victim = BaseBoss( event.GetInt("userid"), true );
 	/*
@@ -113,25 +113,21 @@ public Action PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 	/// make sure the attacker is valid so we can set him/her as BaseBoss instance
 	int attacker = GetClientOfUserId( event.GetInt("attacker") );
 	if( victim.index == attacker || attacker <= 0 )
-	return Plugin_Continue;
+		return Plugin_Continue;
 	
 	BaseBoss boss = BaseBoss( event.GetInt("attacker"), true );
 	ManageHurtPlayer(boss, victim, event);
 	return Plugin_Continue;
 }
 
-public Action DelaySpawn(BaseBoss boss){
-		/// check if they preset something and if its not the same boss
-	if (boss.iPresetType>-1 && boss.iBossType!=boss.iPresetType){
 public Action DelaySpawn(BaseBoss boss)
 {
 	/// check if they preset something and if its not the same boss
-	if (boss.iPresetType>-1 && boss.iBossType!=boss.iPresetType)
-	{
+	if( boss.iPresetType > -1 && boss.iBossType != boss.iPresetType ) {
 		boss.iBossType = boss.iPresetType;
 		ManageOnBossSelected(boss);
 		boss.ConvertToBoss();
-		boss.iPresetType = -1; // they got what they wanted now reset this var
+		boss.iPresetType = -1; /// they got what they wanted now reset this var
 	}
 }
 
@@ -154,11 +150,11 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 	int playing;
 	for( int iplay=MaxClients; iplay; --iplay ) {
 		if( !IsValidClient(iplay) || !IsClientInGame(iplay) )
-		continue;
+			continue;
 		
 		ManageResetVariables(BaseBoss(iplay));    /// in handler.sp
 		if( GetClientTeam(iplay) > VSH2Team_Spectator )
-		++playing;
+			++playing;
 	}
 	if( GetClientCount() <= 1 || playing < 2 ) {
 		CPrintToChatAll("{olive}[VSH 2]{default} Need more Players to Commence");
@@ -190,7 +186,7 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 		g_vsh2.m_hGamemode.hNextBoss = view_as< BaseBoss >(0);
 	}
 	
-		/// Got our boss, let's prep him/her.
+	/// Got our boss, let's prep him/her.
 	boss.iBossType = g_vsh2.m_hGamemode.iSpecial;
 	
 	/// Setting this here so we can intercept Boss type and other info
@@ -198,13 +194,13 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 	boss.ConvertToBoss();
 	g_vsh2.m_hGamemode.iSpecial = -1;
 	
-	// If player has used /setboss before round started, swap their boss to their new selection
-	// this allows players to pick a boss as round is starting ( last second change of mind for example )
+	/// If player has used /setboss before round started, swap their boss to their new selection
+	/// this allows players to pick a boss as round is starting ( last second change of mind for example )
 	SetPawnTimer(DelaySpawn,3.5+5.0,boss);
 	
 	
 	if( GetClientTeam(boss.index) != VSH2Team_Boss )
-	boss.ForceTeamChange(VSH2Team_Boss);
+			boss.ForceTeamChange(VSH2Team_Boss);
 	
 	BaseBoss player;
 	for( int i=MaxClients; i; --i ) {
@@ -216,16 +212,15 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 		continue;
 		
 		/// Forceteamchange does respawn.
-		if( GetClientTeam(i) == VSH2Team_Boss )
-		player.ForceTeamChange(VSH2Team_Red);
+			if( GetClientTeam(i) == VSH2Team_Boss )
+				player.ForceTeamChange(VSH2Team_Red);
 	}
 	
 	/// We got players and a valid boss, set the gamestate to Starting
 	g_vsh2.m_hGamemode.iRoundState = StateStarting;
-	//SetPawnTimer(RoundStartPost, 9.1);    /// in handler.sp
+	///SetPawnTimer(RoundStartPost, 9.1);    /// in handler.sp
 	
-	// add 7 seconds and wait for round to start first before playing sound, boss may have changed
-	
+	/// add 7 seconds and wait for round to start first before playing sound, boss may have changed
 	SetPawnTimer(ManagePlayBossIntro, 3.5+7.0, boss);    /// in handler.sp
 	
 	int ent = -1;
