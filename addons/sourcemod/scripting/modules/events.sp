@@ -123,10 +123,15 @@ public Action PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 public Action DelaySpawn(BaseBoss boss){
 		/// check if they preset something and if its not the same boss
 	if (boss.iPresetType>-1 && boss.iBossType!=boss.iPresetType){
+public Action DelaySpawn(BaseBoss boss)
+{
+	/// check if they preset something and if its not the same boss
+	if (boss.iPresetType>-1 && boss.iBossType!=boss.iPresetType)
+	{
 		boss.iBossType = boss.iPresetType;
 		ManageOnBossSelected(boss);
 		boss.ConvertToBoss();
-		boss.iPresetType = -1;
+		boss.iPresetType = -1; // they got what they wanted now reset this var
 	}
 }
 
@@ -193,7 +198,7 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 	boss.ConvertToBoss();
 	g_vsh2.m_hGamemode.iSpecial = -1;
 	
-	// delay the spawn so it sets player as boss when arena round starts
+	// If player has used /setboss before round started, swap their boss to their new selection
 	// this allows players to pick a boss as round is starting ( last second change of mind for example )
 	SetPawnTimer(DelaySpawn,3.5+5.0,boss);
 	
