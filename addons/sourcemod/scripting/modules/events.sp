@@ -123,7 +123,7 @@ public Action PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 public Action DelaySpawn(BaseBoss boss)
 {
 	/// check if they preset something and if its not the same boss
-	if( boss.iPresetType > -1 && boss.iBossType != boss.iPresetType ){
+	if( boss.iPresetType > -1 && boss.iBossType != boss.iPresetType ) {
 		boss.iBossType = boss.iPresetType;
 		ManageOnBossSelected(boss);
 		boss.ConvertToBoss();
