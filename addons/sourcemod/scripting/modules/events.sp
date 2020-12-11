@@ -196,7 +196,7 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 	g_vsh2.m_hGamemode.iSpecial = -1;
 	
 	/// If player has used /setboss before round started, swap their boss to their new selection
-	SetPawnTimer(DelaySpawn,3.5+5.0,boss);
+	SetPawnTimer( DelaySpawn , 3.5+5.0 , boss );
 	
 	if( GetClientTeam(boss.index) != VSH2Team_Boss )
 		boss.ForceTeamChange(VSH2Team_Boss);
