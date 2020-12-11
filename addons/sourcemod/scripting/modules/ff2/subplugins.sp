@@ -53,6 +53,8 @@ methodmap FF2PluginList < ArrayList {
 				}
 			}
 			
+			delete iter;
+			
 			infos.loading = true;
 			this.SetInfo(i, infos);
 			RequestFrame(QuerySetPluginHandle, i);
