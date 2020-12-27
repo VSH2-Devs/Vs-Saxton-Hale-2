@@ -297,6 +297,42 @@ methodmap ConfigMap < StringMap {
 		}
 		return 0;
 	}
+	
+	/**
+	 * 
+	 * name:      GetBool
+	 * @param     key_path : key path to the data you need.
+	 * @param     b : bool reference to store data.
+	 * @param     simple : option to simplistically check string value as boolean or not.
+	 * @return    Number of chars used, 0 if error.
+	 * @note      to directly access subsections, use a '.' like "root.section1.section2"
+	 *            for keys that have a dot in their name, use '\\.'
+	 */
+	public int GetBool(const char[] key_path, bool& b, bool simple=true) {
+		if( this==null ) {
+			return 0;
+		}
+		PackVal val;
+		bool result = this.GetVal(key_path, val);
+		if( result && val.tag==KeyValType_Value ) {
+			val.data.Reset();
+			char[] strval = new char[val.size];
+			val.data.ReadString(strval, val.size);
+			if( simple ) {
+				b = StringToInt(strval) != 0;
+			} else {
+				if( !strcmp(strval, "true", false) || !strcmp(strval, "1", false) ) {
+					b = true;
+				} else if( !strcmp(strval, "false", false) || !strcmp(strval, "0", false) ) {
+					b = false;
+				} else {
+					return 0;
+				}
+			}
+			return val.size - 1;
+		}
+		return 0;
+	}
 };
 
 public SMCResult ConfigMap_OnNewSection(SMCParser smc, const char[] name, bool opt_quotes)
