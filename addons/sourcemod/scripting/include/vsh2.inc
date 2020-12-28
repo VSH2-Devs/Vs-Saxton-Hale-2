@@ -918,7 +918,7 @@ stock int PrepareModel(const char[] model_path, bool model_only=false)
 }
 
 /// Contributed by ScaleFace
-stock bool IsStockSound(char sample[PLATFORM_MAX_PATH])
+stock bool IsStockSound(const char sample[PLATFORM_MAX_PATH])
 {
 	char exclusions[][] = {
 		"_pain","_medic","_battlecry","_pain","_auto","_activatecharge","_jeers","_cheers","_help",
@@ -933,7 +933,7 @@ stock bool IsStockSound(char sample[PLATFORM_MAX_PATH])
 	return false;
 }
 
-stock bool IsVoiceLine(char sample[PLATFORM_MAX_PATH])
+stock bool IsVoiceLine(const char sample[PLATFORM_MAX_PATH])
 {
 	return !strncmp(sample, "vo", 2, false);
 }
