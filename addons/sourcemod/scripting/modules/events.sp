@@ -195,7 +195,7 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 	boss.ConvertToBoss();
 	g_vsh2.m_hGamemode.iSpecial = -1;
 	
-	float snddelay = 3.5 /// this is the default value for delay on the boss intro line
+	float snddelay = 3.5; /// this is the default value for delay on the boss intro line
 	
 	if ( g_vsh2.m_hCvars.PreroundSetboss.BoolValue ) {
 	/// If player has used /setboss before round started, swap their boss to their new selection
