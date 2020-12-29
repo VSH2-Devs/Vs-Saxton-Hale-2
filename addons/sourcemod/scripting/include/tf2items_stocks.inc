@@ -9,8 +9,8 @@ methodmap TF2Item < Handle {
 	public TF2Item(int iFlags) {
 		return view_as< TF2Item >( TF2Items_CreateItem(iFlags) );
 	}
-	/////////////////////////////// 
-	
+	///////////////////////////////
+
 	property int iFlags {
 		public get()			{ return TF2Items_GetFlags(this); }
 		public set( int iVal )		{ TF2Items_SetFlags(this, iVal); }
@@ -32,7 +32,7 @@ methodmap TF2Item < Handle {
 		public set( int iVal )		{TF2Items_SetNumAttributes(this, iVal);}
 	}
 	///////////////////////////////
-	
+
 	public int GiveNamedItem(int iClient) {
 		return TF2Items_GiveNamedItem(iClient, this);
 	}
@@ -57,21 +57,21 @@ methodmap TF2Item < Handle {
 stock TF2Item TF2Item_PrepareItemHandle(TF2Item hItem, char[] name = "", int index = -1, const char[] att = "", bool dontpreserve = false)
 {
 	static TF2Item hWeapon = null;
-	int addattribs = 0;
 	char weaponAttribsArray[32][32];
 	int attribCount = ExplodeString(att, "; ", weaponAttribsArray, 32, 32);
-	
+	attribCount &= ~1;
+
 	int flags = OVERRIDE_ATTRIBUTES;
 	if( !dontpreserve )
 		flags |= PRESERVE_ATTRIBUTES;
-	
+
 	if( !hWeapon )
 		hWeapon = new TF2Item(flags);
 	else hWeapon.iFlags = flags;
-	
+
 	if( hItem != null ) {
-		addattribs = hItem.iNumAttribs;
-		if( addattribs ) {
+		int addattribs = hItem.iNumAttribs;
+		if( addattribs && attribCount > 2 ) {
 			for( int i; i < 2 * addattribs; i += 2 ) {
 				bool dontAdd = false;
 				int attribIndex = hItem.GetAttribID(i);
@@ -86,11 +86,11 @@ stock TF2Item TF2Item_PrepareItemHandle(TF2Item hItem, char[] name = "", int ind
 					FloatToString(hItem.GetAttribValue(i), weaponAttribsArray[i+1+attribCount], 32);
 				}
 			}
-			attribCount += 2*addattribs;
+			attribCount += 2 * addattribs;
 		}
 		delete hItem;
 	}
-	
+
 	if( name[0] != '\0' ) {
 		flags |= OVERRIDE_CLASSNAME;
 		hWeapon.SetClassname(name);
@@ -99,16 +99,15 @@ stock TF2Item TF2Item_PrepareItemHandle(TF2Item hItem, char[] name = "", int ind
 		flags |= OVERRIDE_ITEM_DEF;
 		hWeapon.iItemIndex = index;
 	}
-	if( attribCount > 1 ) {
+	if( attribCount > 2 ) {
 		hWeapon.iNumAttribs = (attribCount/2);
-		int i2 = 0;
-		for( int i; i<attribCount && i<32; i += 2 ) {
+		for( int i, att_index; i<attribCount && i<32; i += 2, att_index++ ) {
 			int attrib = StringToInt(weaponAttribsArray[i]);
 			if( !attrib )
 				continue;
-			
-			hWeapon.SetAttribute(i2, StringToInt(weaponAttribsArray[i]), StringToFloat(weaponAttribsArray[i+1]));
-			i2++;
+
+			hWeapon.SetAttribute(att_index, StringToInt(weaponAttribsArray[i]), StringToFloat(weaponAttribsArray[i+1]));
+			att_index++;
 		}
 	}
 	else hWeapon.iNumAttribs = 0;

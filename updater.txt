@@ -4,22 +4,29 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.8.26"
+			"Latest"	"2.9.27"
 		}
-		
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.8.26:"
+
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.9.27:"
+		"Notes"	"Changed method `SetWepInvis` to use the alpha value as a percentage from 0 to 100 instead of 0 to 255."
+		"Notes"	"Refactored `ShowPlayerScores` (Scags)."
+		"Notes"	"Attempted patch at making sure client disconnecting doesn't throw an error."
+		"Notes"	"Added extension to OnMusic forward to control song volume."
 		"Notes"	"Updated 'VSH2GameMode_GetHudHandle' to take an int to a specific HUD."
+		"Notes"	"Fixed formatting of FF2 compatibility engine to fit codebase conventions."
+		"Notes"	"Patched empty string not removing attributes from weapons."
+		"Notes"	"Patched oversight on VSH1 compatibility engine where Hale Rage forward was trying to be executed instead of Hale Jump as the intended hook."
 	}
-	
+
 	"Files"
 	{
 		"Plugin"	"Path_SM/plugins/vsh2.smx"
-		
+
 		"Source"	"Path_SM/scripting/vsh2.sp"
 		"Source"	"Path_SM/scripting/vsh2boss_plaguedoctor.sp"
 		"Source"	"Path_SM/scripting/vsh2boss_template.sp"
 		"Source"	"Path_SM/scripting/saxtonhale.sp"
-		
+
 		"Source"	"Path_SM/scripting/modules/base.sp"
 		"Source"	"Path_SM/scripting/modules/bosses.sp"
 		"Source"	"Path_SM/scripting/modules/commands.sp"
@@ -34,8 +41,9 @@
 		"Source"	"Path_SM/scripting/modules/bosses/hhh.sp"
 		"Source"	"Path_SM/scripting/modules/bosses/plague.sp"
 		"Source"	"Path_SM/scripting/modules/bosses/vagineer.sp"
-		
+
 		"Source"	"Path_SM/scripting/include/vsh2.inc"
+		"Source"	"Path_SM/scripting/include/freak_fortress_2.inc"
 		"Source"	"Path_SM/scripting/include/cfgmap.inc"
 		"Source"	"Path_SM/scripting/include/steamtools.inc"
 		"Source"	"Path_SM/scripting/include/tf2items_stocks.inc"

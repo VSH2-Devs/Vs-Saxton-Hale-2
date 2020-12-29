@@ -68,7 +68,6 @@ public Action Timer_DisplayCharPack(Handle timer)
 	for( i = 0; i < list_limit && i < pack_limit; i++ ) {
 		list.GetString(i, pack, sizeof(pack));
 		IntToString(i, _item, sizeof(_item));
-		
 		menu.AddItem(_item, pack);
 	}
 	
@@ -102,7 +101,7 @@ static bool IsVSHMap(const char[] nextmap)
 	
 	char config[PLATFORM_MAX_PATH];
 	if( FileExists("bNextMapToFF2") || FileExists("bNextMapToHale") )
-	return true;
+		return true;
 	
 	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/maps.cfg");
 	if( !FileExists(config) ) {
@@ -118,7 +117,7 @@ static bool IsVSHMap(const char[] nextmap)
 		LogError("[VSH 2] **** Error Reading Maps from %s Config, Disabling VSH 2 ****", config);
 		return false;
 	}
-		
+	
 	int tries;
 	while( file.ReadLine(config, sizeof(config)) && tries < 100 ) {
 		++tries;
@@ -145,7 +144,6 @@ public Action Reload_Plugin(int client, int argc)
 {
 	char pl_name[FF2_MAX_PLUGIN_NAME];
 	char path[PLATFORM_MAX_PATH];
-	
 	GetCmdArgString(pl_name, sizeof(pl_name));
 	
 	BuildPath(Path_SM, path, sizeof(path), "plugins\\freaks\\%s.ff2", pl_name);

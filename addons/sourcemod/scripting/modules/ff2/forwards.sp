@@ -1,4 +1,3 @@
-
 Action Call_OnBossSelected(FF2Player player, char name[MAX_BOSS_NAME_SIZE], bool force)
 {
 	Action res;
@@ -93,9 +92,10 @@ Action Call_OnTakeDamage_OnBossTriggerHurt(int victim, int attacker, float& dama
 	Call_Finish(res);
 	switch( res ) {
 		case Plugin_Continue: return res;
-		case Plugin_Changed: { damage = damage2; return res;}
+		case Plugin_Changed: {
+			damage = damage2; return res;
+		}
 	}
-	
 	damage = 0.0;
 	return Plugin_Changed;
 }

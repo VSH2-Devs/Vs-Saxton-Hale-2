@@ -1,4 +1,4 @@
-/*
+/**
 	Default Abilities Pack:
 
 	Rages:
@@ -69,15 +69,14 @@ _ConVars m_ConVars;
 
 
 #define EXPLOSIVE_DANCE_ABILITY	"rage_explosive_dance"	
-enum struct _ExplosiveDance_t
-{
+enum struct _ExplosiveDance_t {
 	int iNumExplosion;
 	float flDamage;
 	float flRange;
 	
 	void Init(FF2Player player)
 	{
-		if(player.HasAbility(this_plugin_name, EXPLOSIVE_DANCE_ABILITY)) {
+		if( player.HasAbility(this_plugin_name, EXPLOSIVE_DANCE_ABILITY) ) {
 			this.iNumExplosion = player.GetArgI(this_plugin_name, EXPLOSIVE_DANCE_ABILITY, "count", 35);
 			this.flDamage = player.GetArgF(this_plugin_name, EXPLOSIVE_DANCE_ABILITY, "damage", 180.0);
 			this.flRange = player.GetArgF(this_plugin_name, EXPLOSIVE_DANCE_ABILITY, "distance", 350.0);
@@ -112,6 +111,7 @@ enum struct _InstantTele_t
 #define MATRIX_ABILITY			"rage_matrix_attack"
 #define SOUND_SLOW_MO_START		"replay/enterperformancemode.wav"
 #define SOUND_SLOW_MO_END		"replay/exitperformancemode.wav"
+
 enum struct _MatrixAbility_t {
 	Handle timer;
 	int iOldTarget;
@@ -153,14 +153,15 @@ _DemoCharge_t democharge;
 #define NO_ANIMS				"special_noanims"
 
 
-enum struct Function_t { 
-	Function fn; 
+enum struct Function_t {
+	Function fn;
 }
+
 methodmap AbilityPool_t < StringMap
 {
 	public AbilityPool_t()
 	{
-		return view_as<AbilityPool_t>(new StringMap());
+		return view_as< AbilityPool_t >(new StringMap());
 	}
 	
 	public void FindAndStartCall(const char[] name, const FF2Player player)
@@ -221,7 +222,7 @@ public void OnPluginStart2()
 	VSH2_Hook(OnRoundEndInfo, 		_OnRoundEnd);
 	VSH2_Hook(OnMinionInitialized,  _OnMinionInitialized);
 	
-	if(ff2_gm.RoundState == StateRunning) {
+	if( ff2_gm.RoundState == StateRunning ) {
 		
 		FF2Player[] bosses = new FF2Player[MaxClients + 1];
 		FF2Player[] mercs = new FF2Player[MaxClients + 1];
@@ -261,12 +262,12 @@ public void OnProjectileSpawned(int entity)
 		return;
 	
 	int client = GetEntPropEnt(launcher, Prop_Send, "m_hOwnerEntity");
-	if ( client > 0 && IsClientInGame(client) ) {
+	if( client > 0 && IsClientInGame(client) ) {
 		FF2Player player = FF2Player(client);
 		if( player.HasAbility(this_plugin_name, PROJECTILE_ABILITY) ) {
 			static char projectile[PLATFORM_MAX_PATH], classname[PLATFORM_MAX_PATH];
-			if( player.GetArgS(this_plugin_name, PROJECTILE_ABILITY, "projectile", projectile, sizeof(projectile)) && 
-				GetEntityClassname(entity, classname, sizeof(classname)) && 
+			if( player.GetArgS(this_plugin_name, PROJECTILE_ABILITY, "projectile", projectile, sizeof(projectile)) &&
+				GetEntityClassname(entity, classname, sizeof(classname)) &&
 				StrContains(classname, projectile) != -1 ) {
 				
 				player.GetArgS(this_plugin_name, PROJECTILE_ABILITY, "model", classname, sizeof(classname));
@@ -285,20 +286,18 @@ public void OnProjectileSpawned(int entity)
 }
 
 
-/* VSH2 Events */
+/** VSH2 Events */
 public void _OnRoundStart(const VSH2Player[] bosses, const int boss_count, const VSH2Player[] red_players, const int red_count)
 {
 	FF2Player player;
-	for(int i = 0; i < boss_count; i++) {
+	for( int i; i < boss_count; i++ ) {
 		player = ToFF2Player(bosses[i]);
 		ExplosiveDance[player.index].Init(player);
-		
 		if( player.HasAbility(this_plugin_name, DEMOCHARGE_ABILITY) && !democharge.bThinkHooked ) {
 			VSH2_Hook(OnBossThinkPost, _RunDemoChargeThink);
 			democharge.bThinkHooked = true;
 		}
 	}
-	
 	CreateTimer(0.41, Timer_Disable_Anims, .flags = TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(9.31, Timer_Disable_Anims, .flags = TIMER_FLAG_NO_MAPCHANGE);
 }
@@ -310,7 +309,6 @@ public void _OnMinionInitialized(const VSH2Player minion, const VSH2Player vsh2_
 		return;
 	
 	static char classname[64], model[PLATFORM_MAX_PATH];
-	
 	int health = 250;
 	
 	/// Formula parser by nergal
@@ -327,7 +325,7 @@ public void _OnMinionInitialized(const VSH2Player minion, const VSH2Player vsh2_
 	/// Handle minions class
 	{
 		int class = owner.GetArgI(this_plugin_name, CLONE_ATK_ABILITY, "class");
-		TF2_SetPlayerClass(client, view_as<TFClassType>(class), .persistent = false);
+		TF2_SetPlayerClass(client, view_as< TFClassType >(class), .persistent = false);
 	}
 	minion.RemoveAllItems();
 	
@@ -337,38 +335,34 @@ public void _OnMinionInitialized(const VSH2Player minion, const VSH2Player vsh2_
 #endif
 	
 	/// Handle minions weapon
-	if(	owner.GetArgI(this_plugin_name, CLONE_ATK_ABILITY, "weapon mode") && 
+	if(	owner.GetArgI(this_plugin_name, CLONE_ATK_ABILITY, "weapon mode") &&
 		owner.GetArgS(this_plugin_name, CLONE_ATK_ABILITY, "classname",  classname, sizeof(classname)) ) {
 		int index = owner.GetArgI(this_plugin_name, CLONE_ATK_ABILITY, "index", 191);
-		int weapon = minion.SpawnWeapon( classname, 
-										 index, 
-										 100, 
-										 5, 
-										 model /* attributes */);
+		int weapon = minion.SpawnWeapon( classname,
+										 index,
+										 100,
+										 5,
+										 model /** attributes */);
 		if( IsValidEntity(weapon) ) {
 			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 			SetEntProp(weapon, Prop_Send, "m_iWorldModelIndex", -1);
 			
-			if( StrEqual(classname, "tf_weapon_builder") && index != 735 )  //PDA, normal sapper
-			{
+			if( StrEqual(classname, "tf_weapon_builder") && index != 735 ) {  /// PDA, normal sapper
 				for( int i = 0; i < 4; i++ )
 					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, .element = i);
-			}
-			else if( StrEqual(classname, "tf_weapon_sapper") || index == 735 )  //Sappers, normal sapper
-			{
+			} else if( StrEqual(classname, "tf_weapon_sapper") || index == 735 ) { /// Sappers, normal sapper
 				SetEntProp(weapon, Prop_Send, "m_iObjectType", 3);
 				SetEntProp(weapon, Prop_Data, "m_iSubType", 3);
 				for( int i = 0; i < 4; i++ )
 					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, .element = i);
 			}
-	
+			
 			if( ammo >= 0 || clip >= 0 )
 				FF2_SetAmmo(client, weapon, ammo, clip);
 		}
 	}
 	
-	if(health)
-	{
+	if( health ) {
 		SetEntProp(client, Prop_Data, "m_iMaxHealth", health);
 		SetEntityHealth(client, health);
 	}
@@ -387,7 +381,8 @@ public void _OnMinionInitialized(const VSH2Player minion, const VSH2Player vsh2_
 	
 	if( !owner.GetArgI(this_plugin_name, CLONE_ATK_ABILITY, "custom model") ) {
 		owner.GetString("model", model, sizeof(model));
-	} else owner.GetArgS(this_plugin_name, CLONE_ATK_ABILITY, "model",  model, sizeof(model));
+	}
+	else owner.GetArgS(this_plugin_name, CLONE_ATK_ABILITY, "model",  model, sizeof(model));
 	
 	if( model[0] ) {
 		SetVariantString(model);
@@ -440,18 +435,17 @@ public void _OnPlayerKilled(const VSH2Player vsh2_attacker, const VSH2Player vic
 {
 	if( FF2GameMode.Validate(vsh2_attacker) ) {	///	attacker is the boss
 		HandleAttackerKill(ToFF2Player(victim), ToFF2Player(vsh2_attacker));
-	}
-	else if( FF2GameMode.Validate(victim) ) {	///	victim is the boss
+	} else if( FF2GameMode.Validate(victim) ) {	///	victim is the boss
 		HandleVictimKill(ToFF2Player(victim), event.GetInt("death_flags"));
 	}
 }
 
 
-/* New Weapon */
+/** New Weapon */
 void Rage_New_Weapon(const FF2Player player)
 {
 	int client = player.index;
-	if(!IsClientInGame(client) || !IsPlayerAlive(client))
+	if( !IsClientInGame(client) || !IsPlayerAlive(client) )
 		return;
 
 	TF2_RemoveWeaponSlot(client, player.GetArgI(this_plugin_name, NEW_WEAPON_ABILITY, "weapon slot", -1));
@@ -459,48 +453,44 @@ void Rage_New_Weapon(const FF2Player player)
 	static char classname[64], attributes[128];
 	
 	int index = player.GetArgI(this_plugin_name, NEW_WEAPON_ABILITY, "index", -1);
-	if( !player.GetArgS(this_plugin_name, NEW_WEAPON_ABILITY, "classname", classname, sizeof(classname)) || index < 0 ) 
+	if( !player.GetArgS(this_plugin_name, NEW_WEAPON_ABILITY, "classname", classname, sizeof(classname)) || index < 0 )
 		return;
 	
 	player.GetArgS(this_plugin_name, NEW_WEAPON_ABILITY, "attributes", attributes, sizeof(attributes));
 	
 	int weapon = player.SpawnWeapon( classname,	
-									 index,player.GetArgI(this_plugin_name, NEW_WEAPON_ABILITY, "level", 39), 
+									 index,player.GetArgI(this_plugin_name, NEW_WEAPON_ABILITY, "level", 39),
 									 player.GetArgI(this_plugin_name, NEW_WEAPON_ABILITY, "quality", 5),
 									 attributes );
 							
-	if(StrEqual(classname, "tf_weapon_builder") && index != 735)  //PDA, normal sapper
-	{
-		for(int i = 0; i < 4; i++)
+	if( StrEqual(classname, "tf_weapon_builder") && index != 735 ) { /// PDA, normal sapper
+		for( int i = 0; i < 4; i++ )
 			SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, .element = i);
-	}
-	else if(StrEqual(classname, "tf_weapon_sapper") || index == 735)  //Sappers, normal sapper
-	{
+	} else if(StrEqual(classname, "tf_weapon_sapper") || index == 735) { /// Sappers, normal sapper
 		SetEntProp(weapon, Prop_Send, "m_iObjectType", 3);
 		SetEntProp(weapon, Prop_Data, "m_iSubType", 3);
-		for(int i = 0; i < 4; i++)
+		for( int i = 0; i < 4; i++ )
 			SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, .element = i);
 	}
 
-	if(player.GetArgF(this_plugin_name, NEW_WEAPON_ABILITY, "force switch"))
+	if( player.GetArgF(this_plugin_name, NEW_WEAPON_ABILITY, "force switch") )
 		SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 
 	int ammo = player.GetArgI(this_plugin_name, NEW_WEAPON_ABILITY, "ammo", 5);
 	int clip = player.GetArgI(this_plugin_name, NEW_WEAPON_ABILITY, "clip", 7);
 	
-	if (ammo >= 0 || clip >= 0)
+	if( ammo >= 0 || clip >= 0 )
 		FF2_SetAmmo(client, weapon, ammo, clip);
 }
 
 
-/* Stun Player */
+/** Stun Player */
 void Rage_Stun(const FF2Player player)
 {
 	float delay = player.GetArgF(this_plugin_name, STUN_ABILITY, "delay", 0.0);
 	if( delay >= 0.1 )
 		CreateTimer(delay, Timer_Rage_Stun, player);
-	else
-		Timer_Rage_Stun(null, player);
+	else Timer_Rage_Stun(null, player);
 }
 
 public Action Timer_Rage_Stun(Handle timer, FF2Player cur_boss)
@@ -515,7 +505,7 @@ public Action Timer_Rage_Stun(Handle timer, FF2Player cur_boss)
 	
  /// Distance
 	float distance = cur_boss.GetArgF(this_plugin_name, STUN_ABILITY, "distance");
-	if(distance <= 0)
+	if( distance <= 0 )
 		distance = cur_boss.RageDist(this_plugin_name, STUN_ABILITY);
 		
  /// Stun Flags
@@ -555,7 +545,7 @@ public Action Timer_Rage_Stun(Handle timer, FF2Player cur_boss)
 		addduration = 0.0;
 	}
 	
- // Solo Rage Duration
+ /// Solo Rage Duration
 	float soloduration = cur_boss.GetArgF(this_plugin_name, STUN_ABILITY, "solo");
 	if( soloduration <= 0 )
 		soloduration = duration;
@@ -565,8 +555,8 @@ public Action Timer_Rage_Stun(Handle timer, FF2Player cur_boss)
 	for( int target = 1; target <= MaxClients; target++ ) {
 		if( IsClientInGame(target) && IsPlayerAlive(target) && target != client && (friendly || GetClientTeam(target) != GetClientTeam(client)) ) {
 			GetEntPropVector(target, Prop_Send, "m_vecOrigin", targetPosition);
-			if( (!TF2_IsPlayerInCondition(target, TFCond_Ubercharged) 
-				|| (ignore > 0 && ignore != 2)) && (!TF2_IsPlayerInCondition(target, TFCond_MegaHeal) 
+			if( (!TF2_IsPlayerInCondition(target, TFCond_Ubercharged)
+				|| (ignore > 0 && ignore != 2)) && (!TF2_IsPlayerInCondition(target, TFCond_MegaHeal)
 				|| ignore > 1) && GetVectorDistance(bossPosition, targetPosition) <= distance ) {
 				victim_pool[count] = FF2Player(target);
 				count++;
@@ -574,7 +564,7 @@ public Action Timer_Rage_Stun(Handle timer, FF2Player cur_boss)
 		}
 	}
 
-	if(!count)
+	if( !count )
 		return Plugin_Continue;
 	
 	if( count == 1 && (duration != soloduration || m_ConVars.ff2_solo_shame.BoolValue) ) {
@@ -584,8 +574,7 @@ public Action Timer_Rage_Stun(Handle timer, FF2Player cur_boss)
 		
 		if( duration != soloduration )
 			duration = soloduration;
-	}
-	else {
+	} else {
 		duration += addduration * (count - 1);
 		if( duration > maxduration )
 			duration = maxduration;
@@ -595,7 +584,7 @@ public Action Timer_Rage_Stun(Handle timer, FF2Player cur_boss)
 	
 	/// Idealy we can use FF2Player.StunPlayers() but we want to change stun particles
 	FF2Player cur_victim;
-	while(count > 0) {
+	while( count > 0 ) {
 		count--;
 		cur_victim = victim_pool[count];
 		
@@ -618,19 +607,18 @@ public Action Timer_SoloRageResult(Handle timer, FF2Player target)
 
 	if( IsPlayerAlive(client) )
 		FPrintToChatAll("It's {red}not{default} very effective...");
-	else
-		FPrintToChatAll("It's {blue}super{default} effective...");
-
+	else FPrintToChatAll("It's {blue}super{default} effective...");
 	return Plugin_Continue;
 }
 
 
-/* Stun Building */
-enum BuildingType_t { 
+/** Stun Building */
+enum BuildingType_t {
 	SENTRY 		= 0b001,
 	DISPENSER 	= 0b010,
 	TELEPORTER 	= 0b100
 };
+
 void Rage_Stun_Building(const FF2Player player)
 {
 	int client = player.index;
@@ -661,7 +649,7 @@ void Rage_Stun_Building(const FF2Player player)
 	if( player.GetArgS(this_plugin_name, STUN_BUILDING_ABILITY, "particle", strBuffer, sizeof(strBuffer)) )
 		strBuffer = "yikes_fx";
 	
-	BuildingType_t buildingtype = view_as<BuildingType_t>(player.GetArgI(this_plugin_name, STUN_BUILDING_ABILITY, "building", 0b111));
+	BuildingType_t buildingtype = view_as< BuildingType_t >(player.GetArgI(this_plugin_name, STUN_BUILDING_ABILITY, "building", 0b111));
 	/**
 	 *	1 = sentry
 	 *	2 = dispenser
@@ -708,12 +696,9 @@ void Rage_Stun_Building(const FF2Player player)
 			
 			GetEntPropVector(building, Prop_Send, "m_vecOrigin", buildingPos);
 			if( GetVectorDistance(bossPosition, buildingPos) <= distance ) {
-				if(destroy)
-				{
+				if( destroy ) {
 					SDKHooks_TakeDamage(building, client, client, 9001.0, DMG_GENERIC, -1);
-				}
-				else
-				{
+				} else {
 					if( health != 1.0 )
 						SDKHooks_TakeDamage(building, client, client, GetEntProp(building, Prop_Send, "m_iMaxHealth") * health, DMG_GENERIC, -1);
 					
@@ -746,7 +731,7 @@ public Action Timer_EnableBuilding(Handle timer, int ref)
 }
 
 
-/* Rage Uber */
+/** Rage Uber */
 void Rage_Uber(const FF2Player player)
 {
 	float duration = player.GetArgF(this_plugin_name, UBER_ABILITY, "duration", 5.0);
@@ -768,7 +753,7 @@ public Action Timer_StopUber(Handle timer, FF2Player player)
 }
 
 
-/* Explosive Dance */
+/** Explosive Dance */
 void Explosive_Dance(const FF2Player player)
 {
 	SetEntityMoveType(player.index, MOVETYPE_NONE);
@@ -778,10 +763,10 @@ void Explosive_Dance(const FF2Player player)
 public Action Timer_Prepare_Explosion_Rage(Handle timer, FF2Player player)
 {
 	int client = player.index;
-	if(!IsClientInGame(client))
+	if( !IsClientInGame(client) )
 		return Plugin_Continue;
 
-	if(player.GetArgI(this_plugin_name, EXPLOSIVE_DANCE_ABILITY, "taunt", true))
+	if( player.GetArgI(this_plugin_name, EXPLOSIVE_DANCE_ABILITY, "taunt", true) )
 		ClientCommand(client, "+taunt");
 
 	CreateTimer(player.GetArgF(this_plugin_name, EXPLOSIVE_DANCE_ABILITY, "delay", 0.12), Timer_Rage_Explosive_Dance, player, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
@@ -791,7 +776,7 @@ public Action Timer_Prepare_Explosion_Rage(Handle timer, FF2Player player)
 
 	static char sound[PLATFORM_MAX_PATH];
 	
-	if(player.GetArgS(this_plugin_name, EXPLOSIVE_DANCE_ABILITY, "sound", sound, sizeof(sound)))
+	if( player.GetArgS(this_plugin_name, EXPLOSIVE_DANCE_ABILITY, "sound", sound, sizeof(sound)) )
 		EmitSoundToAll(sound, client, .speakerentity = client, .origin = position);
 	
 	return Plugin_Continue;
@@ -801,25 +786,22 @@ public Action Timer_Rage_Explosive_Dance(Handle timer, FF2Player player)
 {
 	static int count[MAXCLIENTS];
 	int client = player.index;
-	if(!IsClientInGame(client))
-	{
+	if( !IsClientInGame(client) ) {
 		count[client] = 0;
 		return Plugin_Stop;
 	}
 	
 	count[client]++;
-	if(count[client] <= ExplosiveDance[client].iNumExplosion && IsPlayerAlive(client))
-	{
+	if( count[client] <= ExplosiveDance[client].iNumExplosion && IsPlayerAlive(client) ) {
 		SetEntityMoveType(client, MOVETYPE_NONE);
 		static float bossPosition[3], explosionPosition[3];
 		GetEntPropVector(client, Prop_Send, "m_vecOrigin", bossPosition);
 		explosionPosition[2] = bossPosition[2];
 		float range;
 		
-		for(int i; i < 3; i++)
-		{
+		for( int i; i < 3; i++ ) {
 			int explosion = CreateEntityByName("env_explosion");
-			if(!IsValidEntity(explosion))
+			if( !IsValidEntity(explosion) )
 				break;
 			
 			DispatchKeyValueFloat(explosion, "DamageForce", ExplosiveDance[client].flDamage);
@@ -833,11 +815,10 @@ public Action Timer_Rage_Explosive_Dance(Handle timer, FF2Player player)
 			explosionPosition[0] = bossPosition[0] + GetRandomFloat(-ExplosiveDance[client].flRange, ExplosiveDance[client].flRange);
 			explosionPosition[1] = bossPosition[1] + GetRandomFloat(-ExplosiveDance[client].flRange, ExplosiveDance[client].flRange);
 			
-			if(!(GetEntityFlags(client) & FL_ONGROUND)) {
+			if( !(GetEntityFlags(client) & FL_ONGROUND) ) {
 				range = ((ExplosiveDance[client].flRange * 3.0) / 7.0);
 				explosionPosition[2] = bossPosition[2] + GetRandomFloat(-range, range);
-			}
-			else {
+			} else {
 				range = ((ExplosiveDance[client].flRange * 2.0) / 7.0);
 				explosionPosition[2] = bossPosition[2] + GetRandomFloat(0.0, range);
 			}
@@ -847,9 +828,7 @@ public Action Timer_Rage_Explosive_Dance(Handle timer, FF2Player player)
 			
 			RemoveEntity(explosion);
 		}
-	}
-	else
-	{
+	} else {
 		SetEntityMoveType(client, MOVETYPE_WALK);
 		count[client] = 0;
 		return Plugin_Stop;
@@ -858,7 +837,7 @@ public Action Timer_Rage_Explosive_Dance(Handle timer, FF2Player player)
 }
 
 
-/* Instant Teleport */
+/** Instant Teleport */
 void Rage_Instant_Tele(const FF2Player player)
 {
 	static float position[3];
@@ -872,17 +851,15 @@ void Rage_Instant_Tele(const FF2Player player)
 	player.GetArgS(this_plugin_name, INSTANT_TELE_ABILITY, "particle",particleEffect, sizeof(particleEffect));
 	
 	int flags;
-	if(!player.GetArgS(this_plugin_name, INSTANT_TELE_ABILITY, "flags", strflags, sizeof(strflags)) 
+	if( !player.GetArgS(this_plugin_name, INSTANT_TELE_ABILITY, "flags", strflags, sizeof(strflags))
 		|| !(flags = StringToInt(strflags, 16)) )
 		flags = TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT;
 	
 	
 	int count;
 	FF2Player[] players = new FF2Player[MaxClients + 1];
-	int client = player.index
-	;
-	for( int target=1; target <= MaxClients; target++ )
-	{
+	int client = player.index;
+	for( int target=1; target <= MaxClients; target++ ) {
 		if( IsClientInGame(target) && IsPlayerAlive(target) && target != client) {
 			players[count] = FF2Player(target);
 			count++;
@@ -894,7 +871,7 @@ void Rage_Instant_Tele(const FF2Player player)
 	FF2Player final_target = players[GetRandomInt(0, count - 1)];
 	int target = final_target.index;
 	
-	if(particleEffect[0]) {
+	if( particleEffect[0] ) {
 		AttachParticle(target, particleEffect);
 		AttachParticle(target, particleEffect, .battach = false);
 	}
@@ -902,9 +879,8 @@ void Rage_Instant_Tele(const FF2Player player)
 	GetEntPropVector(target, Prop_Send, "m_vecOrigin", position);
 	SetEntPropFloat(client, Prop_Send, "m_flNextAttack", GetGameTime() + 2.0);
 	
-	if(GetEntProp(target, Prop_Send, "m_bDucked"))
-	{
-		SetEntPropVector(client, Prop_Send, "m_vecMaxs", view_as<float>({ 24.0, 24.0, 62.0 }));
+	if( GetEntProp(target, Prop_Send, "m_bDucked") ) {
+		SetEntPropVector(client, Prop_Send, "m_vecMaxs", view_as< float >({ 24.0, 24.0, 62.0 }));
 		SetEntProp(client, Prop_Send, "m_bDucked", 1);
 		SetEntityFlags(client, GetEntityFlags(client) | FL_DUCKING);
 		
@@ -915,13 +891,10 @@ void Rage_Instant_Tele(const FF2Player player)
 		pack.WriteFloat(flstuntime);
 		pack.WriteFloat(flslowdown);
 		pack.WriteCell(flags);
-	}
-	else
-	{
-		if(sounds)
+	} else {
+		if( sounds )
 			TF2_StunPlayer(client, flstuntime, flslowdown, flags, target);
-		else
-			TF2_StunPlayer(client, flstuntime, flslowdown, flags);
+		else TF2_StunPlayer(client, flstuntime, flslowdown, flags);
 	}
 	
 	TeleportEntity(client, position, NULL_VECTOR, NULL_VECTOR);
@@ -942,7 +915,7 @@ public Action Timer_StunBoss(Handle timer, DataPack pack)
 }
 
 
-/* Christian Brutal Sniper Bow */
+/** Christian Brutal Sniper Bow */
 void Rage_CBS_Bow(const FF2Player player)
 {
 	int client = player.index;
@@ -951,9 +924,8 @@ void Rage_CBS_Bow(const FF2Player player)
 	static char attributes[64], classname[64];
 
 	player.GetArgS(this_plugin_name, CBS_BOW_ABILITY, "attributes",  attributes, sizeof(attributes));
-	if( !attributes[0] )
-	{
-		attributes = m_ConVars.ff2_strangewep.BoolValue ? 
+	if( !attributes[0] ) {
+		attributes = m_ConVars.ff2_strangewep.BoolValue ?
 					 "6 ; 0.5 ; 37 ; 0.0 ; 214 ; 333 ; 280 ; 19":
 					 "6 ; 0.5 ; 37 ; 0.0 ; 280 ; 19";
 	}
@@ -967,34 +939,34 @@ void Rage_CBS_Bow(const FF2Player player)
 	int index = player.GetArgI(this_plugin_name, CBS_BOW_ABILITY, "index", 1005);
 	int level = player.GetArgI(this_plugin_name, CBS_BOW_ABILITY, "level", 101);
 	int quality = player.GetArgI(this_plugin_name, CBS_BOW_ABILITY, "quality", 5);
-	int weapon = player.SpawnWeapon( classname, 
-									 index, 
-									 level, 
-									 quality, 
+	int weapon = player.SpawnWeapon( classname,
+									 index,
+									 level,
+									 quality,
 									 attributes );
 	
-	if(player.GetArgI(this_plugin_name, CBS_BOW_ABILITY, "force switch", 1))
+	if( player.GetArgI(this_plugin_name, CBS_BOW_ABILITY, "force switch", 1) )
 		SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 
-	ammo *= ff2_gm.iLivingReds;	// Ammo multiplied by alive players
+	ammo *= ff2_gm.iLivingReds; /// Ammo multiplied by alive players
 	
-	if( ammo > maximum )		// Maximum or lower ammo
+	if( ammo > maximum ) /// Maximum or lower ammo
 		ammo = maximum;
 
-	ammo -= clip;			// Ammo subtracted by clip
+	ammo -= clip;  /// Ammo subtracted by clip
 
-	while(ammo < 0 && clip >= 0)	// Remove clip until ammo or clip is zero
-	{
+	while( ammo < 0 && clip >= 0 ) { /// Remove clip until ammo or clip is zero
 		clip--;
 		ammo++;
 	}
-					// If clip is positive or zero
+	
+	/// If clip is positive or zero
 	if( clip >= 0 )
 		FF2_SetAmmo(client, weapon, ammo, clip);
 }
 
 
-/* Clone Attack */
+/** Clone Attack */
 void Rage_CloneAttack(const FF2Player player)
 {
 	int client = player.index;
@@ -1013,8 +985,7 @@ void Rage_CloneAttack(const FF2Player player)
 			if( team != TF2_GetClientTeam(client) ) {
 				if( IsPlayerAlive(i) )
 					alive++;
-				else if( !cur_target.GetPropInt("bIsBoss") )  //Don't let dead bosses become clones
-				{
+				else if( !cur_target.GetPropInt("bIsBoss") ) {  /// Don't let dead bosses become clones
 					list.Push(cur_target);
 				}
 			}
@@ -1038,7 +1009,7 @@ void Rage_CloneAttack(const FF2Player player)
 	
 	delete list;
 
-
+	/// TODO: replace with VSH2 natives that deal with this?
 	int entity, owner;
 	while( (entity = FindEntityByClassname(entity, "tf_wearable")) != -1 )
 		if( (owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")) <= MaxClients && owner > 0 && GetClientTeam(owner) == GetClientTeam(client) )
@@ -1058,7 +1029,7 @@ void Rage_CloneAttack(const FF2Player player)
 }
 
 
-/* Trade Spam */
+/** Trade Spam */
 void Rage_Trade_Spam(const FF2Player player)
 {
 	CreateTimer(0.1, Trade_KeepSpamming, 1, TIMER_FLAG_NO_MAPCHANGE);
@@ -1066,34 +1037,34 @@ void Rage_Trade_Spam(const FF2Player player)
 
 public Action Trade_KeepSpamming(Handle timer, int count)
 {
-	if( count == 13 )  //Rage has finished-reset it in 6 seconds (trade_0 is 100% transparent apparently)
+	if( count == 13 )  /// Rage has finished-reset it in 6 seconds (trade_0 is 100% transparent apparently)
 		CreateTimer(6.0, Trade_KeepSpamming, 0, TIMER_FLAG_NO_MAPCHANGE);
 	else {
 		static char overlay[PLATFORM_MAX_PATH];
 		Format(overlay, sizeof(overlay), "r_screenoverlay \"freak_fortress_2/demopan/trade_%i\"", count);
 
-		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);  //Allow normal players to use r_screenoverlay
+		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);  /// Allow normal players to use r_screenoverlay
 		for( int client = 1; client <= MaxClients; client++ ) {
-			if(IsClientInGame(client) && IsPlayerAlive(client) && GetClientTeam(client) != VSH2Team_Boss) {
+			if( IsClientInGame(client) && IsPlayerAlive(client) && GetClientTeam(client) != VSH2Team_Boss ) {
 				ClientCommand(client, overlay);
 			}
 		}
-		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);  //Reset the cheat permissions
+		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);  /// Reset the cheat permissions
 
-		if(count) {
+		if( count ) {
 			EmitSoundToAll("ui/notification_alert.wav", .updatePos = false);
-			CreateTimer( count == 1 ? 1.0 : 0.5/float(count), 
-						 Trade_KeepSpamming, 
-					 	 count + 1, 
-						 TIMER_FLAG_NO_MAPCHANGE );  //Give a longer delay between the first and second overlay for "smoothness"
+			CreateTimer(count == 1 ? 1.0 : 0.5 / float(count),
+						 Trade_KeepSpamming,
+					 	 count + 1,
+						 TIMER_FLAG_NO_MAPCHANGE);  /// Give a longer delay between the first and second overlay for "smoothness"
 		}
-		else return Plugin_Stop; //Stop the rage
+		else return Plugin_Stop; /// Stop the rage
 	}
 	return Plugin_Continue;
 }
 
 
-/* Matrix */
+/** Matrix */
 void Rage_Matrix(const FF2Player player)
 {
 	float timescale = player.GetArgF(this_plugin_name, MATRIX_ABILITY, "timescale", 0.5);
@@ -1130,7 +1101,7 @@ public Action Timer_StopSlowMo(Handle timer, FF2Player player)
 	if( timescale != 1.0 )
 		EmitSoundToAll(SOUND_SLOW_MO_END, .updatePos = false);
 	
-	if( client ) 
+	if( client )
 		SDKUnhook(client, SDKHook_PostThinkPost, Post_ClientSlowMoThink);
 }
 
@@ -1140,6 +1111,7 @@ public void Post_ClientSlowMoThink(int client)
 		SDKUnhook(client, SDKHook_PostThinkPost, Post_ClientSlowMoThink);
 		return;
 	}
+	
 	static float flNextClick[MAXCLIENTS];
 	if( GetClientButtons(client) & IN_ATTACK && flNextClick[client] < GetGameTime() ) {
 		flNextClick[client] = GetGameTime() + FF2Player(client).GetArgF(this_plugin_name, MATRIX_ABILITY, "delay", 0.2);
@@ -1165,7 +1137,6 @@ public void Post_ClientSlowMoThink(int client)
 			pack.WriteCell(GetClientUserId(target));
 			pack.Reset();
 		}
-		
 		delete trace;
 	}
 }
@@ -1174,11 +1145,11 @@ public Action Timer_Rage_SlowMo_Attack(Handle timer, DataPack pack)
 {
 	int client = GetClientOfUserId(pack.ReadCell());
 	int target = GetClientOfUserId(pack.ReadCell());
-	if( client && 
-		target && 
-		IsClientInGame(client) && 
-		IsClientInGame(target) && 
-		GetClientTeam(client) != GetClientTeam(target)) {
+	if( client &&
+		target &&
+		IsClientInGame(client) &&
+		IsClientInGame(target) &&
+		GetClientTeam(client) != GetClientTeam(target) ) {
 		
 		static float clientPosition[3], targetPosition[3];
 		GetEntPropVector(client, Prop_Send, "m_vecOrigin", clientPosition);
@@ -1200,7 +1171,7 @@ public bool TraceRayDontHitSelf(int entity, int mask, int ref)
 }
 
 
-/* Overlay */
+/** Overlay */
 void Rage_Overlay(const FF2Player player)
 {
 	static char overlay[PLATFORM_MAX_PATH];
@@ -1235,7 +1206,7 @@ public Action Timer_Remove_Overlay(Handle timer)
 }
 
 
-/* DemoCharge */
+/** DemoCharge */
 public Action Do_DemoCharge(Handle timer, FF2Player player)
 {
 	int client = player.index;
@@ -1243,8 +1214,8 @@ public Action Do_DemoCharge(Handle timer, FF2Player player)
 	float res = charge - player.GetArgF(this_plugin_name, DEMOCHARGE_ABILITY, "rage", 2.0);
 	float flthink = player.GetArgF(this_plugin_name, DEMOCHARGE_ABILITY, "cooldown") / 2;
 	
-	if ( charge > player.GetArgF(this_plugin_name, DEMOCHARGE_ABILITY, "minimum", 10.0) &&
-	     charge <= player.GetArgF(this_plugin_name, DEMOCHARGE_ABILITY, "maximum", 100.0) && 
+	if( charge > player.GetArgF(this_plugin_name, DEMOCHARGE_ABILITY, "minimum", 10.0) &&
+	     charge <= player.GetArgF(this_plugin_name, DEMOCHARGE_ABILITY, "maximum", 100.0) &&
 	     res >= 0.0 ) {
 	     	
 		float duration = player.GetArgF(this_plugin_name, DEMOCHARGE_ABILITY, "duration", 0.25);
@@ -1256,18 +1227,18 @@ public Action Do_DemoCharge(Handle timer, FF2Player player)
 		
 		player.SetPropFloat("flRAGE", res);
 		democharge.flNextThink[client] = GetGameTime() + flthink * 2;
-	} else democharge.flNextThink[client] = GetGameTime() + flthink;
-	
+	}
+	else democharge.flNextThink[client] = GetGameTime() + flthink;
 	return Plugin_Continue;
 }
 
 
-/* No Anims */
+/** No Anims */
 public Action Timer_Disable_Anims(Handle timer)
 {
 	for( int client = MaxClients; client > 0; client-- ) {
 		FF2Player player = FF2Player(client);
-		if(player.index && player.HasAbility(this_plugin_name, NO_ANIMS)) {
+		if( player.index && player.HasAbility(this_plugin_name, NO_ANIMS) ) {
 			SetEntProp(client, Prop_Send, "m_bUseClassAnimations", player.GetArgF(this_plugin_name, NO_ANIMS, "custom model animation"));
 			SetEntProp(client, Prop_Send, "m_bCustomModelRotates", player.GetArgF(this_plugin_name, NO_ANIMS, "custom model rotates"));
 		}
@@ -1275,7 +1246,7 @@ public Action Timer_Disable_Anims(Handle timer)
 }
 
 
-/* Stocks */
+/** Stocks */
 stock int AttachParticle(const int ent, const char[] particleType, float offset = 0.0, bool battach = true, float time = 3.0)
 {
 	int particle = CreateEntityByName("info_particle_system");
@@ -1376,7 +1347,7 @@ int SpawnManyObjects(const char[] classname, const int client, const char[] mode
 		
 		SetEntProp(entity, Prop_Send, "m_iTeamNum", 2);
 		DispatchSpawn(entity);
-		TeleportEntity(entity, position, view_as<float>({90.0, 0.0, 0.0}), velocity);
+		TeleportEntity(entity, position, view_as< float >({90.0, 0.0, 0.0}), velocity);
 		SetEntProp(entity, Prop_Data, "m_iHealth", 900);
 		
 		SetEntData(entity, m_iPackType, 1, .changeState = true);
@@ -1398,7 +1369,7 @@ public Action Timer_DissolveRagdoll(Handle timer, FF2Player player)
 	if( client && IsClientInGame(client) )
 		ragdoll = GetEntPropEnt(client, Prop_Send, "m_hRagdoll");
 
-	if(IsValidEntity(ragdoll)) {
+	if( IsValidEntity(ragdoll) ) {
 		int dissolver = CreateEntityByName("env_entity_dissolver");
 		if( dissolver != -1 ) {
 			DispatchKeyValue(dissolver, "dissolvetype", "0");
@@ -1417,14 +1388,9 @@ void HandleAttackerKill(FF2Player victim, FF2Player player)
 	if( player.HasAbility(this_plugin_name, OBJECTS_DEATH) ) {
 		static char model[PLATFORM_MAX_PATH], classname[PLATFORM_MAX_PATH];
 		if( player.GetArgS(this_plugin_name, OBJECTS_DEATH, "classname", classname, sizeof(classname)) &&
-			player.GetArgS(this_plugin_name, OBJECTS_DEATH, "model", model, sizeof(model)) )
-		
-		SpawnManyObjects(	classname, 
-							victim.index, 
-							model, 
-							player.GetArgI(this_plugin_name, OBJECTS_DEATH, "skin"), 
-							player.GetArgI(this_plugin_name, OBJECTS_DEATH, "amount", 14), 
-							player.GetArgF(this_plugin_name, OBJECTS_DEATH, "distance", 30.0) );
+			player.GetArgS(this_plugin_name, OBJECTS_DEATH, "model", model, sizeof(model)) ) {
+			SpawnManyObjects(classname, victim.index, model, player.GetArgI(this_plugin_name, OBJECTS_DEATH, "skin"), player.GetArgI(this_plugin_name, OBJECTS_DEATH, "amount", 14), player.GetArgF(this_plugin_name, OBJECTS_DEATH, "distance", 30.0) );
+		}
 	}
 	
 	if( player.HasAbility(this_plugin_name, DISSOLVE) ) {
@@ -1451,15 +1417,15 @@ void HandleAttackerKill(FF2Player victim, FF2Player player)
 		}
 	}
 	
-	if( player.HasAbility(this_plugin_name, DROP_PROP) )
-	{
+	if( player.HasAbility(this_plugin_name, DROP_PROP) ) {
 		static char model[PLATFORM_MAX_PATH];
 		if( player.GetArgS(this_plugin_name, DROP_PROP, "model", model, PLATFORM_MAX_PATH) ) {
 			if( !IsModelPrecached(model) ) {
 				if( !FileExists(model, true) ) {
 					FF2_ReportError(player, "[Boss] Model '%s' doesn't exist!, (plugin: %s - ability: %s)", model, this_plugin_name, DROP_PROP);
 					return;
-				} else PrecacheModel(model);
+				}
+				else PrecacheModel(model);
 			}
 			if( player.GetArgF(this_plugin_name, DROP_PROP, "remove ragdolls") )
 				CreateTimer(0.1, Timer_RemoveRagdoll, victim, TIMER_FLAG_NO_MAPCHANGE);
@@ -1485,18 +1451,16 @@ void HandleAttackerKill(FF2Player victim, FF2Player player)
 
 void HandleVictimKill(FF2Player player, int flags)
 {
-	if(	player.HasAbility(this_plugin_name, CLONE_ATK_ABILITY) && 
-		player.GetArgI(this_plugin_name, CLONE_ATK_ABILITY, "slay on death", 1) && 
-		!(flags & TF_DEATHFLAG_DEADRINGER))
-	{
+	if(	player.HasAbility(this_plugin_name, CLONE_ATK_ABILITY) && player.GetArgI(this_plugin_name, CLONE_ATK_ABILITY, "slay on death", 1) && !(flags & TF_DEATHFLAG_DEADRINGER)) {
 		FF2Player iter;
 		int client = player.index;
 		for( int i = 1; i <= MaxClients; i++ ) {
 			if( !IsClientInGame(i) || GetClientTeam(i) != GetClientTeam(client) )
 				continue;
+			
 			iter = FF2Player(i);
 			if( iter.hOwnerBoss == player ) {
-				ChangeClientTeam(i, (GetClientTeam(client) == view_as<int>(TFTeam_Blue)) ? view_as<int>(TFTeam_Red) : view_as<int>(TFTeam_Blue));
+				ChangeClientTeam(i, (GetClientTeam(client) == view_as< int >(TFTeam_Blue)) ? view_as< int >(TFTeam_Red) : view_as< int >(TFTeam_Blue));
 			}
 		}
 	}
@@ -1505,12 +1469,6 @@ void HandleVictimKill(FF2Player player, int flags)
 		static char classname[PLATFORM_MAX_PATH], model[PLATFORM_MAX_PATH];
 		player.GetArgS(this_plugin_name, OBJECTS_DEATH, "classname", classname, PLATFORM_MAX_PATH);
 		player.GetArgS(this_plugin_name, OBJECTS_DEATH, "model", model, PLATFORM_MAX_PATH);
-		
-		SpawnManyObjects( classname, 
-						  player.index, 
-						  model, 
-						  player.GetArgI(this_plugin_name, OBJECTS_DEATH, "skin"), 
-						  player.GetArgI(this_plugin_name, OBJECTS_DEATH, "count", 14), 
-						  player.GetArgF(this_plugin_name, OBJECTS_DEATH, "distance", 30.0) );
+		SpawnManyObjects(classname, player.index, model, player.GetArgI(this_plugin_name, OBJECTS_DEATH, "skin"), player.GetArgI(this_plugin_name, OBJECTS_DEATH, "count", 14), player.GetArgF(this_plugin_name, OBJECTS_DEATH, "distance", 30.0));
 	}
 }
