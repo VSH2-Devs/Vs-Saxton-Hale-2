@@ -109,6 +109,7 @@ enum struct VSH2Cvars {
 	ConVar VagineerUberAirBlast;
 	ConVar CapReenableTime;
 	ConVar AllowSniperClimbing;
+	ConVar PreroundSetboss;
 	ConVar VersionNumber;
 }
 
@@ -314,6 +315,7 @@ public void OnPluginStart()
 	g_vsh2.m_hCvars.VagineerUberAirBlast = CreateConVar("vsh2_vagineer_uber_time_airblast", "2.0", "extra time given to vagineer's uber when airblasted.", FCVAR_NONE, true, 1.0, false);
 	g_vsh2.m_hCvars.CapReenableTime = CreateConVar("vsh2_multiple_cp_capture_reenable_time", "30.0", "time to reenable the control pointer after being captured, does nothing is 'vsh2_multiple_cp_captures' is disabled.", FCVAR_NONE, true, 1.0, false);
 	g_vsh2.m_hCvars.AllowSniperClimbing = CreateConVar("vsh2_allow_sniper_climb", "1", "allow snipers to be able to climb using melee.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars.PreroundSetboss = CreateConVar("vsh2_preround_setboss", "0", "Allow players to change boss during round start phase.", FCVAR_NONE, true, 0.0, true, 1.0);
 	
 	g_vsh2.m_hGamemode.bSteam = LibraryExists("SteamTools");
 	g_vsh2.m_hGamemode.bTF2Attribs = LibraryExists("tf2attributes");

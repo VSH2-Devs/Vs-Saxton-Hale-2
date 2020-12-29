@@ -195,8 +195,13 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 	boss.ConvertToBoss();
 	g_vsh2.m_hGamemode.iSpecial = -1;
 	
+	float snddelay = 3.5 /// this is the default value for delay on the boss intro line
+	
+	if ( g_vsh2.m_hCvars.PreroundSetboss.BoolValue ) {
 	/// If player has used /setboss before round started, swap their boss to their new selection
-	SetPawnTimer( DelaySpawn , 3.5+5.0 , boss );
+		SetPawnTimer( DelaySpawn, 8.5, boss );
+		snddelay += 7.0; /// add 7 seconds to delay the sound until round has started
+	}
 	
 	if( GetClientTeam(boss.index) != VSH2Team_Boss )
 		boss.ForceTeamChange(VSH2Team_Boss);
@@ -219,8 +224,7 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 	g_vsh2.m_hGamemode.iRoundState = StateStarting;
 	//SetPawnTimer(RoundStartPost, 9.1);    /// in handler.sp
 	
-	/// add 7 seconds and wait for round to start first before playing sound, boss may have changed
-	SetPawnTimer(ManagePlayBossIntro, 3.5+7.0, boss);    /// in handler.sp
+	SetPawnTimer(ManagePlayBossIntro, snddelay, boss);    /// in handler.sp
 	
 	int ent = -1;
 	while( (ent = FindEntityByClassname(ent, "func_regenerate")) != -1 )
