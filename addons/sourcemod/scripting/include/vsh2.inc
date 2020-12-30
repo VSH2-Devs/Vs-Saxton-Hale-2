@@ -421,6 +421,7 @@ enum { /// VSH2HookType
 	OnRedPlayerThink,
 	OnBossEquippedPost,
 	OnPlayerTakeFallDamage,
+	OnPlayerClimb,
 	OnSoundHook,
 	OnRoundStart,
 	OnHelpMenu,
@@ -517,6 +518,10 @@ typeset VSH2HookCB {
 	 */
 	function Action (const VSH2Player player, const VSH2Player victim, Event event);
 	function void (const VSH2Player player, const VSH2Player victim, Event event);
+	
+	/// OnPlayerClimb
+	function Action (const VSH2Player player, const int weapon, const float upwardvel, const float health, const bool attackdelay);
+	function void (const VSH2Player player, const int weapon, const float upwardvel, const float health, const bool attackdelay);
 	
 	/// OnTraceAttack
 	function Action (const VSH2Player victim, const VSH2Player attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup);

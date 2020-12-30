@@ -484,6 +484,11 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 	public bool ClimbWall(const int weapon, const float upwardvel, const float health, const bool attackdelay)
 	/// Credit to Mecha the Slag
 	{
+		/// override climb behaviour
+		Action act = Call_OnPlayerClimb(this, weapon, upwardvel, health, attackdelay);
+		if ( act > Plugin_Changed )
+			return false;
+			
 		/// Have to baby players so they don't accidentally kill themselves trying to escape...
 		if( GetClientHealth(this.index) <= health )
 			return false;
@@ -523,6 +528,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		float fVelocity[3];
 		GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
 		fVelocity[2] = upwardvel;
+		
 		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, fVelocity);
 		SDKHooks_TakeDamage(client, client, client, health, DMG_CLUB, 0); /// Inflictor is 0 to prevent Shiv self-bleed
 		this.iClimbs++;
