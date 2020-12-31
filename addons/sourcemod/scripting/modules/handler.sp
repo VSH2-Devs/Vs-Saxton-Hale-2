@@ -1892,73 +1892,70 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 
 public void ManageFighterThink(const BaseBoss fighter)
 {
-	if( GetClientTeam(fighter.index) != VSH2Team_Red )
+	if( GetClientTeam(fighter.index) != VSH2Team_Red ) {
 		return;
+	}
 
 	Action act = Call_OnRedPlayerThink(fighter);
-	if( act > Plugin_Changed )
+	if( act > Plugin_Changed ) {
 		return;
+	}
 
 	char HUDText[300];
 	int i = fighter.index;
-	char wepclassname[64];
 	int buttons = GetClientButtons(i);
-	SetHudTextParams(-1.0, 0.88, 0.35, 90, 255, 90, 255, 0, 0.35, 0.0, 0.1);
+
+	/// HUD code
+	Format(HUDText, sizeof(HUDText), "Damage: %d", fighter.iDamage);
 	if( !IsPlayerAlive(i) ) {
 		int obstarget = GetEntPropEnt(i, Prop_Send, "m_hObserverTarget");
-		if( IsValidClient(obstarget) && GetClientTeam(obstarget) != 3 && obstarget != i ) {
-			if( !(buttons & IN_SCORE) )
-				Format(HUDText, 300, "Damage: %d - %N's Damage: %d", fighter.iDamage, obstarget, BaseBoss(obstarget).iDamage);
-		} else {
-			if( !(buttons & IN_SCORE) )
-				Format(HUDText, 300, "Damage: %d", fighter.iDamage);
+		if( IsValidClient(obstarget) && GetClientTeam(obstarget) != VSH2Team_Boss && obstarget != i ) {
+			BaseBoss observ = BaseBoss(obstarget);
+			Format(HUDText, sizeof(HUDText), "%s - %N's Damage: %d", HUDText, obstarget, observ.iDamage);
 		}
-		ShowSyncHudText(i, g_vsh2.m_hHUDs[PlayerHUD], HUDText);
-		return;
+	} else if( g_vsh2.m_hGamemode.bMedieval || g_vsh2.m_hCvars.ForceLives.BoolValue ) {
+		Format(HUDText, sizeof(HUDText), "%s | Lives: %d", HUDText, fighter.iLives);
 	}
 
-	if( !(buttons & IN_SCORE) ) {
-		if( g_vsh2.m_hGamemode.bMedieval || g_vsh2.m_hCvars.ForceLives.BoolValue )
-			Format(HUDText, 300, "Damage: %d | Lives: %d", fighter.iDamage, fighter.iLives);
-		else Format(HUDText, 300, "Damage: %d", fighter.iDamage);
-		ShowSyncHudText(i, g_vsh2.m_hHUDs[PlayerHUD], HUDText);
-	}
-
+	/// killstreak support code.
 	if( HasEntProp(i, Prop_Send, "m_iKillStreak") ) {
-		int killstreaker = fighter.iDamage/1000;
-		if( killstreaker && GetEntProp(i, Prop_Send, "m_iKillStreak") >= 0 )
+		int killstreaker = fighter.iDamage / 1000;
+		if( killstreaker && GetEntProp(i, Prop_Send, "m_iKillStreak") >= 0 ) {
 			SetEntProp(i, Prop_Send, "m_iKillStreak", killstreaker);
+		}
 	}
 
-	TFClassType TFClass = TF2_GetPlayerClass(i);
+	char wepclassname[64];
+	TFClassType tfclass = TF2_GetPlayerClass(i);
 	int weapon = GetActiveWep(i);
-	if( weapon <= MaxClients || !IsValidEntity(weapon) || !GetEdictClassname(weapon, wepclassname, sizeof(wepclassname)) )
+	if( weapon <= MaxClients || !IsValidEntity(weapon) || !GetEdictClassname(weapon, wepclassname, sizeof(wepclassname)) ) {
 		strcopy(wepclassname, sizeof(wepclassname), "");
-	bool validwep = ( !strncmp(wepclassname, "tf_wea", 6, false) );
-	int index = GetItemIndex(weapon);
+	}
+	bool validwep = !strncmp(wepclassname, "tf_wea", 6, false);
 
-	switch( TFClass ) {
+	switch( tfclass ) {
 		/// Chdata's Deadringer Notifier
 		case TFClass_Spy: {
-			if( GetClientCloakIndex(i) == 59 ) {
+			if( GetClientCloakIndex(i)==59 ) {
 				int drstatus = TF2_IsPlayerInCondition(i, TFCond_Cloaked) ? 2 : GetEntProp(i, Prop_Send, "m_bFeignDeathReady") ? 1 : 0;
-				char s[32];
+				char status_str[32];
 				switch( drstatus ) {
 					case 1: {
-						Format(s, sizeof(s), "Status: Feign-Death Ready");
+						Format(status_str, sizeof(status_str), "Status: Feign-Death Ready");
 					}
 					case 2: {
-						Format(s, sizeof(s), "Status: Dead-Ringered");
+						Format(status_str, sizeof(status_str), "Status: Dead-Ringered");
 					}
 					default: {
-						Format(s, sizeof(s), "Status: Inactive");
+						Format(status_str, sizeof(status_str), "Status: Inactive");
 					}
 				}
-				Format(HUDText, 300, "%s\n%s", HUDText, s);
+				Format(HUDText, sizeof(HUDText), "%s\n%s", HUDText, status_str);
 			}
 			int spy_secondary = GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary);
-			if( spy_secondary > MaxClients && IsValidEntity(spy_secondary) )
-				Format(HUDText, 300, "%s | Kunai: %s", HUDText, GetWeaponAmmo(spy_secondary) ? "Ready" : "None");
+			if( spy_secondary > MaxClients && IsValidEntity(spy_secondary) ) {
+				Format(HUDText, sizeof(HUDText), "%s | Kunai: %s", HUDText, GetWeaponAmmo(spy_secondary) ? "Ready" : "None");
+			}
 		}
 		case TFClass_Medic: {
 			int medigun = GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary);
@@ -1966,151 +1963,180 @@ public void ManageFighterThink(const BaseBoss fighter)
 			if( medigun > MaxClients && IsValidEntity(medigun) ) {
 				GetEdictClassname(medigun, mediclassname, sizeof(mediclassname));
 				if( !strcmp(mediclassname, "tf_weapon_medigun", false) ) {
-					int charge = RoundToFloor(GetMediCharge(medigun) * 100);
-					Format(HUDText, 300, "%s\nUbercharge: %i%%", HUDText, charge);
+					float charge_level = GetMediCharge(medigun);
+					int charge = RoundToFloor(charge_level * 100);
+					Format(HUDText, sizeof(HUDText), "%s\nUbercharge: %i%%", HUDText, charge);
 
 					/// Fixes Ubercharges ending prematurely on Medics.
-					if( GetEntProp(medigun, Prop_Send, "m_bChargeRelease") && GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel") > 0.0 && GetEntPropEnt(i, Prop_Send, "m_hActiveWeapon")==medigun )
+					if( GetEntProp(medigun, Prop_Send, "m_bChargeRelease") && charge_level > 0.0 && GetActiveWep(i)==medigun ) {
 						TF2_AddCondition(i, TFCond_Ubercharged, 1.0);
+					}
 				}
 			}
 		}
 		case TFClass_Soldier: {
-			if( GetIndexOfWeaponSlot(i, TFWeaponSlot_Primary) == 1104 ) {
-				Format(HUDText, 300, "%s\nAir Strike Damage: %i", HUDText, fighter.iAirDamage);
+			if( GetIndexOfWeaponSlot(i, TFWeaponSlot_Primary)==1104 ) {
+				Format(HUDText, sizeof(HUDText), "%s\nAir Strike Damage: %i", HUDText, fighter.iAirDamage);
 			}
 		}
 		case TFClass_DemoMan: {
 			int shield = GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary);
 			if( shield <= 0 ) {
-				if( !(buttons & IN_SCORE) ) {
-					if( GetEntProp(i, Prop_Send, "m_bShieldEquipped") )
-						Format(HUDText, 300, "%s\nShield: Active", HUDText);
-					else Format(HUDText, 300, "%s\nShield: Gone", HUDText);
+				if( GetEntProp(i, Prop_Send, "m_bShieldEquipped") ) {
+					Format(HUDText, sizeof(HUDText), "%s\nShield: Active", HUDText);
+				} else {
+					Format(HUDText, sizeof(HUDText), "%s\nShield: Gone", HUDText);
 				}
 			}
 		}
 	}
-	if( !(buttons & IN_SCORE) )
+
+	if( !(buttons & IN_SCORE) ) {
+		SetHudTextParams(-1.0, 0.88, 0.35, 90, 255, 90, 255, 0, 0.35, 0.0, 0.1);
 		ShowSyncHudText(i, g_vsh2.m_hHUDs[PlayerHUD], HUDText);
+	}
 
-	int living = GetLivingPlayers(VSH2Team_Red);
-	if( living == 1 && !TF2_IsPlayerInCondition(i, TFCond_Cloaked) ) {
+	if( !TF2_IsPlayerInCondition(i, TFCond_Cloaked) ) {
+		switch( GetLivingPlayers(VSH2Team_Red) ) {
+			case 1: {
+				TF2_AddCondition(i, TFCond_CritOnWin, 0.2);
+				int primary = GetPlayerWeaponSlot(i, TFWeaponSlot_Primary);
+				if( tfclass==TFClass_Engineer && weapon==primary && StrEqual(wepclassname, "tf_weapon_sentry_revenge", false) ) {
+					SetEntProp(i, Prop_Send, "m_iRevengeCrits", 3);
+				}
+				TF2_AddCondition(i, TFCond_Buffed, 0.2);
+				return;
+			}
+			case 2: {
+				TF2_AddCondition(i, TFCond_Buffed, 0.2);
+			}
+		}
+	}
+
+	/// Crit conditional code.
+	if( TF2_IsPlayerInCondition(i, TFCond_CritCola) && (tfclass==TFClass_Scout || tfclass==TFClass_Heavy) ) {
 		TF2_AddCondition(i, TFCond_CritOnWin, 0.2);
-		int primary = GetPlayerWeaponSlot(i, TFWeaponSlot_Primary);
-		if( TFClass==TFClass_Engineer && weapon==primary && StrEqual(wepclassname, "tf_weapon_sentry_revenge", false) )
-			SetEntProp(i, Prop_Send, "m_iRevengeCrits", 3);
-		TF2_AddCondition(i, TFCond_Buffed, 0.2);
-		return;
-	}
-	else if( living == 2 && !TF2_IsPlayerInCondition(i, TFCond_Cloaked) )
-		TF2_AddCondition(i, TFCond_Buffed, 0.2);
-
-	/** THIS section really needs cleaning! */
-
-	TFCond cond = TFCond_CritOnWin;
-	if( TF2_IsPlayerInCondition(i, TFCond_CritCola) && (TFClass==TFClass_Scout || TFClass==TFClass_Heavy) ) {
-		TF2_AddCondition(i, cond, 0.2);
 		return;
 	}
 
-	bool addthecrit = false;
-	bool addmini = false;
+	int crit_flags = 0;
+	enum {
+		CRITFLAG_MINI = 1 << 0, /// minicrits.
+		CRITFLAG_FULL = 1 << 1, /// full crits.
+	};
+
 	int healers = GetEntProp(i, Prop_Send, "m_nNumHealers");
-	for( int u=0; u<healers; u++ ) {
+	for( int u; u<healers; u++ ) {
 		if( 0 < GetHealerByIndex(i, u) <= MaxClients ) {
-			addmini = true;
+			crit_flags |= CRITFLAG_MINI;
 			break;
 		}
 	}
 
-	if( validwep && weapon == GetPlayerWeaponSlot(i, TFWeaponSlot_Melee) ) {
-		/// slightly longer check but makes sure that any weapon that can backstab will not crit (e.g. Saxxy)
-		addthecrit = !!strcmp(wepclassname, "tf_weapon_knife", false);
-	}
-	if( validwep && weapon == GetPlayerWeaponSlot(i, TFWeaponSlot_Primary) ) /// Primary weapon crit list
-	{
-		if( StrStarts(wepclassname, "tf_weapon_compound_bow") || /// Sniper bows
-			StrStarts(wepclassname, "tf_weapon_crossbow") || /// Medic crossbows
-			StrEqual(wepclassname, "tf_weapon_shotgun_building_rescue") || /// Engineer Rescue Ranger
-			StrEqual(wepclassname, "tf_weapon_drg_pomson") ) /// Engineer Pomson
-		{
-			addthecrit = true;
-		}
-	}
-	if( validwep && weapon == GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary) ) /// Secondary weapon crit list
-	{
-		if( StrStarts(wepclassname, "tf_weapon_pistol") || /// Engineer/Scout pistols
-			StrStarts(wepclassname, "tf_weapon_handgun_scout_secondary") || /// Scout pistols
-			StrStarts(wepclassname, "tf_weapon_flaregun") || /// Flare guns
-			StrEqual(wepclassname, "tf_weapon_smg") ) /// Sniper SMGs minus Cleaner's Carbine
-		{
-			if( TFClass == TFClass_Scout && cond == TFCond_CritOnWin )
-				cond = TFCond_Buffed;
+	if( validwep ) {
+		switch( GetSlotFromWeapon(i, weapon) ) {
+			case TFWeaponSlot_Melee: {
+				/// slightly longer check but makes sure that any weapon that can backstab will not crit (e.g. Saxxy)
+				crit_flags |= view_as< int >(!!strcmp(wepclassname, "tf_weapon_knife", false)) << 1;
+			}
+			case TFWeaponSlot_Primary: {
+				crit_flags |= view_as< int >((StrStarts(wepclassname, "tf_weapon_compound_bow") || /// Sniper bows
+					StrStarts(wepclassname, "tf_weapon_crossbow") || /// Medic crossbows
+					StrEqual(wepclassname,  "tf_weapon_shotgun_building_rescue") || /// Engineer Rescue Ranger
+					StrEqual(wepclassname,  "tf_weapon_drg_pomson"))) << 1;
+			}
+			case TFWeaponSlot_Secondary: {
+				if( StrStarts(wepclassname, "tf_weapon_pistol") || /// Engineer/Scout pistols
+					StrStarts(wepclassname, "tf_weapon_handgun_scout_secondary") || /// Scout pistols
+					StrStarts(wepclassname, "tf_weapon_flaregun") || /// Flare guns
+					StrStarts(wepclassname, "tf_weapon_smg") ) /// Sniper SMGs minus Cleaner's Carbine
+				{
+					if( tfclass==TFClass_Scout ) {
+						crit_flags = CRITFLAG_MINI;
+					}
 
-			int PrimaryIndex = GetIndexOfWeaponSlot(i, TFWeaponSlot_Primary);
-			if( (TFClass == TFClass_Pyro && PrimaryIndex == 594) || (IsValidEntity(FindPlayerBack(i, { 642 }, 1))) ) /// No crits if using Phlogistinator or Cozy Camper
-				addthecrit = false;
-			else addthecrit = true;
+					int PrimaryIndex = GetIndexOfWeaponSlot(i, TFWeaponSlot_Primary);
+					/// No crits if using Phlogistinator or Cozy Camper
+					if( (tfclass==TFClass_Pyro && PrimaryIndex == 594) || (IsValidEntity(FindPlayerBack(i, { 642 }, 1))) ) {
+						crit_flags &= ~CRITFLAG_FULL;
+					} else {
+						crit_flags |= CRITFLAG_FULL;
+					}
+				}
+
+				/// Jarate/Milk + Flying Guillotine
+				crit_flags |= view_as< int >((StrStarts(wepclassname, "tf_weapon_jar") || StrEqual(wepclassname, "tf_weapon_cleaver"))) << 1;
+			}
 		}
-		if( StrStarts(wepclassname, "tf_weapon_jar") || /// Jarate/Milk
-			StrEqual(wepclassname, "tf_weapon_cleaver") ) /// Flying Guillotine
-			addthecrit = true;
 	}
 
 	/// Specific weapon crit list
-	switch( index ) {
+	switch( GetItemIndex(weapon) ) {
 		/// Holiday Punch, Short Circuit
 		case 656, 528: {
-			addthecrit = true;
-			cond = TFCond_Buffed;
+			crit_flags = CRITFLAG_MINI;
 		}
 		/// Market Gardener
 		case 416: {
-			addthecrit = false;
+			crit_flags = 0;
 		}
 	}
 
-	if( TFClass == TFClass_DemoMan && !IsValidEntity(GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary)) ) {
+	/// Demo Man shield crits code.
+	if( tfclass == TFClass_DemoMan && !IsValidEntity(GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary)) ) {
 		float flShieldMeter = GetEntPropFloat(i, Prop_Send, "m_flChargeMeter");
 		if( g_vsh2.m_hCvars.DemoShieldCrits.IntValue >= 1 ) {
-			addthecrit = true;
-			if( g_vsh2.m_hCvars.DemoShieldCrits.IntValue == 1 || (g_vsh2.m_hCvars.DemoShieldCrits.IntValue == 3 && flShieldMeter < 100.0) )
-				cond = TFCond_Buffed;
-			if( g_vsh2.m_hCvars.DemoShieldCrits.IntValue == 3 && (flShieldMeter < 35.0 || !GetEntProp(i, Prop_Send, "m_bShieldEquipped")) )
-				addthecrit = false;
+			crit_flags = CRITFLAG_FULL;
+			if( g_vsh2.m_hCvars.DemoShieldCrits.IntValue == 1 || (g_vsh2.m_hCvars.DemoShieldCrits.IntValue == 3 && flShieldMeter < 100.0) ) {
+				crit_flags = CRITFLAG_MINI;
+			}
+
+			if( g_vsh2.m_hCvars.DemoShieldCrits.IntValue == 3 && (flShieldMeter < 35.0 || !GetEntProp(i, Prop_Send, "m_bShieldEquipped")) ) {
+				crit_flags = 0;
+			}
 		}
 	}
 
-	if( addthecrit ) {
-		TF2_AddCondition(i, cond, 0.2);
-		if( addmini && cond != TFCond_Buffed )
-			TF2_AddCondition(i, TFCond_Buffed, 0.2);
+	if( crit_flags & CRITFLAG_FULL ) {
+		TF2_AddCondition(i, TFCond_CritOnWin, 0.2);
 	}
-	if( TFClass == TFClass_Spy && validwep && weapon == GetPlayerWeaponSlot(i, TFWeaponSlot_Primary) ) {
-		if( !TF2_IsPlayerCritBuffed(i)
-			&& !TF2_IsPlayerInCondition(i, TFCond_Buffed)
-			&& !TF2_IsPlayerInCondition(i, TFCond_Cloaked)
-			&& !TF2_IsPlayerInCondition(i, TFCond_Disguised)
-			&& !GetEntProp(i, Prop_Send, "m_bFeignDeathReady") )
-		{
-			TF2_AddCondition(i, TFCond_CritCola, 0.2);
+	if( crit_flags & CRITFLAG_MINI ) {
+		TF2_AddCondition(i, TFCond_Buffed, 0.2);
+	}
+
+	switch( tfclass ) {
+		case TFClass_Spy: {
+			/// If Spies are cloaked or disguised, make sure they're not showing crit FX.
+			if( validwep && weapon == GetPlayerWeaponSlot(i, TFWeaponSlot_Primary) ) {
+				if( !TF2_IsPlayerCritBuffed(i)
+					&& !TF2_IsPlayerInCondition(i, TFCond_Buffed)
+					&& !TF2_IsPlayerInCondition(i, TFCond_Cloaked)
+					&& !TF2_IsPlayerInCondition(i, TFCond_Disguised)
+					&& !GetEntProp(i, Prop_Send, "m_bFeignDeathReady") )
+				{
+					TF2_AddCondition(i, TFCond_CritCola, 0.2);
+				}
+			}
 		}
-	}
-	if( TFClass == TFClass_Engineer && weapon == GetPlayerWeaponSlot(i, TFWeaponSlot_Primary) && StrEqual(wepclassname, "tf_weapon_sentry_revenge", false) )
-	{
-		int sentry = FindSentry(i);
-		if( IsValidEntity(sentry) ) {
-			/// Trying to target minions as well
-			int enemy = GetEntPropEnt(sentry, Prop_Send, "m_hEnemy");
-			if( enemy > 0 && GetClientTeam(enemy) == VSH2Team_Boss ) {
-				SetEntProp(i, Prop_Send, "m_iRevengeCrits", 3);
-				TF2_AddCondition(i, TFCond_Kritzkrieged, 0.2);
-			} else {
-				if( HasEntProp(i, Prop_Send, "m_iRevengeCrits") )
-					SetEntProp(i, Prop_Send, "m_iRevengeCrits", 0);
-				else if( TF2_IsPlayerInCondition(i, TFCond_Kritzkrieged) && !TF2_IsPlayerInCondition(i, TFCond_Healing) )
-					TF2_RemoveCondition(i, TFCond_Kritzkrieged);
+
+		case TFClass_Engineer: {
+			/// Frontier Justice revenge-crits code.
+			if( weapon == GetPlayerWeaponSlot(i, TFWeaponSlot_Primary) && StrEqual(wepclassname, "tf_weapon_sentry_revenge", false) ) {
+				int sentry = FindSentry(i);
+				if( IsValidEntity(sentry) ) {
+					/// Trying to target minions as well
+					int enemy = GetEntPropEnt(sentry, Prop_Send, "m_hEnemy");
+					if( enemy > 0 && GetClientTeam(enemy) == VSH2Team_Boss ) {
+						SetEntProp(i, Prop_Send, "m_iRevengeCrits", 3);
+						TF2_AddCondition(i, TFCond_Kritzkrieged, 0.2);
+					} else {
+						if( HasEntProp(i, Prop_Send, "m_iRevengeCrits") ) {
+							SetEntProp(i, Prop_Send, "m_iRevengeCrits", 0);
+						} else if( TF2_IsPlayerInCondition(i, TFCond_Kritzkrieged) && !TF2_IsPlayerInCondition(i, TFCond_Healing) ) {
+							TF2_RemoveCondition(i, TFCond_Kritzkrieged);
+						}
+					}
+				}
 			}
 		}
 	}
