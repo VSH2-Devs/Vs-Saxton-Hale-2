@@ -287,7 +287,7 @@ methodmap ConfigMap < StringMap {
 	 *
 	 * name:      GetFloat
 	 * @param     key_path : key path to the data you need.
-	 * @param     val : integer reference to store int data.
+	 * @param     val : float reference to store int data.
 	 * @return    Number of chars used, 0 if error.
 	 * @note      to directly access subsections, use a '.' like "root.section1.section2"
 	 *            for keys that have a dot in their name, use '\\.'
@@ -341,6 +341,118 @@ methodmap ConfigMap < StringMap {
 			return val.size - 1;
 		}
 		return 0;
+	}
+	
+	/**
+	 * 
+	 * name:      SetInt
+	 * @param     key_path : key path to the data you need.
+	 * @param     val : integer value to set data to.
+	 * @return    true on success, false if the key doesn't exists.
+	 * @note      to directly access subsections, use a '.' like "root.section1.section2"
+	 *            for keys that have a dot in their name, use '\\.'
+	 */
+	public bool SetInt(const char[] key_path, int i) {
+		if( this==null ) {
+			return false;
+		}
+		PackVal val;
+		bool result = this.GetVal(key_path, val);
+		if( result && val.tag==KeyValType_Value ) {
+			val.data.Reset();
+			char val_str[15];
+			IntToString(i, val_str, sizeof(val_str));
+			val.data.WriteString(val_str);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * 
+	 * name:      SetFloat
+	 * @param     key_path : key path to the data you need.
+	 * @param     val : float value to set data to.
+	 * @return    true on success, false if the key doesn't exists.
+	 * @note      to directly access subsections, use a '.' like "root.section1.section2"
+	 *            for keys that have a dot in their name, use '\\.'
+	 */
+	public bool SetFloat(const char[] key_path, float f) {
+		if( this==null ) {
+			return false;
+		}
+		PackVal val;
+		bool result = this.GetVal(key_path, val);
+		if( result && val.tag==KeyValType_Value ) {
+			val.data.Reset();
+			char val_str[15];
+			FloatToString(f, val_str, sizeof(val_str));
+			val.data.WriteString(val_str);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * 
+	 * name:      SetString
+	 * @param     key_path : key path to the data you need.
+	 * @param     str : new string to set.
+	 * @return    true on success, false if the key doesn't exists.
+	 * @note      to directly access subsections, use a '.' like "root.section.key"
+	 *            for keys that have a dot in their name, use '\\.'
+	 */
+	public bool SetString(const char[] key_path, const char[] str) {
+		if( this==null ) {
+			return false;
+		}
+		PackVal val;
+		bool result = this.GetVal(key_path, val);
+		if( result && val.tag==KeyValType_Value ) {
+			val.data.Reset();
+			val.data.WriteString(str);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * 
+	 * name:      ExportToFile
+	 * @param     sec_name : new section name.
+	 * @param     path : path to store ConfigMap infos.
+	 * @return    true on sucess, false otherwise.
+	 */
+	public bool ExportToFile(const char[] sec_name, const char[] path) {
+		if( this==null ) {
+			return false;
+		}
+		File file = OpenFile(path, "wt");
+		if( file==null ) {
+			return false;
+		}
+		bool res = ConfigMapToFile(this, sec_name, file);
+		delete file;
+		
+		return res;
+	}
+	
+	/**
+	 * 
+	 * name:      Clone
+	 * @param     new_owner : new plugin owner.
+	 * @return    true on sucess, false otherwise.
+	 */
+	public ConfigMap Clone(Handle new_owner) {
+		if( this==null || !new_owner ) {
+			return null;
+		}
+		ConfigMap map = view_as<ConfigMap>(new StringMap());
+		if( !CloneConfigMap(this, map, new_owner) ) {
+			delete map;
+		}
+		
+		return map;
 	}
 };
 
@@ -524,4 +636,93 @@ stock void PrintCfg(ConfigMap cfg) {
 		}
 	}
 	delete snap;
+}
+
+static stock void ReplaceEscapeSeq(char[] str, int size)
+{
+	char list[][][] = {
+		{ "\t", "\\t" },
+		{ "\n", "\\n" },
+		{ "\r", "\\r" }
+	};
+	for( int i; i<sizeof(list); i++) {
+		ReplaceString(str, size, list[i][0], list[i][1]);
+	}
+}
+
+static stock bool ConfigMapToFile(const ConfigMap cfg, const char[] sec_name, const File file, int deep = 0)
+{
+	StringMapSnapshot snap = cfg.Snapshot();
+	if( snap==null ) {
+		delete file;
+		return false;
+	}
+	
+	char[] tab = new char[deep];
+	for( int i; i<deep; i++) tab[i]='\t';
+	file.WriteLine("%s\"%s\" {", tab, sec_name);
+	
+	int size = snap.Length;
+	for( int i; i<size; i++ ) {
+		int strsize = snap.KeyBufferSize(i) + 1;
+		char[] key = new char[strsize];
+		snap.GetKey(i, key, strsize);
+		PackVal pack;
+		cfg.GetArray(key, pack, sizeof(pack));
+		pack.data.Reset();
+		switch( pack.tag ) {
+			case KeyValType_Value: {
+				int key_size = pack.size+10;
+				char[] key_val = new char[key_size];
+				pack.data.ReadString(key_val, key_size);
+				ReplaceEscapeSeq(key_val, key_size);
+				file.WriteLine("%s\t\"%s\"\t \"%s\"", tab, key, key_val);
+			}
+			case KeyValType_Section: {
+				ConfigMap subsection = pack.data.ReadCell();
+				if( !ConfigMapToFile(subsection, key, file, deep + 1) ) {
+					delete snap;
+					file.WriteLine("}");
+					return false;
+				}
+			}
+		}
+	}
+	
+	delete snap;
+	file.WriteLine("%s}", tab);
+	return true;
+}
+
+static stock bool CloneConfigMap(const ConfigMap cfg, ConfigMap new_cfg, Handle new_owner)
+{
+	StringMapSnapshot snap = cfg.Snapshot();
+	if( !snap )
+		return false;
+	
+	int size = snap.Length;
+	for( int i; i<size; i++ ) {
+		int strsize = snap.KeyBufferSize(i) + 1;
+		char[] key_buffer = new char[strsize];
+		snap.GetKey(i, key_buffer, strsize);
+		PackVal pack;
+		cfg.GetArray(key_buffer, pack, sizeof(pack));
+		switch( pack.tag ) {
+			case KeyValType_Value: {
+				Handle data = pack.data;
+				pack.data = view_as<DataPack>(CloneHandle(data, new_owner));
+				new_cfg.SetArray(key_buffer, pack, sizeof(pack));
+			}
+			case KeyValType_Section: {
+				pack.data.Reset();
+				ConfigMap subsec = pack.data.ReadCell();
+				if( !CloneConfigMap(subsec, new_cfg, new_owner) ) {
+					delete snap;
+					return false;
+				}
+			}
+		}
+	}
+	delete snap;
+	return true;
 }
