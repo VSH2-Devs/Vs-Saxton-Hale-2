@@ -644,7 +644,7 @@ static stock void ReplaceEscapeSeq(char[] str, int size)
 		{ "\n", "\\n" },
 		{ "\r", "\\r" }
 	};
-	for( int i; i<sizeof(list); i++) {
+	for( int i; i<sizeof(list); i++ ) {
 		ReplaceString(str, size, list[i][0], list[i][1]);
 	}
 }
@@ -657,7 +657,7 @@ static stock bool ConfigMapToFile(const ConfigMap cfg, const char[] sec_name, co
 	}
 	
 	char[] tab = new char[deep];
-	for( int i; i<deep; i++) tab[i]='\t';
+	for( int i; i<deep; i++ ) tab[i]='\t';
 	file.WriteLine("%s\"%s\" {", tab, sec_name);
 	
 	int size = snap.Length;
