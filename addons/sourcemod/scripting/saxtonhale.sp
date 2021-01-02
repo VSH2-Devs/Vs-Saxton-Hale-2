@@ -55,7 +55,7 @@ public Action VSH_OnBossSuperJump(const VSH2Player player)
 {
 	Action act = Plugin_Continue;
 	bool super = player.GetPropAny("bSuperCharge");
-	Call_StartForward(g_vsh_fwds.OnHaleRage);
+	Call_StartForward(g_vsh_fwds.OnHaleJump);
 	Call_PushCellRef(super);
 	Call_Finish(act);
 	if( act==Plugin_Changed )
@@ -86,7 +86,7 @@ public void VSH_OnStartMusic(char song[PLATFORM_MAX_PATH], float& time, const VS
 	Action act = Plugin_Continue;
 	float new_time;
 	char new_song[PLATFORM_MAX_PATH];
-	
+
 	Call_StartForward(g_vsh_fwds.OnVSHMusic);
 	Call_PushStringEx(new_song, PLATFORM_MAX_PATH, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 	Call_PushFloatRef(new_time);
@@ -119,13 +119,13 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH_GetSaxtonHaleHealthMax",  Native_GetHealthMax);
 	CreateNative("VSH_GetClientDamage",         Native_GetDamage);
 	CreateNative("VSH_GetRoundState",           Native_GetRoundState);
-	
+
 	g_vsh_fwds.OnHaleJump      = new GlobalForward("VSH_OnDoJump",      ET_Hook, Param_CellByRef);
 	g_vsh_fwds.OnHaleRage      = new GlobalForward("VSH_OnDoRage",      ET_Hook, Param_FloatByRef);
 	g_vsh_fwds.OnHaleWeighdown = new GlobalForward("VSH_OnDoWeighdown", ET_Hook);
 	g_vsh_fwds.OnVSHMusic      = new GlobalForward("VSH_OnMusic",       ET_Hook, Param_String, Param_FloatByRef);
 	g_vsh_fwds.OnHaleNext      = new GlobalForward("VSH_OnHaleNext",    ET_Hook, Param_Cell);
-	
+
 	RegPluginLibrary("saxtonhale");
 	return APLRes_Success;
 }

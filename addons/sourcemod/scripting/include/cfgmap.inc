@@ -1,26 +1,26 @@
 /**
  * cfg.inc
- * 
+ *
  * Copyright [2020] Nergal the Ashurian
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE ANDNONINFRINGEMENT.
- * 
+ *
  * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
  * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
 #if defined _cfgmap_included
@@ -101,8 +101,10 @@ methodmap ConfigMap < StringMap {
 			} else {
 				LogError("ConfigMap Err (%s) :: **** Unknown Fatal Parse Error ****", path);
 			}
-			if( g_kvstate.top != null )
+			
+			if( g_kvstate.top != null ) {
 				DeleteCfg(view_as< ConfigMap >(g_kvstate.top));
+			}
 		}
 		delete g_kvstate.parser;
 		delete g_kvstate.cfgstack;
@@ -110,15 +112,17 @@ methodmap ConfigMap < StringMap {
 		delete g_kvstate.enum_stack;
 		
 		StringMap cfg = g_kvstate.top;
-		if( g_kvstate.top != null )
+		if( g_kvstate.top != null ) {
 			g_kvstate.top = null;
+		}
 		return view_as< ConfigMap >(cfg);
 	}
 	
 	public bool GetVal(const char[] key, PackVal valbuf)
 	{
-		if( this==null )
+		if( this==null ) {
 			return false;
+		}
 		
 		/// first check if we're getting a singular value OR we iterate through a sectional path.
 		int dot = FindCharInString(key, '.');
@@ -147,14 +151,16 @@ methodmap ConfigMap < StringMap {
 			while( key[i] != 0 ) {
 				if( key[i]=='\\' && key[i+1] != 0 && key[i+1]=='.' ) {
 					i++;
-					if( n<PLATFORM_MAX_PATH )
+					if( n<PLATFORM_MAX_PATH ) {
 						curr_section[n++] = key[i++];
+					}
 				} else if( key[i]=='.' ) {
 					i++;
 					break;
 				} else {
-					if( n<PLATFORM_MAX_PATH )
+					if( n<PLATFORM_MAX_PATH ) {
 						curr_section[n++] = key[i++];
+					}
 				}
 			}
 			PackVal val;
@@ -173,7 +179,7 @@ methodmap ConfigMap < StringMap {
 	}
 	
 	/**
-	 * 
+	 *
 	 * name:      GetSize
 	 * @param     key_path : key path to the data you need.
 	 * @return    size of the string value.
@@ -181,16 +187,16 @@ methodmap ConfigMap < StringMap {
 	 *            for keys that have a dot in their name, use '\\.'
 	 */
 	public int GetSize(const char[] key_path) {
-		if( this==null )
+		if( this==null ) {
 			return 0;
-		
+		}
 		PackVal val;
 		bool result = this.GetVal(key_path, val);
 		return( result && val.tag==KeyValType_Value ) ? val.size : 0;
 	}
 	
 	/**
-	 * 
+	 *
 	 * name:      Get
 	 * @param     key_path : key path to the data you need.
 	 * @param     buffer : buffer to store the string value.
@@ -200,8 +206,9 @@ methodmap ConfigMap < StringMap {
 	 *            for keys that have a dot in their name, use '\\.'
 	 */
 	public int Get(const char[] key_path, char[] buffer, int buf_size) {
-		if( this==null || buf_size==0 )
+		if( this==null || buf_size<=0 ) {
 			return 0;
+		}
 		PackVal val;
 		bool result = this.GetVal(key_path, val);
 		if( result && val.tag==KeyValType_Value ) {
@@ -214,7 +221,7 @@ methodmap ConfigMap < StringMap {
 	}
 	
 	/**
-	 * 
+	 *
 	 * name:      GetSection
 	 * @param     key_path : key path to the data you need.
 	 * @return    ConfigMap subsection if successful, null otherwise.
@@ -222,8 +229,9 @@ methodmap ConfigMap < StringMap {
 	 *            for keys that have a dot in their name, use '\\.'
 	 */
 	public ConfigMap GetSection(const char[] key_path) {
-		if( this==null )
+		if( this==null ) {
 			return null;
+		}
 		PackVal val;
 		bool result = this.GetVal(key_path, val);
 		if( result && val.tag==KeyValType_Section ) {
@@ -235,7 +243,7 @@ methodmap ConfigMap < StringMap {
 	}
 	
 	/**
-	 * 
+	 *
 	 * name:      GetKeyValType
 	 * @param     key_path : key path to the data you need.
 	 * @return    either Section or String type if successful, Null otherwise.
@@ -243,14 +251,15 @@ methodmap ConfigMap < StringMap {
 	 *            for keys that have a dot in their name, use '\\.'
 	 */
 	public KeyValType GetKeyValType(const char[] key_path) {
-		if( this==null )
+		if( this==null ) {
 			return KeyValType_Null;
+		}
 		PackVal val;
 		return( this.GetVal(key_path, val) ) ? val.tag : KeyValType_Null;
 	}
 	
 	/**
-	 * 
+	 *
 	 * name:      GetInt
 	 * @param     key_path : key path to the data you need.
 	 * @param     val : integer reference to store int data.
@@ -260,9 +269,9 @@ methodmap ConfigMap < StringMap {
 	 *            for keys that have a dot in their name, use '\\.'
 	 */
 	public int GetInt(const char[] key_path, int& i, int base=10) {
-		if( this==null )
+		if( this==null ) {
 			return 0;
-		
+		}
 		PackVal val;
 		bool result = this.GetVal(key_path, val);
 		if( result && val.tag==KeyValType_Value ) {
@@ -275,7 +284,7 @@ methodmap ConfigMap < StringMap {
 	}
 	
 	/**
-	 * 
+	 *
 	 * name:      GetFloat
 	 * @param     key_path : key path to the data you need.
 	 * @param     val : integer reference to store int data.
@@ -284,9 +293,9 @@ methodmap ConfigMap < StringMap {
 	 *            for keys that have a dot in their name, use '\\.'
 	 */
 	public int GetFloat(const char[] key_path, float& f) {
-		if( this==null )
+		if( this==null ) {
 			return 0;
-		
+		}
 		PackVal val;
 		bool result = this.GetVal(key_path, val);
 		if( result && val.tag==KeyValType_Value ) {
@@ -297,16 +306,54 @@ methodmap ConfigMap < StringMap {
 		}
 		return 0;
 	}
+	
+	/**
+	 *
+	 * name:      GetBool
+	 * @param     key_path : key path to the data you need.
+	 * @param     b : bool reference to store data.
+	 * @param     simple : option to simplistically check string value as boolean or not.
+	 * @return    Number of chars used, 0 if error.
+	 * @note      to directly access subsections, use a '.' like "root.section1.section2"
+	 *            for keys that have a dot in their name, use '\\.'
+	 */
+	public int GetBool(const char[] key_path, bool& b, bool simple=true) {
+		if( this==null ) {
+			return 0;
+		}
+		PackVal val;
+		bool result = this.GetVal(key_path, val);
+		if( result && val.tag==KeyValType_Value ) {
+			val.data.Reset();
+			char[] strval = new char[val.size];
+			val.data.ReadString(strval, val.size);
+			if( simple ) {
+				b = StringToInt(strval) != 0;
+			} else {
+				if( !strcmp(strval, "true", false) || !strcmp(strval, "1", false) ) {
+					b = true;
+				} else if( !strcmp(strval, "false", false) || !strcmp(strval, "0", false) ) {
+					b = false;
+				} else {
+					return 0;
+				}
+			}
+			return val.size - 1;
+		}
+		return 0;
+	}
 };
 
 public SMCResult ConfigMap_OnNewSection(SMCParser smc, const char[] name, bool opt_quotes)
 {
 	/// if we hit a new (sub)section,
 	/// push the old head and add a new head to write the subsection.
-	if( g_kvstate.top != null )
+	if( g_kvstate.top != null ) {
 		g_kvstate.cfgstack.Push(g_kvstate.top);
-	if( g_kvstate.curr_section[0] != 0 )
+	}
+	if( g_kvstate.curr_section[0] != 0 ) {
 		g_kvstate.secstack.PushString(g_kvstate.curr_section);
+	}
 	
 	g_kvstate.top = new StringMap();
 	strcopy(g_kvstate.curr_section, sizeof(g_kvstate.curr_section), name);
@@ -368,8 +415,9 @@ public SMCResult ConfigMap_OnEndSection(SMCParser smc)
 		val.tag = KeyValType_Section;
 		
 		higher.SetArray(g_kvstate.curr_section, val, sizeof(val));
-		if( !g_kvstate.secstack.Empty )
+		if( !g_kvstate.secstack.Empty ) {
 			g_kvstate.secstack.PopString(g_kvstate.curr_section, sizeof(g_kvstate.curr_section));
+		}
 		g_kvstate.top = higher;
 	}
 	return SMCParse_Continue;
@@ -390,13 +438,15 @@ stock bool ParseTargetPath(const char[] key, char[] buffer, int buffer_len)
 		/// check if we hit a dot.
 		if( key[i]=='.' ) {
 			/// if we hit a dot, check if the previous char is an "escape" char.
-			if( key[i-1]=='\\' )
+			if( key[i-1]=='\\' ) {
 				i--;
-			else {
+			} else {
 				i++;
 				break;
 			}
-		} else i--;
+		} else {
+			i--;
+		}
 	}
 	int n;
 	/// now we save the target section and then use the resulting string.
@@ -411,13 +461,14 @@ stock bool ParseTargetPath(const char[] key, char[] buffer, int buffer_len)
 }
 
 stock void DeleteCfg(ConfigMap& cfg, bool clear_only=false) {
-	if( cfg==null )
+	if( cfg==null ) {
 		return;
+	}
 	
 	StringMapSnapshot snap = cfg.Snapshot();
-	if( !snap )
+	if( snap==null ) {
 		return;
-	
+	}
 	int entries = snap.Length;
 	for( int i; i<entries; i++ ) {
 		int strsize = snap.KeyBufferSize(i) + 1;
@@ -438,19 +489,22 @@ stock void DeleteCfg(ConfigMap& cfg, bool clear_only=false) {
 	}
 	delete snap;
 	
-	if( clear_only )
+	if( clear_only ) {
 		cfg.Clear();
-	else delete cfg;
+	} else {
+		delete cfg;
+	}
 }
 
 stock void PrintCfg(ConfigMap cfg) {
-	if( cfg==null )
+	if( cfg==null ) {
 		return;
+	}
 	
 	StringMapSnapshot snap = cfg.Snapshot();
-	if( !snap )
+	if( snap==null ) {
 		return;
-	
+	}
 	int entries = snap.Length;
 	for( int i; i<entries; i++ ) {
 		int strsize = snap.KeyBufferSize(i) + 1;

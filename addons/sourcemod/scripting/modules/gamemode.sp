@@ -19,14 +19,6 @@ enum struct VSHGameMode {
 	float    flHealthTime;
 	float    flMusicTime;
 	BaseBoss hNextBoss;
-	
-	
-	
-	
-	
-	
-	
-	
 }
 */
 
@@ -195,7 +187,7 @@ methodmap VSHGameMode < StringMap {
 		}
 	}
 	
-	/// When adding a new property, make sure you initialize it to a default 
+	/// When adding a new property, make sure you initialize it to a default
 	public void Init() {
 		this.iRoundState = 0;
 		this.iSpecial = -1;

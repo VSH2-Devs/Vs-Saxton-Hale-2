@@ -1,14 +1,14 @@
 enum struct AmmoData {
 	int ammo[2];
 	int clip[2];
-	
+
 	int GetAmmo(int wepslot) {
 		return( wepslot > -1 && wepslot < 2 ) ? this.ammo[wepslot] : 0;
 	}
 	int GetClip(int wepslot) {
 		return( wepslot > -1 && wepslot < 2 ) ? this.clip[wepslot] : 0;
 	}
-	
+
 	void SetAmmo(int wepslot, int val) {
 		if( wepslot < 0 || wepslot > 1 )
 			return;
@@ -43,9 +43,9 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		return view_as< BaseFighter >( player );
 	}
 	///////////////////////////////
-	
+
 	/** [ P R O P E R T I E S ] */
-	
+
 	property int userid {
 		public get() { return view_as< int >(this); }
 	}
@@ -210,7 +210,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			g_vsh2.m_hPlayerFields[this.index].SetValue("iClimbs", val);
 		}
 	}
-	
+
 	property bool bIsMinion {
 		public get() {
 			bool i; g_vsh2.m_hPlayerFields[this.index].GetValue("bIsMinion", i);
@@ -245,7 +245,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			g_vsh2.m_hCookies[MusicOpt].Set(this.index, musical);
 		}
 	}
-	
+
 	property float flGlowtime {
 		public get() {
 			float i; g_vsh2.m_hPlayerFields[this.index].GetValue("flGlowtime", i);
@@ -284,7 +284,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			g_vsh2.m_hPlayerFields[this.index].SetValue("flMusicTime", val);
 		}
 	}
-	
+
 	public void ConvertToMinion(const float time) {
 		this.bIsMinion = true;
 		SetPawnTimer(_MakePlayerMinion, time, this.userid);
@@ -304,32 +304,30 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		TF2Item hWep = new TF2Item(OVERRIDE_ALL|FORCE_GENERATION);
 		if( !hWep )
 			return -1;
-		
+
 		hWep.SetClassname(name);
 		hWep.iItemIndex = index;
 		hWep.iLevel = level;
 		hWep.iQuality = qual;
 		char atts[32][32];
 		int count = ExplodeString(att, "; ", atts, 32, 32);
-		
+
 		/// odd numbered attributes result in an error, remove the 1st bit so count will always be even.
 		count &= ~1;
 		if( count > 0 ) {
 			hWep.iNumAttribs = count / 2;
-			int i2=0;
-			for( int i=0; i<count; i+=2 ) {
-				hWep.SetAttribute( i2, StringToInt(atts[i]), StringToFloat(atts[i+1]) );
-				i2++;
+			for( int i, att_index; i<count; i+=2, att_index++ ) {
+				hWep.SetAttribute(att_index, StringToInt(atts[i]), StringToFloat(atts[i+1]));
 			}
 		}
 		else hWep.iNumAttribs = 0;
-		
+
 		int entity = hWep.GiveNamedItem(this.index);
 		delete hWep;
 		EquipPlayerWeapon(this.index, entity);
 		return entity;
 	}
-	
+
 	/**
 	 * gets the max recorded ammo for a certain weapon index
 	 *
@@ -339,7 +337,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 	public int getAmmotable(const int wepslot) {
 		return g_munitions[this.index].GetAmmo(wepslot);
 	}
-	
+
 	/**
 	 * sets the max recorded ammo for a certain weapon index
 	 *
@@ -359,7 +357,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 	public int getCliptable(const int wepslot) {
 		return g_munitions[this.index].GetClip(wepslot);
 	}
-	
+
 	/**
 	 * sets the max recorded clipsize for a certain weapon index
 	 *
@@ -377,14 +375,14 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 	public void SetWepInvis(const int alpha) {
 		int transparent = alpha;
 		for( int i=0; i<5; i++ ) {
-			int entity = GetPlayerWeaponSlot(this.index, i); 
+			int entity = GetPlayerWeaponSlot(this.index, i);
 			if( IsValidEntity(entity) ) {
-				if( transparent > 255 )
-					transparent = 255;
-				if( transparent < 0 )
+				if( transparent > 100 )
+					transparent = 100;
+				else if( transparent < 0 )
 					transparent = 0;
-				SetEntityRenderMode(entity, RENDER_TRANSCOLOR); 
-				SetEntityRenderColor(entity, 150, 150, 150, transparent); 
+				SetEntityRenderMode(entity, RENDER_TRANSCOLOR);
+				SetEntityRenderColor(entity, 150, 150, 150, RoundFloat((transparent / 100.0) * 255));
 			}
 		}
 	}
@@ -393,7 +391,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		SetCommandFlags("r_screenoverlay", iFlags);
 		ClientCommand(this.index, "r_screenoverlay \"%s\"", strOverlay);
 	}
-	
+
 	/// Props to Chdata!
 	public bool TeleToSpawn(int team = 0)
 	{
@@ -408,14 +406,14 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			/// skip disabled spawns.
 			if( GetEntProp(spawn, Prop_Data, "m_bDisabled") )
 				continue;
-			
+
 			/// now check if the spawn is blocked by something that might get our player stuck.
 			GetEntPropVector(spawn, Prop_Send, "m_vecOrigin", pos);
 			GetClientMaxs(this.index, maxs);
 			GetClientMins(this.index, mins);
 			if( !CanFitHere(pos, mins, maxs) )
 				continue;
-			
+
 			/// if the client is a boss, allow them to use ANY valid spawn!
 			int is_boss; g_vsh2.m_hPlayerFields[this.index].GetValue("iBossType", is_boss);
 			if( team <= 1 || is_boss > -1 )
@@ -428,10 +426,10 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		}
 		if( !hArray.Length )
 			return false;
-		
+
 		spawn = hArray.Get(GetRandomInt(0, hArray.Length - 1));
 		hArray.Close();
-		
+
 		/// Technically you'll never find a map without a spawn point. Not a good map at least.
 		float ang[3];
 		GetEntPropVector(spawn, Prop_Send, "m_vecOrigin", pos);
@@ -439,11 +437,11 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		TeleportEntity(this.index, pos, ang, NULL_VECTOR);
 		return true;
 	}
-	
+
 	public void IncreaseHeadCount() {
 		if( !TF2_IsPlayerInCondition(this.index, TFCond_DemoBuff) )
 			TF2_AddCondition(this.index, TFCond_DemoBuff, -1.0);
-		
+
 		int heads = GetEntProp(this.index, Prop_Send, "m_iDecapitations");
 		SetEntProp(this.index, Prop_Send, "m_iDecapitations", ++heads);
 		int health = GetClientHealth(this.index);
@@ -492,39 +490,39 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		/// Have to baby players so they don't accidentally kill themselves trying to escape...
 		if( GetClientHealth(this.index) <= health )
 			return false;
-		
+
 		int client = this.index;
 		float vecClientEyePos[3];
 		GetClientEyePosition(client, vecClientEyePos);   /// Get the position of the player's eyes
-		
+
 		float vecClientEyeAng[3];
 		GetClientEyeAngles(client, vecClientEyeAng);     /// Get the angle the player is looking
-		
+
 		/// Check for colliding entities
 		TR_TraceRayFilter(vecClientEyePos, vecClientEyeAng, MASK_PLAYERSOLID, RayType_Infinite, TraceRayDontHitSelf, client);
 		if( !TR_DidHit(null) )
 			return false;
-		
+
 		char classname[64];
 		int TRIndex = TR_GetEntityIndex(null);
 		GetEdictClassname(TRIndex, classname, sizeof(classname));
 		if( !(StrEqual(classname, "worldspawn") || !strncmp(classname, "prop_", 5)) )
 			return false;
-		
+
 		float fNormal[3];
 		TR_GetPlaneNormal(null, fNormal);
 		GetVectorAngles(fNormal, fNormal);
-		
+
 		if( fNormal[0] >= 30.0 && fNormal[0] <= 330.0 )
 			return false;
 		if( fNormal[0] <= -30.0 )
 			return false;
-		
+
 		float pos[3]; TR_GetEndPosition(pos);
 		float distance = GetVectorDistance(vecClientEyePos, pos);
 		if( distance >= 100.0 )
 			return false;
-		
+
 		float fVelocity[3];
 		GetEntPropVector(client, Prop_Data, "m_vecVelocity", fVelocity);
 		fVelocity[2] = upwardvel;
@@ -532,7 +530,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, fVelocity);
 		SDKHooks_TakeDamage(client, client, client, health, DMG_CLUB, 0); /// Inflictor is 0 to prevent Shiv self-bleed
 		this.iClimbs++;
-		
+
 		if( attackdelay )
 			RequestFrame(NoAttacking, EntIndexToEntRef(weapon));
 		return true;
@@ -541,7 +539,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 	{
 		if( IsVoteInProgress() )
 			return;
-		
+
 		static char class_help[][] = {
 			"help.unknown",
 			"help.scout",
@@ -554,7 +552,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 			"help.spy",
 			"help.engie"
 		};
-		
+
 		Panel panel = new Panel();
 		TFClassType tfclass = TF2_GetPlayerClass(this.index);
 		int len = g_vsh2.m_hCfg.GetSize(class_help[tfclass]);
@@ -565,7 +563,7 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 		panel.Send(this.index, HintPanel, 20);
 		delete panel;
 	}
-	
+
 	public int GetHealTarget() {
 		return GetHealingTarget(this.index);
 	}
@@ -587,17 +585,17 @@ methodmap BaseFighter {	/** Player Interface that Opposing team and Boss team de
 	public void Heal(const int health, bool on_hud=false) {
 		HealPlayer(this.index, health, on_hud);
 	}
-	
+
 	public void PlayMusic(const float vol, const char[] override = "") {
 		if( this.bNoMusic )
 			return;
-		
+
 		if( override[0]!=0 ) {
 			strcopy(g_vsh2.m_strCurrSong, sizeof(g_vsh2.m_strCurrSong), override);
 		}
 		EmitSoundToClient(this.index, g_vsh2.m_strCurrSong, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
 	}
-	
+
 	public void StopMusic() {
 		StopSound(this.index, SNDCHAN_AUTO, g_vsh2.m_strCurrSong);
 	}
@@ -615,10 +613,10 @@ methodmap BaseBoss < BaseFighter {
 	public BaseBoss(const int ind, bool uid=false) {
 		return view_as< BaseBoss >( BaseFighter(ind, uid) );
 	}
-	
+
 	///////////////////////////////
 	/** [ P R O P E R T I E S ] */
-	
+
 	property int iHealth {
 		public get() {
 			/*
@@ -679,7 +677,7 @@ methodmap BaseBoss < BaseFighter {
 			g_vsh2.m_hPlayerFields[this.index].SetValue("iDifficulty", val);
 		}
 	}
-	
+
 	property bool bIsBoss {
 		public get() {
 			return this.iBossType >= 0;
@@ -703,7 +701,7 @@ methodmap BaseBoss < BaseFighter {
 			g_vsh2.m_hPlayerFields[this.index].SetValue("bSuperCharge", val);
 		}
 	}
-	
+
 	property float flSpeed {
 		public get() {
 			float i; g_vsh2.m_hPlayerFields[this.index].GetValue("flSpeed", i);
@@ -753,12 +751,12 @@ methodmap BaseBoss < BaseFighter {
 			g_vsh2.m_hPlayerFields[this.index].SetValue("flWeighDown", val);
 		}
 	}
-	
+
 	public void ConvertToBoss() {
 		this.flRAGE = 0.0;
 		SetPawnTimer(_MakePlayerBoss, 0.1, this.userid);
 	}
-	
+
 	public void GiveRage(const int damage) {
 		/// Patch Oct 26, 2019.
 		/// Killing boss throws negative value exception for sqrt.
@@ -782,7 +780,7 @@ methodmap BaseBoss < BaseFighter {
 		Action act = Call_OnBossDoRageStun(this, rage_dist);
 		if( act > Plugin_Changed )
 			return;
-		
+
 		int i;
 		float pos[3], pos2[3];
 		GetEntPropVector(this.index, Prop_Send, "m_vecOrigin", pos);
@@ -827,7 +825,7 @@ methodmap BaseBoss < BaseFighter {
 			}
 		}
 	}
-	
+
 	public void StunPlayers(float rage_dist, float stun_time=5.0)
 	{
 		float pos[3], pos2[3];
@@ -843,7 +841,7 @@ methodmap BaseBoss < BaseFighter {
 			}
 		}
 	}
-	
+
 	public void StunBuildings(float rage_dist, float sentry_stun_time=8.0)
 	{
 		float pos[3], pos2[3];
@@ -876,11 +874,11 @@ methodmap BaseBoss < BaseFighter {
 			}
 		}
 	}
-	
+
 	public void RemoveAllItems(bool weps = true) {
 		int client = this.index;
 		TF2_RemovePlayerDisguise(client);
-		
+
 		int ent = -1;
 		while( (ent = FindEntityByClassname(ent, "tf_wearabl*")) != -1 ) {
 			if( GetOwner(ent) == client ) {
@@ -898,19 +896,19 @@ methodmap BaseBoss < BaseFighter {
 		if( weps )
 			TF2_RemoveAllWeapons(client);
 	}
-	
+
 	public bool GetName(char buffer[MAX_BOSS_NAME_SIZE]) {
 		return g_vsh2.m_hPlayerFields[this.index].GetString("strName", buffer, sizeof(buffer));
 	}
 	public bool SetName(const char name[MAX_BOSS_NAME_SIZE]) {
 		return g_vsh2.m_hPlayerFields[this.index].SetString("strName", name);
 	}
-	
+
 	public void SuperJump(const float power, const float reset) {
 		Action act = Call_OnBossSuperJump(this);
 		if( act > Plugin_Changed )
 			return;
-		
+
 		int client = this.index;
 		float vel[3]; GetEntPropVector(client, Prop_Data, "m_vecVelocity", vel);
 		vel[2] = 750 + power * 13.0;
@@ -924,7 +922,7 @@ methodmap BaseBoss < BaseFighter {
 		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, vel);
 		this.flCharge = reset;
 	}
-	
+
 	public void WeighDown(const float reset) {
 		Action act = Call_OnBossWeighDown(this);
 		if( act > Plugin_Changed )
@@ -937,18 +935,18 @@ methodmap BaseBoss < BaseFighter {
 		SetPawnTimer(SetGravityNormal, 1.0, this);
 		this.flWeighDown = reset;
 	}
-	
+
 	public void PlayVoiceClip(const char[] vclip, const int flags) {
 		int client = this.index;
 		float pos[3];
 		if( flags & VSH2_VOICE_BOSSPOS )
 			GetEntPropVector(client, Prop_Send, "m_vecOrigin", pos);
-		
+
 		EmitSoundToAll(vclip, (flags & VSH2_VOICE_BOSSENT) ? client : SOUND_FROM_PLAYER, (flags & VSH2_VOICE_ALLCHAN) ? SNDCHAN_AUTO : SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, (flags & VSH2_VOICE_BOSSPOS) ? pos : NULL_VECTOR, NULL_VECTOR, true, 0.0);
-		
+
 		if( !(flags & VSH2_VOICE_ONCE) )
 			EmitSoundToAll(vclip, (flags & VSH2_VOICE_BOSSENT) ? client : SOUND_FROM_PLAYER, (flags & VSH2_VOICE_ALLCHAN) ? SNDCHAN_AUTO : SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, (flags & VSH2_VOICE_BOSSPOS) ? pos : NULL_VECTOR, NULL_VECTOR, true, 0.0);
-		
+
 		if( flags & VSH2_VOICE_TOALL ) {
 			for( int i=MaxClients; i; --i ) {
 				if( IsClientInGame(i) && i != client ) {
@@ -958,7 +956,7 @@ methodmap BaseBoss < BaseFighter {
 			}
 		}
 	}
-	
+
 	public void SpeedThink(const float iota, const float minspeed=100.0) {
 		float speed = iota + 0.7 * (100-this.iHealth*100/this.iMaxHealth);
 		SetEntPropFloat(this.index, Prop_Send, "m_flMaxspeed", (speed < minspeed) ? minspeed : speed);
@@ -993,7 +991,7 @@ methodmap BaseBoss < BaseFighter {
 		if( flags & FL_ONGROUND )
 			this.flWeighDown = 0.0;
 		else this.flWeighDown += 0.1;
-		
+
 		if( (buttons & IN_DUCK) && this.flWeighDown >= weighdown_time ) {
 			float ang[3]; GetClientEyeAngles(this.index, ang);
 			if( ang[0] > 60.0 )

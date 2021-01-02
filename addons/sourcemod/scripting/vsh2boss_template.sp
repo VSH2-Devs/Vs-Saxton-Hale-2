@@ -196,7 +196,7 @@ public void Template_OnCallDownloads()
 		ConfigMap dl_section = assets.GetSection(dl_keys[i]);
 		if( dl_section != null ) {
 			for( int n; n<dl_section.Size; n++ ) {
-				char index[10]; Format(index, sizeof index, "%i", n);
+				char index[10]; IntToString(n, index, sizeof index);
 				int path_len = dl_section.GetSize(index);
 				char[] file = new char[path_len];
 				if( dl_section.Get(index, file, path_len) > 0 ) {
@@ -365,7 +365,7 @@ public void Template_OnBossMedicCall(const VSH2Player player)
 	
 	/// use ConfigMap to set how large the rage radius is!
 	float radius = 800.0; /// in case of failure, default value!
-	template_boss_cfg.GetFloat("melee_attribs", radius);
+	template_boss_cfg.GetFloat("rage_dist", radius);
 	
 	player.DoGenericStun(radius);
 	VSH2Player[] players = new VSH2Player[MaxClients];
@@ -444,10 +444,10 @@ public Action Template_OnSoundHook(const VSH2Player player, char sample[PLATFORM
 
 /// Stocks =============================================
 stock bool IsValidClient(const int client, bool nobots=false)
-{ 
+{
 	if( client <= 0 || client > MaxClients || !IsClientConnected(client) || (nobots && IsFakeClient(client)) )
-		return false; 
-	return IsClientInGame(client); 
+		return false;
+	return IsClientInGame(client);
 }
 
 stock int GetSlotFromWeapon(const int client, const int wep)
@@ -470,30 +470,27 @@ stock bool OnlyScoutsLeft(const int team)
 	return true;
 }
 
-stock void SetPawnTimer(Function func, float thinktime = 0.1, any param1 = -999, any param2 = -999)
+stock void SetPawnTimerEx(Function func, float thinktime = 0.1, const any[] args, const int len)
 {
 	DataPack thinkpack = new DataPack();
 	thinkpack.WriteFunction(func);
-	thinkpack.WriteCell(param1);
-	thinkpack.WriteCell(param2);
-	CreateTimer(thinktime, DoThink, thinkpack, TIMER_DATA_HNDL_CLOSE);
+	thinkpack.WriteCell(len);
+	for( int i; i<len; i++ )
+		thinkpack.WriteCell(args[i]);
+	CreateTimer(thinktime, DoPawnTimer, thinkpack, TIMER_DATA_HNDL_CLOSE);
 }
 
-public Action DoThink(Handle hTimer, DataPack hndl)
+public Action DoPawnTimer(Handle t, DataPack pack)
 {
-	hndl.Reset();
+	pack.Reset();
+	Function fn = pack.ReadFunction();
+	Call_StartFunction(null, fn);
 	
-	Function pFunc = hndl.ReadFunction();
-	Call_StartFunction(null, pFunc);
-	
-	any param1 = hndl.ReadCell();
-	if( param1 != -999 )
-		Call_PushCell(param1);
-	
-	any param2 = hndl.ReadCell();
-	if( param2 != -999 )
-		Call_PushCell(param2);
-	
+	int len = pack.ReadCell();
+	for( int i; i<len; i++ ) {
+		any param = pack.ReadCell();
+		Call_PushCell(param);
+	}
 	Call_Finish();
 	return Plugin_Continue;
 }

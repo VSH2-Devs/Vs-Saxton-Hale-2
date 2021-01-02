@@ -15,7 +15,7 @@
 
 methodmap CHHHJr < BaseBoss {
 	public CHHHJr(const int ind, bool uid=false) {
-		return view_as<CHHHJr>( BaseBoss(ind, uid) );
+		return view_as< CHHHJr >( BaseBoss(ind, uid) );
 	}
 	
 	public void PlaySpawnClip() {
@@ -146,7 +146,7 @@ methodmap CHHHJr < BaseBoss {
 	}
 	public void RageAbility()
 	{
-		TF2_AddCondition(this.index, view_as<TFCond>(42), 4.0);
+		TF2_AddCondition(this.index, view_as< TFCond >(42), 4.0);
 		if( !GetEntProp(this.index, Prop_Send, "m_bIsReadyToHighFive")
 			&& !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
 		{
@@ -199,7 +199,7 @@ methodmap CHHHJr < BaseBoss {
 
 public CHHHJr ToCHHHJr (const BaseBoss guy)
 {
-	return view_as<CHHHJr>(guy);
+	return view_as< CHHHJr >(guy);
 }
 
 public void AddHHHToDownloads()

@@ -1,4 +1,3 @@
-
 #include <morecolors>
 #include <tf2_stocks>
 
@@ -7,7 +6,7 @@
 #define REQUIRE_PLUGIN
 #include <sdkhooks>
 
-#define PLYR					35
+#define PLYR    35
 
 #include <cfgmap>
 #include "modules/stocks.inc"
@@ -56,14 +55,14 @@ enum {
 };
 
 enum struct FF2CompatPlugin {
-	FF2ConVars	m_cvars;
+	FF2ConVars    m_cvars;
 	FF2PluginList m_plugins;
-	ConfigMap	m_charcfg;
-	GlobalForward	m_forwards[MaxFF2Forwards];
-	Handle		m_hud[HUD_TYPES];
-	bool		m_vsh2;
-	bool		m_cheats;
-	int		m_queuePoints[PLYR];
+	ConfigMap     m_charcfg;
+	GlobalForward m_forwards[MaxFF2Forwards];
+	Handle        m_hud[HUD_TYPES];
+	bool          m_vsh2;
+	bool          m_cheats;
+	int           m_queuePoints[PLYR];
 }
 
 FF2CompatPlugin ff2;
@@ -84,22 +83,22 @@ static void LoadFF2()
 
 	ff2.m_hud[HUD_Jump] = vsh2_gm.hHUD;
 	ff2.m_hud[HUD_Weighdown] = CreateHudSynchronizer();
-		
+
 	InitVSH2Bridge();
-	
+
 	for( int i=MaxClients; i > 0; i-- )
 		if( IsClientInGame(i) )
 			OnClientPutInServer(i);
-	
+
 	ff2.m_plugins = new FF2PluginList();
 }
 
 static void LateLoadSubPlugins()
 {
 	if( VSH2GameMode.GetPropAny("iRoundState") == StateRunning ) {
-		FF2Player[] bosses = new FF2Player[MaxClients]; 
+		FF2Player[] bosses = new FF2Player[MaxClients];
 		int count = VSH2GameMode.GetBosses(view_as<VSH2Player>(bosses), false);
-		
+
 		FF2Player player;
 		for(int i; i < count && !ff2.m_plugins.IsFull; i++ ) {
 			player = bosses[i];
@@ -122,11 +121,11 @@ public void OnPluginEnd()
 
 public void OnLibraryAdded(const char[] name) {
 	if( StrEqual(name, "VSH2") && !ff2.m_vsh2) {
-		
+
 		InitConVars();
 		ff2.m_vsh2 = true;
 		LoadFF2();
-		
+
 		LateLoadSubPlugins();
 	}
 }
@@ -134,14 +133,15 @@ public void OnLibraryAdded(const char[] name) {
 public void OnMapEnd()
 {
 	if( ff2.m_vsh2 ) {
-		ff2.m_plugins.UnloadAllSubPlugins();
-		
-		ff2_cfgmgr.DeleteAll();
+		if( ff2.m_plugins != null )
+			ff2.m_plugins.UnloadAllSubPlugins();
+
+		if( ff2_cfgmgr != null )
+			ff2_cfgmgr.DeleteAll();
 		delete ff2_cfgmgr;
-		
+
 		char pack[48];
 		ff2.m_cvars.m_pack_name.GetString(pack, sizeof(pack));
-		
 		ff2_cfgmgr = new FF2BossManager(pack);
 	}
 }
@@ -156,7 +156,7 @@ public void OnLibraryRemoved(const char[] name) {
 public void NextFrame_InitFF2Player(int client)
 {
 	FF2Player player = FF2Player(client);
-	
+
 	player.iMaxLives = 0;
 	player.bNoSuperJump = false;
 	player.bNoWeighdown = false;
@@ -166,14 +166,14 @@ public void NextFrame_InitFF2Player(int client)
 public void OnClientPutInServer(int client)
 {
 	if ( !ff2.m_vsh2 ) return;
-	
+
 	RequestFrame(NextFrame_InitFF2Player, client);
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	InitNatives();
-	
+
 	ff2.m_forwards[FF2OnMusic]		= new GlobalForward("FF2_OnMusic", ET_Hook, Param_Cell, Param_String, Param_FloatByRef);
 	ff2.m_forwards[FF2OnSpecial]		= new GlobalForward("FF2_OnBossSelected", ET_Hook, Param_Cell, Param_String, Param_Cell);
 	ff2.m_forwards[FF2OnLoseLife]		= new GlobalForward("FF2_OnLoseLife", ET_Hook, Param_Cell, Param_CellByRef, Param_Cell);
@@ -182,9 +182,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	ff2.m_forwards[FF2OnAbility]		= new GlobalForward("FF2_OnAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell);
 	ff2.m_forwards[FF2OnQueuePoints]	= new GlobalForward("FF2_OnAddQueuePoints", ET_Hook, Param_Array);
 	ff2.m_forwards[FF2OnBossJarated]	= new GlobalForward("FF2_OnBossJarated", ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef);
-	
+
 	RegPluginLibrary("freak_fortress_2");
-	
+
 	return APLRes_Success;
 }
 

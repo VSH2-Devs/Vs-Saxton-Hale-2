@@ -132,7 +132,7 @@ stock void SetWeaponInvis(const int client, const int alpha)
 {
 	int transparent = alpha;
 	for( int i; i<5; i++ ) {
-		int entity = GetPlayerWeaponSlot(client, i); 
+		int entity = GetPlayerWeaponSlot(client, i);
 		if( IsValidEntity(entity) ) {
 			if( transparent > 255 )
 				transparent = 255;
@@ -140,8 +140,8 @@ stock void SetWeaponInvis(const int client, const int alpha)
 			if( transparent < 0 )
 				transparent = 0;
 			
-			SetEntityRenderMode(entity, RENDER_TRANSCOLOR); 
-			SetEntityRenderColor(entity, 150, 150, 150, transparent); 
+			SetEntityRenderMode(entity, RENDER_TRANSCOLOR);
+			SetEntityRenderColor(entity, 150, 150, 150, transparent);
 		}
 	}
 }
@@ -212,7 +212,7 @@ stock int ShootRocket(const int client, bool bCrit = false, float vPosition[3], 
 	AcceptEntityInput(iProjectile, "SetTeam", -1, -1, 0);
 	SetEntDataFloat(iProjectile, FindSendPropInfo("CTFProjectile_Rocket", "m_iDeflected")+4, dmg, true);
 	
-	TeleportEntity(iProjectile, vPosition, vAngles, vVelocity); 
+	TeleportEntity(iProjectile, vPosition, vAngles, vVelocity);
 	DispatchSpawn(iProjectile);
 	if( arc )
 		SetEntityMoveType(iProjectile, MOVETYPE_FLYGRAVITY);
@@ -782,8 +782,8 @@ stock bool TF2_IsPlayerCritBuffed(const int client)
 {
 	return( TF2_IsPlayerInCondition(client, TFCond_Kritzkrieged)
 			|| TF2_IsPlayerInCondition(client, TFCond_HalloweenCritCandy)
-			|| TF2_IsPlayerInCondition(client, view_as<TFCond>(34))
-			|| TF2_IsPlayerInCondition(client, view_as<TFCond>(35))
+			|| TF2_IsPlayerInCondition(client, view_as< TFCond >(34))
+			|| TF2_IsPlayerInCondition(client, view_as< TFCond >(35))
 			|| TF2_IsPlayerInCondition(client, TFCond_CritOnFirstBlood)
 			|| TF2_IsPlayerInCondition(client, TFCond_CritOnWin)
 			|| TF2_IsPlayerInCondition(client, TFCond_CritOnFlagCapture)
@@ -1144,8 +1144,8 @@ stock bool TF2_IsKillable(const int entity)
 {
 	bool bResult = true;
 	if( 0 < entity <= MaxClients ) {
-		if(TF2_IsPlayerInCondition(entity, TFCond_Ubercharged) 
-		|| TF2_IsPlayerInCondition(entity, TFCond_UberchargedHidden) 
+		if(TF2_IsPlayerInCondition(entity, TFCond_Ubercharged)
+		|| TF2_IsPlayerInCondition(entity, TFCond_UberchargedHidden)
 		|| TF2_IsPlayerInCondition(entity, TFCond_UberchargedCanteen)
 		|| TF2_IsPlayerInCondition(entity, TFCond_Bonked)
 		|| TF2_IsPlayerInCondition(entity, TFCond_PasstimeInterception))
