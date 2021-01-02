@@ -23,7 +23,7 @@ VSH2GameMode vsh2_gm;
 
 methodmap CPlague < VSH2Player {
 	public CPlague(const int ind, bool uid=false) {
-		return view_as<CPlague>( VSH2Player(ind, uid) );
+		return view_as< CPlague >( VSH2Player(ind, uid) );
 	}
 	
 	property float flCharge {
@@ -65,7 +65,7 @@ methodmap CPlague < VSH2Player {
 	public void RageAbility()
 	{
 		int attribute = 0;
-		float value = 0.0; 
+		float value = 0.0;
 		TF2_AddCondition(this.index, TFCond_MegaHeal, 10.0);
 		switch( GetRandomInt(0, 2) ) {
 			case 0: { attribute = 2; value = 2.0; }	 /// Extra damage
@@ -129,7 +129,7 @@ methodmap CPlague < VSH2Player {
 /// plague doctor conversion helper function.
 public CPlague ToCPlague(const VSH2Player guy)
 {
-	return view_as<CPlague>(guy);
+	return view_as< CPlague >(guy);
 }
 
 
@@ -296,7 +296,7 @@ public void PlagueDoc_OnBossInitialized(const VSH2Player player)
 {
 	if( !IsPlagueDoctor(player) )
 		return;
-	SetEntProp(player.index, Prop_Send, "m_iClass", view_as<int>(TFClass_Medic));
+	SetEntProp(player.index, Prop_Send, "m_iClass", view_as< int >(TFClass_Medic));
 }
 public void PlagueDoc_OnMinionInitialized(const VSH2Player player, const VSH2Player master)
 {
@@ -425,10 +425,10 @@ void RecruitMinion(const VSH2Player base)
 
 
 stock bool IsValidClient(const int client, bool nobots=false)
-{ 
+{
 	if( client <= 0 || client > MaxClients || !IsClientConnected(client) || (nobots && IsFakeClient(client)) )
-		return false; 
-	return IsClientInGame(client); 
+		return false;
+	return IsClientInGame(client);
 }
 stock int GetSlotFromWeapon(const int iClient, const int iWeapon)
 {

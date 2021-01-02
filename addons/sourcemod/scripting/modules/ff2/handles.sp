@@ -13,26 +13,24 @@ void ProcessOnCallDownload()
 		char _key[32];
 		char model_path[PLATFORM_MAX_PATH];
 		
-		for (int i = snap.Length - 1; i >= 0; i--) {
+		for( int i = snap.Length - 1; i >= 0; i-- ) {
 			snap.GetKey(i, _key, sizeof(_key));
 			ff2_cfgmgr.GetIdentity(_key, identity);
 			
 			/// Precache SoundList
 			{
 				snap_list = identity.sndHash.Snapshot();
-			
-				for (int j = snap_list.Length - 1; j >= 0; j--) {
+				for( int j = snap_list.Length - 1; j >= 0; j-- ) {
 					snap_list.GetKey(j, _key, sizeof(_key));
 					list = identity.sndHash.GetList(_key);
 					
-					for (int k = list.Length - 1; k >= 0; k--) {
+					for( int k = list.Length - 1; k >= 0; k-- ) {
 						list.At(k, snd_id);
-						if (snd_id.path[0]) {
+						if( snd_id.path[0] ) {
 							PrecacheSound(snd_id.path);
 						}
 					}
 				}
-				
 				delete snap_list;
 			}
 			
@@ -45,9 +43,7 @@ void ProcessOnCallDownload()
 						PrecacheModel(model_path);
 				}
 			}
-			
 		}
-		
 		delete snap;
 	}
 }
@@ -59,24 +55,22 @@ void Call_FF2OnAbility(const FF2Player player, FF2CallType_t call_type)
 	static char pl_ab[2][FF2_MAX_PLUGIN_NAME];
 	
 	ConfigMap cfg = player.iCfg;
-	
 	FF2CallType_t cur_type;
 	
 	static FF2AbilityList list; list = player.HookedAbilities;
-	if( !list ) return;
+	if( !list )
+		return;
 	
 	StringMapSnapshot snap = list.Snapshot();
-	
-	for ( int i = 0; i < snap.Length; i++ ) {
-		
+	for( int i = 0; i < snap.Length; i++ ) {
 		snap.GetKey(i, curKey, sizeof(curKey));
 		list.GetString(curKey, cfg_key, sizeof(cfg_key));
 		
 		cur_type = CT_NONE;
 		FormatEx(pl_ab[0], sizeof(pl_ab[]), "%s.slot", cfg_key);
-		if( !cfg.GetInt(pl_ab[0], view_as<int>(cur_type)) ) {
+		if( !cfg.GetInt(pl_ab[0], view_as< int >(cur_type)) ) {
 			FormatEx(pl_ab[0], sizeof(pl_ab[]), "%s.arg0", cfg_key);
-			if ( !cfg.GetInt(pl_ab[0], view_as<int>(cur_type)) )
+			if( !cfg.GetInt(pl_ab[0], view_as< int >(cur_type)) )
 				cur_type = CT_RAGE;
 		}
 		
@@ -94,7 +88,7 @@ void Call_FF2OnAbility(const FF2Player player, FF2CallType_t call_type)
 		Call_PushCellRef(enabled);
 		Call_Finish();
 		
-		if(!enabled) {
+		if( !enabled ) {
 			continue;
 		}
 		
@@ -105,13 +99,13 @@ void Call_FF2OnAbility(const FF2Player player, FF2CallType_t call_type)
 		Call_PushCell(call_type);
 		Call_Finish();
 	}
-	
 	delete snap;
 }
 
 bool RandomAbilitySound(FF2SoundList list, FF2CallType_t slot, char[] res, int maxlen)
 {
-	if ( !list ) return false;
+	if( !list )
+		return false;
 	
 	int[] slots = new int[15];
 	int count;
@@ -120,21 +114,19 @@ bool RandomAbilitySound(FF2SoundList list, FF2CallType_t slot, char[] res, int m
 	char name[6]; FormatEx(name, sizeof(name), "slot%i", slot);
 	FF2SoundIdentity curEntry;
 	
-	for (int i = list.Length - 1; i >= 0 && count < 15; i--) {
+	for( int i = list.Length - 1; i >= 0 && count < 15; i-- ) {
 		list.At(i, curEntry);
-		
 		int pos = FindCharInString(curEntry.name, '_', true);
-		cur_slot = view_as<FF2CallType_t>(StringToInt(curEntry.name[pos + 1]));
-		
-		if ( cur_slot & slot ) {
+		cur_slot = view_as< FF2CallType_t >(StringToInt(curEntry.name[pos + 1]));
+		if( cur_slot & slot ) {
 			slots[count++] = i;
 		}
 	}
 	
-	if ( !count ) return false;
+	if( !count )
+		return false;
 	
 	list.At(slots[GetRandomInt(0, count - 1)], curEntry);
 	FormatEx(res, maxlen, "%s", curEntry.path);
-	
 	return true;
 }

@@ -83,7 +83,7 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 				}
 				case 2: {
 					for( int ent=MaxClients+1; ent<2048; ++ent ) {
-						if( !IsValidEntity(ent) || !HasEntProp(ent, Prop_Send, "m_hBuilder") ) 
+						if( !IsValidEntity(ent) || !HasEntProp(ent, Prop_Send, "m_hBuilder") )
 							continue;
 						else if( GetBuilder(ent) != victim.index )
 							continue;

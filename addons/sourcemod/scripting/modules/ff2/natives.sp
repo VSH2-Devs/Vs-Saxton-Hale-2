@@ -2,7 +2,6 @@ void InitNatives()
 {
 	#define CREATE_NATIVE(%0) CreateNative(#%0, Native_%0)
 	
-	
 	CREATE_NATIVE(FF2_IsFF2Enabled);
 	CREATE_NATIVE(FF2_GetFF2Version);
 	CREATE_NATIVE(FF2_GetForkVersion);
@@ -21,7 +20,7 @@ void InitNatives()
 	
 	
 	#undef CREATE_NATIVE
-	#define CREATE_NATIVE(%0)	CreateNative("FF2GameMode."...#%0		, Native_FF2GameMode_%0		)
+	#define CREATE_NATIVE(%0)    CreateNative("FF2GameMode."...#%0   , Native_FF2GameMode_%0)
 	
 	
 	CREATE_NATIVE(LoadAbility);
@@ -29,9 +28,9 @@ void InitNatives()
 	
 	
 	#undef CREATE_NATIVE
-	#define CREATE_NATIVE(%0)	CreateNative("FF2Player."...#%0		, Native_FF2Player_%0		)
-	#define CREATE_NATIVE_GET(%0)	CreateNative("FF2Player."...#%0...".get", Native_FF2Player_%0_Get	)
-	#define CREATE_NATIVE_SET(%0)	CreateNative("FF2Player."...#%0...".set", Native_FF2Player_%0_Set	)
+	#define CREATE_NATIVE(%0)        CreateNative("FF2Player."...#%0,          Native_FF2Player_%0    )
+	#define CREATE_NATIVE_GET(%0)    CreateNative("FF2Player."...#%0...".get", Native_FF2Player_%0_Get)
+	#define CREATE_NATIVE_SET(%0)    CreateNative("FF2Player."...#%0...".set", Native_FF2Player_%0_Set)
 	
 
 	CREATE_NATIVE(FF2Player);
@@ -148,7 +147,7 @@ public any Native_FF2Player_RandomSound(Handle plugin, int numParams)
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 	
 	static FF2Identity identity;
-	if ( !ff2_cfgmgr.FindIdentity(player.GetPropInt("iBossType"), identity) )
+	if( !ff2_cfgmgr.FindIdentity(player.GetPropInt("iBossType"), identity) )
 		return 0;
 	
 	int size = GetNativeCell(4);
@@ -163,15 +162,17 @@ public any Native_FF2Player_RandomSound(Handle plugin, int numParams)
 	FF2SoundIdentity snd_id;
 	FF2SoundList list = identity.sndHash.GetList(key);
 	
-	if ( list ) {
+	if( list ) {
 		if( !StrContains(key, "sound_ability") ) {
 			FF2CallType_t slot = GetNativeCell(5);
 			soundExists = RandomAbilitySound(list, slot, snd_id.path, size);
-		} 
-		else soundExists = list.RandomSound(snd_id);
+		} else {
+			soundExists = list.RandomSound(snd_id);
+		}
 	}
 	
-	if ( !soundExists ) return false;
+	if( !soundExists )
+		return false;
 	return( SetNativeString(3, snd_id.path, size) == SP_ERROR_NONE );
 }
 
@@ -192,7 +193,9 @@ public any Native_FF2Player_RageDist(Handle plugin, int numParams)
 	
 	ConfigMap section = JumpToAbility(player, plugin_name, ability_name);
 	float see;
-	if ( !section ) return 0.0;
+	if( !section )
+		return 0.0;
+		
 	if( !section.GetFloat("dist", see) && !section.GetFloat("ragedist", see) ) {
 		cfg.GetFloat("ragedist", see);
 	}
@@ -263,7 +266,7 @@ public any Native_FF2Player_SoundCache_Get(Handle plugin, int numParams)
 {
 	FF2Player player = GetNativeCell(1);
 	static FF2Identity identity;
-	if ( !ff2_cfgmgr.FindIdentity(player.iBossType, identity) )
+	if( !ff2_cfgmgr.FindIdentity(player.iBossType, identity) )
 		return 0;
 	
 	return( identity.sndHash );
@@ -276,7 +279,7 @@ public any Native_FF2Player_PlayBGM(Handle plugin, int numParams)
 	player.PlayBGM(bgm);
 }
 
-/* end FF2Player methodmaps */
+/** end FF2Player methodmaps */
 
 
 
@@ -317,7 +320,6 @@ public any Native_FF2_LogError(Handle plugin, int numParams)
 	if( error != SP_ERROR_NONE ) {
 		return( ThrowNativeError(error, "Failed to format") );
 	}
-	
 	LogError(buffer);
 	return 0;
 }

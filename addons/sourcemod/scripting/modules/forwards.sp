@@ -26,7 +26,7 @@ void InitializeForwards()
 		g_hForwards[i][OnVariablesReset] = new PrivateForward( ET_Event, Param_Cell );
 		g_hForwards[i][OnUberDeployed] = new PrivateForward( ET_Event, Param_Cell, Param_Cell );
 		g_hForwards[i][OnUberLoop] = new PrivateForward( ET_Event, Param_Cell, Param_Cell );
-		g_hForwards[i][OnMusic] = new PrivateForward( ET_Event, Param_String, Param_FloatByRef, Param_Cell );
+		g_hForwards[i][OnMusic] = new PrivateForward( ET_Event, Param_String, Param_FloatByRef, Param_Cell, Param_FloatByRef );
 		g_hForwards[i][OnRoundEndInfo] = new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_String );
 		g_hForwards[i][OnLastPlayer] = new PrivateForward( ET_Event, Param_Cell );
 		g_hForwards[i][OnBossHealthCheck] = new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_String );
@@ -444,7 +444,7 @@ Action Call_OnUberLoop(const BaseBoss medic, const BaseBoss target)
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
-Action Call_OnMusic(char song[PLATFORM_MAX_PATH], float& time, const BaseBoss player)
+Action Call_OnMusic(char song[PLATFORM_MAX_PATH], float& time, const BaseBoss player, float& vol)
 {
 	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
@@ -452,6 +452,7 @@ Action Call_OnMusic(char song[PLATFORM_MAX_PATH], float& time, const BaseBoss pl
 		Call_PushStringEx(song, PLATFORM_MAX_PATH, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		Call_PushFloatRef(time);
 		Call_PushCell(player);
+		Call_PushFloatRef(vol);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
 			return act[i];

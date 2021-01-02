@@ -27,7 +27,7 @@
 
 methodmap CVagineer < BaseBoss {
 	public CVagineer(const int ind, bool uid=false) {
-		return view_as<CVagineer>( BaseBoss(ind, uid) );
+		return view_as< CVagineer >( BaseBoss(ind, uid) );
 	}
 	
 	public void PlaySpawnClip() {
@@ -93,12 +93,12 @@ methodmap CVagineer < BaseBoss {
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
 	public void RageAbility() {
-		TF2_AddCondition(this.index, view_as<TFCond>(42), 4.0);
+		TF2_AddCondition(this.index, view_as< TFCond >(42), 4.0);
 		if( !GetEntProp(this.index, Prop_Send, "m_bIsReadyToHighFive")
 			&& !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
 		{
 			TF2_RemoveCondition(this.index, TFCond_Taunting);
-			this.SetModel(); 
+			this.SetModel();
 		}
 		TF2_AddCondition(this.index, TFCond_Ubercharged, g_vsh2.m_hCvars.VagineerUberTime.FloatValue);
 		this.DoGenericStun(VAGRAGEDIST);
@@ -158,9 +158,9 @@ methodmap CVagineer < BaseBoss {
 	}
 };
 
-public CVagineer ToCVagineer (const BaseBoss guy)
+public CVagineer ToCVagineer(const BaseBoss guy)
 {
-	return view_as<CVagineer>(guy);
+	return view_as< CVagineer >(guy);
 }
 
 public void AddVagToDownloads()

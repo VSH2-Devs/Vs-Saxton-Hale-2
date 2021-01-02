@@ -19,7 +19,7 @@
 
 methodmap CChristian < BaseBoss {
 	public CChristian(const int ind, bool uid=false) {
-		return view_as<CChristian>( BaseBoss(ind, uid) );
+		return view_as< CChristian >( BaseBoss(ind, uid) );
 	}
 	
 	public void PlaySpawnClip() {
@@ -71,7 +71,7 @@ methodmap CChristian < BaseBoss {
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
 	public void RageAbility() {
-		TF2_AddCondition(this.index, view_as<TFCond>(42), 4.0);
+		TF2_AddCondition(this.index, view_as< TFCond >(42), 4.0);
 		if( !GetEntProp(this.index, Prop_Send, "m_bIsReadyToHighFive")
 			&& !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
 		{
@@ -154,7 +154,7 @@ methodmap CChristian < BaseBoss {
 
 public CChristian ToCChristian (const BaseBoss guy)
 {
-	return view_as<CChristian>(guy);
+	return view_as< CChristian >(guy);
 }
 
 public void AddCBSToDownloads()

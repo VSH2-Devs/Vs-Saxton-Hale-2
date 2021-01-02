@@ -103,7 +103,7 @@ static const char HaleMatsV2[][] = {
 
 methodmap CHale < BaseBoss {
 	public CHale(const int ind, bool uid=false) {
-		return view_as<CHale>( BaseBoss(ind, uid) );
+		return view_as< CHale >( BaseBoss(ind, uid) );
 	}
 	
 	public void PlaySpawnClip() {
@@ -162,7 +162,7 @@ methodmap CHale < BaseBoss {
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
 	}
 	public void RageAbility() {
-		TF2_AddCondition(this.index, view_as<TFCond>(42), 4.0);
+		TF2_AddCondition(this.index, view_as< TFCond >(42), 4.0);
 		if( !GetEntProp(this.index, Prop_Send, "m_bIsReadyToHighFive")
 			&& !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
 		{

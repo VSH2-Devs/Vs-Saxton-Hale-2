@@ -3,7 +3,7 @@
 #tryinclude <tf2items>
 
 #if defined _VSH2_FF2
- #endinput
+	#endinput
 #endif
 #define _VSH2_FF2
 
@@ -11,22 +11,20 @@
 
 #if !defined FF2_USING_AUTO_PLUGIN__OLD
 
-enum FF2CallType_t
-{
-	CT_NONE		= 0b000000000,	// 	Inactive, default to CT_RAGE
-	CT_LIFE_LOSS 	= 0b000000001,
-	CT_RAGE		= 0b000000010,
-	CT_CHARGE	= 0b000000100,
-	CT_UNUSED_DEMO 	= 0b000001000,	//	UNUSED
-	CT_WEIGHDOWN	= 0b000010000,
-	CT_PLAYER_KILLED= 0b000100000,
-	CT_BOSS_KILLED	= 0b001000000,
-	CT_BOSS_STABBED	= 0b010000000,
-	CT_BOSS_MG	= 0b100000000,
+enum FF2CallType_t {
+	CT_NONE          = 0b000000000, /// Inactive, default to CT_RAGE
+	CT_LIFE_LOSS     = 0b000000001,
+	CT_RAGE          = 0b000000010,
+	CT_CHARGE        = 0b000000100,
+	CT_UNUSED_DEMO   = 0b000001000, /// UNUSED
+	CT_WEIGHDOWN     = 0b000010000,
+	CT_PLAYER_KILLED = 0b000100000,
+	CT_BOSS_KILLED   = 0b001000000,
+	CT_BOSS_STABBED  = 0b010000000,
+	CT_BOSS_MG       = 0b100000000,
 };
 
-enum FF2RageType_t
-{
+enum FF2RageType_t {
 	RT_RAGE = 0,
 	RT_WEIGHDOWN,
 	RT_CHARGE
@@ -34,50 +32,50 @@ enum FF2RageType_t
 
 #else
 
-#define FF2CallType_t int
+#define FF2CallType_t    int
 
 enum {
-	FF2FLAG_UBERREADY 		= (1<<1),		//Used when medic says "I'm charged!"				
-	FF2FLAG_ISBUFFED 		= (1<<2),		//Used when soldier uses the Battalion's Backup	
-	FF2FLAG_CLASSTIMERDISABLED 	= (1<<3),		//Used to prevent clients' timer		
-	FF2FLAG_HUDDISABLED 		= (1<<4),		//Used to prevent custom hud from clients' timer	
-	FF2FLAG_BOTRAGE 		= (1<<5),		//Used by bots to use Boss's rage
-	FF2FLAG_TALKING 		= (1<<6),		//Used by Bosses with "sound_block_vo" to disable block for some lines			
-	FF2FLAG_ALLOWSPAWNINBOSSTEAM	= (1<<7),		//Used to allow spawn players in Boss's team			
-	FF2FLAG_USEBOSSTIMER 		= (1<<8),		//Used to prevent Boss's timer		
-	FF2FLAG_USINGABILITY 		= (1<<9),		//Used to prevent Boss's hints about abilities buttons	
-	FF2FLAG_CLASSHELPED 		= (1<<10),					
-	FF2FLAG_HASONGIVED 		= (1<<11),					
-	FF2FLAG_CHANGECVAR		= (1<<12),		//Used to prevent SMAC from kicking bosses who are using certain rages (NYI)		
-	FF2FLAG_ALLOW_HEALTH_PICKUPS	= (1<<13),		//Used to prevent bosses from picking up health
-	FF2FLAG_ALLOW_AMMO_PICKUPS	= (1<<14),		//Used to prevent bosses from picking up ammo		
-	FF2FLAG_ROCKET_JUMPING		= (1<<15),		//Used when a soldier is rocket jumping
-	FF2FLAG_ALLOW_BOSS_WEARABLES	= (1<<16),		//Used to allow boss having wearables (only for Official FF2)
-	FF2FLAGS_SPAWN 			= ~FF2FLAG_UBERREADY 
-					& ~FF2FLAG_ISBUFFED 
-					& ~FF2FLAG_TALKING 
-					& ~FF2FLAG_ALLOWSPAWNINBOSSTEAM 
-					& ~FF2FLAG_CHANGECVAR 
-					& ~FF2FLAG_ROCKET_JUMPING 
-					& FF2FLAG_USEBOSSTIMER 
-					& FF2FLAG_USINGABILITY,					
-}
+	FF2FLAG_UBERREADY            = (1<<1),  /// Used when medic says "I'm charged!"				
+	FF2FLAG_ISBUFFED             = (1<<2),  /// Used when soldier uses the Battalion's Backup	
+	FF2FLAG_CLASSTIMERDISABLED   = (1<<3),  /// Used to prevent clients' timer		
+	FF2FLAG_HUDDISABLED          = (1<<4),  /// Used to prevent custom hud from clients' timer	
+	FF2FLAG_BOTRAGE              = (1<<5),  /// Used by bots to use Boss's rage
+	FF2FLAG_TALKING              = (1<<6),  /// Used by Bosses with "sound_block_vo" to disable block for some lines
+	FF2FLAG_ALLOWSPAWNINBOSSTEAM = (1<<7),  /// Used to allow spawn players in Boss's team			
+	FF2FLAG_USEBOSSTIMER         = (1<<8),  /// Used to prevent Boss's timer		
+	FF2FLAG_USINGABILITY         = (1<<9),  /// Used to prevent Boss's hints about abilities buttons	
+	FF2FLAG_CLASSHELPED          = (1<<10),
+	FF2FLAG_HASONGIVED           = (1<<11),
+	FF2FLAG_CHANGECVAR           = (1<<12), /// Used to prevent SMAC from kicking bosses who are using certain rages (NYI)
+	FF2FLAG_ALLOW_HEALTH_PICKUPS = (1<<13), /// Used to prevent bosses from picking up health
+	FF2FLAG_ALLOW_AMMO_PICKUPS   = (1<<14), /// Used to prevent bosses from picking up ammo		
+	FF2FLAG_ROCKET_JUMPING       = (1<<15), /// Used when a soldier is rocket jumping
+	FF2FLAG_ALLOW_BOSS_WEARABLES = (1<<16), /// Used to allow boss having wearables (only for Official FF2)
+	FF2FLAGS_SPAWN = ~FF2FLAG_UBERREADY
+					& ~FF2FLAG_ISBUFFED
+					& ~FF2FLAG_TALKING
+					& ~FF2FLAG_ALLOWSPAWNINBOSSTEAM
+					& ~FF2FLAG_CHANGECVAR
+					& ~FF2FLAG_ROCKET_JUMPING
+					& FF2FLAG_USEBOSSTIMER
+					& FF2FLAG_USINGABILITY,
+};
 
 
 #endif
 
-#define INVALID_FF2PLAYER ToFF2Player(-1)
-#define ToFF2Player(%0)	view_as<FF2Player>(%0)
-#define FF2_PREFIX		"{olive}[FF2]{default} "
+#define INVALID_FF2PLAYER    ToFF2Player(-1)
+#define ToFF2Player(%0)      view_as< FF2Player >(%0)
+#define FF2_PREFIX           "{olive}[FF2]{default} "
 
 enum struct FF2SoundIdentity {
-	char path[PLATFORM_MAX_PATH];
-	char name[32];
-	char artist[32];
+	char  path[PLATFORM_MAX_PATH];
+	char  name[32];
+	char  artist[32];
 	float time;
 }
 
-/** 
+/**
  * Some new properties:
  *
  * iLives
@@ -115,11 +113,15 @@ methodmap FF2Player < VSH2Player {
 	}
 	
 	property bool Valid {
-		public get() { return this != INVALID_FF2PLAYER && this.index; }
+		public get() {
+			return this != INVALID_FF2PLAYER && this.index;
+		}
 	}
 	
 	property bool bIsBoss {
-		public get() { return this.GetPropAny("bIsBoss"); }
+		public get() {
+			return this.GetPropAny("bIsBoss");
+		}
 	}
 	
 	/**
@@ -240,7 +242,7 @@ methodmap FF2Player < VSH2Player {
 	public native void DoAbility(const char[] pl_name, const char[] ab_name, FF2CallType_t slot);
 	
 	/**
-	 * Forces boss to use every ability with 
+	 * Forces boss to use every ability with
 	 *
 	 * @param slot		check FF2CallType enums
 	 *
@@ -259,7 +261,7 @@ methodmap FF2Player < VSH2Player {
 	 *
 	 * @return		True if sound has been found, false otherwise
 	 */
-	public native bool RandomSound(const char[] key_name, char[] buffer, int maxlen, FF2CallType_t slot=view_as<FF2CallType_t>(2));
+	public native bool RandomSound(const char[] key_name, char[] buffer, int maxlen, FF2CallType_t slot=view_as< FF2CallType_t >(2));
 }
 
 
@@ -608,7 +610,7 @@ stock bool FF2_HasAbility(int boss, const char[] pluginName, const char[] abilit
 	 */
 stock void FF2_DoAbility(int boss, const char[] pluginName, const char[] abilityName, int slot)
 {
-	FF2Player(boss, true).DoAbility(pluginName, abilityName, view_as<FF2CallType_t>(slot));
+	FF2Player(boss, true).DoAbility(pluginName, abilityName, view_as< FF2CallType_t >(slot));
 }
 
 /**
@@ -742,7 +744,7 @@ stock void FF2_GetArgNamedS(int boss, const char[] pluginName, const char[] abil
  */
 stock bool FF2_RandomSound(const char[] keyvalue, char[] buffer, int bufferLength, int boss=0, int slot=0)
 {
-	return FF2Player(boss, true).RandomSound(keyvalue, buffer, bufferLength, view_as<FF2CallType_t>(slot));
+	return FF2Player(boss, true).RandomSound(keyvalue, buffer, bufferLength, view_as< FF2CallType_t >(slot));
 }
 
 /**
@@ -815,7 +817,7 @@ stock Handle FF2_GetSpecialKV(int boss, int specialIndex=0)
 stock int FF2_GetFF2flags(int client)
 {
 #if defined FF2_USING_AUTO_PLUGIN__OLD
-	#warning this doesn't return what you think it does, use FF2Player.GetProp[Int, Float, Any] instead. 
+	#warning this doesn't return what you think it does, use FF2Player.GetProp[Int, Float, Any] instead.
 #endif
 	FF2Player player = FF2Player(client);
 	return player.GetPropInt("iFlags");
@@ -941,7 +943,7 @@ stock bool FF2_Debug()
 {
 #if defined DEBUG
 	return true;
-#else 
+#else
 	return false;
 #endif
 }
@@ -988,7 +990,7 @@ native bool FF2_MakeBoss(int client, const char[] boss_name, bool call_event = t
  */
 #if !defined FF2_USING_AUTO_PLUGIN__OLD
 forward void FF2_PreAbility(FF2Player boss, const char[] pluginName, const char[] abilityName, FF2CallType_t calltype, bool &enabled);
-#else 
+#else
 forward void FF2_PreAbility(int boss, const char[] pluginName, const char[] abilityName, FF2CallType_t calltype, bool &enabled);
 #endif
 
@@ -1026,7 +1028,7 @@ forward Action FF2_OnTriggerHurt(int boss, int triggerHurt, float &damage);
  */
 forward Action FF2_OnMusic(
 #if !defined FF2_USING_AUTO_PLUGIN__OLD
-							const FF2Player player, 
+							const FF2Player player,
 #endif
 							char[] path, float &time);
 
@@ -1335,12 +1337,12 @@ public void FF2_OnAbility(const FF2Player player, const char[] pluginName, const
 	}
 }
 
-#else 
+#else
 
 public void FF2_OnAbility(const FF2Player player, const char[] pluginName, const char[] abilityName, FF2CallType_t calltype)
 {
 	if( !strcmp(pluginName, this_plugin_name) ) {
-		FF2_OnAbility2(player.userid, pluginName, abilityName, view_as<int>(calltype));
+		FF2_OnAbility2(player.userid, pluginName, abilityName, view_as< int >(calltype));
 	}
 }
 
