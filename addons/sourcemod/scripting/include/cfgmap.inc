@@ -451,7 +451,6 @@ methodmap ConfigMap < StringMap {
 		if( !CloneConfigMap(this, map, new_owner) ) {
 			delete map;
 		}
-		
 		return map;
 	}
 };
@@ -654,7 +653,6 @@ static stock bool ConfigMapToFile(const ConfigMap cfg, const char[] sec_name, co
 {
 	StringMapSnapshot snap = cfg.Snapshot();
 	if( snap==null ) {
-		delete file;
 		return false;
 	}
 	
@@ -682,7 +680,7 @@ static stock bool ConfigMapToFile(const ConfigMap cfg, const char[] sec_name, co
 				ConfigMap subsection = pack.data.ReadCell();
 				if( !ConfigMapToFile(subsection, key, file, deep + 1) ) {
 					delete snap;
-					file.WriteLine("}");
+					file.WriteLine("%s}", tab);
 					return false;
 				}
 			}
@@ -697,9 +695,9 @@ static stock bool ConfigMapToFile(const ConfigMap cfg, const char[] sec_name, co
 static stock bool CloneConfigMap(const ConfigMap cfg, ConfigMap new_cfg, Handle new_owner)
 {
 	StringMapSnapshot snap = cfg.Snapshot();
-	if( !snap )
+	if( !snap ) {
 		return false;
-	
+	}
 	int size = snap.Length;
 	for( int i; i<size; i++ ) {
 		int strsize = snap.KeyBufferSize(i) + 1;
