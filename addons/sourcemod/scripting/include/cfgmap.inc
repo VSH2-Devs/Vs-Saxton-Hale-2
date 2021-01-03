@@ -118,8 +118,7 @@ methodmap ConfigMap < StringMap {
 		return view_as< ConfigMap >(cfg);
 	}
 	
-	public bool GetVal(const char[] key, PackVal valbuf)
-	{
+	public bool GetVal(const char[] key, PackVal valbuf) {
 		if( this==null ) {
 			return false;
 		}
@@ -127,10 +126,10 @@ methodmap ConfigMap < StringMap {
 		/// first check if we're getting a singular value OR we iterate through a sectional path.
 		int dot = FindCharInString(key, '.');
 		/// Patch: dot and escaped dot glitching out the hashmap hashing...
-		if( dot == -1 || (dot > 0 && key[dot-1] == '\\') ) {
+		if( dot==-1 || (dot > 0 && key[dot-1]=='\\') ) {
 			PackVal val;
 			bool result = this.GetArray(key, val, sizeof(val));
-			if( result && val.tag != KeyValType_Null ) {
+			if( result && val.tag!=KeyValType_Null ) {
 				valbuf = val;
 				return true;
 			}
@@ -169,6 +168,95 @@ methodmap ConfigMap < StringMap {
 				break;
 			} else if( StrEqual(curr_section, target_section) ) {
 				valbuf = val;
+				return true;
+			} else if( val.tag==KeyValType_Section ) {
+				val.data.Reset();
+				itermap = val.data.ReadCell();
+			}
+		}
+		return false;
+	}
+	
+	public bool SetVal(const char[] key, const char[] val_str = "", int val_size = 0) {
+		if( this==null ) {
+			return false;
+		}
+		///	if "do_erase" is set true, "SetVal" will behave as "RemoveVal", iterate and recursively delete the elements.
+		bool do_erase = val_size<0;
+		/// first check if we're getting a singular value OR we iterate through a sectional path.
+		int dot = FindCharInString(key, '.');
+		/// Patch: dot and escaped dot glitching out the hashmap hashing...
+		if( dot == -1 || (dot > 0 && key[dot-1] == '\\') ) {
+			PackVal val;
+			bool result = this.GetArray(key, val, sizeof(val));
+			KeyValType tag = val.tag;
+			if( result && tag!=KeyValType_Null ) {
+				if( do_erase ) {
+					if( val.tag==KeyValType_Section ) {
+						val.data.Reset();
+						ConfigMap cfg = val.data.ReadCell();
+						DeleteCfg(cfg);
+					}
+					delete val.data;
+					this.Remove(key);
+				}
+				else if( tag==KeyValType_Value ) {
+					val.data.Reset();
+					val.data.WriteString(val_str);
+					val.size = val_size;
+					this.SetArray(key, val, sizeof(val));
+				}
+				return true;
+			}
+			return false;
+		}
+		
+		/// ok, not a singular value, iterate to the specific linkmap section then.
+		/// parse the target key first.
+		int i; /// used for `key`.
+		char target_section[PLATFORM_MAX_PATH];
+		ParseTargetPath(key, target_section, sizeof(target_section));
+		
+		ConfigMap itermap = this;
+		while( itermap != null ) {
+			int n;
+			char curr_section[PLATFORM_MAX_PATH];
+			/// Patch: allow keys to use dot without interfering with dot path.
+			while( key[i] != 0 ) {
+				if( key[i]=='\\' && key[i+1] != 0 && key[i+1]=='.' ) {
+					i++;
+					if( n<PLATFORM_MAX_PATH ) {
+						curr_section[n++] = key[i++];
+					}
+				} else if( key[i]=='.' ) {
+					i++;
+					break;
+				} else {
+					if( n<PLATFORM_MAX_PATH ) {
+						curr_section[n++] = key[i++];
+					}
+				}
+			}
+			PackVal val;
+			bool result = itermap.GetArray(curr_section, val, sizeof(val));
+			if( !result ) {
+				break;
+			} else if( StrEqual(curr_section, target_section) ) {
+				if( !do_erase ) {
+					val.data.Reset();
+					val.data.WriteString(val_str);
+					val.size = val_size;
+					itermap.SetArray(curr_section, val, sizeof(val))	
+				}
+				else {
+					if( val.tag==KeyValType_Section ) {
+						val.data.Reset();
+						ConfigMap cfg = val.data.ReadCell();
+						DeleteCfg(cfg);
+					}
+					delete val.data;
+					itermap.Remove(curr_section);
+				}
 				return true;
 			} else if( val.tag==KeyValType_Section ) {
 				val.data.Reset();
@@ -356,16 +444,9 @@ methodmap ConfigMap < StringMap {
 		if( this==null ) {
 			return false;
 		}
-		PackVal val;
-		bool result = this.GetVal(key_path, val);
-		if( result && val.tag==KeyValType_Value ) {
-			val.data.Reset();
-			char val_str[15];
-			IntToString(i, val_str, sizeof(val_str));
-			val.data.WriteString(val_str);
-			return true;
-		}
-		return false;
+		char val_str[15];
+		int size = IntToString(i, val_str, sizeof(val_str)) + 1;
+		return this.SetVal(key_path, val_str, size);
 	}
 	
 	/**
@@ -381,16 +462,9 @@ methodmap ConfigMap < StringMap {
 		if( this==null ) {
 			return false;
 		}
-		PackVal val;
-		bool result = this.GetVal(key_path, val);
-		if( result && val.tag==KeyValType_Value ) {
-			val.data.Reset();
-			char val_str[15];
-			FloatToString(f, val_str, sizeof(val_str));
-			val.data.WriteString(val_str);
-			return true;
-		}
-		return false;
+		char val_str[15];
+		int size = FloatToString(f, val_str, sizeof(val_str)) + 1;
+		return this.SetVal(key_path, val_str, size);
 	}
 	
 	/**
@@ -406,14 +480,7 @@ methodmap ConfigMap < StringMap {
 		if( this==null ) {
 			return false;
 		}
-		PackVal val;
-		bool result = this.GetVal(key_path, val);
-		if( result && val.tag==KeyValType_Value ) {
-			val.data.Reset();
-			val.data.WriteString(str);
-			return true;
-		}
-		return false;
+		return this.SetVal(key_path, str, strlen(str) + 1);
 	}
 	
 	/**
@@ -452,6 +519,21 @@ methodmap ConfigMap < StringMap {
 			delete map;
 		}
 		return map;
+	}
+	
+	/**
+	 * 
+	 * name:      DeleteSection
+	 * @param     key_path : section path name to erase.
+	 * @return    true on if section was successfully deleted, false otherwise.
+	 * @note      to directly access subsections, use a '.' like "root.section1.section2"
+	 *            for keys that have a dot in their name, use '\\.'
+	 */
+	public bool DeleteSection(const char[] key_path) {
+		if( this==null ) {
+			return false;
+		}
+		return this.SetVal(key_path, .val_size = -1);
 	}
 };
 
