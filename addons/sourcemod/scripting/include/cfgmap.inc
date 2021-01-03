@@ -94,7 +94,7 @@ methodmap ConfigMap < StringMap {
 		
 		SMCError err = g_kvstate.parser.ParseFile(path);
 		//PrintCfg(view_as< ConfigMap >(g_kvstate.top));
-		if( err != SMCError_Okay ) {
+		if( err!=SMCError_Okay ) {
 			char buffer[64];
 			if( g_kvstate.parser.GetErrorString(err, buffer, sizeof(buffer)) ) {
 				LogError("ConfigMap Err (%s) :: **** %s ****", path, buffer);
@@ -102,7 +102,7 @@ methodmap ConfigMap < StringMap {
 				LogError("ConfigMap Err (%s) :: **** Unknown Fatal Parse Error ****", path);
 			}
 			
-			if( g_kvstate.top != null ) {
+			if( g_kvstate.top!=null ) {
 				DeleteCfg(view_as< ConfigMap >(g_kvstate.top));
 			}
 		}
@@ -112,7 +112,7 @@ methodmap ConfigMap < StringMap {
 		delete g_kvstate.enum_stack;
 		
 		StringMap cfg = g_kvstate.top;
-		if( g_kvstate.top != null ) {
+		if( g_kvstate.top!=null ) {
 			g_kvstate.top = null;
 		}
 		return view_as< ConfigMap >(cfg);
@@ -126,7 +126,7 @@ methodmap ConfigMap < StringMap {
 		/// first check if we're getting a singular value OR we iterate through a sectional path.
 		int dot = FindCharInString(key, '.');
 		/// Patch: dot and escaped dot glitching out the hashmap hashing...
-		if( dot==-1 || (dot > 0 && key[dot-1]=='\\') ) {
+		if( dot==-1 || (dot>0 && key[dot-1]=='\\') ) {
 			PackVal val;
 			bool result = this.GetArray(key, val, sizeof(val));
 			if( result && val.tag!=KeyValType_Null ) {
@@ -143,12 +143,12 @@ methodmap ConfigMap < StringMap {
 		ParseTargetPath(key, target_section, sizeof(target_section));
 		
 		ConfigMap itermap = this;
-		while( itermap != null ) {
+		while( itermap!=null ) {
 			int n;
 			char curr_section[PLATFORM_MAX_PATH];
 			/// Patch: allow keys to use dot without interfering with dot path.
-			while( key[i] != 0 ) {
-				if( key[i]=='\\' && key[i+1] != 0 && key[i+1]=='.' ) {
+			while( key[i]!=0 ) {
+				if( key[i]=='\\' && key[i+1]!=0 && key[i+1]=='.' ) {
 					i++;
 					if( n<PLATFORM_MAX_PATH ) {
 						curr_section[n++] = key[i++];
@@ -186,7 +186,7 @@ methodmap ConfigMap < StringMap {
 		/// first check if we're getting a singular value OR we iterate through a sectional path.
 		int dot = FindCharInString(key, '.');
 		/// Patch: dot and escaped dot glitching out the hashmap hashing...
-		if( dot == -1 || (dot > 0 && key[dot-1] == '\\') ) {
+		if( dot==-1 || (dot>0 && key[dot-1]=='\\') ) {
 			PackVal val;
 			bool result = this.GetArray(key, val, sizeof(val));
 			KeyValType tag = val.tag;
@@ -218,12 +218,12 @@ methodmap ConfigMap < StringMap {
 		ParseTargetPath(key, target_section, sizeof(target_section));
 		
 		ConfigMap itermap = this;
-		while( itermap != null ) {
+		while( itermap!=null ) {
 			int n;
 			char curr_section[PLATFORM_MAX_PATH];
 			/// Patch: allow keys to use dot without interfering with dot path.
-			while( key[i] != 0 ) {
-				if( key[i]=='\\' && key[i+1] != 0 && key[i+1]=='.' ) {
+			while( key[i]!=0 ) {
+				if( key[i]=='\\' && key[i+1]!=0 && key[i+1]=='.' ) {
 					i++;
 					if( n<PLATFORM_MAX_PATH ) {
 						curr_section[n++] = key[i++];
@@ -511,7 +511,7 @@ methodmap ConfigMap < StringMap {
 	 * @return    true on sucess, false otherwise.
 	 */
 	public ConfigMap Clone(Handle new_owner) {
-		if( this==null || !new_owner ) {
+		if( this==null || new_owner==null ) {
 			return null;
 		}
 		ConfigMap map = view_as<ConfigMap>(new StringMap());
