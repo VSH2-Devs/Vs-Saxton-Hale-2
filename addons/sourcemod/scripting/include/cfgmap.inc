@@ -181,7 +181,7 @@ methodmap ConfigMap < StringMap {
 		if( this==null ) {
 			return false;
 		}
-		///	if "do_erase" is set true, "SetVal" will behave as "RemoveVal", iterate and recursively delete the elements.
+		/// if "do_erase" is set true, "SetVal" will behave as "RemoveVal", iterate and recursively delete the elements.
 		bool do_erase = val_size<0;
 		/// first check if we're getting a singular value OR we iterate through a sectional path.
 		int dot = FindCharInString(key, '.');
