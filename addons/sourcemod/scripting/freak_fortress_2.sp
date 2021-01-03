@@ -6,7 +6,8 @@
 #define REQUIRE_PLUGIN
 #include <sdkhooks>
 
-#define PLYR    35
+#define PLYR		35
+#define PLUGIN_VERSION	"1.0.1b"
 
 #include <cfgmap>
 #include "modules/stocks.inc"
@@ -18,7 +19,7 @@ public Plugin myinfo = {
 	name           = "VSH2/FF2 Compatibility Engine",
 	author         = "Nergal/Assyrianic, BatFoxKid and 01Pollux",
 	description    = "Implements FF2's forwards & natives using VSH2's API",
-	version        = "1.0b",
+	version        = PLUGIN_VERSION,
 	url            = "https://github.com/VSH2-Devs/Vs-Saxton-Hale-2"
 };
 
@@ -86,9 +87,11 @@ static void LoadFF2()
 
 	InitVSH2Bridge();
 
-	for( int i=MaxClients; i > 0; i-- )
-		if( IsClientInGame(i) )
+	for( int i=MaxClients; i>0; i-- ) {
+		if( IsClientInGame(i) ) {
 			OnClientPutInServer(i);
+		}
+	}
 
 	ff2.m_plugins = new FF2PluginList();
 }
@@ -100,11 +103,12 @@ static void LateLoadSubPlugins()
 		int count = VSH2GameMode.GetBosses(view_as<VSH2Player>(bosses), false);
 
 		FF2Player player;
-		for(int i; i < count && !ff2.m_plugins.IsFull; i++ ) {
+		for( int i; i < count && !ff2.m_plugins.IsFull; i++ ) {
 			player = bosses[i];
 			FF2AbilityList list = player.HookedAbilities;
-			if( list )
+			if( list ) {
 				ff2.m_plugins.LoadPlugins(list);
+			}
 		}
 	}
 }
@@ -113,15 +117,15 @@ static void LateLoadSubPlugins()
 public void OnPluginEnd()
 {
 	if( ff2.m_vsh2 ) {
-		ff2.m_vsh2 = false;
-		ff2.m_plugins.UnloadAllSubPlugins();
+		if( ff2.m_plugins != null ) {
+			ff2.m_plugins.UnloadAllSubPlugins();
+		}
 		RemoveVSH2Bridge();
 	}
 }
 
 public void OnLibraryAdded(const char[] name) {
-	if( StrEqual(name, "VSH2") && !ff2.m_vsh2) {
-
+	if( StrEqual(name, "VSH2") && !ff2.m_vsh2 ) {
 		InitConVars();
 		ff2.m_vsh2 = true;
 		LoadFF2();
@@ -133,11 +137,13 @@ public void OnLibraryAdded(const char[] name) {
 public void OnMapEnd()
 {
 	if( ff2.m_vsh2 ) {
-		if( ff2.m_plugins != null )
+		if( ff2.m_plugins != null ) {
 			ff2.m_plugins.UnloadAllSubPlugins();
+		}
 
-		if( ff2_cfgmgr != null )
+		if( ff2_cfgmgr != null ) {
 			ff2_cfgmgr.DeleteAll();
+		}
 		delete ff2_cfgmgr;
 
 		char pack[48];
@@ -147,26 +153,33 @@ public void OnMapEnd()
 }
 
 public void OnLibraryRemoved(const char[] name) {
-	if( StrEqual(name, "VSH2") && ff2.m_vsh2) {
-		ServerCommand("sm plugins unload \"freak_fortress_2\"");
+	if( StrEqual(name, "VSH2") && ff2.m_vsh2 ) {
+		ff2.m_vsh2 = false;
+		
+		if( ff2.m_plugins != null ) {
+			ff2.m_plugins.UnloadAllSubPlugins();
+		}
+		delete ff2.m_plugins;
+		
+		RemoveVSH2Bridge();		///	ff2_cfgmgr will be deleted here
 	}
 }
 
 
 public void NextFrame_InitFF2Player(int client)
 {
-	FF2Player player = FF2Player(client);
+	if( ff2.m_vsh2 ) {
+		FF2Player player = FF2Player(client);
 
-	player.iMaxLives = 0;
-	player.bNoSuperJump = false;
-	player.bNoWeighdown = false;
-	player.bHideHUD = false;
+		player.iMaxLives = 0;
+		player.bNoSuperJump = false;
+		player.bNoWeighdown = false;
+		player.bHideHUD = false;
+	}
 }
 
 public void OnClientPutInServer(int client)
 {
-	if ( !ff2.m_vsh2 ) return;
-
 	RequestFrame(NextFrame_InitFF2Player, client);
 }
 
