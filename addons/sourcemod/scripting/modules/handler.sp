@@ -340,8 +340,9 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					return Plugin_Changed;
 				}
 			} else if( attacker <= 0 && bFallDamage ) {
-				if( Call_OnBossTakeFallDamage(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed )
+				if( Call_OnBossTakeFallDamage(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
 					damage = (victim.iHealth > 100) ? 1.0 : 30.0;
+				}
 				return Plugin_Changed;
 			}
 
@@ -462,7 +463,9 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 			/// Gives 4 heads if successful sword killtaunt!
 			/// TODO: add cvar for this?
 			if( damagecustom == TF_CUSTOM_TAUNT_BARBARIAN_SWING ) {
-				repeat(4) IncrementHeadCount(attacker);
+				repeat(4) {
+					IncrementHeadCount(attacker);
+				}
 				if( Call_OnBossTakeDamage_OnSwordTaunt(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) == Plugin_Changed )
 					return Plugin_Changed;
 			}
@@ -1239,10 +1242,8 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 		switch( base.iBossType ) {
 			case -1: {}
 			case VSH2Boss_HHHjr: {
-				if( base.iClimbs < g_vsh2.m_hCvars.HHHMaxClimbs.IntValue ) {
-					if( base.ClimbWall(weapon, g_vsh2.m_hCvars.HHHClimbVelocity.FloatValue, 0.0, false) ) {
-						base.flWeighDown = 0.0;
-					}
+				if( base.iClimbs < g_vsh2.m_hCvars.HHHMaxClimbs.IntValue && base.ClimbWall(weapon, g_vsh2.m_hCvars.HHHClimbVelocity.FloatValue, 0.0, false) ) {
+					base.flWeighDown = 0.0;
 				}
 			}
 		}
@@ -1252,10 +1253,12 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 			return Plugin_Continue;
 		result = false;
 		return Plugin_Changed;
-	}
-	if( !base.bIsBoss && !base.bIsMinion ) {
-		if( TF2_GetPlayerClass(base.index) == TFClass_Sniper && IsWeaponSlotActive(base.index, TFWeaponSlot_Melee) && g_vsh2.m_hCvars.AllowSniperClimbing.BoolValue )
+	} else if( !base.bIsMinion ) {
+		if( TF2_GetPlayerClass(client)==TFClass_Sniper
+				&& IsWeaponSlotActive(client, TFWeaponSlot_Melee)
+				&& g_vsh2.m_hCvars.AllowSniperClimbing.BoolValue ) {
 			base.ClimbWall(weapon, g_vsh2.m_hCvars.SniperClimbVelocity.FloatValue, 15.0, true);
+		}
 	}
 	return Plugin_Continue;
 }
@@ -1501,6 +1504,7 @@ public void ManageLastPlayer()
 		case VSH2Boss_Bunny:     ToCBunny(currBoss).LastPlayerSoundClip();
 	}
 }
+
 public void ManageBossCheckHealth(const BaseBoss base)
 {
 	static int LastBossTotalHealth;
@@ -1560,14 +1564,13 @@ public void CheckAlivePlayers(const any nil)
 		return;
 
 	int living = GetLivingPlayers(VSH2Team_Red);
-	if( !living )
+	if( !living ) {
 		ForceTeamWin(VSH2Team_Boss);
-
-	if( living == 1 && VSHGameMode.CountBosses(true) > 0 && g_vsh2.m_hGamemode.iTimeLeft <= 0 ) {
-		ManageLastPlayer();	/// in handler.sp
+	} else if( living == 1 && VSHGameMode.CountBosses(true) > 0 && g_vsh2.m_hGamemode.iTimeLeft <= 0 ) {
+		ManageLastPlayer(); /// in handler.sp
 		g_vsh2.m_hGamemode.iTimeLeft = g_vsh2.m_hCvars.LastPlayerTime.IntValue;
 
-		/// maybe some day :/ ...
+		/// maybe some day...
 		/*
 		int round_timer = -1;
 		round_timer = FindEntityByClassname(RoundTimer, "team_round_timer");
@@ -1593,21 +1596,23 @@ public void CheckAlivePlayers(const any nil)
 	int enable_alive = g_vsh2.m_hCvars.AliveToEnable.IntValue;
 	if( !g_vsh2.m_hCvars.PointType.BoolValue && living <= enable_alive && !g_vsh2.m_hGamemode.bPointReady ) {
 		PrintHintTextToAll("%i players are left; control point enabled!", living);
-		if( living==enable_alive )
+		if( living==enable_alive ) {
 			EmitSoundToAll("vo/announcer_am_capenabled02.mp3");
-		else if( living < enable_alive ) {
-			char cap_incite_snd[PLATFORM_MAX_PATH];
-			Format(cap_incite_snd, sizeof(cap_incite_snd), "vo/announcer_am_capincite0%i.mp3", GetRandomInt(0, 1) ? 1 : 3);
-			EmitSoundToAll(cap_incite_snd);
+		} else if( living < enable_alive ) {
+			char cap_incite_snd[][] = {
+				"vo/announcer_am_capincite01.mp3",
+				"vo/announcer_am_capincite03.mp3"
+			};
+			EmitSoundToAll(cap_incite_snd[GetRandomInt(0, 1)]);
 		}
 		SetControlPoint(true);
 		g_vsh2.m_hGamemode.bPointReady = true;
 	}
 }
 
-public void ManageOnBossCap(char sCappers[MAXPLAYERS+1], const int CappingTeam)
+public void ManageOnBossCap(char sCappers[MAXPLAYERS+1], const int capping_team, BaseBoss[] cappers, const int capper_count)
 {
-	Call_OnControlPointCapped(sCappers, CappingTeam);
+	Call_OnControlPointCapped(sCappers, capping_team, cappers, capper_count);
 }
 
 /// TODO: fix this up so it appears more often.
@@ -1615,15 +1620,16 @@ public void _SkipBossPanel()
 {
 	BaseBoss[] upnext = new BaseBoss[MaxClients];
 	VSHGameMode.GetQueue(upnext);
-	for( int j; j<3; ++j ) {
+	for( int j; j<3; j++ ) {
 		if( !upnext[j] )
 			continue;
 
 		/// If up next to become a boss.
-		if( !j )
+		if( !j ) {
 			SkipBossPanelNotify(upnext[j].index);
-		else if( !IsFakeClient(upnext[j].index) )
+		} else if( !IsFakeClient(upnext[j].index) ) {
 			CPrintToChat(upnext[j].index, "{olive}[VSH 2]{default} You are going to be a Boss soon! Type {olive}/halenext{default} to check/reset your queue points & !setboss to set your boss.");
+		}
 	}
 }
 
@@ -1633,16 +1639,18 @@ public void PrepPlayers(const BaseBoss player)
 	if( g_vsh2.m_hGamemode.iRoundState == StateEnding || !IsValidClient(client) || !IsPlayerAlive(client) || player.bIsBoss )
 		return;
 
-	Action act = Call_OnPrepRedTeam(player);
-	if( act > Plugin_Changed )
-		return;
-
 #if defined _tf2attributes_included
 	if( g_vsh2.m_hGamemode.bTF2Attribs )
 		TF2Attrib_RemoveAll(client);
 #endif
+
+	Action act = Call_OnPrepRedTeam(player);
+	if( act > Plugin_Changed )
+		return;
+
 	/// Added fix by Chdata to correct team colors
-	if( GetClientTeam(client) != VSH2Team_Red && GetClientTeam(client) > VSH2Team_Spectator ) {
+	int player_team = GetClientTeam(client);
+	if( player_team > VSH2Team_Spectator && player_team != VSH2Team_Red ) {
 		player.ForceTeamChange(VSH2Team_Red);
 		TF2_RegeneratePlayer(client);
 	}
@@ -2000,11 +2008,11 @@ public void ManageFighterThink(const BaseBoss fighter)
 		switch( GetLivingPlayers(VSH2Team_Red) ) {
 			case 1: {
 				TF2_AddCondition(i, TFCond_CritOnWin, 0.2);
+				TF2_AddCondition(i, TFCond_Buffed,    0.2);
 				int primary = GetPlayerWeaponSlot(i, TFWeaponSlot_Primary);
 				if( tfclass==TFClass_Engineer && weapon==primary && StrEqual(wepclassname, "tf_weapon_sentry_revenge", false) ) {
 					SetEntProp(i, Prop_Send, "m_iRevengeCrits", 3);
 				}
-				TF2_AddCondition(i, TFCond_Buffed, 0.2);
 				return;
 			}
 			case 2: {
@@ -2021,14 +2029,15 @@ public void ManageFighterThink(const BaseBoss fighter)
 
 	int crit_flags = 0;
 	enum {
-		CRITFLAG_MINI = 1 << 0, /// minicrits.
-		CRITFLAG_FULL = 1 << 1, /// full crits.
+		CRITFLAG_MINI  = 1 << 0, /// minicrits.
+		CRITFLAG_FULL  = 1 << 1, /// full crits.
+		CRITFLAG_STACK = 1 << 2, /// stack crits.
 	};
 
 	int healers = GetEntProp(i, Prop_Send, "m_nNumHealers");
 	for( int u; u<healers; u++ ) {
 		if( 0 < GetHealerByIndex(i, u) <= MaxClients ) {
-			crit_flags |= CRITFLAG_MINI;
+			crit_flags |= CRITFLAG_STACK;
 			break;
 		}
 	}
@@ -2083,9 +2092,9 @@ public void ManageFighterThink(const BaseBoss fighter)
 	}
 
 	/// Demo Man shield crits code.
-	if( tfclass == TFClass_DemoMan && !IsValidEntity(GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary)) ) {
-		float flShieldMeter = GetEntPropFloat(i, Prop_Send, "m_flChargeMeter");
+	if( tfclass == TFClass_DemoMan && !IsValidEntity(GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary)) && GetSlotFromWeapon(i, weapon) != TFWeaponSlot_Melee ) {
 		if( g_vsh2.m_hCvars.DemoShieldCrits.IntValue >= 1 ) {
+			float flShieldMeter = GetEntPropFloat(i, Prop_Send, "m_flChargeMeter");
 			crit_flags = CRITFLAG_FULL;
 			if( g_vsh2.m_hCvars.DemoShieldCrits.IntValue == 1 || (g_vsh2.m_hCvars.DemoShieldCrits.IntValue == 3 && flShieldMeter < 100.0) ) {
 				crit_flags = CRITFLAG_MINI;
@@ -2098,6 +2107,8 @@ public void ManageFighterThink(const BaseBoss fighter)
 	}
 
 	if( crit_flags & CRITFLAG_FULL ) {
+		if( crit_flags & CRITFLAG_STACK )
+			TF2_AddCondition(i, TFCond_Buffed, 0.2);
 		TF2_AddCondition(i, TFCond_CritOnWin, 0.2);
 	}
 	if( crit_flags & CRITFLAG_MINI ) {
@@ -2145,6 +2156,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 /// too many temp funcs just to call as a timer. No wonder sourcepawn needs lambda funcs...
 public void _RespawnPlayer(const int userid)
 {
-	if( g_vsh2.m_hGamemode.iRoundState == StateRunning )
+	if( g_vsh2.m_hGamemode.iRoundState == StateRunning ) {
 		TF2_RespawnPlayer(GetClientOfUserId(userid));
+	}
 }

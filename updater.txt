@@ -4,18 +4,22 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.9.27"
+			"Latest"	"2.10.28"
 		}
-
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.9.27:"
-		"Notes"	"Changed method `SetWepInvis` to use the alpha value as a percentage from 0 to 100 instead of 0 to 255."
-		"Notes"	"Refactored `ShowPlayerScores` (Scags)."
-		"Notes"	"Attempted patch at making sure client disconnecting doesn't throw an error."
-		"Notes"	"Added extension to OnMusic forward to control song volume."
-		"Notes"	"Updated 'VSH2GameMode_GetHudHandle' to take an int to a specific HUD."
-		"Notes"	"Fixed formatting of FF2 compatibility engine to fit codebase conventions."
-		"Notes"	"Patched empty string not removing attributes from weapons."
-		"Notes"	"Patched oversight on VSH1 compatibility engine where Hale Rage forward was trying to be executed instead of Hale Jump as the intended hook."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.10.28:"
+		"Notes"	"Refactored HUD and Crit code in 'ManageFighterThink'."
+		"Notes"	"Optimized 'OnPreThinkPost' by having the cloak reducing check code if the player is cloaked."
+		"Notes"	"Switched code placement of tf2attributes removal and the 'PrepPlayers' forward call."
+		"Notes"	"Added PreRound Boss Setting (Shinyscales)."
+		"Notes"	"Added OnPlayerClimb forward for when a player climbs a wall (Shinyscales)."
+		"Notes"	"Renamed 'OnHookedEvent' to 'OnExplosiveJump' and renamed a few other identifier names to something more self-documenting."
+		"Notes"	"Extended 'OnControlPointCapped' by adding a filled VSH2Player array with capper amount."
+		"Notes"	"Added VSH2's documentation as text & image files."
+		"Notes"	"Added new native 'VSH2_GetConfigMap'."
+		"Notes"	"Demomen no longer lose melee crits when they lose shield charge for specific vsh2_demoman_shield_crits cvar values."
+		"Notes"	"Added new property for the VSH2 Gamemode: 'iPrevSpecial'."
+		"Notes"	"Expanded ConfigMap with Setting methods, ExportToFile, & Cloning (01Pollux)."
+		"Notes"	"Update FF2 loading cycle (01Pollux)."
 	}
 
 	"Files"
@@ -23,6 +27,7 @@
 		"Plugin"	"Path_SM/plugins/vsh2.smx"
 
 		"Source"	"Path_SM/scripting/vsh2.sp"
+		"Source"	"Path_SM/scripting/freak_fortress_2.sp"
 		"Source"	"Path_SM/scripting/vsh2boss_plaguedoctor.sp"
 		"Source"	"Path_SM/scripting/vsh2boss_template.sp"
 		"Source"	"Path_SM/scripting/saxtonhale.sp"
@@ -44,6 +49,7 @@
 
 		"Source"	"Path_SM/scripting/include/vsh2.inc"
 		"Source"	"Path_SM/scripting/include/freak_fortress_2.inc"
+		"Source"	"Path_SM/scripting/include/morecolors.inc"
 		"Source"	"Path_SM/scripting/include/cfgmap.inc"
 		"Source"	"Path_SM/scripting/include/steamtools.inc"
 		"Source"	"Path_SM/scripting/include/tf2items_stocks.inc"

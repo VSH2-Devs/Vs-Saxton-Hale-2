@@ -159,7 +159,7 @@ public int Native_GetSpecial(Handle plugin, int numParams)
 	VSH2Player[] boss = new VSH2Player[MaxClients];
 	if( VSH2GameMode.GetBosses(boss) > 0 )
 		return boss[0].GetPropInt("iBossType");
-	else return 0;
+	else return -1;
 }
 
 public int Native_GetHealth(Handle plugin, int numParams)

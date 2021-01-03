@@ -2,21 +2,21 @@
 
 #### Current STABLE Version: *2.0.5*
 [![Master Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=master)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
-#### Current DEVELOPMENT Version: *2.9.27*
+#### Current DEVELOPMENT Version: *2.10.28*
 [![Develop Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=develop)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
 
 **[VSH2 Addons Repository](https://github.com/VSH2-Devs/VSH2-Addons)**
 
 
-VSH2 is rewrite of VSH1. VSH1 and FF2 both had a very bad code framework using shoddy, hacky coding. I could even go as far to say they probably had no framework at all and even no real structure to its code.
+VSH2 is a rewrite of VSH1. VSH1 and FF2 both had a very bad gamemode framework using shoddy, hacky coding. I could even go as far to say they probably had no framework at all nor any real structure to its code.
 
-VSH2 actually has a structured, event-based framework and combines the best features of both FF2 and VSH1 by not only having multiplayer boss support but also to make it easier to add new bosses **and** give them truly unique abilities and mechanics through giving the developer full, uninhibited control by code rather than config files.
+VSH2 actually has a structured, event-based framework which combines the best features of both FF2 and VSH1 by not only having multiplayer boss support but also to make it easier to add new bosses **and** give them truly unique abilities & mechanics through giving the developer full, uninhibited control by code rather than strictly config files.
 
-FF2's purpose is to be very easy to add bosses in a generic, cookie-cutter manner. Of course there's a trade off: FF2 is alot more difficult, if not impossible, to truly customize boss mechanics and abilities without having to recode parts of FF2 itself. VSH2, since it requires experience with SourcePawn, is somewhat more difficult for a newbie than FF2 to create new bosses but it rewards taking the harder route by allowing you to control damn near every individual boss behavior and logic.
+FF2's purpose was to be very easy to add bosses in a generic, cookie-cutter manner. Of course there's a trade off: FF2 is alot more difficult, if not impossible, to truly customize boss mechanics & abilities without having to recode parts of FF2 itself. VSH2, since it requires at least some experience with SourcePawn, is somewhat more difficult for a newbie to create new bosses than if they were to use FF2 but choosing VSH2 rewards taking the harder route by allowing you to control damn near every individual boss behavior and logic.
 
-If you do require help in setting up the bosses or at least need some info on the API for boss building in VSH2, [have a look at the VSH2 wiki](https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki)
+If you do require help in setting up the bosses or at least need some info on the API for boss building, then take advantage of VSH2's vast API by [having a look at the VSH2 wiki](https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki)
 
-**NB:** While VSH2 will work perfectly fine as-is out of the box as a VSH1 replacement, it was designed with capable SourcePawn **_developers_** in mind to make the most out of the coded-from-scratch framework! So don't expect to be able to easily modify/add bosses if you have no prior SourcePawn experience like you would with FF2.
+**NB:** VSH2 will work perfectly fine as-is out of the box as a VSH1 replacement, but it was designed with capable SourcePawn **_developers_** in mind to make the most out of the coded-from-scratch framework!
 
 ### Why VSH2?
 
@@ -24,15 +24,16 @@ If you do require help in setting up the bosses or at least need some info on th
 * VSH2 operates through a series of Event Handling functions across different Boss, non-Boss actions, and clear cut API which allows developers to control boss code at will and with ease.
 * VSH2's game state is controlled through a singleton instance of the VSHGameMode methodmap which allows for easier management of the entire gamemode's state.
 * VSH2 gives you the option to either hard code your new bosses directly into the plugin or use VSH2's vast API to build bosses as subplugins/modules!
+* 'ConfigMap' allows you to not only have the power of VSH2's API but have FF2-like configuration for a powerful combination of customization through code and config alike.
 
 ### How do I get set up?
 
-* Compile with spcomp
 * VSH2 uses the same map configurations as FF2 and VSH1 and this is for compatibility reasons.
-* Dependencies: TF2Items, MoreColors, ConfigMap.
-* Optional Dependencies: TF2Attributes (https://github.com/FlaminSarge/tf2attributes), SteamTools (https://forums.alliedmods.net/showthread.php?t=170630)
-* Compile plugin into .smx and put in addons/sourcemod/plugins folder
-* Take a look at the [Wiki](https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki) to get started making your own boss!
+* Dependencies: [TF2Items](https://builds.limetech.io/?project=tf2items), MoreColors, ConfigMap (MoreColors + ConfigMap are part of VSH2 repo).
+* Optional Dependencies: [TF2Attributes](https://github.com/FlaminSarge/tf2attributes), [SteamTools] (https://forums.alliedmods.net/showthread.php?t=170630)
+* Compile the VSH2 script code with spcomp or upload the prebuild SMX binaries; which ever method you use, move the SMX binaries to your server's SourceMod 'plugins' directory (addons/sourcemod/plugins).
+* Read the [Wiki](https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki) to get started making your own boss!
+* If you're moving from FF2 to VSH2, we also have the VSH2-FF2 Compatibility Engine, [use this FF2 subplugin library, courtesy of 01Pollux](https://github.com/01Pollux/FF2-Library)
 
 ### Who do I talk to?
 
@@ -43,6 +44,7 @@ If you do require help in setting up the bosses or at least need some info on th
 ### Contribution Rules
 #### Code Format:
 * Use New sourcepawn syntax (sourcemod 1.7+).
+* Statements that require parentheses (such as 'if' statements) should have each side of the parentheses spaced out with the beginning parens touching the construct keyword, e.g. `construct( code/expression )`.
 * Single line comments that convey a message must have 3 slashes: `///`.
 * Multi-line comments that convey a message should have an extra beginning star: `/**`.
 * Properties, functions, & methods smaller than 30 lines of code should have the beginning `{` brace in K&R C style, for example: `ret func() {`.

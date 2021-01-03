@@ -30,14 +30,14 @@ void InitializeForwards()
 		g_hForwards[i][OnRoundEndInfo] = new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_String );
 		g_hForwards[i][OnLastPlayer] = new PrivateForward( ET_Event, Param_Cell );
 		g_hForwards[i][OnBossHealthCheck] = new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_String );
-		g_hForwards[i][OnControlPointCapped] = new PrivateForward( ET_Event, Param_String, Param_Cell );
+		g_hForwards[i][OnControlPointCapped] = new PrivateForward( ET_Event, Param_String, Param_Cell, Param_Array, Param_Cell );
 		g_hForwards[i][OnPrepRedTeam] = new PrivateForward( ET_Event, Param_Cell );
 		g_hForwards[i][OnRedPlayerThink] = new PrivateForward( ET_Event, Param_Cell );
 		g_hForwards[i][OnPlayerHurt] = new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_Cell );
 		g_hForwards[i][OnBossMenu] = new PrivateForward( ET_Ignore, Param_CellByRef, Param_Cell );
 		g_hForwards[i][OnScoreTally] = new PrivateForward( ET_Event, Param_Cell, Param_CellByRef, Param_CellByRef );
 		g_hForwards[i][OnItemOverride] = new PrivateForward( ET_Hook, Param_Cell, Param_String, Param_Cell, Param_CellByRef );
-		
+
 		/// OnBossDealDamage Specific Forwards.
 		g_hForwards[i][OnBossDealDamage_OnStomp] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossDealDamage_OnHitDefBuff] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
@@ -46,7 +46,7 @@ void InitializeForwards()
 		g_hForwards[i][OnBossDealDamage_OnHitDeadRinger] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossDealDamage_OnHitCloakedSpy] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossDealDamage_OnHitShield] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		
+
 		/// OnBossTakeDamage Specific Forwards
 		g_hForwards[i][OnBossTakeDamage_OnStabbed] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossTakeDamage_OnTelefragged] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
@@ -63,28 +63,29 @@ void InitializeForwards()
 		g_hForwards[i][OnBossTakeDamage_OnAmbassadorHeadshot] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossTakeDamage_OnDiamondbackManmelterCrit] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossTakeDamage_OnHolidayPunch] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		
+
 		g_hForwards[i][OnBossSuperJump] = new PrivateForward( ET_Event, Param_Cell );
 		g_hForwards[i][OnBossDoRageStun] = new PrivateForward( ET_Event, Param_Cell, Param_FloatByRef );
 		g_hForwards[i][OnBossWeighDown] = new PrivateForward( ET_Event, Param_Cell );
-		
+
 		g_hForwards[i][OnRPSTaunt] = new PrivateForward( ET_Event, Param_Cell, Param_Cell );
 		g_hForwards[i][OnBossAirShotProj] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossTakeFallDamage] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossGiveRage] = new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_FloatByRef );
 		g_hForwards[i][OnBossCalcHealth] = new PrivateForward( ET_Single, Param_Cell, Param_CellByRef, Param_Cell, Param_Cell );
-		
+
 		g_hForwards[i][OnBossTakeDamage_OnTriggerHurt] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossTakeDamage_OnMantreadsStomp] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossThinkPost] = new PrivateForward( ET_Hook, Param_Cell );
 		g_hForwards[i][OnBossEquippedPost] = new PrivateForward( ET_Hook, Param_Cell );
 		g_hForwards[i][OnPlayerTakeFallDamage] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		
+
 		g_hForwards[i][OnSoundHook] = new PrivateForward( ET_Event, Param_Cell, Param_String, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_CellByRef );
 		g_hForwards[i][OnRoundStart] = new PrivateForward( ET_Ignore, Param_Array, Param_Cell, Param_Array, Param_Cell );
 		g_hForwards[i][OnHelpMenu] = new PrivateForward( ET_Ignore, Param_Cell, Param_Cell );
 		g_hForwards[i][OnHelpMenuSelect] = new PrivateForward( ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
 		g_hForwards[i][OnDrawGameTimer] = new PrivateForward( ET_Hook, Param_CellByRef );
+		g_hForwards[i][OnPlayerClimb] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef, Param_FloatByRef, Param_CellByRef );
 	}
 }
 
@@ -499,19 +500,23 @@ Action Call_OnBossHealthCheck(const BaseBoss player, const bool isBoss, char mes
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
-Action Call_OnControlPointCapped(char cappers[MAXPLAYERS+1], const int team)
+
+Action Call_OnControlPointCapped(char cappers[MAXPLAYERS+1], const int team, BaseBoss[] bcappers, const int capper_count)
 {
 	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnControlPointCapped]);
 		Call_PushString(cappers);
 		Call_PushCell(team);
+		Call_PushArrayEx(bcappers, capper_count, SM_PARAM_COPYBACK);
+		Call_PushCell(capper_count);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
 			return act[i];
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
+
 Action Call_OnPrepRedTeam(const BaseBoss player)
 {
 	Action act[2];
@@ -1259,7 +1264,7 @@ void Call_OnRoundStart(BaseBoss[] bosses, const int boss_count, BaseBoss[] reds,
 		Call_StartForward(g_hForwards[i][OnRoundStart]);
 		Call_PushArrayEx(bosses, boss_count, SM_PARAM_COPYBACK);
 		Call_PushCell(boss_count);
-		
+
 		Call_PushArrayEx(reds, red_count, SM_PARAM_COPYBACK);
 		Call_PushCell(red_count);
 		Call_Finish();
@@ -1293,6 +1298,23 @@ Action Call_OnDrawGameTimer(int& time)
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnDrawGameTimer]);
 		Call_PushCellRef(time);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
+	}
+	return act[0] > act[1] ? act[0] : act[1];
+}
+
+Action Call_OnPlayerClimb(const BaseBoss player, const int weapon, float& upwardvel, float& health, bool& attackdelay)
+{
+	Action act[2];
+	for( int i; i<sizeof(g_hForwards); i++ ) {
+		Call_StartForward(g_hForwards[i][OnPlayerClimb]);
+		Call_PushCell(player);
+		Call_PushCell(weapon);
+		Call_PushFloatRef(upwardvel);
+		Call_PushFloatRef(health);
+		Call_PushCellRef(attackdelay);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
 			return act[i];

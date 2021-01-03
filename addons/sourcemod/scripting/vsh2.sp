@@ -24,23 +24,24 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.9.27"
+#define PLUGIN_VERSION       "2.10.28"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
-#define PLYR                 35
+enum {
+	PLYR = 35,
+	PATH = 64
+};
 
-/// misc.
-#define PATH                 64
-#define repeat(%1)           for( int __i=0; __i<(%1); ++__i )
+#define repeat(%1)    for( int __i=0; __i<(%1); ++__i )
 
 
 public Plugin myinfo = {
-	name            = "Vs Saxton Hale 2 Mod",
-	author          = "nergal/assyrian, props to Flamin' Sarge, Chdata, Scags, & Buzzkillington",
-	description     = "Allows Players to play as various bosses of TF2",
-	version         = PLUGIN_VERSION,
-	url             = "https://forums.alliedmods.net/showthread.php?t=286701"
+	name             = "Vs Saxton Hale 2 Mod",
+	author           = "Nergal/assyrian, props to Flamin' Sarge, Chdata, Scags, & Buzzkillington",
+	description      = "Allows Players to play as various bosses of TF2",
+	version          = PLUGIN_VERSION,
+	url              = "https://forums.alliedmods.net/showthread.php?t=286701"
 };
 
 
@@ -109,6 +110,7 @@ enum struct VSH2Cvars {
 	ConVar VagineerUberAirBlast;
 	ConVar CapReenableTime;
 	ConVar AllowSniperClimbing;
+	ConVar PreRoundSetBoss;
 	ConVar VersionNumber;
 }
 
@@ -123,7 +125,8 @@ enum struct BossModule {
 
 PrivateForward g_hForwards[2][MaxVSH2Forwards];
 enum struct VSH2ModuleSys {
-	ArrayList m_hBossesRegistered;
+	ArrayList m_hBossesRegistered; /// []BossModule
+	//StringMap m_hBossMap;          /// map[Plugin]int
 
 	bool IsPluginABoss(Handle plugin) {
 		int len = this.m_hBossesRegistered.Length;
@@ -314,6 +317,7 @@ public void OnPluginStart()
 	g_vsh2.m_hCvars.VagineerUberAirBlast = CreateConVar("vsh2_vagineer_uber_time_airblast", "2.0", "extra time given to vagineer's uber when airblasted.", FCVAR_NONE, true, 1.0, false);
 	g_vsh2.m_hCvars.CapReenableTime = CreateConVar("vsh2_multiple_cp_capture_reenable_time", "30.0", "time to reenable the control pointer after being captured, does nothing is 'vsh2_multiple_cp_captures' is disabled.", FCVAR_NONE, true, 1.0, false);
 	g_vsh2.m_hCvars.AllowSniperClimbing = CreateConVar("vsh2_allow_sniper_climb", "1", "allow snipers to be able to climb using melee.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars.PreRoundSetBoss = CreateConVar("vsh2_preround_setboss", "0", "Allow players to change boss during round start phase.", FCVAR_NONE, true, 0.0, true, 1.0);
 
 	g_vsh2.m_hGamemode.bSteam = LibraryExists("SteamTools");
 	g_vsh2.m_hGamemode.bTF2Attribs = LibraryExists("tf2attributes");
@@ -328,10 +332,10 @@ public void OnPluginStart()
 	HookEvent("object_deflected", ObjectDeflected);
 	HookEvent("object_destroyed", ObjectDestroyed, EventHookMode_Pre);
 	HookEvent("player_jarated", PlayerJarated);
-	HookEvent("rocket_jump", OnHookedEvent);
-	HookEvent("rocket_jump_landed", OnHookedEvent);
-	HookEvent("sticky_jump", OnHookedEvent);
-	HookEvent("sticky_jump_landed", OnHookedEvent);
+	HookEvent("rocket_jump", OnExplosiveJump);
+	HookEvent("rocket_jump_landed", OnExplosiveJump);
+	HookEvent("sticky_jump", OnExplosiveJump);
+	HookEvent("sticky_jump_landed", OnExplosiveJump);
 	HookEvent("item_pickup", ItemPickedUp);
 	HookEvent("player_chargedeployed", UberDeployed);
 	HookEvent("arena_round_start", ArenaRoundStart);
@@ -701,7 +705,7 @@ public Action Timer_PlayerThink(Handle hTimer)
 		_MusicPlay();
 
 	BaseBoss player;
-	for( int i=MaxClients; i; --i ) {
+	for( int i=MaxClients; i; i-- ) {
 		if( !IsValidClient(i, false) )
 			continue;
 
@@ -739,20 +743,15 @@ public Action CmdReloadCFG(int client, int args)
 
 public void OnPreThinkPost(int client)
 {
-	if( !g_vsh2.m_hCvars.Enabled.BoolValue || IsClientObserver(client) || !IsPlayerAlive(client) )
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || IsClientObserver(client) || !IsPlayerAlive(client) ) {
 		return;
-
-	//BaseBoss player = BaseBoss(client);
-	if( IsNearSpencer(client) ) {
-		if( TF2_IsPlayerInCondition(client, TFCond_Cloaked) ) {
-			float cloak = GetEntPropFloat(client, Prop_Send, "m_flCloakMeter") - 0.5;
-			if( cloak < 0.0 )
-				cloak = 0.0;
-			SetEntPropFloat(client, Prop_Send, "m_flCloakMeter", cloak);
-		}
+	} else if( TF2_IsPlayerInCondition(client, TFCond_Cloaked) && IsNearSpencer(client) ) {
+		float cloak = GetEntPropFloat(client, Prop_Send, "m_flCloakMeter") - 0.5;
+		if( cloak < 0.0 )
+			cloak = 0.0;
+		SetEntPropFloat(client, Prop_Send, "m_flCloakMeter", cloak);
 	}
 }
-
 
 public Action TraceAttack(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &ammotype, int hitbox, int hitgroup)
 {
@@ -774,14 +773,14 @@ public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& dam
 		return Plugin_Changed;
 	}
 
-	BaseBoss BossVictim = BaseBoss(victim);
-	if( BossVictim.bIsBoss ) /// in handler.sp
-		return ManageOnBossTakeDamage(BossVictim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
+	BaseBoss boss_victim = BaseBoss(victim);
+	if( boss_victim.bIsBoss ) /// in handler.sp
+		return ManageOnBossTakeDamage(boss_victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 
 	/// BUG PATCH: Client index 0 is invalid
 	if( !IsClientValid(attacker) ) {
-		if( (damagetype & DMG_FALL) && !BossVictim.bIsBoss ) {
-			Action act = Call_OnPlayerTakeFallDamage(BossVictim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
+		if( (damagetype & DMG_FALL) && !boss_victim.bIsBoss ) {
+			Action act = Call_OnPlayerTakeFallDamage(boss_victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 
 			int item = GetPlayerWeaponSlot(victim, (TF2_GetPlayerClass(victim) == TFClass_DemoMan ? TFWeaponSlot_Primary : TFWeaponSlot_Secondary));
 			if( item <= 0 || !IsValidEntity(item) || (TF2_GetPlayerClass(victim)==TFClass_Spy && TF2_IsPlayerInCondition(victim, TFCond_Cloaked)) ) {
@@ -793,9 +792,9 @@ public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& dam
 		return Plugin_Continue;
 	}
 
-	BaseBoss BossAttacker = BaseBoss(attacker);
-	if( BossAttacker.bIsBoss ) /// in handler.sp
-		return ManageOnBossDealDamage(BossVictim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
+	BaseBoss boss_attacker = BaseBoss(attacker);
+	if( boss_attacker.bIsBoss ) /// in handler.sp
+		return ManageOnBossDealDamage(boss_victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 	return Plugin_Continue;
 }
 
@@ -1118,18 +1117,22 @@ public int RegisterBoss(Handle plugin, const char modulename[MAX_BOSS_NAME_SIZE]
 		return -1;
 	}
 
-	for( int i; i<g_modsys.m_hBossesRegistered.Length; i++ ) {
+	int boss_count = g_modsys.m_hBossesRegistered.Length;
+	for( int i; i<boss_count; i++ ) {
 		BossModule module;
 		g_modsys.m_hBossesRegistered.GetArray(i, module, sizeof(module));
 		/// if we already have a module of the name, let's check if its plugin is valid.
 		if( !strcmp(module.name, modulename) ) {
 			/// iterate through all plugins and see if it actually exists.
-			for( Handle iter=GetPluginIterator(), p=ReadPlugin(iter); MorePlugins(iter); p = ReadPlugin(iter) ) {
+			Handle iter = GetPluginIterator();
+			for( Handle p = ReadPlugin(iter); MorePlugins(iter); p = ReadPlugin(iter) ) {
 				if( p==module.plugin ) {
 					LogError("VSH2 :: Boss Registrar: **** Plugin '%s' Already Registered ****", modulename);
 					return -1;
 				}
 			}
+			delete iter;
+
 			/// the boss being registered has the same name but it's of a different handle ID?
 			/// override its plugin ID then, it was probably reloaded.
 			module.plugin = plugin;
@@ -1159,6 +1162,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("VSH2_GetBossIDs", Native_GetBossIDs);
 	CreateNative("VSH2_GetBossID", Native_GetBossID);
 	CreateNative("VSH2_StopMusic", Native_StopMusic);
+	CreateNative("VSH2_GetConfigMap", Native_GetMainConfig);
 
 	CreateNative("VSH2Player.VSH2Player", Native_VSH2Instance);
 
@@ -1468,6 +1472,10 @@ public int Native_StopMusic(Handle plugin, int numParams)
 	return 0;
 }
 
+public any Native_GetMainConfig(Handle plugin, int numParams)
+{
+	return g_vsh2.m_hCfg;
+}
 
 public int Native_VSH2_ConvertToMinion(Handle plugin, int numParams)
 {

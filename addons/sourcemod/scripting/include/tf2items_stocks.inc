@@ -59,7 +59,6 @@ stock TF2Item TF2Item_PrepareItemHandle(TF2Item hItem, char[] name = "", int ind
 	static TF2Item hWeapon = null;
 	char weaponAttribsArray[32][32];
 	int attribCount = ExplodeString(att, "; ", weaponAttribsArray, 32, 32);
-	attribCount &= ~1;
 
 	int flags = OVERRIDE_ATTRIBUTES;
 	if( !dontpreserve )
@@ -71,12 +70,12 @@ stock TF2Item TF2Item_PrepareItemHandle(TF2Item hItem, char[] name = "", int ind
 
 	if( hItem != null ) {
 		int addattribs = hItem.iNumAttribs;
-		if( addattribs && attribCount > 2 ) {
+		if( addattribs ) {
 			for( int i; i < 2 * addattribs; i += 2 ) {
 				bool dontAdd = false;
 				int attribIndex = hItem.GetAttribID(i);
 				for( int z; z < attribCount+i; z += 2 ) {
-					if( StringToInt(weaponAttribsArray[z]) == attribIndex ) {
+					if( StringToInt(weaponAttribsArray[z])==attribIndex ) {
 						dontAdd = true;
 						break;
 					}
@@ -99,7 +98,7 @@ stock TF2Item TF2Item_PrepareItemHandle(TF2Item hItem, char[] name = "", int ind
 		flags |= OVERRIDE_ITEM_DEF;
 		hWeapon.iItemIndex = index;
 	}
-	if( attribCount > 2 ) {
+	if( attribCount > 0 ) {
 		hWeapon.iNumAttribs = (attribCount/2);
 		for( int i, att_index; i<attribCount && i<32; i += 2, att_index++ ) {
 			int attrib = StringToInt(weaponAttribsArray[i]);

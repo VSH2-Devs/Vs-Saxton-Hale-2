@@ -1,27 +1,5 @@
 /** all game mode oriented code should be handled HERE ONLY */
 
-/*
-enum struct VSHGameMode {
-	int      iRoundState;
-	int      iSpecial;
-	int      iTotalMaxHealth;
-	int      iTimeLeft;
-	int      iRoundCount;
-	int      iHealthChecks;
-	int      iCaptures;
-	VSHHealthBar iHealthBar;
-	bool     bSteam;
-	bool     bTF2Attribs;
-	bool     bPointReady;
-	bool     bMedieval;
-	bool     bDoors;
-	bool     bTeleToSpawn;
-	float    flHealthTime;
-	float    flMusicTime;
-	BaseBoss hNextBoss;
-}
-*/
-
 methodmap VSHGameMode < StringMap {
 	public VSHGameMode() {
 		return view_as< VSHGameMode >(new StringMap());
@@ -42,6 +20,15 @@ methodmap VSHGameMode < StringMap {
 		}
 		public set(const int val) {
 			this.SetValue("iSpecial", val);
+		}
+	}
+	property int iPrevSpecial {
+		public get() {
+			int i; this.GetValue("iPrevSpecial", i);
+			return i;
+		}
+		public set(const int val) {
+			this.SetValue("iPrevSpecial", val);
 		}
 	}
 	property VSHHealthBar iHealthBar { /// in vsh2.inc
@@ -191,6 +178,7 @@ methodmap VSHGameMode < StringMap {
 	public void Init() {
 		this.iRoundState = 0;
 		this.iSpecial = -1;
+		this.iPrevSpecial = -1;
 		this.iHealthBar = view_as< VSHHealthBar >(0);
 		this.iTotalMaxHealth = 0;
 		this.iTimeLeft = 0;
@@ -420,8 +408,9 @@ methodmap VSHGameMode < StringMap {
 		if( this.iSpecial > -1 ) {    /// Clamp the chosen special so we don't error out.
 			if( this.iSpecial > MAXBOSS )
 				this.iSpecial = MAXBOSS;
+		} else {
+			this.iSpecial = GetRandomInt(VSH2Boss_Hale, MAXBOSS);
 		}
-		else this.iSpecial = GetRandomInt(VSH2Boss_Hale, MAXBOSS);
 	}
 	/// just use arena maps as vsh/ff2 maps
 	public static bool IsVSHMap()

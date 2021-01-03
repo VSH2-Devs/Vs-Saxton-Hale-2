@@ -7,9 +7,12 @@
 #include <cfgmap>
 
 
-#define MAXMESSAGE            512
-#define MAX_PANEL_MSG         512
-#define MAX_BOSS_NAME_SIZE    64
+enum {
+	MAXMESSAGE = 512,
+	MAX_PANEL_MSG = 512,
+	MAX_BOSS_NAME_SIZE = 64
+};
+
 
 enum { /** VSH2 Round States */
 	StateDisabled = -1,
@@ -425,6 +428,7 @@ enum { /// VSH2HookType
 	OnHelpMenu,
 	OnHelpMenuSelect,
 	OnDrawGameTimer,
+	OnPlayerClimb,
 	MaxVSH2Forwards
 };
 
@@ -448,7 +452,7 @@ typeset VSH2HookCB {
 	 * VariablesReset
 	 * PrepRedTeam
 	 * RedPlayerThink
-	 * LastPlayer - Player is a random boss in this case.
+	 * OnLastPlayer - 'player' is a boss.
 	 * BossSuperJump
 	 * BossWeighDown
 	 * BossThinkPost -> Action has no effect on this forward.
@@ -463,6 +467,7 @@ typeset VSH2HookCB {
 	 * UberLoop - Victim is medic, Attacker (Check if valid) is uber target
 	 * RPSTaunt - victim is loser, attacker is winner.
 	 * MinionInitialized - victim is minion, attacker is the owner/master boss.
+	 * OnLastPlayer - "victim" is a boss, "attacker" is the last fighter/player.
 	 */
 	function Action (const VSH2Player victim, const VSH2Player attacker);
 	function void (const VSH2Player victim, const VSH2Player attacker);
@@ -541,6 +546,8 @@ typeset VSH2HookCB {
 	/// OnControlPointCapped
 	function Action (char cappers[MAXPLAYERS+1], const int team);
 	function void (char cappers[MAXPLAYERS+1], const int team);
+	function Action (char cappers[MAXPLAYERS+1], const int team, VSH2Player[] cappers, const int capper_count);
+	function void (char cappers[MAXPLAYERS+1], const int team, VSH2Player[] cappers, const int capper_count);
 
 	/// OnCallDownloads
 	function Action ();
@@ -596,6 +603,10 @@ typeset VSH2HookCB {
 	/// OnDrawGameTimer
 	function Action (int& seconds);
 	function void (int& seconds);
+
+	/// OnPlayerClimb
+	function Action (const VSH2Player player, const int weapon, float& upwardvel, float& health, bool& attackdelay);
+	function void (const VSH2Player player, const int weapon, float& upwardvel, float& health, bool& attackdelay);
 };
 
 /// Use hooktype enum on these.
@@ -630,6 +641,14 @@ native int VSH2_GetBossID(const char boss_name[MAX_BOSS_NAME_SIZE]);
  * @noreturn
  */
 native void VSH2_StopMusic(bool reset_time=true);
+
+/**
+ * returns the internal ConfigMap instance read from 'vsh2.cfg'.
+ * @noparam
+ * @return          internal config map used by VSH2.
+ * @note            DO NOT RUN DELETE FUNCTION ON THE INTERNAL CONFIGMAP.
+ */
+native ConfigMap VSH2_GetConfigMap();
 
 
 /**
@@ -712,6 +731,7 @@ stock void VSH2GameMode_SetPropAny(const char prop_name[64], any value) {
  * Available Properties:
  * int iRoundState
  * int iSpecial
+ * int iPrevSpecial
  * int iTotalMaxHealth
  * int iTimeLeft
  * int iRoundCount
@@ -951,6 +971,13 @@ stock int ShuffleIndex(const int size, const int curr_index)
 	return new_index;
 }
 
+stock int int_hash(int h)
+{
+	h ^= (h >> 20) ^ (h >> 12);
+	h = h ^ (h >> 7) ^ (h >> 4);
+	return h < 0 ? -h : h;
+}
+
 
 public SharedPlugin __pl_vsh2 = {
 	name = "VSH2",
@@ -1032,6 +1059,7 @@ public void __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2_GetBossIDs");
 	MarkNativeAsOptional("VSH2_GetBossID");
 	MarkNativeAsOptional("VSH2_StopMusic");
+	MarkNativeAsOptional("VSH2_GetConfigMap");
 
 	MarkNativeAsOptional("VSH2GameMode_GetProperty");
 	MarkNativeAsOptional("VSH2GameMode_SetProperty");
