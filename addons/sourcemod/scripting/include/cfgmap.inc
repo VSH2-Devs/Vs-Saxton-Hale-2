@@ -517,7 +517,7 @@ methodmap ConfigMap < StringMap {
 		
 		ConfigMap map = view_as< ConfigMap >(new StringMap());
 		if( !CloneConfigMap(this, map, new_owner_pl) ) {
-			delete map;
+			DeleteCfg(map);
 		}
 		return map;
 	}
