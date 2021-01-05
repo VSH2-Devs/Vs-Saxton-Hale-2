@@ -646,7 +646,7 @@ native void VSH2_StopMusic(bool reset_time=true);
  * returns the internal ConfigMap instance read from 'vsh2.cfg'.
  * @noparam
  * @return          internal config map used by VSH2.
- * @note            DO NOT RUN DELETE FUNCTION ON THE INTERNAL CONFIGMAP.
+ * @note            the handle MUST be freed with DeleteCfg
  */
 native ConfigMap VSH2_GetConfigMap();
 
