@@ -7,8 +7,7 @@ methodmap FF2AbilityList < StringMap {
 		this.SetString(key, str);
 	}
 	
-	public static void GetKeyVal(const char[] key, char[][] pl_ab)
-	{
+	public static void GetKeyVal(const char[] key, char[][] pl_ab) {
 		ExplodeString(key, "##", pl_ab, 2, FF2_MAX_PLUGIN_NAME);
 	}
 }
