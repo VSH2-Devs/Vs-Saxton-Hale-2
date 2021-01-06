@@ -1,3 +1,18 @@
+methodmap FF2AbilityList < StringMap {
+	public FF2AbilityList() {
+		return( view_as< FF2AbilityList >(new StringMap()) );
+	}
+	
+	public void Insert(const char[] key, const char[] str) {
+		this.SetString(key, str);
+	}
+	
+	public static void GetKeyVal(const char[] key, char[][] pl_ab)
+	{
+		ExplodeString(key, "##", pl_ab, 2, FF2_MAX_PLUGIN_NAME);
+	}
+}
+
 /**
  * Boss identity struct
  *
@@ -15,29 +30,14 @@ enum struct FF2Identity {
 	FF2AbilityList ablist;
 	char           szName[48];
 	char           szPath[PLATFORM_MAX_PATH];
-}
-
-methodmap FF2AbilityList < StringMap {
-	public FF2AbilityList() {
-		return( view_as< FF2AbilityList >(new StringMap()) );
-	}
 	
-	public void Insert(const char[] key, const char[] str) {
-		this.SetString(key, str);
-	}
-	
-	public static void GetKeyVal(const char[] key, char[][] pl_ab)
-	{
-		ExplodeString(key, "##", pl_ab, 2, FF2_MAX_PLUGIN_NAME);
+	void Release() {
+		this.sndHash.DeleteAll();
+		delete this.sndHash;
+		DeleteCfg(this.hCfg);
+		delete this.ablist;
 	}
 }
-
-#define RELEASE_IDENTITY(%0) \
-		%0.sndHash.DeleteAll(); \
-		delete %0.sndHash; \
-		DeleteCfg(%0.hCfg); \
-		delete %0.ablist
-
 
 static bool FF2_LoadCharacter(FF2Identity identity)
 {
@@ -265,7 +265,7 @@ methodmap FF2BossManager < StringMap {
 	public void Delete(const char[] name) {
 		FF2Identity identity;
 		if( this.GetArray(name, identity, sizeof(FF2Identity)) ) {
-			RELEASE_IDENTITY(identity);
+			identity.Release();
 			this.Remove(name);
 		}
 	}
@@ -277,7 +277,7 @@ methodmap FF2BossManager < StringMap {
 		for( int i = snap.Length - 1; i >= 0; i-- ) {
 			snap.GetKey(i, name, sizeof(name));
 			if( this.GetIdentity(name, identity) ) {
-				RELEASE_IDENTITY(identity);
+				identity.Release();
 			}
 		}
 		this.Clear();

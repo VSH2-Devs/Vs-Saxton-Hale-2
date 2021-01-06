@@ -68,6 +68,14 @@ enum {
 #define ToFF2Player(%0)      view_as< FF2Player >(%0)
 #define FF2_PREFIX           "{olive}[FF2]{default} "
 
+enum {
+	FF2_MAX_PLUGIN_NAME  = 64,   /// sizeof plugin_name
+	FF2_MAX_ABILITY_NAME = 64,   /// sizeof ability_name
+	FF2_MAX_ABILITY_KEY  = 64,   /// sizeof "ability*" key
+};
+
+enum { FF2_MAX_LIST_KEY = FF2_MAX_PLUGIN_NAME + FF2_MAX_ABILITY_NAME + 2 };		/// sizeof key in FF2AbilityList
+
 enum struct FF2SoundIdentity {
 	char  path[PLATFORM_MAX_PATH];
 	char  name[32];
