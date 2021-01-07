@@ -239,8 +239,8 @@ Action Call_OnBossTakeDamage(const BaseBoss player, int& attacker, int& inflicto
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -259,8 +259,8 @@ Action Call_OnBossDealDamage(const BaseBoss player, int& attacker, int& inflicto
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -590,8 +590,8 @@ Action Call_OnBossDealDamage_OnStomp(const BaseBoss player, int& attacker, int& 
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -610,8 +610,8 @@ Action Call_OnBossDealDamage_OnHitDefBuff(const BaseBoss player, int& attacker, 
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -630,8 +630,8 @@ Action Call_OnBossDealDamage_OnHitCritMmmph(const BaseBoss player, int& attacker
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -650,8 +650,8 @@ Action Call_OnBossDealDamage_OnHitMedic(const BaseBoss player, int& attacker, in
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -670,8 +670,8 @@ Action Call_OnBossDealDamage_OnHitDeadRinger(const BaseBoss player, int& attacke
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -690,8 +690,8 @@ Action Call_OnBossDealDamage_OnHitCloakedSpy(const BaseBoss player, int& attacke
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -710,8 +710,8 @@ Action Call_OnBossDealDamage_OnHitShield(const BaseBoss player, int& attacker, i
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -733,8 +733,8 @@ Action Call_OnBossTakeDamage_OnStabbed(const BaseBoss player, int& attacker, int
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -753,8 +753,8 @@ Action Call_OnBossTakeDamage_OnTelefragged(const BaseBoss player, int& attacker,
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -773,8 +773,8 @@ Action Call_OnBossTakeDamage_OnSwordTaunt(const BaseBoss player, int& attacker, 
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -793,8 +793,8 @@ Action Call_OnBossTakeDamage_OnHeavyShotgun(const BaseBoss player, int& attacker
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -813,8 +813,8 @@ Action Call_OnBossTakeDamage_OnSniped(const BaseBoss player, int& attacker, int&
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -833,8 +833,8 @@ Action Call_OnBossTakeDamage_OnThirdDegreed(const BaseBoss player, int& attacker
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -853,8 +853,8 @@ Action Call_OnBossTakeDamage_OnHitSword(const BaseBoss player, int& attacker, in
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -873,8 +873,8 @@ Action Call_OnBossTakeDamage_OnHitFanOWar(const BaseBoss player, int& attacker, 
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -893,8 +893,8 @@ Action Call_OnBossTakeDamage_OnHitCandyCane(const BaseBoss player, int& attacker
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -913,8 +913,8 @@ Action Call_OnBossTakeDamage_OnMarketGardened(const BaseBoss player, int& attack
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -933,8 +933,8 @@ Action Call_OnBossTakeDamage_OnPowerJack(const BaseBoss player, int& attacker, i
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -953,8 +953,8 @@ Action Call_OnBossTakeDamage_OnKatana(const BaseBoss player, int& attacker, int&
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -973,8 +973,8 @@ Action Call_OnBossTakeDamage_OnAmbassadorHeadshot(const BaseBoss player, int& at
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -993,8 +993,8 @@ Action Call_OnBossTakeDamage_OnDiamondbackManmelterCrit(const BaseBoss player, i
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -1013,8 +1013,8 @@ Action Call_OnBossTakeDamage_OnHolidayPunch(const BaseBoss player, int& attacker
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -1088,8 +1088,8 @@ Action Call_OnBossAirShotProj(const BaseBoss player, int& attacker, int& inflict
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -1109,8 +1109,8 @@ Action Call_OnBossTakeFallDamage(const BaseBoss player, int& attacker, int& infl
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -1161,8 +1161,8 @@ Action Call_OnBossTakeDamage_OnTriggerHurt(const BaseBoss player, int& attacker,
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -1182,8 +1182,8 @@ Action Call_OnBossTakeDamage_OnMantreadsStomp(const BaseBoss player, int& attack
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -1229,8 +1229,8 @@ Action Call_OnPlayerTakeFallDamage(const BaseBoss player, int& attacker, int& in
 		Call_PushFloatRef(damage);
 		Call_PushCellRef(damagetype);
 		Call_PushCellRef(weapon);
-		Call_PushArray(damageForce, 3);
-		Call_PushArray(damagePosition, 3);
+		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
 		Call_PushCell(damagecustom);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
