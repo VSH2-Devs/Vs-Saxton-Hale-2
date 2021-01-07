@@ -76,50 +76,14 @@ VSH2GameMode    vsh2_gm;
 #include "modules/ff2/vsh2_bridge.sp"
 #include "modules/ff2/natives.sp"
 #include "modules/ff2/console.sp"
-
-
-static void LoadFF2()
-{
-	ff2.m_charcfg = new ConfigMap(PATH_TO_CHAR_CFG);
-	ff2.m_hud[HUD_Jump] = vsh2_gm.hHUD;
-	ff2.m_hud[HUD_Weighdown] = CreateHudSynchronizer();
-	
-	InitVSH2Bridge();
-	
-	for( int i=MaxClients; i > 0; i-- ) {
-		if( IsClientInGame(i) ) {
-			OnClientPutInServer(i);
-		}
-	}
-	
-	ff2.m_plugins = new FF2PluginList();
-}
-
-static void LateLoadSubPlugins()
-{
-	if( VSH2GameMode.GetPropAny("iRoundState") == StateRunning ) {
-		FF2Player[] bosses = new FF2Player[MaxClients];
-		int count = VSH2GameMode.GetBosses(view_as< VSH2Player >(bosses), false);
-
-		FF2Player player;
-		for(int i; i < count && !ff2.m_plugins.IsFull; i++ ) {
-			player = bosses[i];
-			FF2AbilityList list = player.HookedAbilities;
-			if( list ) {
-				ff2.m_plugins.LoadPlugins(list);
-			}
-		}
-	}
-}
+#include "modules/ff2/gamemode.sp"
 
 
 public void OnPluginEnd()
 {
 	if( ff2.m_vsh2 ) {
-		if( ff2.m_plugins != null ) {
-			ff2.m_plugins.UnloadAllSubPlugins();
-		}
-		RemoveVSH2Bridge();
+		FF2GameMode.RemoveSubplugins();
+		FF2GameMode.UnhookFromVSH2();
 	}
 }
 
@@ -127,21 +91,16 @@ public void OnLibraryAdded(const char[] name) {
 	if( StrEqual(name, "VSH2") && !ff2.m_vsh2) {
 		InitConVars();
 		ff2.m_vsh2 = true;
-		LoadFF2();
-		LateLoadSubPlugins();
+		FF2GameMode.LoadFF2();
+		FF2GameMode.LateLoadSubplugins();
 	}
 }
 
 public void OnMapEnd()
 {
 	if( ff2.m_vsh2 ) {
-		if( ff2.m_plugins != null ) {
-			ff2.m_plugins.UnloadAllSubPlugins();
-		}
-		if( ff2_cfgmgr != null ) {
-			ff2_cfgmgr.DeleteAll();
-		}
-		delete ff2_cfgmgr;
+		FF2GameMode.RemoveSubplugins();
+		FF2GameMode.RemoveCfgMgr();
 
 		char pack[48];
 		ff2.m_cvars.m_pack_name.GetString(pack, sizeof(pack));
@@ -153,12 +112,10 @@ public void OnLibraryRemoved(const char[] name) {
 	if( StrEqual(name, "VSH2") && ff2.m_vsh2 ) {
 		ff2.m_vsh2 = false;
 		
-		if( ff2.m_plugins != null ) {
-			ff2.m_plugins.UnloadAllSubPlugins();
-		}
-		delete ff2.m_plugins;
+		FF2GameMode.RemoveSubplugins(true);
 		
-		RemoveVSH2Bridge();    /// ff2_cfgmgr will be deleted here
+		FF2GameMode.UnhookFromVSH2();    /// ff2_cfgmgr will be deleted here
+		DeleteCfg(ff2.m_charcfg);
 	}
 }
 
