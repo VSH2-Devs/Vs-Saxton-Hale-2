@@ -70,7 +70,7 @@ void Call_FF2OnAbility(const FF2Player player, FF2CallType_t call_type)
 		FormatEx(pl_ab[0], sizeof(pl_ab[]), "%s.slot", cfg_key);
 		if( !cfg.GetInt(pl_ab[0], view_as< int >(cur_type)) ) {
 			FormatEx(pl_ab[0], sizeof(pl_ab[]), "%s.arg0", cfg_key);
-			if( !cfg.GetInt(pl_ab[0], view_as< int >(cur_type)) )
+			if( !cfg.GetInt(pl_ab[0], view_as< int >(cur_type)) || !cur_type )
 				cur_type = CT_RAGE;
 		}
 		
