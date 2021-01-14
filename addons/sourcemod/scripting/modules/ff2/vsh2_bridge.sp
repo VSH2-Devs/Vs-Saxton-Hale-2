@@ -207,6 +207,7 @@ public void OnBossThinkFF2(const VSH2Player vsh2player)
 	float flRage = player.GetPropFloat("flRAGE");
 	int client = player.index;
 	ConfigMap cfg = player.iCfg;
+	static char buffer[PLATFORM_MAX_PATH];
 	
 	///	Handle super jump
 	{
@@ -220,9 +221,8 @@ public void OnBossThinkFF2(const VSH2Player vsh2player)
 			player.SuperJump(flCharge, flmin);
 			
 			FF2SoundList snd_list = identity.sndHash.GetList("sound_ability");
-			char snd_path[PLATFORM_MAX_PATH];
-			if( RandomAbilitySound(snd_list, CT_CHARGE, snd_path, sizeof(snd_path)) ) {
-				player.PlayVoiceClip(snd_path, VSH2_VOICE_ABILITY);
+			if( RandomAbilitySound(snd_list, CT_CHARGE, buffer, sizeof(buffer)) ) {
+				player.PlayVoiceClip(buffer, VSH2_VOICE_ABILITY);
 			}
 		}
 	}
@@ -255,15 +255,20 @@ public void OnBossThinkFF2(const VSH2Player vsh2player)
 		}
 	}
 	
-	if( player.bHideHUD )
-		return;
+	buffer[0] = '\0';
+	
+	if( !player.bHideHUD )
+		Format(buffer, sizeof(buffer), "Super-Jump: %i%%\n", player.GetPropInt("bSuperCharge") ? 1000 : RoundFloat(flCharge) * 4);
 	
 	SetHudTextParams(-1.0, 0.77, 0.15, 255, 255, 255, 255);
+	
 	if( flRage >= 100.0 ) {
-		ShowSyncHudText(client, ff2.m_hud[HUD_Jump], "Super-Jump: %i%%\nCall for medic to activate your \"RAGE\" ability", player.GetPropInt("bSuperCharge") ? 1000 : RoundFloat(flCharge) * 4);
+		Format(buffer, sizeof(buffer), "%sCall for medic to activate your \"RAGE\" ability", buffer);
 	} else {
-		ShowSyncHudText(client, ff2.m_hud[HUD_Jump], "Super-Jump: %i%%\nRage is %.1f percent ready", player.GetPropInt("bSuperCharge") ? 1000 : RoundFloat(flCharge) * 4, flRage);
+		Format(buffer, sizeof(buffer), "%sRage is %.1f percent ready", buffer, flRage);
 	}
+	
+	ShowSyncHudText(client, ff2.m_hud[HUD_Jump], "%s", buffer);
 }
 
 public Action OnBossSuperJumpFF2(const VSH2Player vsh2player)
