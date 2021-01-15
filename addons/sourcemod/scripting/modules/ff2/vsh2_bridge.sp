@@ -19,8 +19,8 @@ void InitVSH2Bridge()
 	VSH2_Hook(OnPlayerKilled, OnPlayerKilledFF2);
 	VSH2_Hook(OnPlayerHurt, OnPlayerHurtFF2);
 	VSH2_Hook(OnPlayerAirblasted, OnPlayerAirblastedFF2);
-	VSH2_Hook(OnBossMedicCall, OnBossMedicCallFF2);
-	VSH2_Hook(OnBossTaunt, OnBossMedicCallFF2);
+	VSH2_Hook(OnBossMedicCall, OnBossTriggerRageFF2);
+	VSH2_Hook(OnBossTaunt, OnBossTriggerRageFF2);
 	VSH2_Hook(OnBossJarated, OnBossJaratedFF2);
 	VSH2_Hook(OnRoundEndInfo, OnRoundEndInfoFF2);
 	VSH2_Hook(OnMusic, OnMusicFF2);
@@ -48,8 +48,8 @@ void RemoveVSH2Bridge()
 	VSH2_Unhook(OnPlayerKilled, OnPlayerKilledFF2);
 	VSH2_Unhook(OnPlayerHurt, OnPlayerHurtFF2);
 	VSH2_Unhook(OnPlayerAirblasted, OnPlayerAirblastedFF2);
-	VSH2_Unhook(OnBossMedicCall, OnBossMedicCallFF2);
-	VSH2_Unhook(OnBossTaunt, OnBossMedicCallFF2);
+	VSH2_Unhook(OnBossMedicCall, OnBossTriggerRageFF2);
+	VSH2_Unhook(OnBossTaunt, OnBossTriggerRageFF2);
 	VSH2_Unhook(OnBossJarated, OnBossJaratedFF2);
 	VSH2_Unhook(OnRoundEndInfo, OnRoundEndInfoFF2);
 	VSH2_Unhook(OnMusic, OnMusicFF2);
@@ -161,12 +161,12 @@ public Action OnBossSelectedFF2(const VSH2Player player)
 	}
 
 	ff2.m_plugins.LoadPlugins(identity.ablist);
-	char help[128] = "";
+	char[] help = new char[512];
 	{
 		char language[25];
-		GetLanguageInfo(GetClientLanguage(player.index), language, 3);
+		GetLanguageInfo(GetClientLanguage(player.index), language, sizeof(language));
 		Format(language, sizeof(language), "character.description_%s", language);
-		if( !identity.hCfg.Get(language, help, sizeof(help)) )
+		if( !identity.hCfg.Get(language, help, 512) )
 			return Plugin_Changed;
 	}
 
@@ -289,6 +289,10 @@ public Action OnBossSuperJumpFF2(const VSH2Player vsh2player)
 
 public void OnBossWeighDownFF2(const VSH2Player vsh2player)
 {
+	FF2Identity identity;
+	if( !ff2_cfgmgr.FindIdentity(ToFF2Player(vsh2player).iBossType, identity) )
+		return;
+	
 	Call_FF2OnAbility(ToFF2Player(vsh2player), CT_WEIGHDOWN);
 }
 
@@ -503,15 +507,21 @@ public void OnPlayerAirblastedFF2(const VSH2Player airblaster, const VSH2Player 
 }
 
 
-public Action OnBossMedicCallFF2(const VSH2Player player)
+public Action OnBossTriggerRageFF2(const VSH2Player vsh2player)
 {
 	FF2Identity identity;
-	if( !ff2_cfgmgr.FindIdentity(ToFF2Player(player).iBossType, identity) )
-		return;
-
-	Call_FF2OnAbility(ToFF2Player(player), CT_RAGE);
+	if( !ff2_cfgmgr.FindIdentity(ToFF2Player(vsh2player).iBossType, identity) )
+		return Plugin_Continue;
+	
+	FF2Player player = ToFF2Player(vsh2player);
+	if( player.GetPropAny("flRAGE") < 100.0 )
+		return Plugin_Handled;
+	
+	Call_FF2OnAbility(player, CT_RAGE);
 	if( !player.GetPropAny("bSupressRAGE") )
 		player.SetPropFloat("flRAGE", 0.0);
+	
+	return Plugin_Handled;
 }
 
 public Action OnBossJaratedFF2(const VSH2Player victim, const VSH2Player attacker)
@@ -569,16 +579,18 @@ public Action OnMusicFF2(char song[PLATFORM_MAX_PATH], float& time, const VSH2Pl
 		FF2SoundIdentity snd_id;
 		FF2SoundList list = identity.sndHash.GetList("sound_bgm");
 		if( list ) {
-			if( res == Plugin_Changed && list.Seek(song, snd_id) ) {
+			if( res == Plugin_Changed && list.Seek(song, snd_id) && snd_id.time > 0.0 ) {
 				strcopy(song, sizeof(song), snd_id.path);
 				time = snd_id.time;
-			} else if( list.RandomSound(snd_id) ) {
+			} else if( list.RandomSound(snd_id) && snd_id.time > 0.0 ) {
 				strcopy(song, sizeof(song), snd_id.path);
 				time = snd_id.time;
+				snd_id.PrintToAll();
 			}
-		}	
+		}
 	}
-	return Plugin_Continue;
+	
+	return Plugin_Handled;
 }
 
 
@@ -663,8 +675,8 @@ public Action OnSoundHookFF2(const VSH2Player player, char sample[PLATFORM_MAX_P
 			}
 		}
 
-		bool bSoundBlock;
-		if( identity.hCfg.GetInt("character.sound_block_vo", bSoundBlock) && bSoundBlock ) {
+		bool sound_block;
+		if( identity.hCfg.GetBool("character.sound_block_vo", sound_block) && sound_block ) {
 			return Plugin_Stop;
 		}
 	}
