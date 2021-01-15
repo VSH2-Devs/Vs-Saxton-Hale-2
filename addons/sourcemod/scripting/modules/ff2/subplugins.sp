@@ -1,6 +1,5 @@
-
 /**
- * SubPlugins struct
+ * Subplugins struct
  *
  * name = Plugin Name
  * hndl = Plugin Handle
@@ -56,7 +55,7 @@ methodmap FF2PluginList < ArrayList {
 
 			infos.loading = true;
 			this.SetInfo(i, infos);
-			RequestFrame(QuerySetPluginHandle, i);
+			CreateTimer(0.1, _ScheduleAddSubplugin, i, TIMER_FLAG_NO_MAPCHANGE);
 			return true;
 		}
 
@@ -68,7 +67,7 @@ methodmap FF2PluginList < ArrayList {
 		infos.loading = true;
 		strcopy(infos.name, sizeof(FF2SubPlugin::name), name);
 		this.PushArray(infos, sizeof(FF2SubPlugin));
-		RequestFrame(QuerySetPluginHandle, i);
+		CreateTimer(0.1, _ScheduleAddSubplugin, i, TIMER_FLAG_NO_MAPCHANGE);
 
 		return true;
 	}
@@ -107,22 +106,30 @@ methodmap FF2PluginList < ArrayList {
 	}
 }
 
-void QuerySetPluginHandle(int pos)
-{
-	FF2SubPlugin info; ff2.m_plugins.GetInfo(pos, info);
-	info.hndl = _FindPlugin(info.name);
-	info.loading = false;
-	ff2.m_plugins.SetInfo(pos, info);
-}
-
 
 static Handle _FindPlugin(const char[] name)
 {
 	char pl_name[PLATFORM_MAX_PATH];
 	FormatEx(pl_name, sizeof(pl_name), "freaks\\%s.ff2", name);
 	Handle pl = FindPluginByFile(pl_name);
-	if( !pl )
-		LogError("[VSH2/FF2] Failed to find plugin: %s", pl_name);
+	if( !pl || GetPluginStatus(pl)!=Plugin_Running )
+	{
+		LogError("[VSH2/FF2] Failed to load plugin: %s", pl_name);
+		return null;
+	}
 
 	return pl;
+}
+
+static Action _ScheduleAddSubplugin(Handle timer, int pos)
+{
+	if( !ff2.m_vsh2 )
+		return Plugin_Continue;
+	
+	FF2SubPlugin info; ff2.m_plugins.GetInfo(pos, info);
+	info.hndl = _FindPlugin(info.name);
+	info.loading = false;
+	ff2.m_plugins.SetInfo(pos, info);
+	
+	return Plugin_Continue;
 }
