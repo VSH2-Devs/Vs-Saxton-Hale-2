@@ -4,6 +4,7 @@
  * path = full song path name
  * name = > "slot*_*": <key position>_<value>
  * 		  > "song name"
+ *		  > String To Replace or unused for "catch_phrase"
  * artist = empty or contains artist's name
  * time = 0.0, or song duration
  */
@@ -14,11 +15,21 @@ enum struct FF2SoundIdentity  {
 	char artist[32];
 	float time;
 	
-	void Init(const char[] path, float time, const char[] name = "Unknown Song", const char[] artist = "Unknown artist") {
+	void Init(const char[] path, float time, const char[] name = "", const char[] artist = "Unknown artist") {
 		strcopy(this.path, sizeof(FF2SoundIdentity::path), path);
 		strcopy(this.name, sizeof(FF2SoundIdentity::name), name);
 		strcopy(this.artist, sizeof(FF2SoundIdentity::artist), artist);
 		this.time = time;
+	}
+	
+	void PrintToAll() {
+		if( !this.name[0] )
+			return;
+		for( int i=1;i<MaxClients;i++ ) {
+			if( IsClientInGame(i) ) {
+				FPrintToChat(i, "Now Playing {blue}%s{default} - {orange}%s{default}", this.name, this.artist);
+			}
+		}
 	}
 }
 
@@ -44,7 +55,7 @@ methodmap FF2SoundList < ArrayList {
 	
 	public bool RandomSound(FF2SoundIdentity snd_id) {
 		if( !this.Empty ) {
-			int rand = GetRandomInt(0, this.Length - 1);
+			int rand = GetURandomInt() % this.Length;
 			return( this.At(rand, snd_id) );
 		}
 		return false;
