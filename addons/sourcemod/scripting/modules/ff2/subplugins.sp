@@ -112,8 +112,7 @@ static Handle _FindPlugin(const char[] name)
 	char pl_name[PLATFORM_MAX_PATH];
 	FormatEx(pl_name, sizeof(pl_name), "freaks\\%s.ff2", name);
 	Handle pl = FindPluginByFile(pl_name);
-	if( !pl || GetPluginStatus(pl)!=Plugin_Running )
-	{
+	if( !pl || GetPluginStatus(pl)!=Plugin_Running ) {
 		LogError("[VSH2/FF2] Failed to load plugin: %s", pl_name);
 		return null;
 	}
