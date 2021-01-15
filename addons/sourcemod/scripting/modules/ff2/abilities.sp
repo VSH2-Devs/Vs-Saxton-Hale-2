@@ -179,43 +179,61 @@ static bool FF2_LoadCharacter(FF2Identity identity)
 
 		for( int i = snap.Length - 1; i >= 0; i-- ) {
 			snap.GetKey(i, _key, sizeof(_key));
-			if( !StrContains(_key, "sound") ) {
+			bool is_catch_snd = !strncmp(_key, "catch_", 6);
+
+			if (!StrContains(_key, "sound") || is_catch_snd ) {
 				_list = this_char.GetSection(_key);
 				snd_list = identity.sndHash.GetOrCreateList(_key);
 
-				bool bIsBGM = _list.Get("path1", strBuffer, sizeof(strBuffer)) > 0;
+				bool is_bgm_section = _list.Get("path1", strBuffer, sizeof(strBuffer)) > 0;
 
-				for( int j = 1; j <= 15; j++ ) {
-					if( bIsBGM ) {
-						Format(curSection, sizeof(curSection), "path%i", j);
+				for( int j = 0; j <= 15; j++ ) {
+					if( is_bgm_section ) {
+						/**	sound* contains pathX & timeX
+						 *	FF2SoundIdentity = { Path, Time, Song_Name, Atrist_Name };
+						 */
+						Format(curSection, sizeof(curSection), "path%i", j + 1);
 						if( !_list.Get(curSection, strBuffer, sizeof(strBuffer)) )
 							break;
 
-						Format(curSection, sizeof(curSection), "time%i", j);
+						Format(curSection, sizeof(curSection), "time%i", j + 1);
 						if( !_list.GetFloat(curSection, time) )
 							break;
 
-						Format(curSection, sizeof(curSection), "name%i", j);
+						Format(curSection, sizeof(curSection), "name%i", j + 1);
 						if( !_list.Get(curSection, name, sizeof(name)) )
 							name = "Unknown Song";
 
-						Format(curSection, sizeof(curSection), "artist%i", j);
+						Format(curSection, sizeof(curSection), "artist%i", j + 1);
 						if( !_list.Get(curSection, artist, sizeof(artist)) )
 							name = "Unknown Artist";
 
 						snd_id.Init(strBuffer, time, name, artist);
 						snd_list.PushArray(snd_id, sizeof(FF2SoundIdentity));
 					} else {
-						IntToString(j, curSection, 2);
+						IntToString(j, curSection, 4);
 						if( !_list.Get(curSection, strBuffer, sizeof(strBuffer)) )
-							break;
+							continue;
 
-						FormatEx(_key, sizeof(_key), "slot%i", j);
-						if( !_list.Get(_key, buffer, sizeof(buffer)) )
-							slot_type = view_as< int >(CT_RAGE);
-						else slot_type = StringToInt(buffer, 2);
-
-						FormatEx(_key, sizeof(_key), "slot%i_%i", j, slot_type);
+						/**	catch_* 
+						 *	FF2SoundIdentity = { Path, UNUSED, String To Replace || UNUSUED for catch_phrase, Atrist_Name };
+						 */
+						if( is_catch_snd ) {
+							FormatEx(_key, sizeof(_key), "vo%i", j);
+							if( !_list.Get(_key, buffer, sizeof(buffer)) )
+								buffer[0] = '\0';
+						}
+						else {
+							/** sound*
+							 *	FF2SoundIdentity = { Path, UNUSED, slot'Position'_'FF2CallType_t', UNUSED}; 
+							 */
+							FormatEx(_key, sizeof(_key), "slot%i", j);
+							if( !_list.Get(_key, buffer, sizeof(buffer)) )
+								slot_type = view_as< int >(CT_RAGE);
+							else slot_type = StringToInt(buffer, 2);
+	
+							FormatEx(_key, sizeof(_key), "slot%i_%i", j, slot_type);
+						}
 
 						snd_id.Init(strBuffer, 0.0, _key);
 						snd_list.PushArray(snd_id, sizeof(FF2SoundIdentity));

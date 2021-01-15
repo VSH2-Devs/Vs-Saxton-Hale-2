@@ -7,7 +7,7 @@
 #include <sdkhooks>
 
 #define PLYR           35
-#define PLUGIN_VERSION "1.0.1b"
+#define PLUGIN_VERSION "1.0.3b"
 
 #include <cfgmap>
 #include "modules/stocks.inc"
