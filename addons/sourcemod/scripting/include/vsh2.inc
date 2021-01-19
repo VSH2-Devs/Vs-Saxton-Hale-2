@@ -429,6 +429,7 @@ enum { /// VSH2HookType
 	OnHelpMenuSelect,
 	OnDrawGameTimer,
 	OnPlayerClimb,
+	OnRemoveCondition,
 	MaxVSH2Forwards
 };
 
@@ -607,6 +608,9 @@ typeset VSH2HookCB {
 	/// OnPlayerClimb
 	function Action (const VSH2Player player, const int weapon, float& upwardvel, float& health, bool& attackdelay);
 	function void (const VSH2Player player, const int weapon, float& upwardvel, float& health, bool& attackdelay);
+
+	/// OnRemoveCondition
+	function Action (const VSH2Player player, const TFCond cond);
 };
 
 /// Use hooktype enum on these.

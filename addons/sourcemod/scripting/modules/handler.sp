@@ -1113,8 +1113,10 @@ public void TF2_OnConditionAdded(int client, TFCond condition)
 		return;
 
 	switch( condition ) {
-		case TFCond_Disguised, TFCond_Jarated, TFCond_MarkedForDeath:
-			TF2_RemoveCondition(client, condition);
+		case TFCond_Disguised, TFCond_Jarated, TFCond_MarkedForDeath: {
+			if( Call_OnRemoveCondition(player, condition) <= Plugin_Changed )
+				TF2_RemoveCondition(client, condition);
+		}
 	}
 }
 
