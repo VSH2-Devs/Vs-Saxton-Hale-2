@@ -365,7 +365,6 @@ OnHelpMenu,
 OnHelpMenuSelect,
 OnPlayerClimb,
 OnDrawGameTimer,
-OnPlayerClimb,
 OnRemoveCondition,
 ```
 
