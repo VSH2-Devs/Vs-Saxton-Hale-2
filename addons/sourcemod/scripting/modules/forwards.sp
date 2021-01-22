@@ -86,7 +86,7 @@ void InitializeForwards()
 		g_hForwards[i][OnHelpMenuSelect] = new PrivateForward( ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
 		g_hForwards[i][OnDrawGameTimer] = new PrivateForward( ET_Hook, Param_CellByRef );
 		g_hForwards[i][OnPlayerClimb] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef, Param_FloatByRef, Param_CellByRef );
-		g_hForwards[i][OnRemoveCondition] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell );
+		g_hForwards[i][OnBossConditionChange] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_Cell );
 	}
 }
 
@@ -1323,13 +1323,14 @@ Action Call_OnPlayerClimb(const BaseBoss player, const int weapon, float& upward
 	return act[0] > act[1] ? act[0] : act[1];
 }
 
-Action Call_OnRemoveCondition(const BaseBoss player, const TFCond cond)
+Action Call_OnBossConditionChange(const BaseBoss player, const TFCond cond, const bool removing)
 {
 	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnRemoveCondition]);
+		Call_StartForward(g_hForwards[i][OnBossConditionChange]);
 		Call_PushCell(player);
 		Call_PushCell(cond);
+		Call_PushCell(removing);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
 			return act[i];

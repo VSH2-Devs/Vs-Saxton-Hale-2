@@ -1112,12 +1112,14 @@ public void TF2_OnConditionAdded(int client, TFCond condition)
 	if( !player.bIsBoss )
 		return;
 
+	bool remove;
 	switch( condition ) {
-		case TFCond_Disguised, TFCond_Jarated, TFCond_MarkedForDeath: {
-			if( Call_OnRemoveCondition(player, condition) <= Plugin_Changed )
-				TF2_RemoveCondition(client, condition);
-		}
+		case TFCond_Disguised, TFCond_Jarated, TFCond_MarkedForDeath:
+			remove = true;
 	}
+
+	if( Call_OnBossConditionChange(player, condition, remove) <= Plugin_Changed && remove )
+		TF2_RemoveCondition(client, condition);
 }
 
 public void ManageBossMedicCall(const BaseBoss base)
