@@ -365,6 +365,7 @@ OnHelpMenu,
 OnHelpMenuSelect,
 OnPlayerClimb,
 OnDrawGameTimer,
+OnBossConditionChange,
 ```
 
 ## VSH2HookCB (function typeset)
@@ -531,6 +532,9 @@ function void (int& seconds);
 /// OnPlayerClimb
 function Action (const VSH2Player player, const int weapon, float& upwardvel, float& health, bool& attackdelay);
 function void (const VSH2Player player, const int weapon, float& upwardvel, float& health, bool& attackdelay);
+
+/// OnBossConditionChange
+function Action (const VSH2Player player, const TFCond cond, const bool removing);
 ```
 
 ## VSH2 Hook Natives
