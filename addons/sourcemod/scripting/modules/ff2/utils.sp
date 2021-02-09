@@ -71,6 +71,17 @@ stock ConfigMap JumpToAbility(const FF2Player player, const char[] plugin_name, 
 	return( ability );
 }
 
+stock int GetArgNamedB(FF2Player player, const char[] plugin_name, const char[] ability_name, const char[] argument, bool defval = false)
+{
+	ConfigMap section = JumpToAbility(player, plugin_name, ability_name);
+	if( section==null ) {
+		return( defval );
+	}
+	
+	bool result;
+	return( section.GetBool(argument, result) ? result:defval );
+}
+
 stock int GetArgNamedI(FF2Player player, const char[] plugin_name, const char[] ability_name, const char[] argument, int defval = 0)
 {
 	ConfigMap section = JumpToAbility(player, plugin_name, ability_name);

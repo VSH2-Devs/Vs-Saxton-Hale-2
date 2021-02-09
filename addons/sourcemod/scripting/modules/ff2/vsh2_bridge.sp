@@ -104,13 +104,13 @@ public void OnBossMenuFF2(Menu& menu, const VSH2Player player)
 	char char_name[48];
 
 	ConfigMap cfg;
-	int tmp;
+	bool tmp;
 	for( int i = snap.Length - 1; i >= 0; i-- ) {
 		snap.GetKey(i, char_name, sizeof(char_name));
 		FF2Identity curIdentity;
 		if( ff2_cfgmgr.GetIdentity(char_name, curIdentity) ) {
 			cfg = curIdentity.hCfg.GetSection("character");
-			if( !cfg.Get("name", char_name, sizeof(char_name)) || (cfg.GetInt("blocked", tmp) && tmp) )
+			if( !cfg.Get("name", char_name, sizeof(char_name)) || (cfg.GetBool("blocked", tmp) && tmp) )
 				continue;
 
 			IntToString(curIdentity.VSH2ID, id_menu, sizeof(id_menu));
@@ -210,14 +210,14 @@ public void OnBossThinkFF2(const VSH2Player vsh2player)
 	static char buffer[PLATFORM_MAX_PATH];
 
 	///	Handle super jump
-	{
+	if( !player.bNoSuperJump ) {
 		float flmin;
 		if( !cfg.GetFloat("min super jump", flmin) )
 			flmin = 25.0;
 
 		if( player.SuperJumpThink(2.5, flmin) ) {
-			if ( !cfg.GetFloat("super jump reset", flmin) )
-				flmin = -100.0;
+			if( !cfg.GetFloat("super jump reset", flmin) )
+				flmin = -130.0;
 			player.SuperJump(flCharge, flmin);
 
 			FF2SoundList snd_list = identity.sndHash.GetList("sound_ability");
@@ -279,11 +279,6 @@ public Action OnBossSuperJumpFF2(const VSH2Player vsh2player)
 		return Plugin_Continue;
 
 	Call_FF2OnAbility(player, CT_CHARGE);
-
-	if( player.bNoSuperJump ) {
-		return Plugin_Stop;
-	}
-
 	return Plugin_Continue;
 }
 
@@ -361,12 +356,11 @@ public void OnBossInitializedFF2(const VSH2Player vsh2player)
 
 	SetEntProp(player.index, Prop_Send, "m_iClass", cls);
 	{
-		int tmp;
-		player.bNoSuperJump = cfg.GetInt("No Superjump", tmp) && tmp;
-		player.bNoWeighdown = cfg.GetInt("No Weighdown", tmp) && tmp;
-		player.bHideHUD 	= cfg.GetInt("No HUD", tmp) && tmp;
+		bool tmp;
+		player.bNoSuperJump = cfg.GetBool("No Superjump", tmp) && tmp;
+		player.bNoWeighdown = cfg.GetBool("No Weighdown", tmp) && tmp;
+		player.bHideHUD 	= cfg.GetBool("No HUD", tmp) && tmp;
 	}
-	
 
 	/// Process Set Companion
 	{
@@ -506,7 +500,6 @@ public void OnPlayerAirblastedFF2(const VSH2Player airblaster, const VSH2Player 
 	airblasted.SetPropFloat("flRAGE", rage + ff2.m_cvars.m_flairblast.FloatValue);
 }
 
-
 public Action OnBossTriggerRageFF2(const VSH2Player vsh2player)
 {
 	FF2Identity identity;
@@ -562,7 +555,6 @@ public void OnRoundEndInfoFF2(const VSH2Player player, bool bossBool, char messa
 	}
 }
 
-
 public Action OnMusicFF2(char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player)
 {
 	static FF2Identity identity;
@@ -592,7 +584,6 @@ public Action OnMusicFF2(char song[PLATFORM_MAX_PATH], float& time, const VSH2Pl
 	
 	return Plugin_Handled;
 }
-
 
 public void OnBossDeathFF2(const VSH2Player player)
 {

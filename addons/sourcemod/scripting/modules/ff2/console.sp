@@ -19,19 +19,19 @@ void InitConVars()
 	
 	ff2.m_cvars.m_nextmap.AddChangeHook(_OnNextMap);
 	
-	RegAdminCmd("sm_ff2_reload_plugin", Reload_Plugin, ADMFLAG_RCON, "Load/Reload a FF2 SubPlugin");
+	RegAdminCmd("sm_ff2_load_plugin", Load_Plugin, ADMFLAG_RCON, "Load/Reload a FF2 SubPlugin");
 	RegAdminCmd("sm_ff2_unload_plugin", Unload_Plugin, ADMFLAG_RCON, "Unload FF2 SubPlugin");
 }
 
 
-public void _OnNextMap(ConVar convar, const char[] oldValue, const char[] newValue)
+void _OnNextMap(ConVar convar, const char[] oldValue, const char[] newValue)
 {
 	if( IsVSHMap(newValue) )
 		CreateTimer(0.1, Timer_DisplayCharPack, .flags = TIMER_FLAG_NO_MAPCHANGE);
 }
 
 
-public Action Timer_DisplayCharPack(Handle timer)
+Action Timer_DisplayCharPack(Handle timer)
 {
 	if( VSH2GameMode.GetPropAny("bPackSelected") )
 		return Plugin_Continue;
@@ -140,7 +140,7 @@ static bool IsVSHMap(const char[] nextmap)
 }
 
 
-public Action Reload_Plugin(int client, int argc)
+static Action Load_Plugin(int client, int argc)
 {
 	char pl_name[FF2_MAX_PLUGIN_NAME];
 	char path[PLATFORM_MAX_PATH];
@@ -155,11 +155,12 @@ public Action Reload_Plugin(int client, int argc)
 	if( !ff2.m_plugins.TryLoadSubPlugin(pl_name) ) {
 		ReplyToCommand(client, "[VSH2/FF2] Failed to reload SubPlugin: \"%s\"", pl_name);
 	}
+	else ReplyToCommand(client, "[VSH2/FF2] Plugin: \"%s\" Loaded successfully", pl_name);
 	
 	return Plugin_Handled;
 }
 
-public Action Unload_Plugin(int client, int argc)
+static Action Unload_Plugin(int client, int argc)
 {
 	char pl_name[FF2_MAX_PLUGIN_NAME];
 	
