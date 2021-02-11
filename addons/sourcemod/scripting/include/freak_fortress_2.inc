@@ -164,6 +164,16 @@ methodmap FF2Player < VSH2Player {
 	public native bool GetString(const char[] key_name, char[] res, int maxlen);
 
 	/**
+	 * Retrieve a ConfigMap section from boss config
+	 *
+	 * @param key_name		key name
+	 *
+	 * @return			a valid ConfigMap handle on success, null otherwis
+	 * @note			the handle MUST be deleted with 'DeleteCfg()'
+	 */
+	public native ConfigMap GetSection(const char[] key_name);
+
+	/**
 	 * Gets the charge meter value of the Boss
 	 *
 	 * @param type		check FF2RageType_t enum value
@@ -1284,6 +1294,7 @@ public void __pl_FF2_SetNTVOptional()
 	MARK_OPTIONAL(GetInt);
 	MARK_OPTIONAL(GetFloat);
 	MARK_OPTIONAL(GetString);
+	MARK_OPTIONAL(GetSection);
 	MARK_OPTIONAL(GetArgB);
 	MARK_OPTIONAL(GetArgI);
 	MARK_OPTIONAL(GetArgF);

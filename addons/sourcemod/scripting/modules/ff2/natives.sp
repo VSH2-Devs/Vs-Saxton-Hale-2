@@ -33,8 +33,9 @@ void InitNatives()
 	CREATE_NATIVE(GetArgS);
 
 	CREATE_NATIVE(GetInt);
-	CREATE_NATIVE(GetString);
 	CREATE_NATIVE(GetFloat);
+	CREATE_NATIVE(GetString);
+	CREATE_NATIVE(GetSection);
 
 	CREATE_NATIVE(GetRageVar);
 	CREATE_NATIVE(SetRageVar);
@@ -58,12 +59,12 @@ void InitNatives()
 }
 
 /** FF2Player methodmaps */
-public any Native_FF2Player_FF2Player(Handle plugin, int numParams)
+any Native_FF2Player_FF2Player(Handle plugin, int numParams)
 {
 	return( FF2Player(GetNativeCell(1), GetNativeCell(2)) );
 }
 
-public any Native_FF2Player_GetArgB(Handle plugin, int numParams)
+any Native_FF2Player_GetArgB(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 	char pl_name[64], ab_name[64], key_name[32];
@@ -75,7 +76,7 @@ public any Native_FF2Player_GetArgB(Handle plugin, int numParams)
 	return( GetArgNamedB(player, pl_name, ab_name, key_name, def) );
 }
 
-public any Native_FF2Player_GetArgI(Handle plugin, int numParams)
+any Native_FF2Player_GetArgI(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 	char pl_name[64], ab_name[64], key_name[32];
@@ -87,7 +88,7 @@ public any Native_FF2Player_GetArgI(Handle plugin, int numParams)
 	return( GetArgNamedI(player, pl_name, ab_name, key_name, def) );
 }
 
-public any Native_FF2Player_GetArgF(Handle plugin, int numParams)
+any Native_FF2Player_GetArgF(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 	char pl_name[64], ab_name[64], key_name[32];
@@ -99,7 +100,7 @@ public any Native_FF2Player_GetArgF(Handle plugin, int numParams)
 	return( GetArgNamedF(player, pl_name, ab_name, key_name, def) );
 }
 
-public any Native_FF2Player_GetArgS(Handle plugin, int numParams)
+any Native_FF2Player_GetArgS(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 	char pl_name[64], ab_name[64], key_name[32];
@@ -116,7 +117,7 @@ public any Native_FF2Player_GetArgS(Handle plugin, int numParams)
 	return( written );
 }
 
-public any Native_FF2Player_HasAbility(Handle plugin, int numParams)
+any Native_FF2Player_HasAbility(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
@@ -126,7 +127,7 @@ public any Native_FF2Player_HasAbility(Handle plugin, int numParams)
 	return( result );
 }
 
-public any Native_FF2Player_DoAbility(Handle plugin, int numParams)
+any Native_FF2Player_DoAbility(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 	
@@ -143,14 +144,14 @@ public any Native_FF2Player_DoAbility(Handle plugin, int numParams)
 	Call_Finish();
 }
 
-public any Native_FF2Player_ForceAbility(Handle plugin, int numParams)
+any Native_FF2Player_ForceAbility(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 	FF2CallType_t type = GetNativeCell(2);
 	Call_FF2OnAbility(player, type);
 }
 
-public any Native_FF2Player_RandomSound(Handle plugin, int numParams)
+any Native_FF2Player_RandomSound(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 
@@ -184,7 +185,7 @@ public any Native_FF2Player_RandomSound(Handle plugin, int numParams)
 	return( SetNativeString(3, snd_id.path, size) == SP_ERROR_NONE );
 }
 
-public any Native_FF2Player_RageDist(Handle plugin, int numParams)
+any Native_FF2Player_RageDist(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 	if( !player.Valid )
@@ -211,7 +212,7 @@ public any Native_FF2Player_RageDist(Handle plugin, int numParams)
 	return( see );
 }
 
-public any Native_FF2Player_GetRageVar(Handle plugin, int numParams)
+any Native_FF2Player_GetRageVar(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 	if( !player.Valid )
@@ -221,7 +222,7 @@ public any Native_FF2Player_GetRageVar(Handle plugin, int numParams)
 	return( player.GetRageVar(slot) );
 }
 
-public any Native_FF2Player_SetRageVar(Handle plugin, int numParams)
+any Native_FF2Player_SetRageVar(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 	if( !player.Valid )
@@ -234,7 +235,7 @@ public any Native_FF2Player_SetRageVar(Handle plugin, int numParams)
 	return 1;
 }
 
-public any Native_FF2Player_GetConfigName(Handle plugin, int numParams)
+any Native_FF2Player_GetConfigName(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 
@@ -245,7 +246,7 @@ public any Native_FF2Player_GetConfigName(Handle plugin, int numParams)
 	SetNativeString(2, id.szName, GetNativeCell(3));
 }
 
-public any Native_FF2Player_GetInt(Handle plugin, int numParams)
+any Native_FF2Player_GetInt(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 
@@ -259,7 +260,7 @@ public any Native_FF2Player_GetInt(Handle plugin, int numParams)
 	return false;
 }
 
-public any Native_FF2Player_GetFloat(Handle plugin, int numParams)
+any Native_FF2Player_GetFloat(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 
@@ -273,7 +274,7 @@ public any Native_FF2Player_GetFloat(Handle plugin, int numParams)
 	return false;
 }
 
-public any Native_FF2Player_GetString(Handle plugin, int numParams)
+any Native_FF2Player_GetString(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 
@@ -287,13 +288,24 @@ public any Native_FF2Player_GetString(Handle plugin, int numParams)
 	return 0;
 }
 
-public any Native_FF2Player_HookedAbilities_Get(Handle plugin, int numParams)
+any Native_FF2Player_GetSection(Handle plugin, int numParams)
+{
+	FF2Player player = ToFF2Player(GetNativeCell(1));
+
+	char key_name[64]; GetNativeString(2, key_name, sizeof(key_name));
+
+	ConfigMap sec;
+	sec = player.iCfg.GetSection(key_name);
+	return sec.Clone(plugin);
+}
+
+any Native_FF2Player_HookedAbilities_Get(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 	return( player.HookedAbilities );
 }
 
-public any Native_FF2Player_SoundCache_Get(Handle plugin, int numParams)
+any Native_FF2Player_SoundCache_Get(Handle plugin, int numParams)
 {
 	FF2Player player = GetNativeCell(1);
 	static FF2Identity identity;
@@ -303,7 +315,7 @@ public any Native_FF2Player_SoundCache_Get(Handle plugin, int numParams)
 	return( identity.sndHash );
 }
 
-public any Native_FF2Player_PlayBGM(Handle plugin, int numParams)
+any Native_FF2Player_PlayBGM(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 	char bgm[PLATFORM_MAX_PATH]; GetNativeString(2, bgm, sizeof(bgm));
@@ -315,12 +327,12 @@ public any Native_FF2Player_PlayBGM(Handle plugin, int numParams)
 
 
 /** FF2GameMode methodmaps */
-public int Native_FF2GameMode_IsOn(Handle plugin, int numParams)
+int Native_FF2GameMode_IsOn(Handle plugin, int numParams)
 {
 	return( ff2.m_cvars.m_enabled.BoolValue );
 }
 
-public int Native_FF2GameMode_PluginVersion(Handle plugin, int numParams)
+int Native_FF2GameMode_PluginVersion(Handle plugin, int numParams)
 {
 	char version_str[10];
 	ff2.m_cvars.m_version.GetString(version_str, sizeof(version_str));
@@ -335,7 +347,7 @@ public int Native_FF2GameMode_PluginVersion(Handle plugin, int numParams)
 	return 1;
 }
 
-public int Native_FF2GameMode_ForkVersion(Handle plugin, int numParams)
+int Native_FF2GameMode_ForkVersion(Handle plugin, int numParams)
 {
 	char version[3][4];
 	int output[3];
@@ -351,7 +363,7 @@ public int Native_FF2GameMode_ForkVersion(Handle plugin, int numParams)
 	return version[2][end - 1] == 'b';
 }
 
-public any Native_FF2GameMode_LogError(Handle plugin, int numParams)
+any Native_FF2GameMode_LogError(Handle plugin, int numParams)
 {
 	char buffer[MAX_BUFFER_LENGTH];
 	int error = FormatNativeString(0, 1, 2, sizeof(buffer), .fmt_string=buffer);
@@ -362,7 +374,7 @@ public any Native_FF2GameMode_LogError(Handle plugin, int numParams)
 	return 1;
 }
 
-public any Native_FF2GameMode_ReportError(Handle plugin, int numParams)
+any Native_FF2GameMode_ReportError(Handle plugin, int numParams)
 {
 	FF2Player player = GetNativeCell(1);
 	char name[MAX_BOSS_NAME_SIZE] = "Unknown";
@@ -384,7 +396,7 @@ public any Native_FF2GameMode_ReportError(Handle plugin, int numParams)
 	return 1;
 }
 
-public any Native_FF2GameMode_Cheats(Handle plugin, int numParams)
+any Native_FF2GameMode_Cheats(Handle plugin, int numParams)
 {
 	if( numParams ) {
 		ff2.m_cheats = GetNativeCell(1) != 0;
@@ -393,7 +405,7 @@ public any Native_FF2GameMode_Cheats(Handle plugin, int numParams)
 	return ff2.m_cheats;
 }
 
-public any Native_FF2GameMode_FindVSH2IDByName(Handle plugin, int numParams)
+any Native_FF2GameMode_FindVSH2IDByName(Handle plugin, int numParams)
 {
 	FF2Player player = FF2Player(GetNativeCell(1));
 	if( !player.Valid )
@@ -405,7 +417,7 @@ public any Native_FF2GameMode_FindVSH2IDByName(Handle plugin, int numParams)
 	return ff2_cfgmgr.FindIdentityByName(boss_name, id) ? id.VSH2ID : INVALID_FF2_BOSS_ID;
 }
 
-public any Native_FF2GameMode_LoadAbility(Handle plugins, int numParams)
+any Native_FF2GameMode_LoadAbility(Handle plugins, int numParams)
 {
 	char pl_name[FF2_MAX_PLUGIN_NAME];
 	GetNativeString(1, pl_name, sizeof(pl_name));
@@ -413,7 +425,7 @@ public any Native_FF2GameMode_LoadAbility(Handle plugins, int numParams)
 	return ff2.m_plugins.TryLoadSubPlugin(pl_name);
 }
 
-public any Native_FF2GameMode_SubPlugins(Handle plugins, int numParams)
+any Native_FF2GameMode_SubPlugins(Handle plugins, int numParams)
 {
 	FF2PluginList list = ff2.m_plugins;
 	if( !list.Length )

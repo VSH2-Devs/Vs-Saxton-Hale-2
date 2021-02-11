@@ -36,9 +36,8 @@ enum struct FF2Identity {
 	}
 }
 
-static bool FF2_LoadCharacter(FF2Identity identity)
+static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 {
-	char[] path = new char[PLATFORM_MAX_PATH];
 	char[] key_name = new char[PLATFORM_MAX_PATH];
 
 	FormatEx(key_name, PLATFORM_MAX_PATH, "configs/freak_fortress_2/%s.cfg", identity.szName);
@@ -318,18 +317,19 @@ methodmap FF2BossManager < StringMap {
 			ThrowError("Failed to find Section for characters.cfg: \"%s\"", pack_name);
 
 		StringMap map = new StringMap();
-		char key[4], name[48];
+		char key[4];
+		char[] name = new char[PLATFORM_MAX_PATH];
 
 		/// Iterate through the Pack, copy and verify boss path
 		for( int i = cfg.Size - 1; i >= 0; i-- ) {
 			IntToString(i, key, sizeof(key));
-			if( !cfg.Get(key, name, sizeof(name)) )
+			if( !cfg.Get(key, name, PLATFORM_MAX_PATH) )
 				continue;
 
-			FF2Identity curIdentity;
-			strcopy(curIdentity.szName, sizeof(FF2Identity::szName), name);
-			if( FF2_LoadCharacter(curIdentity) ) {
-				map.SetArray(name, curIdentity, sizeof(FF2Identity));
+			FF2Identity cur_id;
+			strcopy(cur_id.szName, sizeof(FF2Identity::szName), name);
+			if( FF2_LoadCharacter(cur_id, name) ) {
+				map.SetArray(name, cur_id, sizeof(FF2Identity));
 			}
 		}
 		return( view_as< FF2BossManager >(map) );
