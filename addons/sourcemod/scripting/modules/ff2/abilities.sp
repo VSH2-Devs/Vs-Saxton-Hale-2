@@ -59,13 +59,13 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 	ConfigMap exclude = cfg.GetSection("map_exclude");
 	if( exclude ) {
 		GetCurrentMap(path, PLATFORM_MAX_PATH);
-		int i = exclude.Length - 1;
+		int i = exclude.Size - 1;
 		char key[4];
 		
 		for( ; i>=0; i-- ) {
 			IntToString(i, key, sizeof(key));
-			if( cfg.Get(key, key_name, PLATFORM_MAX_PATH) && !StrContains(key_name, path) {
-				DeleteCfg(exclude);
+			if( exclude.Get(key, key_name, PLATFORM_MAX_PATH) && !StrContains(key_name, path) ) {
+				DeleteCfg(cfg);
 				return false;
 			}
 		}
@@ -300,10 +300,9 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 							 *	}
 							 */
 							FormatEx(_key, sizeof(_key), "slot%i", j);
-							if( !_list.Get(_key, buffer, sizeof(buffer)) )
+							if( !_list.GetInt(_key, slot_type, 2) )
 								slot_type = view_as< int >(CT_RAGE);
-							else slot_type = StringToInt(buffer, 2);
-	
+
 							FormatEx(_key, sizeof(_key), "slot%i_%i", j, slot_type);
 						}
 
@@ -346,7 +345,7 @@ methodmap FF2BossManager < StringMap {
 			FF2Identity cur_id;
 			strcopy(cur_id.szName, sizeof(FF2Identity::szName), name);
 			if( FF2_LoadCharacter(cur_id, name) ) {
-				map.SetArray(name, cur_id, sizeof(FF2Identity));
+				map.SetArray(cur_id.szName, cur_id, sizeof(FF2Identity));
 			}
 		}
 		return( view_as< FF2BossManager >(map) );
