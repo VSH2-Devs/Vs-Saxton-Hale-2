@@ -65,7 +65,7 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 		for( ; i>=0; i-- ) {
 			IntToString(i, key, sizeof(key));
 			if( cfg.Get(key, key_name, PLATFORM_MAX_PATH) && !StrContains(key_name, path) {
-				DeleteCfg(exclude);
+				DeleteCfg(cfg);
 				return false;
 			}
 		}
