@@ -29,8 +29,10 @@ enum struct FF2Identity {
 	char           szName[48];
 	
 	void Release() {
-		this.sndHash.DeleteAll();
-		delete this.sndHash;
+		if( this.sndHash ) {
+			this.sndHash.DeleteAll();
+			delete this.sndHash;
+		}
 		DeleteCfg(this.hCfg);
 		delete this.ablist;
 	}
@@ -52,6 +54,21 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 	if( !cfg ) {
 		LogError("[VSH2/FF2] Failed to find \"%s\" character!", identity.szName);
 		return false;
+	}
+	
+	ConfigMap exclude = cfg.GetSection("map_exclude");
+	if( exclude ) {
+		GetCurrentMap(path, PLATFORM_MAX_PATH);
+		int i = exclude.Length - 1;
+		char key[4];
+		
+		for( ; i>=0; i-- ) {
+			IntToString(i, key, sizeof(key));
+			if( cfg.Get(key, key_name, PLATFORM_MAX_PATH) && !StrContains(key_name, path) {
+				DeleteCfg(exclude);
+				return false;
+			}
+		}
 	}
 
 	identity.VSH2ID = FF2_RegisterFakeBoss(identity.szName);
