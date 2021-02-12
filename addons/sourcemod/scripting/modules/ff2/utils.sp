@@ -62,7 +62,7 @@ stock ConfigMap JumpToAbility(const FF2Player player, const char[] plugin_name, 
 	FormatEx(actual_key, sizeof(actual_key), "%s##%s", plugin_name, ability_name);
 	
 	ConfigMap ability = null;
-	static char pos[64];
+	char pos[64];
 	
 	if( list && list.GetString(actual_key, pos, sizeof(pos)) ) {
 		ability = player.iCfg.GetSection(pos);

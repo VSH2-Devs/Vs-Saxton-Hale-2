@@ -439,8 +439,6 @@ void OnPlayerKilledFF2(const VSH2Player attacker, const VSH2Player victim, Event
 	if( !states[0] && !states[1] )
 		return;
 
-	static FF2SoundIdentity snd_id;
-	
 	///	Victim is an FF2 boss
 	if( states[1] ) {
 		FF2Player player = ToFF2Player(victim);
@@ -456,16 +454,18 @@ void OnPlayerKilledFF2(const VSH2Player attacker, const VSH2Player victim, Event
 		///	First play sound_kspree
 		if( attacker.GetPropInt("iKills") == 3 && vsh2_gm.iLivingReds != 1 ) {
 			FF2SoundList list = identity[1].sndHash.GetList("sound_kspree");
+			FF2SoundIdentity snd_id;
 			if( list && list.RandomSound(snd_id) ) {
 				attacker.PlayVoiceClip(snd_id.path, VSH2_VOICE_SPREE);
 			}
 		} else {
 			/// play sounn_hit*
 			{
+				FF2SoundIdentity snd_id;
 				static const char tf_classes[] =  { "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer" };
 
 				int cls = view_as< int >(TF2_GetPlayerClass(victim.index)) - 1;
-				static char _key[36];
+				char _key[36];
 				FormatEx(_key, sizeof(_key), "sound_hit_%s", tf_classes[cls]);
 
 				FF2SoundList list;

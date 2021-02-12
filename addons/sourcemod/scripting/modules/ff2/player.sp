@@ -84,30 +84,6 @@ methodmap FF2Player < VSH2Player {
 		}
 	}
 
-	public float GetRageVar(FF2RageType_t type) {
-		switch( type ) {
-			case RT_RAGE: 		return this.GetPropFloat("flRAGE");
-			case RT_CHARGE: 	return this.GetPropFloat("flCharge");
-			case RT_WEIGHDOWN: 	return this.GetPropFloat("flWeighDown");
-			default: {
-				static char key[64]; FormatEx(key, sizeof(key), "flCharge%i", type);
-				return this.GetPropFloat(key);
-			}
-		}
-	}
-
-	public void SetRageVar(FF2RageType_t type, float val) {
-		switch( type ) {
-			case RT_RAGE: 		this.SetPropFloat("flRAGE", val);
-			case RT_CHARGE: 	this.SetPropFloat("flCharge", val);
-			case RT_WEIGHDOWN: 	this.SetPropFloat("flWeighDown", val);
-			default: {
-				static char key[64]; FormatEx(key, sizeof(key), "flCharge%i", type);
-				this.SetPropFloat(key, val);
-			}
-		}
-	}
-
 	public void PlayBGM(const char[] music) {
 		this.PlayMusic(ff2.m_cvars.m_flmusicvol.FloatValue, music);
 	}

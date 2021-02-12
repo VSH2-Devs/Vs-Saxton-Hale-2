@@ -180,7 +180,17 @@ methodmap FF2Player < VSH2Player {
 	 *
 	 * @return			charge meter value
 	 */
-	public native float GetRageVar(FF2RageType_t type);
+	public float GetRageVar(FF2RageType_t type) {
+		switch( type ) {
+			case RT_RAGE: 		return this.GetPropFloat("flRAGE");
+			case RT_CHARGE: 	return this.GetPropFloat("flCharge");
+			case RT_WEIGHDOWN: 	return this.GetPropFloat("flWeighDown");
+			default: {
+				char key[64]; Format(key, sizeof(key), "flCharge%i", type);
+				return this.GetPropFloat(key);
+			}
+		}
+	}
 
 	/**
 	 * Sets the charge meter value of the Boss
@@ -188,7 +198,17 @@ methodmap FF2Player < VSH2Player {
 	 * @param type		check FF2RageType_t enum value
 	 * @param value		value to set
 	 */
-	public native float SetRageVar(FF2RageType_t type, float value);
+	public native float SetRageVar(FF2RageType_t type, float value) {
+		switch( type ) {
+			case RT_RAGE: 		this.SetPropFloat("flRAGE", val);
+			case RT_CHARGE: 	this.SetPropFloat("flCharge", val);
+			case RT_WEIGHDOWN: 	this.SetPropFloat("flWeighDown", val);
+			default: {
+				char key[64]; Format(key, sizeof(key), "flCharge%i", type);
+				this.SetPropFloat(key, val);
+			}
+		}
+	}
 
 	/**
 	 * Gets boss' name in characters.cfg
@@ -320,9 +340,25 @@ methodmap FF2GameMode < VSH2GameMode
 	
 	public static native void ForkVersion(int fver[3]);
 	
-	public static native void LogError(const char[] message, any ...);
+	public static void LogError(const char[] message, any ...) {
+		char buffer[MAX_BUFFER_LENGTH];
+		VFormat(buffer, sizeof(buffer), message, 2);
+		LogError(buffer);
+	}
 
-	public static native void ReportError(FF2Player player = INVALID_FF2PLAYER, const char[] message, any ...);
+	public static void ReportError(FF2Player player = INVALID_FF2PLAYER, const char[] message, any ...) {
+		char name[MAX_BOSS_NAME_SIZE] = "Unknown";
+		if( player.Valid ) {
+			if( !player.GetName(name) )
+				name = "Unknown";
+		}
+
+		char buffer[PLATFORM_MAX_PATH];
+		VFormat(buffer, sizeof(buffer), message, 3);
+
+		LogError("[VSH2/FF2] Exception reported: Boss: %i - Name: %s", player, name);
+		LogError("[VSH2/FF2] %s", buffer);
+	}
 
 	public static native bool Cheats(bool stat=false);
 
@@ -1323,9 +1359,6 @@ public void __pl_FF2_SetNTVOptional()
 	CREATE_NATIVE(PluginVersion);
 	CREATE_NATIVE(ForkVersion);
 	
-	CREATE_NATIVE(LogError);
-	CREATE_NATIVE(ReportError);
-
 	CREATE_NATIVE(Cheats);
 	
 	CREATE_NATIVE(FindVSH2IDByName);

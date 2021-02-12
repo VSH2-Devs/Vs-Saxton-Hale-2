@@ -8,9 +8,6 @@ void InitNatives()
 	CREATE_NATIVE(PluginVersion);
 	CREATE_NATIVE(ForkVersion);
 
-	CREATE_NATIVE(LogError);
-	CREATE_NATIVE(ReportError);
-
 	CREATE_NATIVE(Cheats);
 	
 	CREATE_NATIVE(FindVSH2IDByName);
@@ -36,9 +33,6 @@ void InitNatives()
 	CREATE_NATIVE(GetFloat);
 	CREATE_NATIVE(GetString);
 	CREATE_NATIVE(GetSection);
-
-	CREATE_NATIVE(GetRageVar);
-	CREATE_NATIVE(SetRageVar);
 
 	CREATE_NATIVE(GetConfigName);
 
@@ -155,7 +149,7 @@ any Native_FF2Player_RandomSound(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 
-	static FF2Identity identity;
+	FF2Identity identity;
 	if( !ff2_cfgmgr.FindIdentity(player.GetPropInt("iBossType"), identity) )
 		return 0;
 
@@ -210,29 +204,6 @@ any Native_FF2Player_RageDist(Handle plugin, int numParams)
 	}
 
 	return( see );
-}
-
-any Native_FF2Player_GetRageVar(Handle plugin, int numParams)
-{
-	FF2Player player = ToFF2Player(GetNativeCell(1));
-	if( !player.Valid )
-		return 0.0;
-
-	FF2RageType_t slot = GetNativeCell(2);
-	return( player.GetRageVar(slot) );
-}
-
-any Native_FF2Player_SetRageVar(Handle plugin, int numParams)
-{
-	FF2Player player = ToFF2Player(GetNativeCell(1));
-	if( !player.Valid )
-		return 0;
-
-	FF2RageType_t slot = GetNativeCell(2);
-	float value = GetNativeCell(3);
-	player.SetRageVar(slot, value);
-	
-	return 1;
 }
 
 any Native_FF2Player_GetConfigName(Handle plugin, int numParams)
@@ -308,7 +279,7 @@ any Native_FF2Player_HookedAbilities_Get(Handle plugin, int numParams)
 any Native_FF2Player_SoundCache_Get(Handle plugin, int numParams)
 {
 	FF2Player player = GetNativeCell(1);
-	static FF2Identity identity;
+	FF2Identity identity;
 	if( !ff2_cfgmgr.FindIdentity(player.iBossType, identity) )
 		return 0;
 
@@ -361,39 +332,6 @@ int Native_FF2GameMode_ForkVersion(Handle plugin, int numParams)
 
 	int end = strlen(version[2]);
 	return version[2][end - 1] == 'b';
-}
-
-any Native_FF2GameMode_LogError(Handle plugin, int numParams)
-{
-	char buffer[MAX_BUFFER_LENGTH];
-	int error = FormatNativeString(0, 1, 2, sizeof(buffer), .fmt_string=buffer);
-	if( error != SP_ERROR_NONE ) {
-		return( ThrowNativeError(error, "Failed to format") );
-	}
-	LogError(buffer);
-	return 1;
-}
-
-any Native_FF2GameMode_ReportError(Handle plugin, int numParams)
-{
-	FF2Player player = GetNativeCell(1);
-	char name[MAX_BOSS_NAME_SIZE] = "Unknown";
-	if( player.Valid ) {
-		if( player.GetName(name) ) {
-			name = "Unknown";
-		}
-	}
-
-	LogError("[VSH2/FF2] Exception reported: Boss: %i - Name: %s", player, name);
-	char actual[PLATFORM_MAX_PATH];
-
-	int error;
-	if( (error = FormatNativeString(0, 2, 3, sizeof(actual), .out_string=actual)) != SP_ERROR_NONE )
-		return( ThrowNativeError(error, "Failed to format") );
-
-	LogError("[FF2] %s", actual);
-
-	return 1;
 }
 
 any Native_FF2GameMode_Cheats(Handle plugin, int numParams)
