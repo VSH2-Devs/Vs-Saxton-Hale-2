@@ -1,6 +1,6 @@
 /**
-	ALL NON-BOSS AND NON-MINION RELATED CODE IS AT THE BOTTOM. HAVE FUN CODING!
-*/
+ * ALL NON-BOSS AND NON-MINION RELATED CODE IS AT THE BOTTOM. HAVE FUN CODING!
+ */
 
 #define MAXBOSS    (MaxDefaultVSH2Bosses + (g_modsys.m_hBossesRegistered.Length - 1))
 
@@ -84,10 +84,11 @@ public void ManageDisconnect(const int client)
 {
 	BaseBoss leaver = BaseBoss(client);
 	if( leaver.index && leaver.bIsBoss ) {
-		if( g_vsh2.m_hGamemode.iRoundState >= StateRunning ) {	/// Arena mode flips out when no one is on the other team
+		if( g_vsh2.m_hGamemode.iRoundState >= StateRunning ) {
+			/// Arena mode flips out when no one is on the other team
 			BaseBoss[] bosses = new BaseBoss[MaxClients];
 			int numbosses = VSHGameMode.GetBosses(bosses, false);
-			if( numbosses-1 > 0 ) {	/// Exclude leaver, this is why CountBosses() can't be used
+			if( numbosses-1 > 0 ) { /// Exclude leaver, this is why CountBosses() can't be used
 				for( int i=0; i<numbosses; i++ ) {
 					if( bosses[i]==leaver || (IsClientValid(bosses[i].index) && IsPlayerAlive(bosses[i].index)) )
 						continue;
@@ -154,13 +155,14 @@ public void ManageOnBossSelected(const BaseBoss base)
 	/// random multibosses code.
 	int playing = GetLivingPlayers(VSH2Team_Red);
 	int max_random_bosses = g_vsh2.m_hCvars.MaxRandomMultiBosses.IntValue;
-	if( !g_vsh2.m_hCvars.AllowRandomMultiBosses.BoolValue || playing < 10 || GetRandomInt(0, 3) > 0 || VSHGameMode.CountBosses(false) >= max_random_bosses )
+	if( !g_vsh2.m_hCvars.AllowRandomMultiBosses.BoolValue || playing < 10 || GetRandomInt(0, 3) > 0 || VSHGameMode.CountBosses(false) >= max_random_bosses ) {
 		return;
-
+	}
+	
 	int extra_bosses = GetRandomInt(1, playing / 12);
-	if( extra_bosses > max_random_bosses )
+	if( extra_bosses > max_random_bosses ) {
 		extra_bosses = max_random_bosses;
-
+	}
 	for( int i; i<extra_bosses; i++ ) {
 		BaseBoss partner = VSHGameMode.FindNextBoss();
 		partner.MakeBossAndSwitch(GetRandomInt(VSH2Boss_Hale, MAXBOSS), false);
@@ -206,7 +208,7 @@ public void ManageBossThink(const BaseBoss base)
 		case VSH2Boss_HHHjr:		ToCHHHJr(base).Think();
 		case VSH2Boss_Bunny:		ToCBunny(base).Think();
 	}
-
+	
 	Call_OnBossThinkPost(base);
 }
 
@@ -1642,16 +1644,16 @@ public void PrepPlayers(const BaseBoss player)
 	int client = player.index;
 	if( g_vsh2.m_hGamemode.iRoundState == StateEnding || !IsValidClient(client) || !IsPlayerAlive(client) || player.bIsBoss )
 		return;
-
+	
 #if defined _tf2attributes_included
 	if( g_vsh2.m_hGamemode.bTF2Attribs )
 		TF2Attrib_RemoveAll(client);
 #endif
-
+	
 	Action act = Call_OnPrepRedTeam(player);
 	if( act > Plugin_Changed )
 		return;
-
+	
 	/// Added fix by Chdata to correct team colors
 	int player_team = GetClientTeam(client);
 	if( player_team > VSH2Team_Spectator && player_team != VSH2Team_Red ) {
@@ -1665,14 +1667,87 @@ public void PrepPlayers(const BaseBoss player)
 
 #if defined _tf2attributes_included
 	/// Fixes mantreads to have jump height again
-	if( g_vsh2.m_hGamemode.bTF2Attribs && IsValidEntity(FindPlayerBack(client, { 444 }, 1)) )
+	if( g_vsh2.m_hGamemode.bTF2Attribs && IsValidEntity(FindPlayerBack(client, { 444 }, 1)) ) {
 		/// "self dmg push force increased"
 		TF2Attrib_SetByDefIndex(client, 58, 1.8);
+	}
 #endif
+	static ConfigMap replacer, entry_sect;
+	replacer = g_vsh2.m_hCfg.GetSection("weapon overrides.replace");
+	if( replacer != null ) {
+		int entries = replacer.Size;
+		for( int i; i<entries; i++ ) {
+			char entry_str[10]; IntToString(i, entry_str, sizeof(entry_str));
+			entry_sect = replacer.GetSection(entry_str);
+			if( entry_sect != null ) {
+				int classes_len = entry_sect.GetSize("classes");
+				char[] classes = new char[classes_len];
+				entry_sect.Get("classes", classes, classes_len);
+
+				/// First we check if a class requirement is set.
+				if( classes[0] != '0' ) {
+					char class_strs[10][10];
+					int class_count = ExplodeString(classes, ", ", class_strs, 10, 10);
+					bool correct_class;
+					TFClassType tfclass = TF2_GetPlayerClass(client);
+					for( int n; n<class_count; n++ ) {
+						TFClassType class_type = view_as< TFClassType >(StringToInt(class_strs[n]));
+						if( tfclass==class_type ) {
+							correct_class = true;
+							break;
+						}
+					}
+					if( !correct_class )
+						continue;
+				}
+				
+				int indices_len = entry_sect.GetSize("indices");
+				char[] indices = new char[indices_len];
+				entry_sect.Get("indices", indices, indices_len);
+				char index_strs[20][10];
+				int index_count = ExplodeString(indices, ", ", index_strs, 20, 10);
+				int[] indexes = new int[index_count];
+				for( int n; n<index_count; n++ ) {
+					indexes[n] = StringToInt(index_strs[n]);
+				}
+				/// O(n^2)...
+				for( int slot=TFWeaponSlot_Primary; slot<=TFWeaponSlot_Item2; slot++ ) {
+					int weapon = GetPlayerWeaponSlot(client, slot);
+					int index = GetItemIndex(weapon);
+					for( int n; n<index_count; n++ ) {
+						if( index==indexes[n] ) {
+							int classname_len = entry_sect.GetSize("classname");
+							char[] wep_classname = new char[classname_len];
+							entry_sect.Get("classname", wep_classname, classname_len);
+							int desired_index, desired_level, desired_quality, desired_ammo;
+							entry_sect.GetInt("index", desired_index);
+							entry_sect.GetInt("level", desired_level);
+							entry_sect.GetInt("quality", desired_quality);
+							
+							int attribs_len = entry_sect.GetSize("attribs");
+							char[] attribs = new char[attribs_len];
+							entry_sect.Get("attribs", attribs, attribs_len);
+							entry_sect.GetInt("ammo", desired_ammo);
+							
+							TF2_RemoveWeaponSlot(client, slot);
+							if( desired_index == -1 ) {
+								desired_index = index;
+							}
+							weapon = player.SpawnWeapon(wep_classname, desired_index, desired_level, desired_quality, attribs);
+							if( desired_ammo>0 ) {
+								SetWeaponAmmo(weapon, desired_ammo);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/*
 	int weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
-	int index = -1;
 	if( weapon > MaxClients && IsValidEntity(weapon) ) {
-		index = GetItemIndex(weapon);
+		int index = GetItemIndex(weapon);
 		switch( index ) {
 			/// blocks rocket jumper
 			case 237: {
@@ -1690,28 +1765,24 @@ public void PrepPlayers(const BaseBoss player)
 	}
 	weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 	if( weapon > MaxClients && IsValidEntity(weapon) ) {
-		index = GetItemIndex(weapon);
+		int index = GetItemIndex(weapon);
 		switch( index ) {
 			/// Razorback
-			/*
-			case 57: {
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-				weapon = player.SpawnWeapon("tf_weapon_smg", 16, 1, 0, "");
-			}
-			*/
+			//case 57: {
+			//	TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
+			//	weapon = player.SpawnWeapon("tf_weapon_smg", 16, 1, 0, "");
+			//}
 			/// Stickyjumper
 			case 265: {
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
 				weapon = player.SpawnWeapon("tf_weapon_pipebomblauncher", 20, 1, 0, "");
 				SetWeaponAmmo(weapon, 24);
 			}
-			/*
-			case 311, 433: {
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-				weapon = player.SpawnWeapon("tf_weapon_pipebomblauncher", 20, 5, 10, "280; 3; 6; 0.7; 97; 0.5; 78; 1.2");
-				SetWeaponAmmo(weapon, GetMaxAmmo(client, 1));
-			}
-			*/
+			//case 311, 433: {
+			//	TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
+			//	weapon = player.SpawnWeapon("tf_weapon_pipebomblauncher", 20, 5, 10, "280; 3; 6; 0.7; 97; 0.5; 78; 1.2");
+			//	SetWeaponAmmo(weapon, GetMaxAmmo(client, 1));
+			//}
 			/// Replace sapper with more useful syringe-firing Pistol aka nailgun.
 			case 735, 736, 810, 831, 933, 1080, 1102: {
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
@@ -1729,27 +1800,29 @@ public void PrepPlayers(const BaseBoss player)
 			/// scorch shot
 			case 740: {
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-				weapon = player.SpawnWeapon("tf_weapon_flaregun", index, 5, 10, "551; 1; 25; 0.5; 207; 1.33; 416; 3; 58; 2.08; 1; 0.65");
+				weapon = player.SpawnWeapon("tf_weapon_flaregun", index, 5, 10, "551 ; 1; 25 ; 0.5; 207 ; 1.33; 416 ; 3; 58 ; 2.08; 1 ; 0.65");
 				SetWeaponAmmo(weapon, 20);
 			}
 		}
 	}
+	*/
 	/*
 	if( IsValidEntity (FindPlayerBack(client, { 57 }, 1)) ) {
 		RemovePlayerBack(client, { 57 }, 1);
 		weapon = player.SpawnWeapon("tf_weapon_smg", 16, 1, 0, "");
 	}
 	*/
+	/*
 	weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
 	if( weapon > MaxClients && IsValidEntity(weapon) ) {
-		index = GetItemIndex(weapon);
+		int index = GetItemIndex(weapon);
 		switch( index ) {
 			case 331: {
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
 				weapon = player.SpawnWeapon("tf_weapon_fists", 195, 1, 6, "");
 			}
 			case 357: SetPawnTimer(_NoHonorBound, 1.0, player.userid);
-			case 589: {	/// eureka effect
+			case 589: { /// eureka effect
 				if( !g_vsh2.m_hCvars.BlockEureka.BoolValue ) {
 					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
 					weapon = player.SpawnWeapon("tf_weapon_wrench", 7, 1, 0, "");
@@ -1757,25 +1830,21 @@ public void PrepPlayers(const BaseBoss player)
 			}
 		}
 	}
+	*/
+	/*
 	weapon = GetPlayerWeaponSlot(client, 4);
 	if( weapon > MaxClients && IsValidEntity(weapon) && GetItemIndex(weapon) == 60 ) {
 		TF2_RemoveWeaponSlot(client, 4);
 		weapon = player.SpawnWeapon("tf_weapon_invis", 30, 1, 0, "2; 1.0");
 	}
-	TFClassType equip = TF2_GetPlayerClass(client);
-	switch( equip ) {
+	*/
+	TFClassType tfclass = TF2_GetPlayerClass(client);
+	switch( tfclass ) {
 		case TFClass_Medic: {
-			weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
-			//int mediquality = GetItemQuality(weapon);
-			//if( mediquality != 10 ) {
-			//	TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-			//	if( g_vsh2.m_hCvars.PermOverheal.BoolValue )
-			//		weapon = player.SpawnWeapon("tf_weapon_medigun", 35, 5, 10, "14; 0.0; 18; 0.0; 10; 1.25; 178; 0.75");
-			//	else weapon = player.SpawnWeapon("tf_weapon_medigun", 35, 5, 10, "18; 0.0; 10; 1.25; 178; 0.75");
+			int weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 			/// 200; 1 for area of effect healing, 178; 0.75 Faster switch-to, 14; 0.0 perm overheal, 11; 1.25 Higher overheal
 			if( GetMediCharge(weapon) != 0.41 )
 				SetMediCharge(weapon, 0.41);
-			//}
 		}
 	}
 #if defined _tf2attributes_included
@@ -2053,10 +2122,11 @@ public void ManageFighterThink(const BaseBoss fighter)
 				crit_flags |= view_as< int >(!!strcmp(wepclassname, "tf_weapon_knife", false)) << 1;
 			}
 			case TFWeaponSlot_Primary: {
-				crit_flags |= view_as< int >((StrStarts(wepclassname, "tf_weapon_compound_bow") || /// Sniper bows
+				bool is_wep_class = (StrStarts(wepclassname, "tf_weapon_compound_bow") || /// Sniper bows
 					StrStarts(wepclassname, "tf_weapon_crossbow") || /// Medic crossbows
 					StrEqual(wepclassname,  "tf_weapon_shotgun_building_rescue") || /// Engineer Rescue Ranger
-					StrEqual(wepclassname,  "tf_weapon_drg_pomson"))) << 1;
+					StrEqual(wepclassname,  "tf_weapon_drg_pomson"));
+				crit_flags |= view_as< int >(is_wep_class) << 1;
 			}
 			case TFWeaponSlot_Secondary: {
 				if( StrStarts(wepclassname, "tf_weapon_pistol") || /// Engineer/Scout pistols
@@ -2064,16 +2134,16 @@ public void ManageFighterThink(const BaseBoss fighter)
 					StrStarts(wepclassname, "tf_weapon_flaregun") || /// Flare guns
 					StrStarts(wepclassname, "tf_weapon_smg") ) /// Sniper SMGs minus Cleaner's Carbine
 				{
-					if( tfclass==TFClass_Scout ) {
-						crit_flags = CRITFLAG_MINI;
-					}
-
 					int PrimaryIndex = GetIndexOfWeaponSlot(i, TFWeaponSlot_Primary);
 					/// No crits if using Phlogistinator or Cozy Camper
 					if( (tfclass==TFClass_Pyro && PrimaryIndex == 594) || (IsValidEntity(FindPlayerBack(i, { 642 }, 1))) ) {
 						crit_flags &= ~CRITFLAG_FULL;
 					} else {
 						crit_flags |= CRITFLAG_FULL;
+					}
+					
+					if( tfclass==TFClass_Scout ) {
+						crit_flags = CRITFLAG_MINI;
 					}
 				}
 
@@ -2094,7 +2164,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 			crit_flags = 0;
 		}
 	}
-
+	
 	/// Demo Man shield crits code.
 	if( tfclass == TFClass_DemoMan && !IsValidEntity(GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary)) && GetSlotFromWeapon(i, weapon) != TFWeaponSlot_Melee ) {
 		if( g_vsh2.m_hCvars.DemoShieldCrits.IntValue >= 1 ) {
@@ -2109,7 +2179,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 			}
 		}
 	}
-
+	
 	if( crit_flags & CRITFLAG_FULL ) {
 		if( crit_flags & CRITFLAG_STACK )
 			TF2_AddCondition(i, TFCond_Buffed, 0.2);

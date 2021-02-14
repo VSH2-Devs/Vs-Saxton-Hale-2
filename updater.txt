@@ -4,22 +4,15 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.10.28"
+			"Latest"	"2.10.29"
 		}
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.10.28:"
-		"Notes"	"Refactored HUD and Crit code in 'ManageFighterThink'."
-		"Notes"	"Optimized 'OnPreThinkPost' by having the cloak reducing check code if the player is cloaked."
-		"Notes"	"Switched code placement of tf2attributes removal and the 'PrepPlayers' forward call."
-		"Notes"	"Added PreRound Boss Setting (Shinyscales)."
-		"Notes"	"Added OnPlayerClimb forward for when a player climbs a wall (Shinyscales)."
-		"Notes"	"Renamed 'OnHookedEvent' to 'OnExplosiveJump' and renamed a few other identifier names to something more self-documenting."
-		"Notes"	"Extended 'OnControlPointCapped' by adding a filled VSH2Player array with capper amount."
-		"Notes"	"Added VSH2's documentation as text & image files."
-		"Notes"	"Added new native 'VSH2_GetConfigMap'."
-		"Notes"	"Demomen no longer lose melee crits when they lose shield charge for specific vsh2_demoman_shield_crits cvar values."
-		"Notes"	"Added new property for the VSH2 Gamemode: 'iPrevSpecial'."
-		"Notes"	"Expanded ConfigMap with Setting methods, ExportToFile, & Cloning (01Pollux)."
-		"Notes"	"Update FF2 loading cycle (01Pollux)."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.10.29:"
+		"Notes"	"Added Cvar for controlling ammo pack conversions."
+		"Notes"	"Finally changed Bunny's weapon to a bottle as it should be."
+		"Notes"	"Not that anyone would care but updated VSH2 SourceGo files."
+		"Notes"	"Added error logging if attribute indices exceed the attribute limit for TF2Items stocks."
+		"Notes"	"Fixed a glitch with ConfigMap where it wasn't properly parsing the <enum> values when used as section names."
+		"Notes"	"Replaced total-weapon-replacement code with ConfigMap weapon replacement based code."
 	}
 
 	"Files"

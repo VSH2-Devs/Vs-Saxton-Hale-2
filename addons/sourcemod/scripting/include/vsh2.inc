@@ -35,37 +35,40 @@ enum { /** VSH2 Default Bosses */
 	VSH2Boss_CBS,
 	VSH2Boss_HHHjr,
 	VSH2Boss_Bunny,
-	MaxDefaultVSH2Bosses,
+	MaxDefaultVSH2Bosses
 };
 
 
 enum { /** Voice Clip Flags */
-	VSH2_VOICE_BOSSENT = 1, /// use boss as entity to emit from.
-	VSH2_VOICE_BOSSPOS = 2, /// use boss position for sound origin.
-	VSH2_VOICE_TOALL = 4,   /// sound replay to each individual player.
-	VSH2_VOICE_ALLCHAN = 8, /// if sound replay should use auto sound channel.
-	VSH2_VOICE_ONCE = 16    /// play a clip once to all. (does not cancel out 'VSH2_VOICE_TOALL')
+	VSH2_VOICE_BOSSENT = 1,  /// use boss as entity to emit from.
+	VSH2_VOICE_BOSSPOS = 2,  /// use boss position for sound origin.
+	VSH2_VOICE_TOALL   = 4,  /// sound replay to each individual player.
+	VSH2_VOICE_ALLCHAN = 8,  /// if sound replay should use auto sound channel.
+	VSH2_VOICE_ONCE    = 16, /// play a clip once to all. (does not cancel out 'VSH2_VOICE_TOALL')
 };
 
-#define VSH2_VOICE_ALL     (VSH2_VOICE_BOSSENT|VSH2_VOICE_BOSSPOS|VSH2_VOICE_TOALL|VSH2_VOICE_ALLCHAN|VSH2_VOICE_ONCE)
+enum {
+	VSH2_VOICE_ALL     = VSH2_VOICE_BOSSENT|VSH2_VOICE_BOSSPOS|VSH2_VOICE_TOALL|VSH2_VOICE_ALLCHAN|VSH2_VOICE_ONCE,
 
-/// For when boss does something like a superjump, etc.
-#define VSH2_VOICE_ABILITY (VSH2_VOICE_BOSSENT|VSH2_VOICE_BOSSPOS|VSH2_VOICE_TOALL)
+	/// For when boss does something like a superjump, etc.
+	VSH2_VOICE_ABILITY = VSH2_VOICE_BOSSENT|VSH2_VOICE_BOSSPOS|VSH2_VOICE_TOALL,
 
-/// For when boss does something like rage or special ability.
-#define VSH2_VOICE_RAGE    (VSH2_VOICE_BOSSENT|VSH2_VOICE_BOSSPOS|VSH2_VOICE_TOALL|VSH2_VOICE_ALLCHAN)
+	/// For when boss does something like rage or special ability.
+	VSH2_VOICE_RAGE    = VSH2_VOICE_BOSSENT|VSH2_VOICE_BOSSPOS|VSH2_VOICE_TOALL|VSH2_VOICE_ALLCHAN,
 
-/// For when boss gets stabbed or goes on a killing spree.
-#define VSH2_VOICE_SPREE   (0)
-#define VSH2_VOICE_STABBED VSH2_VOICE_SPREE
+	/// For when boss gets stabbed or goes on a killing spree.
+	VSH2_VOICE_SPREE   = 0,
+	VSH2_VOICE_STABBED = 0,
 
-/// For when boss loses, wins, or introduces themselves like the mentlegen they are.
-#define VSH2_VOICE_WIN     (VSH2_VOICE_ONCE|VSH2_VOICE_ALLCHAN)
-#define VSH2_VOICE_LOSE    VSH2_VOICE_WIN
-#define VSH2_VOICE_INTRO   VSH2_VOICE_WIN
+	/// For when boss loses, wins, or introduces themselves like the mentlegen they are.
+	VSH2_VOICE_WIN     = VSH2_VOICE_ONCE|VSH2_VOICE_ALLCHAN,
+	VSH2_VOICE_LOSE    = VSH2_VOICE_ONCE|VSH2_VOICE_ALLCHAN,
+	VSH2_VOICE_INTRO   = VSH2_VOICE_ONCE|VSH2_VOICE_ALLCHAN,
 
-/// For when there's only one target left!
-#define VSH2_VOICE_LASTGUY (VSH2_VOICE_BOSSPOS)
+	/// For when there's only one target left!
+	VSH2_VOICE_LASTGUY = VSH2_VOICE_BOSSPOS,
+};
+
 
 enum { /** HUDs */
 	PlayerHUD,
@@ -78,9 +81,9 @@ enum { /** HUDs */
 methodmap VSH2Player {
 	/** [ C O N S T R U C T O R ]
 	 * Constructs an instance of the BaseBoss internal methodmap
-	 * @param index			index (or the userid) of a player
-	 * @param userid		if using userid instead of player index, set this param to true
-	 * @return			a player instance of the VSH2Player methodmap
+	 * @param index - index (or the userid) of a player
+	 * @param userid - if using userid instead of player index, set this param to true
+	 * @return    a player instance of the VSH2Player methodmap
 	 */
 	public native VSH2Player(const int index, bool userid=false);
 
@@ -88,7 +91,7 @@ methodmap VSH2Player {
 	/** **** **** [ P R O P E R T I E S ] **** **** **/
 	/**
 	 * gets the userid of the vsh2 player instance
-	 * @return			the bare player userid integer
+	 * @return    the bare player userid integer
 	 */
 	property int userid {
 		public native get();
@@ -96,7 +99,7 @@ methodmap VSH2Player {
 
 	/**
 	 * gets the index of the vsh2 player instance
-	 * @return			the bare player index integer
+	 * @return    the bare player index integer
 	 */
 	property int index {
 		public native get();
@@ -105,9 +108,9 @@ methodmap VSH2Player {
 	/**
 	 * sets the property of the internal VSH2 methodmap
 	 * NOTE: You can use this to create new properties which GetProperty can access!
-	 * @param prop_name		name of property you want to access data from.
-	 * @param item			reference to use of the variable to overwrite with data from the property.
-	 * @return		value as "any".
+	 * @param prop_name - name of property you want to access data from.
+	 * @param item - reference to use of the variable to overwrite with data from the property.
+	 * @return    value as "any".
 	 */
 	#pragma deprecated Use GetPropInt, GetPropFloat, or GetPropAny instead.
 	public native any GetProperty(const char prop_name[64]);
@@ -115,8 +118,8 @@ methodmap VSH2Player {
 	/**
 	 * sets the property of the internal VSH2 methodmap
 	 * NOTE: You can use this to create new properties which GetProperty can access!
-	 * @param prop_name		name of the property you want to override data from (works like StringMap).
-	 * @param value			data you want the property to hold.
+	 * @param prop_name - name of the property you want to override data from (works like StringMap).
+	 * @param value - data you want the property to hold.
 	 * @noreturn
 	 */
 	#pragma deprecated Use SetPropInt, SetPropFloat, or SetPropAny instead.
@@ -139,13 +142,8 @@ methodmap VSH2Player {
 	 * int iAirDamage
 	 * int iSongPick
 	 * int iClimbs
-
-	* use 'hOwnerBoss' instead of this.
-	 * int iOwnerBoss
-
-	** please use userid on this; convert to client index if you want but userid is safer **
-	* Use 'hUberTarget' property instead this
-	 * int iUberTarget
+	 * int iOwnerBoss **** use 'hOwnerBoss' instead of this. ****
+	 * int iUberTarget **** Use 'hUberTarget' property instead this. ****
 	 * bool bIsMinion
 	 * bool bInJump
 	 * float flGlowtime
@@ -303,11 +301,11 @@ stock void VSH2_GlowThink(VSH2Player boss, const float decrease) {
 		SetEntProp(boss.index, Prop_Send, "m_bGlowEnabled", 0);
 }
 
-stock bool VSH2_SuperJumpThink(VSH2Player boss, const float charging, const float jumpcharge) {
+stock bool VSH2_SuperJumpThink(VSH2Player boss, const float charging, const float jumpcharge, int button=(IN_ATTACK2|IN_DUCK)) {
 	int player = boss.index;
 	int buttons = GetClientButtons(player);
 	float charge = boss.GetPropFloat("flCharge");
-	if( ((buttons & IN_DUCK) || (buttons & IN_ATTACK2)) && (charge >= 0.0) ) {
+	if( (buttons & button) && (charge >= 0.0) ) {
 		if( charge + charging < jumpcharge )
 			boss.SetPropFloat("flCharge", charge + charging);
 		else boss.SetPropFloat("flCharge", jumpcharge);
@@ -323,7 +321,7 @@ stock bool VSH2_SuperJumpThink(VSH2Player boss, const float charging, const floa
 	return false;
 }
 
-stock void VSH2_WeighDownThink(VSH2Player boss, const float weighdown_time, const float incr) {
+stock void VSH2_WeighDownThink(VSH2Player boss, const float weighdown_time, const float incr, int button=IN_DUCK) {
 	int player = boss.index;
 	int buttons = GetClientButtons(player);
 	int flags = GetEntityFlags(player);
@@ -331,7 +329,7 @@ stock void VSH2_WeighDownThink(VSH2Player boss, const float weighdown_time, cons
 		boss.SetPropFloat("flWeighDown", 0.0);
 	else boss.SetPropFloat("flWeighDown", boss.GetPropFloat("flWeighDown") + incr);
 
-	if( (buttons & IN_DUCK) && boss.GetPropFloat("flWeighDown") >= weighdown_time ) {
+	if( (buttons & button) && boss.GetPropFloat("flWeighDown") >= weighdown_time ) {
 		float ang[3]; GetClientEyeAngles(player, ang);
 		if( ang[0] > 60.0 )
 			boss.WeighDown(0.0);
@@ -664,8 +662,9 @@ methodmap VSHHealthBar {
 		int healthbar = FindEntityByClassname(-1, "monster_resource");
 		if( healthbar == -1 ) {
 			healthbar = CreateEntityByName("monster_resource");
-			if( healthbar != -1 )
+			if( healthbar != -1 ) {
 				DispatchSpawn(healthbar);
+			}
 		}
 		return view_as< VSHHealthBar >(healthbar);
 	}
@@ -703,8 +702,33 @@ methodmap VSHHealthBar {
 	}
 };
 
+
 native any VSH2GameMode_GetProperty(const char prop_name[64]);
 native void VSH2GameMode_SetProperty(const char prop_name[64], any value);
+
+/**
+ * Available Properties:
+ * int iRoundState
+ * int iSpecial
+ * int iPrevSpecial
+ * int iTotalMaxHealth
+ * int iTimeLeft
+ * int iRoundCount
+ * int iHealthChecks
+ * int iCaptures
+ * 
+ * bool bSteam
+ * bool bTF2Attribs
+ * bool bPointReady
+ * bool bMedieval
+ * bool bDoors
+ * bool bTeleToSpawn
+ * 
+ * float flHealthTime
+ * float flMusicTime
+ * 
+ * VSH2Player hNextBoss
+ */
 
 stock int VSH2GameMode_GetPropInt(const char prop_name[64]) {
 	return VSH2GameMode_GetProperty(prop_name);
@@ -730,27 +754,6 @@ stock void VSH2GameMode_SetPropFloat(const char prop_name[64], float value) {
 stock void VSH2GameMode_SetPropAny(const char prop_name[64], any value) {
 	VSH2GameMode_SetProperty(prop_name, value);
 }
-
-/**
- * Available Properties:
- * int iRoundState
- * int iSpecial
- * int iPrevSpecial
- * int iTotalMaxHealth
- * int iTimeLeft
- * int iRoundCount
- * int iHealthChecks
- * int iCaptures
- * bool bSteam
- * bool bTF2Attribs
- * bool bPointReady
- * bool bMedieval
- * bool bDoors
- * bool bTeleToSpawn
- * float flHealthTime
- * float flMusicTime
- * VSH2Player hNextBoss
- */
 
 
 native VSH2Player VSH2GameMode_FindNextBoss();
@@ -874,8 +877,9 @@ methodmap VSH2GameMode {
  */
 stock void CheckDownload(const char[] file)
 {
-	if( FileExists(file, true) )
+	if( FileExists(file, true) ) {
 		AddFileToDownloadsTable(file);
+	}
 }
 
 stock void PrepareSound(const char[] sound_path)

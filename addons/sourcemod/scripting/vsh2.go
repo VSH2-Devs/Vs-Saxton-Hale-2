@@ -229,6 +229,8 @@ const (
 	OnHelpMenu
 	OnHelpMenuSelect
 	OnDrawGameTimer
+	OnPlayerClimb
+	OnBossConditionChange
 	MaxVSH2Forwards
 )
 
@@ -299,3 +301,4 @@ func DownloadMaterialList(file_list []string, size int)
 func PrepareModel(model_path string, model_only bool) int
 func IsStockSound(sample PathStr) bool
 func IsVoiceLine(sample PathStr) bool
+func ShuffleIndex(size, curr_index int) int

@@ -12,8 +12,8 @@
 ```c
 StateDisabled = -1,
 StateStarting = 0,
-StateRunning = 1,
-StateEnding = 2,
+StateRunning  = 1,
+StateEnding   = 2,
 ```
 
 ## VSH2 Teams (anonymous enum)
@@ -39,12 +39,12 @@ MaxDefaultVSH2Bosses,
 ```c
 VSH2_VOICE_BOSSENT = 1, /// use boss as entity to emit from.
 VSH2_VOICE_BOSSPOS = 2, /// use boss position for sound origin.
-VSH2_VOICE_TOALL = 4,   /// sound replay to each individual player.
+VSH2_VOICE_TOALL   = 4, /// sound replay to each individual player.
 VSH2_VOICE_ALLCHAN = 8, /// if sound replay should use auto sound channel.
-VSH2_VOICE_ONCE = 16    /// play a clip once to all. (does not cancel out 'VSH2_VOICE_TOALL')
+VSH2_VOICE_ONCE    = 16 /// play a clip once to all. (does not cancel out 'VSH2_VOICE_TOALL')
 ```
 
-### Convenient Voice Flags Defines
+### Convenient, Ready-to-use Voice Flags
 ```
 VSH2_VOICE_ALL
 VSH2_VOICE_ABILITY
@@ -286,7 +286,7 @@ ConfigMap VSH2_GetConfigMap();
 
 ## VSH2 Hook Types (anonymous enum)
 ```
-OnCallDownloads,
+OnCallDownloads=0,
 OnBossSelected,
 OnTouchPlayer,
 OnTouchBuilding,
@@ -363,8 +363,8 @@ OnSoundHook,
 OnRoundStart,
 OnHelpMenu,
 OnHelpMenuSelect,
-OnPlayerClimb,
 OnDrawGameTimer,
+OnPlayerClimb,
 OnBossConditionChange,
 ```
 
@@ -462,9 +462,9 @@ function Action (const VSH2Player player, char message[MAXMESSAGE]);
 function void (const VSH2Player player, char message[MAXMESSAGE]);
 
 /**
-	OnBossHealthCheck - bossBool determines if command user was the boss
-	OnRoundEndInfo - bossBool determines if boss won the round
-*/
+ * OnBossHealthCheck - bossBool determines if command user was the boss
+ * OnRoundEndInfo - bossBool determines if boss won the round
+ */
 function Action (const VSH2Player player, bool bossBool, char message[MAXMESSAGE]);
 function void (const VSH2Player player, bool bossBool, char message[MAXMESSAGE]);
 

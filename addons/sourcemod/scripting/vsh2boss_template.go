@@ -456,7 +456,7 @@ func IsValidClient(client Entity) bool {
 
 func GetSlotFromWeapon(client, wep Entity) int {
 	for i:=0; i<5; i++ {
-		if wep == GetPlayerWeaponSlot(client, i) {
+		if wep==GetPlayerWeaponSlot(client, i) {
 			return i
 		}
 	}

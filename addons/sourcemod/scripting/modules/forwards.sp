@@ -1337,3 +1337,21 @@ Action Call_OnBossConditionChange(const BaseBoss player, const TFCond cond, cons
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
+
+/*
+Action Call_OnRedReplaceWep(const BaseBoss player, int weap_ent, int wep_index, int slot)
+{
+	Action act[2];
+	for( int i; i<sizeof(g_hForwards); i++ ) {
+		Call_StartForward(g_hForwards[i][OnRedReplaceWep]);
+		Call_PushCell(player);
+		Call_PushCell(wep_index);
+		Call_PushCell(weap_ent);
+		Call_PushCell(slot);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
+	}
+	return act[0] > act[1] ? act[0] : act[1];
+}
+*/

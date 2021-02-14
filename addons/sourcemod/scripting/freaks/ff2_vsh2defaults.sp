@@ -55,8 +55,7 @@ enum struct _ConVars {
 	ConVar ff2_strangewep;
 	ConVar ff2_solo_shame;
 	
-	void Init()
-	{
+	void Init() {
 		this.sv_cheats				= FindConVar("sv_cheats");
 		this.host_timescale			= FindConVar("host_timescale");
 		this.mp_friendlyfire 		= FindConVar("mp_friendlyfire");

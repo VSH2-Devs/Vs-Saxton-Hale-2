@@ -87,8 +87,9 @@ public void OnPluginEnd()
 	}
 }
 
-public void OnLibraryAdded(const char[] name) {
-	if( StrEqual(name, "VSH2") && !ff2.m_vsh2) {
+public void OnLibraryAdded(const char[] name)
+{
+	if( StrEqual(name, "VSH2") && !ff2.m_vsh2 ) {
 		InitConVars();
 		ff2.m_vsh2 = true;
 		FF2GameMode.LoadFF2();
@@ -108,7 +109,8 @@ public void OnMapEnd()
 	}
 }
 
-public void OnLibraryRemoved(const char[] name) {
+public void OnLibraryRemoved(const char[] name)
+{
 	if( StrEqual(name, "VSH2") && ff2.m_vsh2 ) {
 		ff2.m_vsh2 = false;
 		
@@ -140,14 +142,14 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 {
 	InitNatives();
 
-	ff2.m_forwards[FF2OnMusic]		= new GlobalForward("FF2_OnMusic", ET_Hook, Param_Cell, Param_String, Param_FloatByRef);
-	ff2.m_forwards[FF2OnSpecial]		= new GlobalForward("FF2_OnBossSelected", ET_Hook, Param_Cell, Param_String, Param_Cell);
-	ff2.m_forwards[FF2OnLoseLife]		= new GlobalForward("FF2_OnLoseLife", ET_Hook, Param_Cell, Param_CellByRef, Param_Cell);
-	ff2.m_forwards[FF2OnBackstab]		= new GlobalForward("FF2_OnBackStabbed", ET_Hook, Param_Cell, Param_Cell);
-	ff2.m_forwards[FF2OnPreAbility]		= new GlobalForward("FF2_PreAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell, Param_CellByRef);
-	ff2.m_forwards[FF2OnAbility]		= new GlobalForward("FF2_OnAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell);
-	ff2.m_forwards[FF2OnQueuePoints]	= new GlobalForward("FF2_OnAddQueuePoints", ET_Hook, Param_Array);
-	ff2.m_forwards[FF2OnBossJarated]	= new GlobalForward("FF2_OnBossJarated", ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef);
+	ff2.m_forwards[FF2OnMusic] = new GlobalForward("FF2_OnMusic", ET_Hook, Param_Cell, Param_String, Param_FloatByRef);
+	ff2.m_forwards[FF2OnSpecial] = new GlobalForward("FF2_OnBossSelected", ET_Hook, Param_Cell, Param_String, Param_Cell);
+	ff2.m_forwards[FF2OnLoseLife] = new GlobalForward("FF2_OnLoseLife", ET_Hook, Param_Cell, Param_CellByRef, Param_Cell);
+	ff2.m_forwards[FF2OnBackstab] = new GlobalForward("FF2_OnBackStabbed", ET_Hook, Param_Cell, Param_Cell);
+	ff2.m_forwards[FF2OnPreAbility] = new GlobalForward("FF2_PreAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell, Param_CellByRef);
+	ff2.m_forwards[FF2OnAbility] = new GlobalForward("FF2_OnAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell);
+	ff2.m_forwards[FF2OnQueuePoints] = new GlobalForward("FF2_OnAddQueuePoints", ET_Hook, Param_Array);
+	ff2.m_forwards[FF2OnBossJarated] = new GlobalForward("FF2_OnBossJarated", ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef);
 
 	RegPluginLibrary("freak_fortress_2");
 

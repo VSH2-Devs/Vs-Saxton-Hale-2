@@ -24,7 +24,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.10.28"
+#define PLUGIN_VERSION       "2.10.29"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -111,6 +111,7 @@ enum struct VSH2Cvars {
 	ConVar CapReenableTime;
 	ConVar AllowSniperClimbing;
 	ConVar PreRoundSetBoss;
+	ConVar ChangeAmmoPacks;
 	ConVar VersionNumber;
 }
 
@@ -318,6 +319,7 @@ public void OnPluginStart()
 	g_vsh2.m_hCvars.CapReenableTime = CreateConVar("vsh2_multiple_cp_capture_reenable_time", "30.0", "time to reenable the control pointer after being captured, does nothing is 'vsh2_multiple_cp_captures' is disabled.", FCVAR_NONE, true, 1.0, false);
 	g_vsh2.m_hCvars.AllowSniperClimbing = CreateConVar("vsh2_allow_sniper_climb", "1", "allow snipers to be able to climb using melee.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_vsh2.m_hCvars.PreRoundSetBoss = CreateConVar("vsh2_preround_setboss", "0", "Allow players to change boss during round start phase.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars.ChangeAmmoPacks = CreateConVar("vsh2_change_ammopacks", "1", "changes all map ammopacks to specific size (1-small, 2-medium, 3-large, 0-no change).", FCVAR_NONE, true, 0.0, true, 3.0);
 
 	g_vsh2.m_hGamemode.bSteam = LibraryExists("SteamTools");
 	g_vsh2.m_hGamemode.bTF2Attribs = LibraryExists("tf2attributes");
@@ -841,7 +843,7 @@ public Action cdVoiceMenu(int client, const char[] command, int argc)
 
 	/// Capture call for medic commands (represented by "voicemenu 0 0")
 	BaseBoss boss = BaseBoss(client);
-	if( szCmd1[0] == '0' && szCmd2[0] == '0' && boss.bIsBoss )
+	if( szCmd1[0]=='0' && szCmd2[0]=='0' && boss.bIsBoss )
 		ManageBossMedicCall(boss);
 
 	return Plugin_Continue;

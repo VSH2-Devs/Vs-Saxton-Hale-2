@@ -601,14 +601,25 @@ public SMCResult ConfigMap_OnEndSection(SMCParser smc)
 	/// and push the newer one into it as a new section.
 	if( !g_kvstate.cfgstack.Empty ) {
 		StringMap higher = g_kvstate.cfgstack.Pop();
-
+		
 		PackVal val;
 		val.data = new DataPack();
 		val.data.WriteCell(g_kvstate.top);
 		val.size = sizeof(g_kvstate.top);
 		val.tag = KeyValType_Section;
-
-		higher.SetArray(g_kvstate.curr_section, val, sizeof(val));
+		
+		if( StrEqual(g_kvstate.curr_section, "<ENUM>") ) {
+			int enum_val = g_kvstate.enumer_global++;
+			char enum_val_str[15]; IntToString(enum_val, enum_val_str, sizeof enum_val_str);
+			higher.SetArray(enum_val_str, val, sizeof(val));
+		} else if( StrEqual(g_kvstate.curr_section, "<enum>") ) {
+			int enum_val = g_kvstate.enumer_local++;
+			char enum_val_str[15]; IntToString(enum_val, enum_val_str, sizeof enum_val_str);
+			higher.SetArray(enum_val_str, val, sizeof(val));
+		} else {
+			higher.SetArray(g_kvstate.curr_section, val, sizeof(val));
+		}
+		
 		if( !g_kvstate.secstack.Empty ) {
 			g_kvstate.secstack.PopString(g_kvstate.curr_section, sizeof(g_kvstate.curr_section));
 		}

@@ -20,7 +20,7 @@ import (
 
 type KeyValType int
 const (
-	KeyValType_Null = 0     /// nil
+	KeyValType_Null = 0 /// nil
 	KeyValType_Section  /// StringMap : char[*][*]
 	KeyValType_Value    /// char[*]
 )
@@ -39,14 +39,24 @@ type ConfigMap StringMap
 /// __sp__(`cfg = new ConfigMap(filename);`)
 
 func (ConfigMap) GetVal(key string, valbuf *PackVal) bool
+func (ConfigMap) SetVal(key, val_str string, val_size int) bool
 func (ConfigMap) GetSize(key_path string) int
 func (ConfigMap) Get(key_path string, buffer []char, buf_size int) int
+func (ConfigMap) Set(key_path, str string) bool
 func (ConfigMap) GetSection(key_path string) ConfigMap
 func (ConfigMap) GetKeyValType(key_path string) KeyValType
 func (ConfigMap) GetInt(key_path string, i *int, base int) int
+func (ConfigMap) SetInt(key_path string, i int) bool
 func (ConfigMap) GetFloat(key_path string, f *float) int
+func (ConfigMap) SetFloat(key_path string, f float) bool
 func (ConfigMap) GetBool(key_path string, b *bool, simple bool) int
+
+func (ConfigMap) ExportToFile(sec_name, path string) bool
+func (ConfigMap) Clone(owner_pl Handle) ConfigMap
+func (ConfigMap) DeleteSection(key_path string) bool
 
 func ParseTargetPath(key string, buffer []char, buffer_len int) bool
 func DeleteCfg(cfg *ConfigMap, clear_only bool)
 func PrintCfg(cfg ConfigMap)
+func ConfigMapToFile(cfg ConfigMap, sec_name string, file File, deep int) bool
+func CloneConfigMap(cfg, new_cfg ConfigMap, new_owner_pl Handle) bool

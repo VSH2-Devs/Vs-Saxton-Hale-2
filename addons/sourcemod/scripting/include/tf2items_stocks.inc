@@ -102,8 +102,12 @@ stock TF2Item TF2Item_PrepareItemHandle(TF2Item hItem, char[] name = "", int ind
 		hWeapon.iNumAttribs = (attribCount/2);
 		for( int i, att_index; i<attribCount && i<32; i += 2, att_index++ ) {
 			int attrib = StringToInt(weaponAttribsArray[i]);
-			if( !attrib )
+			if( !attrib ) {
 				continue;
+			} else if( att_index >= 16 ) {
+				LogError("TF2Item_PrepareItemHandle ERROR :: **** attribute '%s' exceeds attributes limit. ****", weaponAttribsArray[i]);
+				continue;
+			}
 
 			hWeapon.SetAttribute(att_index, StringToInt(weaponAttribsArray[i]), StringToFloat(weaponAttribsArray[i+1]));
 			att_index++;

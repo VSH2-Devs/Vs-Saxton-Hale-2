@@ -303,54 +303,34 @@ methodmap VSHGameMode < StringMap {
 		}
 		return count;
 	}
+	public static void ReplaceAmmoPack(int ent, int setting) {
+		float pos[3]; GetEntPropVector(ent, Prop_Send, "m_vecOrigin", pos);
+		AcceptEntityInput(ent, "Kill");
+		
+		DataPack vecPack = new DataPack();
+		vecPack.WriteFloat(pos[0]);
+		vecPack.WriteFloat(pos[1]);
+		vecPack.WriteFloat(pos[2]);
+		vecPack.WriteCell(setting);
+		CreateTimer(0.2, SetAmmoPack, vecPack, TIMER_DATA_HNDL_CLOSE);
+	}
 	public static void SearchForItemPacks()
 	{
+		int ammo_pack_setting = g_vsh2.m_hCvars.ChangeAmmoPacks.IntValue;
+		if( ammo_pack_setting > 0 ) {
+			int ent = -1;
+			while( (ent = FindEntityByClassname(ent, "item_ammopack_*")) != -1 ) {
+				VSHGameMode.ReplaceAmmoPack(ent, ammo_pack_setting);
+			}
+		}
+		
 		bool foundAmmo, foundHealth;
 		int ent = -1, count = 0;
-		float pos[3];
-		while( (ent = FindEntityByClassname(ent, "item_ammopack_full")) != -1 ) {
-			GetEntPropVector(ent, Prop_Send, "m_vecOrigin", pos);
-			AcceptEntityInput(ent, "Kill");
-			
-			DataPack vecPack = new DataPack();
-			vecPack.WriteFloat(pos[0]);
-			vecPack.WriteFloat(pos[1]);
-			vecPack.WriteFloat(pos[2]);
-			CreateTimer(0.2, SetSmallAmmoPack, vecPack, TIMER_DATA_HNDL_CLOSE);
-			count++;
-			foundAmmo = (count > 4);
-		}
-		ent = -1;
-		count = 0;
-		while( (ent = FindEntityByClassname(ent, "item_ammopack_medium")) != -1 ) {
-			//SetEntProp(ent, Prop_Send, "m_iTeamNum", manager.bMainEnable ? manager.iRedTeam : 0, 4);
-			GetEntPropVector(ent, Prop_Send, "m_vecOrigin", pos);
-			AcceptEntityInput(ent, "Kill");
-			
-			DataPack vecPack = new DataPack();
-			vecPack.WriteFloat(pos[0]);
-			vecPack.WriteFloat(pos[1]);
-			vecPack.WriteFloat(pos[2]);
-			CreateTimer(0.2, SetSmallAmmoPack, vecPack, TIMER_DATA_HNDL_CLOSE);
-			count++;
-			if( !foundAmmo )
-				foundAmmo = (count > 4);
-		}
-		ent = -1;
-		count = 0;
-		while( (ent = FindEntityByClassname(ent, "item_ammopack_small")) != -1 ) {
-			count = 0;
-			count++;
-			if( !foundAmmo )
-				foundAmmo = (count > 4);
-		}
-		ent = -1;
-		count = 0;
 		while( (ent = FindEntityByClassname(ent, "item_healthkit_small")) != -1 ) {
 			SetEntProp(ent, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars.Enabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 			count++;
 			if( !foundHealth )
-				foundHealth = (count > 4); //true;
+				foundHealth = (count > 9);
 		}
 		ent = -1;
 		count = 0;
@@ -358,7 +338,7 @@ methodmap VSHGameMode < StringMap {
 			SetEntProp(ent, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars.Enabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 			count++;
 			if( !foundHealth )
-				foundHealth = (count > 2);//true;
+				foundHealth = (count > 6);
 		}
 		ent = -1;
 		count = 0;
@@ -366,12 +346,19 @@ methodmap VSHGameMode < StringMap {
 			SetEntProp(ent, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars.Enabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
 			count++;
 			if( !foundHealth )
-				foundHealth = (count > 2); //true;
+				foundHealth = (count > 3);
 		}
+		
 		if( !foundAmmo )
-			SpawnRandomAmmo();
+			SpawnRandomAmmo(
+				g_vsh2.m_hCvars.AmmoKitLimitMax.IntValue,
+				g_vsh2.m_hCvars.AmmoKitLimitMin.IntValue
+			);
 		if( !foundHealth )
-			SpawnRandomHealth();
+			SpawnRandomHealth(
+				g_vsh2.m_hCvars.HealthKitLimitMax.IntValue,
+				g_vsh2.m_hCvars.HealthKitLimitMin.IntValue
+			);
 	}
 	public void UpdateBossHealth() {
 		BaseBoss boss;
@@ -582,16 +569,29 @@ methodmap VSHGameMode < StringMap {
 	}
 };
 
-public Action SetSmallAmmoPack(Handle timer, DataPack pack) {
+public Action SetAmmoPack(Handle timer, DataPack pack) {
 	pack.Reset();
 	float vecPos[3];
 	vecPos[0] = pack.ReadFloat();
 	vecPos[1] = pack.ReadFloat();
 	vecPos[2] = pack.ReadFloat();
+	int setting = pack.ReadCell();
 	
-	int ammopacker = CreateEntityByName("item_ammopack_small");
-	TeleportEntity(ammopacker, vecPos, NULL_VECTOR, NULL_VECTOR);
-	DispatchSpawn(ammopacker);
-	//SetEntProp(ammopacker, Prop_Send, "m_iTeamNum", manager.bMainEnable ? manager.iRedTeam : 0, 4);
+	char ammopack_names[][] = {
+		"item_ammopack_small",
+		"item_ammopack_medium",
+		"item_ammopack_large"
+	};
+	
+	int ammopack_ent = -1;
+	switch( setting ) {
+		case 1: ammopack_ent = CreateEntityByName(ammopack_names[setting-1]);
+		case 2: ammopack_ent = CreateEntityByName(ammopack_names[setting-1]);
+		case 3: ammopack_ent = CreateEntityByName(ammopack_names[setting-1]);
+		default: ammopack_ent = CreateEntityByName(ammopack_names[GetRandomInt(0, sizeof(ammopack_names)-1)]);
+	}
+	TeleportEntity(ammopack_ent, vecPos, NULL_VECTOR, NULL_VECTOR);
+	DispatchSpawn(ammopack_ent);
+	//SetEntProp(ammopack_ent, Prop_Send, "m_iTeamNum", manager.bMainEnable ? manager.iRedTeam : 0, 4);
 	return Plugin_Continue;
 }

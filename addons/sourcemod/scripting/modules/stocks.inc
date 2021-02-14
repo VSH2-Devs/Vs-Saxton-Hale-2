@@ -619,20 +619,18 @@ stock bool CanFitHere(float origin[3], const float mins[3], const float maxs[3])
 	return false;
 }
 
-stock void SpawnRandomAmmo()
+stock void SpawnRandomAmmo(int maxlimit, int minlimit)
 {
 	int iEnt = MaxClients+1;
-	float vPos[3], vAng[3];
 	int spawned;
-	int maxlim = g_vsh2.m_hCvars.AmmoKitLimitMax.IntValue;
-	int minlim = g_vsh2.m_hCvars.AmmoKitLimitMin.IntValue;
 	while( (iEnt = FindEntityByClassname(iEnt, "info_player_teamspawn")) != -1 ) {
-		if( spawned >= minlim )
+		if( spawned >= minlimit )
 			if( GetRandomInt(0, 3) )
 				continue;
-		if( spawned >= maxlim )
+		if( spawned >= maxlimit )
 			break;
 		/// Technically you'll never find a map without a spawn point.
+		float vPos[3], vAng[3];
 		GetEntPropVector(iEnt, Prop_Send, "m_vecOrigin", vPos);
 		GetEntPropVector(iEnt, Prop_Send, "m_angRotation", vAng);
 		int ammo = CreateEntityByName("item_ammopack_small");
@@ -642,19 +640,17 @@ stock void SpawnRandomAmmo()
 		++spawned;
 	}
 }
-stock void SpawnRandomHealth()
+stock void SpawnRandomHealth(int maxlimit, int minlimit)
 {
 	int iEnt = MaxClients+1;
-	float vPos[3], vAng[3];
 	int spawned;
-	int maxlim = g_vsh2.m_hCvars.HealthKitLimitMax.IntValue;
-	int minlim = g_vsh2.m_hCvars.HealthKitLimitMin.IntValue;
 	while( (iEnt = FindEntityByClassname(iEnt, "info_player_teamspawn")) != -1 ) {
-		if( spawned >= minlim )
+		if( spawned >= minlimit )
 			if( GetRandomInt(0, 3) )
 				continue;
-		if( spawned >= maxlim )
+		if( spawned >= maxlimit )
 			break;
+		float vPos[3], vAng[3];
 		GetEntPropVector(iEnt, Prop_Send, "m_vecOrigin", vPos);
 		GetEntPropVector(iEnt, Prop_Send, "m_angRotation", vAng);
 		int healthkit = CreateEntityByName("item_healthkit_small");
