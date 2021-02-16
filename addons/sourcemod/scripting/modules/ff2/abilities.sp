@@ -29,22 +29,23 @@ enum struct FF2Identity {
 	char           szName[48];
 	
 	void Release() {
-		this.sndHash.DeleteAll();
-		delete this.sndHash;
+		if( this.sndHash ) {
+			this.sndHash.DeleteAll();
+			delete this.sndHash;
+		}
 		DeleteCfg(this.hCfg);
 		delete this.ablist;
 	}
 }
 
-static bool FF2_LoadCharacter(FF2Identity identity)
+static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 {
-	char[] path = new char[PLATFORM_MAX_PATH];
 	char[] key_name = new char[PLATFORM_MAX_PATH];
 
 	FormatEx(key_name, PLATFORM_MAX_PATH, "configs/freak_fortress_2/%s.cfg", identity.szName);
 	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "%s", key_name);
 	if( !FileExists(path) ) {
-		ThrowError("[!!!] Unable to find \"%s\"!", identity.szName);
+		LogError("[VSH2/FF2] Unable to find \"%s\"!", identity.szName);
 		return false;
 	}
 
@@ -53,6 +54,21 @@ static bool FF2_LoadCharacter(FF2Identity identity)
 	if( !cfg ) {
 		LogError("[VSH2/FF2] Failed to find \"%s\" character!", identity.szName);
 		return false;
+	}
+	
+	ConfigMap exclude = cfg.GetSection("map_exclude");
+	if( exclude ) {
+		GetCurrentMap(path, PLATFORM_MAX_PATH);
+		int i = exclude.Size - 1;
+		char key[4];
+		
+		for( ; i>=0; i-- ) {
+			IntToString(i, key, sizeof(key));
+			if( exclude.Get(key, key_name, PLATFORM_MAX_PATH) && !StrContains(key_name, path) ) {
+				DeleteCfg(cfg);
+				return false;
+			}
+		}
 	}
 
 	identity.VSH2ID = FF2_RegisterFakeBoss(identity.szName);
@@ -67,18 +83,23 @@ static bool FF2_LoadCharacter(FF2Identity identity)
 	ConfigMap this_char = cfg.GetSection("character");
 	identity.ablist = new FF2AbilityList();
 
-	/// abilities*
+	StringMapSnapshot snap = this_char.Snapshot();
+	int size_of_snapshot = snap.Length;
+
+	/// ability* || Ability*
+	/**
+	 *	"Ability: Rage Test" {	//	Can be ability5965841, ability*, as long as the key was unique && less than 64 characters
+	 *		"name"			"thing"
+	 *		"plugin_name"	"pl_name"
+	 *	}
+	 */
 	{
-		ConfigMap cur_ab;
-
-		StringMapSnapshot snap = this_char.Snapshot();
-
-		for( int i = snap.Length - 1; i >= 0 && identity.ablist.Size < FF2_MAX_SUBPLUGINS; i-- ) {
+		for( int i = size_of_snapshot - 1; i >= 0 && identity.ablist.Size < FF2_MAX_SUBPLUGINS; i-- ) {
 			snap.GetKey(i, key_name, FF2_MAX_ABILITY_KEY);
-			if( strncmp(key_name, "ability", 7) )
+			if( strncmp(key_name, "ability", 7, false) )
 				continue;
 
-			cur_ab = this_char.GetSection(key_name);
+			ConfigMap cur_ab = this_char.GetSection(key_name);
 			if( !cur_ab || !cur_ab.Get("plugin_name", buffer, FF2_MAX_PLUGIN_NAME) )
 				continue;
 
@@ -91,12 +112,17 @@ static bool FF2_LoadCharacter(FF2Identity identity)
 				identity.ablist.Insert(path, key_name);
 			}
 		}
-		delete snap;
 	}
 
 	ConfigMap stacks;
 
-	///	download
+	/**
+	 *	"download" {
+	 *		"<enum>"		"..."
+	 *		"<enum>"		"...."
+	 *		"<enum>"		".."
+	 *	}
+	 */
 	{
 		if( (stacks = this_char.GetSection("download")) ) {
 			for( int i = stacks.Size - 1; i >= 0; i-- ) {
@@ -105,7 +131,7 @@ static bool FF2_LoadCharacter(FF2Identity identity)
 					continue;
 
 				if( !FileExists(path, true) ) {
-					LogError("[VSH2/FF2] Character \"%s\" is missing file \"%s\"!", key_name, i, identity.szName, path);
+					LogError("[VSH2/FF2] Character \"%s\" is missing file \"%s\"!", identity.szName, path);
 				} else {
 					AddFileToDownloadsTable(path);
 				}
@@ -114,6 +140,13 @@ static bool FF2_LoadCharacter(FF2Identity identity)
 	}
 
 	/// mat/mod download
+	/**
+	 *	"mat_download" {
+	 *		"<enum>"		"..."
+	 *		"<enum>"		"...."
+	 *		"<enum>"		".."
+	 *	}
+	 */
 	{
 		char model_ext[][] = {
 			".mdl",
@@ -144,14 +177,14 @@ static bool FF2_LoadCharacter(FF2Identity identity)
 				IntToString(i, key_name, PLATFORM_MAX_PATH);
 				if( !stacks.Get(key_name, path, PLATFORM_MAX_PATH) )
 					continue;
-				
+
 				FormatEx(key_name, PLATFORM_MAX_PATH, "%s.vmt", path);
 				if( !FileExists(key_name, true) ) {
 					LogError("[VSH2/FF2] Character \"%s\" is missing file \"%s\"!", identity.szName, key_name);
 				} else {
 					AddFileToDownloadsTable(key_name);
 				}
-				
+
 				FormatEx(key_name, PLATFORM_MAX_PATH, "%s.vtf", path);
 				if( !FileExists(key_name, true) ) {
 					LogError("[VSH2/FF2] Character \"%s\" is missing file \"%s\"!", identity.szName, key_name);
@@ -165,24 +198,26 @@ static bool FF2_LoadCharacter(FF2Identity identity)
 	/// Prepare Sound list
 	{
 		identity.sndHash = new FF2SoundHash();
-		StringMapSnapshot snap = this_char.Snapshot();
 
 		ConfigMap _list;
 		FF2SoundList snd_list;
 		FF2SoundIdentity snd_id;
 
-		char curSection[32], _key[32];
+		char curSection[32], _key[48];
 
 		char strBuffer[PLATFORM_MAX_PATH];
 		float time; int slot_type;
 		char name[32], artist[32];
 
-		for( int i = snap.Length - 1; i >= 0; i-- ) {
+		for( int i = size_of_snapshot - 1; i >= 0; i-- ) {
 			snap.GetKey(i, _key, sizeof(_key));
 			bool is_catch_snd = !strncmp(_key, "catch_", 6);
 
-			if (!StrContains(_key, "sound") || is_catch_snd ) {
+			if (!strncmp(_key, "sound", 5, false) || is_catch_snd ) {
 				_list = this_char.GetSection(_key);
+				if( !_list )	///	sound_block_vo or any other ky that contains soun
+					continue;
+
 				snd_list = identity.sndHash.GetOrCreateList(_key);
 
 				bool is_bgm_section = _list.Get("path1", strBuffer, sizeof(strBuffer)) > 0;
@@ -190,7 +225,20 @@ static bool FF2_LoadCharacter(FF2Identity identity)
 				for( int j = 0; j <= 15; j++ ) {
 					if( is_bgm_section ) {
 						/**	sound* contains pathX & timeX
-						 *	FF2SoundIdentity = { Path, Time, Song_Name, Atrist_Name };
+						 *	FF2SoundIdentity = {
+						 *		Path,
+						 *		Time,
+						 *		Song_Name,
+						 *		Atrist_Name
+						 *	};
+						 *
+						 *	"sound_bgm" {
+						 *		"pathX"		"..."	///	required
+						 *		"timeX"		"..."	///	required
+						 *		"nameX"		"..."	///	optional
+						 *		"artistX"	"..."	///	optional
+						 *	}
+						 *
 						 */
 						Format(curSection, sizeof(curSection), "path%i", j + 1);
 						if( !_list.Get(curSection, strBuffer, sizeof(strBuffer)) )
@@ -216,7 +264,22 @@ static bool FF2_LoadCharacter(FF2Identity identity)
 							continue;
 
 						/**	catch_* 
-						 *	FF2SoundIdentity = { Path, UNUSED, String To Replace || UNUSUED for catch_phrase, Atrist_Name };
+						 *	FF2SoundIdentity = {
+						 *		Path,
+						 *		UNUSED,
+						 *		String To Replace || UNUSUED for catch_phrase,
+						 *		UNUSED
+						 *	};
+						 *
+						 *	"catch_phrase" {
+						 *		"<enum>"	"..."	///	required
+						 *		"voX"		"..."	///	required
+						 *	}
+						 *
+						 *	"catch_phrase" {
+						 *		"<enum>"		"..."
+						 *	}
+						 *
 						 */
 						if( is_catch_snd ) {
 							FormatEx(_key, sizeof(_key), "vo%i", j);
@@ -225,13 +288,21 @@ static bool FF2_LoadCharacter(FF2Identity identity)
 						}
 						else {
 							/** sound*
-							 *	FF2SoundIdentity = { Path, UNUSED, slot'Position'_'FF2CallType_t', UNUSED}; 
+							 *	FF2SoundIdentity = {
+							 * 		Path,
+							 *		UNUSED,
+							 *		slot'Position'_'FF2CallType_t',
+							 *		UNUSED
+							 *	}; 
+							 *
+							 *	"sound_*" {
+							 *		"<enum>"		"..."
+							 *	}
 							 */
 							FormatEx(_key, sizeof(_key), "slot%i", j);
-							if( !_list.Get(_key, buffer, sizeof(buffer)) )
+							if( !_list.GetInt(_key, slot_type, 2) )
 								slot_type = view_as< int >(CT_RAGE);
-							else slot_type = StringToInt(buffer, 2);
-	
+
 							FormatEx(_key, sizeof(_key), "slot%i_%i", j, slot_type);
 						}
 
@@ -241,8 +312,9 @@ static bool FF2_LoadCharacter(FF2Identity identity)
 				}
 			}
 		}
-		delete snap;
 	}
+	
+	delete snap;
 	return true;
 }
 
@@ -261,29 +333,32 @@ methodmap FF2BossManager < StringMap {
 			ThrowError("Failed to find Section for characters.cfg: \"%s\"", pack_name);
 
 		StringMap map = new StringMap();
-		char key[4], name[48];
+		char key[4];
+		char[] name = new char[PLATFORM_MAX_PATH];
 
 		/// Iterate through the Pack, copy and verify boss path
 		for( int i = cfg.Size - 1; i >= 0; i-- ) {
 			IntToString(i, key, sizeof(key));
-			if( !cfg.Get(key, name, sizeof(name)) )
+			if( !cfg.Get(key, name, PLATFORM_MAX_PATH) )
 				continue;
 
-			FF2Identity curIdentity;
-			strcopy(curIdentity.szName, sizeof(FF2Identity::szName), name);
-			if( FF2_LoadCharacter(curIdentity) ) {
-				map.SetArray(name, curIdentity, sizeof(FF2Identity));
+			FF2Identity cur_id;
+			strcopy(cur_id.szName, sizeof(FF2Identity::szName), name);
+			if( FF2_LoadCharacter(cur_id, name) ) {
+				map.SetArray(cur_id.szName, cur_id, sizeof(FF2Identity));
 			}
 		}
 		return( view_as< FF2BossManager >(map) );
 	}
 
-	public void Delete(const char[] name) {
+	public bool Delete(const char[] name) {
 		FF2Identity identity;
 		if( this.GetArray(name, identity, sizeof(FF2Identity)) ) {
 			identity.Release();
 			this.Remove(name);
+			return true;
 		}
+		return false;
 	}
 
 	public void DeleteAll() {

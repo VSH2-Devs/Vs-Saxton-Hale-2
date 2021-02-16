@@ -52,12 +52,12 @@ void Call_FF2OnAbility(const FF2Player player, FF2CallType_t call_type)
 {
 	char curKey[FF2_MAX_LIST_KEY];
 	char cfg_key[FF2_MAX_ABILITY_KEY];
-	static char pl_ab[2][FF2_MAX_PLUGIN_NAME];
+	char[][] pl_ab = new char[2][FF2_MAX_PLUGIN_NAME];
 	
 	ConfigMap cfg = player.iCfg;
 	FF2CallType_t cur_type;
 	
-	static FF2AbilityList list; list = player.HookedAbilities;
+	FF2AbilityList list = player.HookedAbilities;
 	if( !list )
 		return;
 	
@@ -67,9 +67,9 @@ void Call_FF2OnAbility(const FF2Player player, FF2CallType_t call_type)
 		list.GetString(curKey, cfg_key, sizeof(cfg_key));
 		
 		cur_type = CT_NONE;
-		FormatEx(pl_ab[0], sizeof(pl_ab[]), "%s.slot", cfg_key);
+		FormatEx(pl_ab[0], FF2_MAX_PLUGIN_NAME, "%s.slot", cfg_key);
 		if( !cfg.GetInt(pl_ab[0], view_as< int >(cur_type)) ) {
-			FormatEx(pl_ab[0], sizeof(pl_ab[]), "%s.arg0", cfg_key);
+			FormatEx(pl_ab[0], FF2_MAX_PLUGIN_NAME, "%s.arg0", cfg_key);
 			if( !cfg.GetInt(pl_ab[0], view_as< int >(cur_type)) || !cur_type )
 				cur_type = CT_RAGE;
 		}

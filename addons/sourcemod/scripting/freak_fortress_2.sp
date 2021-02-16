@@ -7,7 +7,7 @@
 #include <sdkhooks>
 
 #define PLYR           35
-#define PLUGIN_VERSION "1.0.3b"
+#define PLUGIN_VERSION "1.0.5b"
 
 #include <cfgmap>
 #include "modules/stocks.inc"
@@ -126,6 +126,7 @@ public void NextFrame_InitFF2Player(int client)
 {
 	if( ff2.m_vsh2 ) {
 		FF2Player player = FF2Player(client);
+		player.SetPropAny("bNotifySMAC_CVars", false);
 		player.iMaxLives = 0;
 		player.bNoSuperJump = false;
 		player.bNoWeighdown = false;

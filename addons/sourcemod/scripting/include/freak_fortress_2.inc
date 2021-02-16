@@ -32,7 +32,8 @@ enum FF2RageType_t {
 
 #else
 
-#define FF2CallType_t    int
+#define FF2CallType_t   int
+#define FF2RageType_t	int
 
 enum {
 	FF2FLAG_UBERREADY            = (1<<1),  /// Used when medic says "I'm charged!"				
@@ -75,6 +76,7 @@ enum {
 };
 
 enum { FF2_MAX_LIST_KEY = FF2_MAX_PLUGIN_NAME + FF2_MAX_ABILITY_NAME + 2 };		/// sizeof key in FF2AbilityList
+enum { INVALID_FF2_BOSS_ID = -1 };	//Invalid VSH2 iBossType
 
 enum struct FF2SoundIdentity {
 	char  path[PLATFORM_MAX_PATH];
@@ -160,17 +162,74 @@ methodmap FF2Player < VSH2Player {
 	 * @return			true on sucess, false otherwise
 	 */
 	public native bool GetString(const char[] key_name, char[] res, int maxlen);
-	
+
+	/**
+	 * Retrieve a ConfigMap section from boss config
+	 *
+	 * @param key_name		key name
+	 *
+	 * @return			a valid ConfigMap handle on success, null otherwis
+	 * @note			the handle MUST be deleted with 'DeleteCfg()'
+	 */
+	public native ConfigMap GetSection(const char[] key_name);
+
+	/**
+	 * Gets the charge meter value of the Boss
+	 *
+	 * @param type		check FF2RageType_t enum value
+	 *
+	 * @return			charge meter value
+	 */
+	public float GetRageVar(FF2RageType_t type) {
+		switch( type ) {
+			case RT_RAGE: 		return this.GetPropFloat("flRAGE");
+			case RT_CHARGE: 	return this.GetPropFloat("flCharge");
+			case RT_WEIGHDOWN: 	return this.GetPropFloat("flWeighDown");
+			default: {
+				char key[64]; Format(key, sizeof(key), "flCharge%i", type);
+				return this.GetPropFloat(key);
+			}
+		}
+	}
+
+	/**
+	 * Sets the charge meter value of the Boss
+	 *
+	 * @param type		check FF2RageType_t enum value
+	 * @param value		value to set
+	 */
+	public native float SetRageVar(FF2RageType_t type, float value) {
+		switch( type ) {
+			case RT_RAGE: 		this.SetPropFloat("flRAGE", val);
+			case RT_CHARGE: 	this.SetPropFloat("flCharge", val);
+			case RT_WEIGHDOWN: 	this.SetPropFloat("flWeighDown", val);
+			default: {
+				char key[64]; Format(key, sizeof(key), "flCharge%i", type);
+				this.SetPropFloat(key, val);
+			}
+		}
+	}
+
 	/**
 	 * Gets boss' name in characters.cfg
 	 *
 	 * @param path			output buffer
 	 * @param maxlen		size of output
-	 *
-	 * @noreturn
 	 */
 	public native void GetConfigName(char[] path, int maxlen);
-	
+
+	/**
+	 * Retrieve a boolean from boss ability
+	 *
+	 * @param pl_name		"plugin_name" instance
+	 * @param ab_name		ability "name" instance
+	 * @param key_name		key to extract
+	 * @param defVal		default value if no matching key was found
+	 *
+	 * @return				the value stored in ability
+	 */
+	public native bool GetArgB(const char[] pl_name, const char[] ab_name, const char[] key_name, bool defVal = false);
+
 	/**
 	 * Retrieve an integer from boss ability
 	 *
@@ -232,8 +291,6 @@ methodmap FF2Player < VSH2Player {
 	 * Starts the Boss's music for the specified client
 	 *
 	 * @param path	path for music to play
-	 *
-	 * @noreturn
 	 */
 	public native void PlayBGM(const char path[PLATFORM_MAX_PATH]);
 	
@@ -241,11 +298,10 @@ methodmap FF2Player < VSH2Player {
 	 * Forces boss to use an ability
 	 *
 	 * @param pluginName	Name of plugin with this ability
-	 * @param abilityName Name of ability
-	 * @param slot		check FF2CallType enums
+	 * @param abilityName 	Name of ability
+	 * @param slot			check FF2CallType enums
 	 *
 	 * @note				this will NOT remove/reduce boss charge
-	 * @noreturn
 	 */
 	public native void DoAbility(const char[] pl_name, const char[] ab_name, FF2CallType_t slot);
 	
@@ -255,7 +311,6 @@ methodmap FF2Player < VSH2Player {
 	 * @param slot		check FF2CallType enums
 	 *
 	 * @note				this will NOT remove/reduce boss charge
-	 * @noreturn
 	 */
 	public native void ForceAbility(FF2CallType_t slot);
 	
@@ -272,48 +327,83 @@ methodmap FF2Player < VSH2Player {
 	public native bool RandomSound(const char[] key_name, char[] buffer, int maxlen, FF2CallType_t slot=view_as< FF2CallType_t >(2));
 }
 
-
-/**
- * Is Freak Fortress enabled?
- *
- * @return		False if FF2 is disabled
- *			True if FF2 is enabled
- */
-native bool FF2_IsFF2Enabled();
-
 /**
  * bPackSelected
  */
 methodmap FF2GameMode < VSH2GameMode
 {
 	public FF2GameMode() { return view_as< FF2GameMode >(0); }
+
+	public static native bool IsOn();
+
+	public static native void PluginVersion(int ver[3]);
 	
-	property bool FF2IsOn {
-		public get() { return FF2_IsFF2Enabled(); }
+	public static native void ForkVersion(int fver[3]);
+	
+	public static void LogError(const char[] message, any ...) {
+		char buffer[MAX_BUFFER_LENGTH];
+		VFormat(buffer, sizeof(buffer), message, 2);
+		LogError(buffer);
 	}
-	
+
+	public static void ReportError(FF2Player player = INVALID_FF2PLAYER, const char[] message, any ...) {
+		char name[MAX_BOSS_NAME_SIZE] = "Unknown";
+		if( player.Valid ) {
+			if( !player.GetName(name) )
+				name = "Unknown";
+		}
+
+		char buffer[PLATFORM_MAX_PATH];
+		VFormat(buffer, sizeof(buffer), message, 3);
+
+		LogError("[VSH2/FF2] Exception reported: Boss: %i - Name: %s", player, name);
+		LogError("[VSH2/FF2] %s", buffer);
+	}
+
+	public static native bool Cheats(bool stat=false);
+
+	public static native int FindVSH2IDByName(const char[] boss_name);
+
+	public static native bool LoadAbility(const char[] plugin_name);
+
+	public static native StringMap SubPlugins();
+
+	property bool FF2IsOn {
+		public get() { return FF2GameMode.IsOn(); }
+	}
+
 	property int RoundState {
 		public get() { return VSH2GameMode.GetPropInt("iRoundState"); }
 	}
-	
+
 	public static bool Validate(const VSH2Player player) {
 		return ToFF2Player(player).HookedAbilities != null;
 	}
-	
-	public static native bool LoadAbility(const char[] plugin_name);
-	
-	public static native StringMap SubPlugins();
 }
 
+
+/** Stocks for backward compatibility */
+/** All of them are redundant and provides overhead, you should not use them if you're making a subplugin for VSH2-FF2 */
+
+/**
+ * Is Freak Fortress 2 enabled?
+ *
+ * @return		False if FF2 is disabled, true otherwise
+ */
+stock bool FF2_IsFF2Enabled()
+{
+	return FF2GameMode.IsOn();
+}
 
 /**
  * Gets the version of FF2 running on the server
  *
  * @param version	An array of size 3 that will contain the major, minor, and stable version numbers respectively
- *
- * @return		
  */
-native bool FF2_GetFF2Version(int[] version=0);
+stock void FF2_GetFF2Version(int version[3])
+{
+	FF2GameMode.PluginVersion(version);
+}
 
 /**
  * Gets the version of the FF2 fork running on the server
@@ -322,9 +412,12 @@ native bool FF2_GetFF2Version(int[] version=0);
  *
  * @param version	An array of size 3 that will contain the major, minor, and stable version numbers respectively
  *
- * @return		
+ * @return		true if the plugin is running on beta version, false otherwise
  */
-native bool FF2_GetForkVersion(int[] fversion=0);
+stock bool FF2_GetForkVersion(int fversion[3])
+{
+	FF2GameMode.ForkVersion(version);
+}
 
 /**
  * Gets current round state
@@ -363,7 +456,7 @@ stock int FF2_GetBossUserId(int boss=0)
 stock int FF2_GetBossIndex(int client)
 {
 	FF2Player player = FF2Player(client);
-	return player.bIsBoss ? player.userid:-1;
+	return player.Valid && player.bIsBoss ? player.userid:-1;
 }
 
 /**
@@ -422,8 +515,6 @@ stock int FF2_GetBossHealth(int boss=0)
  *
  * @param boss		Boss's index
  * @param health	New health value
- *
- * @noreturn
  */
 stock void FF2_SetBossHealth(int boss, int health)
 {
@@ -453,8 +544,6 @@ stock int FF2_GetBossMaxHealth(int boss=0)
  *
  * @param boss		Boss's index
  * @param health	New max health value
- *
- * @noreturn
  */
 stock void FF2_SetBossMaxHealth(int boss, int health)
 {
@@ -482,8 +571,6 @@ stock int FF2_GetBossLives(int boss)
  *
  * @param boss		Boss's index
  * @param lives		New number of lives
- *
- * @noreturn
  */
 stock void FF2_SetBossLives(int boss, int lives)
 {
@@ -511,8 +598,6 @@ stock int FF2_GetBossMaxLives(int boss)
  *
  * @param boss		Boss's index
  * @param lives		New max number of lives
- *
- * @noreturn
  */
 stock void FF2_SetBossMaxLives(int boss, int lives)
 {
@@ -525,29 +610,25 @@ stock void FF2_SetBossMaxLives(int boss, int lives)
 /**
  * Gets the charge meter value of the Boss
  *
- * @param boss		Boss's index
- * @param slot		Slot of charge meter
- *				0 - rage
- *				1 - as usual, used for brave jump or teleport
- *				2 - other charged abilities
+ * @param type		check FF2RageType_t enum value
  *
- * @return		Charge value of the Boss
+ * @return			charge meter value
  */
-native float FF2_GetBossCharge(int boss, int slot);
+stock float FF2_GetBossCharge(int boss, int slot)
+{
+	return FF2Player(boss, true).GetRageVar(view_as<FF2RageType_t>(slot));
+}
 
 /**
  * Sets the charge meter value of the Boss
  *
- * @param boss		Boss's index
- * @param slot		Slot of charge meter
- *				0 	- rage
- *				1 	- as usual, used for brave jump or teleport
- *				... - other charged abilities
- * @param value		New value of charge
- *
- * @noreturn
+ * @param type		check FF2RageType_t enum value
+ * @param value		value to se
  */
-native void FF2_SetBossCharge(int boss, int slot, float value);
+stock void FF2_SetBossCharge(int boss, int slot, float value)
+{
+	FF2Player(boss, true).SetRageVar(view_as<FF2RageType_t>(slot), value);
+}
 
 /**
  * Gets damage dealt by this client
@@ -566,8 +647,6 @@ stock int FF2_GetClientDamage(int client)
  * Gets damage dealt by this client
  *
  * @param client 	Client's index
- *
- * @noreturn
  */
 stock void FF2_SetClientDamage(int client, int damage)
 {
@@ -614,7 +693,6 @@ stock bool FF2_HasAbility(int boss, const char[] pluginName, const char[] abilit
 	 * @param slot		check FF2CallType enums
 	 *
 	 * @note				this will NOT remove/reduce boss charge
-	 * @noreturn
 	 */
 stock void FF2_DoAbility(int boss, const char[] pluginName, const char[] abilityName, int slot)
 {
@@ -672,8 +750,6 @@ stock float FF2_GetAbilityArgumentFloat(int boss, const char[] plugin_name, cons
  * @param bufferLength	Length of buffer string
  *
  * @error		Invalid boss index
- *
- * @noreturn
  */
 stock void FF2_GetAbilityArgumentString(int boss, const char[] pluginName, const char[] abilityName, int argument, char[] buffer, int bufferLength)
 {
@@ -730,8 +806,6 @@ stock float FF2_GetArgNamedF(int boss, const char[] pluginName, const char[] abi
  * @param argument 	Argument name
  * @param buffer 	Buffer for value of argument
  * @param bufferLength	Length of buffer string
- *
- * @noreturn
  */
 stock void FF2_GetArgNamedS(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, char[] buffer, int bufferLength)
 {
@@ -760,8 +834,6 @@ stock bool FF2_RandomSound(const char[] keyvalue, char[] buffer, int bufferLengt
  *
  * @param client	Client's index (0 for all clients)
  * @param bgm		music path
- *
- * @noreturn
  */
 stock void FF2_StartMusic(int client = 0, const char[] bgm = "")
 {
@@ -784,8 +856,6 @@ stock void FF2_StartMusic(int client = 0, const char[] bgm = "")
  * Stops the Boss's music for the specified clients
  *
  * @param client	Client's index (0 for all clients)
- *
- * @noreturn
  */
 stock void FF2_StopMusic(int client=0)
 {
@@ -836,8 +906,6 @@ stock int FF2_GetFF2flags(int client)
  *
  * @param client	Client's index
  * @param flags		New flag values
- *
- * @noreturn
  */
 stock void FF2_SetFF2flags(int client, int flags)
 {
@@ -870,8 +938,6 @@ stock int FF2_GetQueuePoints(int client)
  * @param value		New value of client's queue points
  *
  * @error		Invalid client index
- *
- * @noreturn
  */
 stock void FF2_SetQueuePoints(int client, int value)
 {
@@ -906,8 +972,6 @@ stock float FF2_GetClientGlow(int client)
  * @param client	Client's index
  * @param time1		Number of seconds to add to the glow timer (can be negative)
  * @param time2		New value of glow timer
- *
- * @noreturn
  */
 stock void FF2_SetClientGlow(int client, float time1, float time2=-1.0)
 {
@@ -926,10 +990,14 @@ stock void FF2_SetClientGlow(int client, float time1, float time2=-1.0)
  * Reports an error to FF2's error log
  *
  * @param message	Message to error log
- *
- * @noreturn
  */
-native void FF2_LogError(const char[] message, any ...);
+stock void FF2_LogError(const char[] message, any ...)
+{
+	int len = PLATFORM_MAX_PATH + strlen(message);
+	char str[len];
+	VFormat(str, len, message, 2);
+	FF2GameMode.LogError(str);
+}
 
 /**
  * Reports an error to FF2's error log with boss name
@@ -937,10 +1005,15 @@ native void FF2_LogError(const char[] message, any ...);
  * @param boss		Boss index
  * @param message	Message to error log
  *
- * @noreturn
  * @error 			failed to format
  */
-native void FF2_ReportError(const FF2Player boss = INVALID_FF2PLAYER, const char[] message, any ...);
+stock void FF2_ReportError(const FF2Player boss = INVALID_FF2PLAYER, const char[] message, any ...)
+{
+	int len = PLATFORM_MAX_PATH + strlen(message);
+	char[] str = new char[len];
+	VFormat(str, len, message, 2);
+	FF2GameMode.ReportError(boss, str);
+}
 
 /**
  * Returns whether or not debug is enabled
@@ -949,7 +1022,7 @@ native void FF2_ReportError(const FF2Player boss = INVALID_FF2PLAYER, const char
  */
 stock bool FF2_Debug()
 {
-#if defined DEBUG
+#if defined DEBUG || defined _DEBUG
 	return true;
 #else
 	return false;
@@ -960,17 +1033,21 @@ stock bool FF2_Debug()
  * Sets the cheat status to turn off logging and statistics
  *
  * @param status	Disable statistics if true
- *
- * @noreturn
  */
-native void FF2_SetCheats(bool status=true);
+stock void FF2_SetCheats(bool status=true)
+{
+	FF2GameMode.Cheats(status);
+}
 
 /**
  * Returns whether or not FF2 cheat commands was in the round
  *
  * @return		True if used, false otherwise
  */
-native bool FF2_GetCheats();
+stock bool FF2_GetCheats()
+{
+	return FF2GameMode.Cheats();
+}
 
 /**
  * Sets the boss selection of a client
@@ -979,9 +1056,18 @@ native bool FF2_GetCheats();
  * @param boss		Boss's name ("name" key)
  * @param access	Allow the client to play that boss regardless of permission
  *
- * @return		True if the client normally has access to this boss, false otherwise
+ * @return		True if the client normally was sucessfully set to the boss, false otherwise
  */
-native bool FF2_MakeBoss(int client, const char[] boss_name, bool call_event = true);
+stock bool FF2_MakeBoss(int client, const char[] boss_name, bool call_event = true)
+{
+	int vsh2_id = FF2GameMode.FindVSH2IDByName(boss_name);
+	if( vsh2_id==INVALID_FF2_BOSS_ID )
+		return false;
+
+	FF2Player player = FF2Player(client);
+	player.MakeBossAndSwitch(vsh2_id, call_event);
+	return true;
+}
 
 /**
  * Called when before a Boss uses an ability (see FF2CallType_t)
@@ -993,8 +1079,6 @@ native bool FF2_MakeBoss(int client, const char[] boss_name, bool call_event = t
  * @param abilityName 	Name of ability
  * @param calltype		reason for the call
  * @param enabled		enabled = false to prevent the ability from being called
- *
- * @noreturn
  */
 #if !defined FF2_USING_AUTO_PLUGIN__OLD
 forward void FF2_PreAbility(FF2Player boss, const char[] pluginName, const char[] abilityName, FF2CallType_t calltype, bool &enabled);
@@ -1009,8 +1093,6 @@ forward void FF2_PreAbility(int boss, const char[] pluginName, const char[] abil
  * @param pluginName	Name of plugin with this ability
  * @param abilityName 	Name of ability
  * @param calltype		reason for the call
- *
- * @noreturn
  */
 forward void FF2_OnAbility(const FF2Player player, const char[] pluginName, const char[] abilityName, FF2CallType_t calltype);
 
@@ -1094,18 +1176,15 @@ forward Action FF2_OnBackStabbed(int boss, int client, int attacker);
  * @param clip		Clip
  *
  * @error		Invalid client index or client not in game
- *
- * @noreturn
  */
 stock void FF2_SetAmmo(int client, int weapon, int ammo=-1, int clip=-1)
 {
-	if(IsValidEntity(weapon))
-	{
-		if(clip > -1)
+	if( IsValidEntity(weapon) ) {
+		if( clip > -1 )
 			SetEntProp(weapon, Prop_Data, "m_iClip1", clip);
 
 		int ammoType = (ammo>-1 ? GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType") : -1);
-		if(ammoType != -1)
+		if( ammoType != -1 )
 			SetEntProp(client, Prop_Data, "m_iAmmo", ammo, _, ammoType);
 	}
 }
@@ -1148,8 +1227,6 @@ stock void FF2_ShowHudText(int client, int channel, const char[] buffer, any ...
  *
  * @param buffer	Debug string to display
  * @param ...		Formatting rules
- *
- * @noreturn
  */
 stock void FF2Dbg(const char[] buffer, any ...)
 {
@@ -1187,18 +1264,15 @@ stock void FReplyToCommand(int client, const char[] message, any ...)
 	SetGlobalTransTarget(client);
 	char buffer[192];
 	VFormat(buffer, sizeof(buffer), message, 3);
-	if(!client)
-	{
+	if( !client ) {
 		CRemoveTags(buffer, sizeof(buffer));
 		PrintToServer("[FF2] %s", buffer);
 	}
-	else if(GetCmdReplySource() == SM_REPLY_TO_CONSOLE)
-	{
+	else if( GetCmdReplySource() == SM_REPLY_TO_CONSOLE ) {
 		CRemoveTags(buffer, sizeof(buffer));
 		PrintToConsole(client, "[FF2] %s", buffer);
 	}
-	else
-	{
+	else {
 		CPrintToChat(client, FF2_PREFIX ... "%s", buffer);
 	}
 }
@@ -1248,51 +1322,54 @@ public SharedPlugin __pl_FF2 =
 #if !defined REQUIRE_PLUGIN
 public void __pl_FF2_SetNTVOptional()
 {
-	#define MARK_OPTIONAL(%0) 		MarkNativeAsOptional(#%0)
-	#define MARK_OPTIONAL_M(%0) 	MarkNativeAsOptional("FF2Player."...#%0)
-	#define MARK_OPTIONAL_MGET(%0) 	MarkNativeAsOptional("FF2Player."...#%0...".get")
-	#define MARK_OPTIONAL_MSET(%0) 	MarkNativeAsOptional("FF2Player."...#%0...".set")
-	
-	MARK_OPTIONAL(FF2_IsFF2Enabled);
-	MARK_OPTIONAL(FF2_GetFF2Version);
-	MARK_OPTIONAL(FF2_GetForkVersion);
-	
-	MARK_OPTIONAL(FF2_LogError);
-	MARK_OPTIONAL(FF2_Debug);
-	
-	MARK_OPTIONAL(FF2_GetCheats);
-	MARK_OPTIONAL(FF2_SetCheats);
-	
-	MARK_OPTIONAL(FF2_GetBossCharge);
-	MARK_OPTIONAL(FF2_SetBossCharge);
-	
-	MARK_OPTIONAL(FF2_GetBossPlayers);
-	MARK_OPTIONAL(FF2_MakeBoss);
+	#define MARK_OPTIONAL(%0) 		MarkNativeAsOptional("FF2Player."...#%0)
+	#define MARK_OPTIONAL_GET(%0) 	MarkNativeAsOptional("FF2Player."...#%0...".get")
 
-	MARK_OPTIONAL_M(FF2Player);
-	MARK_OPTIONAL_M(GetInt);
-	MARK_OPTIONAL_M(GetFloat);
-	MARK_OPTIONAL_M(GetString);
-	MARK_OPTIONAL_M(GetArgI);
-	MARK_OPTIONAL_M(GetArgF);
-	MARK_OPTIONAL_M(GetArgS);
-	
-	MARK_OPTIONAL_M(HasAbility);
-	MARK_OPTIONAL_M(DoAbility);
-	MARK_OPTIONAL_M(ForceAbility);
-	MARK_OPTIONAL_M(RandomSound);
-	MARK_OPTIONAL_M(RageDist);
-	MARK_OPTIONAL_M(GetConfigName);
-	
-	MARK_OPTIONAL_MGET(HookedAbilities);
-	MARK_OPTIONAL_M(PlayBGM);
-	
+
+	MARK_OPTIONAL(FF2Player);
+	MARK_OPTIONAL(GetInt);
+	MARK_OPTIONAL(GetFloat);
+	MARK_OPTIONAL(GetString);
+	MARK_OPTIONAL(GetSection);
+	MARK_OPTIONAL(GetArgB);
+	MARK_OPTIONAL(GetArgI);
+	MARK_OPTIONAL(GetArgF);
+	MARK_OPTIONAL(GetArgS);
+
+	MARK_OPTIONAL(HasAbility);
+	MARK_OPTIONAL(DoAbility);
+	MARK_OPTIONAL(ForceAbility);
+	MARK_OPTIONAL(RandomSound);
+	MARK_OPTIONAL(RageDist);
+	MARK_OPTIONAL(GetConfigName);
+
+	MARK_OPTIONAL_GET(HookedAbilities);
+	MARK_OPTIONAL(PlayBGM);
+
+
 	#undef MARK_OPTIONAL
-	#undef MARK_OPTIONAL_MGET
-	#undef MARK_OPTIONAL_MSET
+	#undef MARK_OPTIONAL_GET
+
 	
-	MarkNativeAsOptional("FF2GameMode.LoadAbility");
-	MarkNativeAsOptional("FF2GameMode.SubPlugins");
+	
+	#define MARK_OPTIONAL(%0) 		MarkNativeAsOptional("FF2GameMode."...#%0)
+
+
+	CREATE_NATIVE(IsOn);
+	CREATE_NATIVE(PluginVersion);
+	CREATE_NATIVE(ForkVersion);
+	
+	CREATE_NATIVE(Cheats);
+	
+	CREATE_NATIVE(FindVSH2IDByName);
+
+	CREATE_NATIVE(LoadAbility);
+	CREATE_NATIVE(SubPlugins);
+	
+
+	#undef MARK_OPTIONAL
+	#undef MARK_OPTIONAL_GET
+
 }
 #endif
 
