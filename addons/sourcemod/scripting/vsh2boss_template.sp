@@ -197,10 +197,9 @@ public void Template_OnCallDownloads()
 		ConfigMap dl_section = assets.GetSection(dl_keys[i]);
 		if( dl_section != null ) {
 			for( int n; n<dl_section.Size; n++ ) {
-				char index[10]; IntToString(n, index, sizeof index);
-				int path_len = dl_section.GetSize(index);
+				int path_len = dl_section.GetIntKeySize(n);
 				char[] file = new char[path_len];
-				if( dl_section.Get(index, file, path_len) > 0 ) {
+				if( dl_section.GetIntKey(n, file, path_len) > 0 ) {
 					switch( i ) {
 						case 0: PrepareSound(file);
 						case 1: PrepareModel(file);
@@ -215,7 +214,7 @@ public void Template_OnCallDownloads()
 public void Template_OnBossMenu(Menu& menu)
 {
 	char tostr[10]; IntToString(g_iTemplateID, tostr, sizeof(tostr));
-
+	
 	/// ConfigMap can be used to store the boss name.
 	int name_len = template_boss_cfg.GetSize("boss_name");
 	char[] name = new char[name_len];
@@ -235,10 +234,9 @@ public void Template_OnBossSelected(const VSH2Player player)
 	/// ConfigMap is also useful for automating custom prop creation.
 	ConfigMap custom_props = template_boss_cfg.GetSection("custom_props");
 	for( int i; i<custom_props.Size; i++ ) {
-		char index[10]; IntToString(i, index, sizeof index);
-		int prop_len = template_boss_cfg.GetSize(index);
+		int prop_len = template_boss_cfg.GetIntKeySize(i);
 		char[] prop_name = new char[prop_len];
-		template_boss_cfg.Get(index, prop_name, prop_len);
+		template_boss_cfg.GetIntKey(i, prop_name, prop_len);
 		char prop[64];
 		strcopy(prop, sizeof prop, prop_name);
 		player.SetPropInt(prop, 0);

@@ -30,10 +30,9 @@ public void ManageDownloads()
 		ConfigMap download_map = g_vsh2.m_hCfg.GetSection(download_keys[i]);
 		if( download_map != null ) {
 			for( int n; n<download_map.Size; n++ ) {
-				char index[10]; IntToString(n, index, sizeof(index));
-				int value_size = download_map.GetSize(index);
+				int value_size = download_map.GetIntKeySize(n);
 				char[] filepath = new char[value_size];
-				if( download_map.Get(index, filepath, value_size) ) {
+				if( download_map.GetIntKey(n, filepath, value_size) ) {
 					switch( i ) {
 						case 0: PrepareSound(filepath);
 						case 1: PrepareModel(filepath);
@@ -1145,7 +1144,7 @@ public void ManageBossTaunt(const BaseBoss base)
 	Action act = Call_OnBossTaunt(base);
 	if( act > Plugin_Changed )
 		return;
-
+	
 	switch( base.iBossType ) {
 		case -1: {}
 		case VSH2Boss_Hale:     ToCHale(base).RageAbility();
@@ -1253,7 +1252,7 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 				}
 			}
 		}
-
+		
 		/// Fuck random crits
 		if( TF2_IsPlayerCritBuffed(base.index) )
 			return Plugin_Continue;
@@ -1664,12 +1663,16 @@ public void PrepPlayers(const BaseBoss player)
 	SetEntityHealth(client, GetEntProp(client, Prop_Data, "m_iMaxHealth"));
 	if( !GetRandomInt(0, 1) )
 		player.HelpPanelClass();
-
+	
 #if defined _tf2attributes_included
 	/// Fixes mantreads to have jump height again
-	if( g_vsh2.m_hGamemode.bTF2Attribs && IsValidEntity(FindPlayerBack(client, { 444 }, 1)) ) {
-		/// "self dmg push force increased"
-		TF2Attrib_SetByDefIndex(client, 58, 1.8);
+	if( g_vsh2.m_hGamemode.bTF2Attribs ) {
+		/// Patch: Equipping mantreads then equipping gunboats allows you to keep the push force increase.
+		TF2Attrib_RemoveByDefIndex(client, 58);
+		if( IsValidEntity(FindPlayerBack(client, { 444 }, 1)) ) {
+			/// "self dmg push force increased"
+			TF2Attrib_SetByDefIndex(client, 58, 1.8);
+		}
 	}
 #endif
 	static ConfigMap replacer, entry_sect;
@@ -1677,8 +1680,7 @@ public void PrepPlayers(const BaseBoss player)
 	if( replacer != null ) {
 		int entries = replacer.Size;
 		for( int i; i<entries; i++ ) {
-			char entry_str[10]; IntToString(i, entry_str, sizeof(entry_str));
-			entry_sect = replacer.GetSection(entry_str);
+			entry_sect = replacer.GetIntSection(i);
 			if( entry_sect != null ) {
 				int classes_len = entry_sect.GetSize("classes");
 				char[] classes = new char[classes_len];
@@ -1743,101 +1745,7 @@ public void PrepPlayers(const BaseBoss player)
 			}
 		}
 	}
-
-	/*
-	int weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
-	if( weapon > MaxClients && IsValidEntity(weapon) ) {
-		int index = GetItemIndex(weapon);
-		switch( index ) {
-			/// blocks rocket jumper
-			case 237: {
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-				weapon = player.SpawnWeapon("tf_weapon_rocketlauncher", 18, 1, 0, "114; 1.0");
-				SetWeaponAmmo(weapon, 20);
-			}
-			case 17, 204: {
-				if( GetItemQuality(weapon) != 10 ) {
-					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-					player.SpawnWeapon("tf_weapon_syringegun_medic", 17, 1, 10, "17; 0.05; 144; 1");
-				}
-			}
-		}
-	}
-	weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
-	if( weapon > MaxClients && IsValidEntity(weapon) ) {
-		int index = GetItemIndex(weapon);
-		switch( index ) {
-			/// Razorback
-			//case 57: {
-			//	TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-			//	weapon = player.SpawnWeapon("tf_weapon_smg", 16, 1, 0, "");
-			//}
-			/// Stickyjumper
-			case 265: {
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-				weapon = player.SpawnWeapon("tf_weapon_pipebomblauncher", 20, 1, 0, "");
-				SetWeaponAmmo(weapon, 24);
-			}
-			//case 311, 433: {
-			//	TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-			//	weapon = player.SpawnWeapon("tf_weapon_pipebomblauncher", 20, 5, 10, "280; 3; 6; 0.7; 97; 0.5; 78; 1.2");
-			//	SetWeaponAmmo(weapon, GetMaxAmmo(client, 1));
-			//}
-			/// Replace sapper with more useful syringe-firing Pistol aka nailgun.
-			case 735, 736, 810, 831, 933, 1080, 1102: {
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-				//weapon = player.SpawnWeapon("tf_weapon_handgun_scout_secondary", 23, 5, 10, "280; 5; 6; 0.7; 2; 0.66; 4; 4.167; 78; 8.333; 137; 6.0");
-				//SetWeaponAmmo(weapon, 200);
-
-				/// kunai-cleavers for spy instead of sapper!
-				player.SpawnWeapon("tf_weapon_cleaver", 356, 5, 10, "279; 4.0 ; 149 ; 5");
-			}
-			case 39, 351, 1081: {
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-				weapon = player.SpawnWeapon("tf_weapon_flaregun", index, 5, 10, "551; 1; 25; 0.5; 207; 1.33; 144; 1; 58; 3.2");
-				SetWeaponAmmo(weapon, 20);
-			}
-			/// scorch shot
-			case 740: {
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-				weapon = player.SpawnWeapon("tf_weapon_flaregun", index, 5, 10, "551 ; 1; 25 ; 0.5; 207 ; 1.33; 416 ; 3; 58 ; 2.08; 1 ; 0.65");
-				SetWeaponAmmo(weapon, 20);
-			}
-		}
-	}
-	*/
-	/*
-	if( IsValidEntity (FindPlayerBack(client, { 57 }, 1)) ) {
-		RemovePlayerBack(client, { 57 }, 1);
-		weapon = player.SpawnWeapon("tf_weapon_smg", 16, 1, 0, "");
-	}
-	*/
-	/*
-	weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
-	if( weapon > MaxClients && IsValidEntity(weapon) ) {
-		int index = GetItemIndex(weapon);
-		switch( index ) {
-			case 331: {
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
-				weapon = player.SpawnWeapon("tf_weapon_fists", 195, 1, 6, "");
-			}
-			case 357: SetPawnTimer(_NoHonorBound, 1.0, player.userid);
-			case 589: { /// eureka effect
-				if( !g_vsh2.m_hCvars.BlockEureka.BoolValue ) {
-					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
-					weapon = player.SpawnWeapon("tf_weapon_wrench", 7, 1, 0, "");
-				}
-			}
-		}
-	}
-	*/
-	/*
-	weapon = GetPlayerWeaponSlot(client, 4);
-	if( weapon > MaxClients && IsValidEntity(weapon) && GetItemIndex(weapon) == 60 ) {
-		TF2_RemoveWeaponSlot(client, 4);
-		weapon = player.SpawnWeapon("tf_weapon_invis", 30, 1, 0, "2; 1.0");
-	}
-	*/
+	
 	TFClassType tfclass = TF2_GetPlayerClass(client);
 	switch( tfclass ) {
 		case TFClass_Medic: {
@@ -1896,6 +1804,7 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		return Plugin_Changed;
 	}
 
+	/// TODO: Make this section moddable from ConfigMap.
 	TFClassType iClass = TF2_GetPlayerClass(client);
 	if( !strncmp(classname, "tf_weapon_rocketlauncher", 24, false) || !strncmp(classname, "tf_weapon_particle_cannon", 25, false) ) {
 		switch( iItemDefinitionIndex ) {
@@ -2047,7 +1956,7 @@ public void ManageFighterThink(const BaseBoss fighter)
 					float charge_level = GetMediCharge(medigun);
 					int charge = RoundToFloor(charge_level * 100);
 					Format(HUDText, sizeof(HUDText), "%s\nUbercharge: %i%%", HUDText, charge);
-
+					
 					/// Fixes Ubercharges ending prematurely on Medics.
 					if( GetEntProp(medigun, Prop_Send, "m_bChargeRelease") && charge_level > 0.0 && GetActiveWep(i)==medigun ) {
 						TF2_AddCondition(i, TFCond_Ubercharged, 1.0);

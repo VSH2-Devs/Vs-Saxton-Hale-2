@@ -55,6 +55,10 @@ func (ConfigMap) ExportToFile(sec_name, path string) bool
 func (ConfigMap) Clone(owner_pl Handle) ConfigMap
 func (ConfigMap) DeleteSection(key_path string) bool
 
+func (ConfigMap) GetIntKeySize(key int) int
+func (ConfigMap) GetIntKey(key int, buffer []char, buf_size int) int
+func (ConfigMap) GetIntSection(key int) ConfigMap
+
 func ParseTargetPath(key string, buffer []char, buffer_len int) bool
 func DeleteCfg(cfg *ConfigMap, clear_only bool)
 func PrintCfg(cfg ConfigMap)

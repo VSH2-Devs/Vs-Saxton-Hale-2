@@ -27,26 +27,26 @@ const (
 	StateEnding   = 2
 	
 	/** VSH2 Teams */
-	VSH2Team_Unassigned=0
-	VSH2Team_Neutral=0
-	VSH2Team_Spectator
-	VSH2Team_Red
-	VSH2Team_Boss
+	VSH2Team_Unassigned = 0
+	VSH2Team_Neutral    = 0
+	VSH2Team_Spectator  = 1
+	VSH2Team_Red        = 2
+	VSH2Team_Boss       = 3
 	
 	/** VSH2 Default Bosses */
-	VSH2Boss_Hale
-	VSH2Boss_Vagineer
-	VSH2Boss_CBS
-	VSH2Boss_HHHjr
-	VSH2Boss_Bunny
-	MaxDefaultVSH2Bosses
+	VSH2Boss_Hale        = 0
+	VSH2Boss_Vagineer    = 1
+	VSH2Boss_CBS         = 2
+	VSH2Boss_HHHjr       = 3
+	VSH2Boss_Bunny       = 4
+	MaxDefaultVSH2Bosses = 5
 	
 	/** Voice Clip Flags */
-	VSH2_VOICE_BOSSENT = 1 /// use boss as entity to emit from.
-	VSH2_VOICE_BOSSPOS = 2 /// use boss position for sound origin.
-	VSH2_VOICE_TOALL = 4   /// sound replay to each individual player.
-	VSH2_VOICE_ALLCHAN = 8 /// if sound replay should use auto sound channel.
-	VSH2_VOICE_ONCE = 16    /// play a clip once to all. (does not cancel out 'VSH2_VOICE_TOALL')
+	VSH2_VOICE_BOSSENT = 1  /// use boss as entity to emit from.
+	VSH2_VOICE_BOSSPOS = 2  /// use boss position for sound origin.
+	VSH2_VOICE_TOALL   = 4  /// sound replay to each individual player.
+	VSH2_VOICE_ALLCHAN = 8  /// if sound replay should use auto sound channel.
+	VSH2_VOICE_ONCE    = 16 /// play a clip once to all. (does not cancel out 'VSH2_VOICE_TOALL')
 
 	VSH2_VOICE_ALL =     (VSH2_VOICE_BOSSENT|VSH2_VOICE_BOSSPOS|VSH2_VOICE_TOALL|VSH2_VOICE_ALLCHAN|VSH2_VOICE_ONCE)
 

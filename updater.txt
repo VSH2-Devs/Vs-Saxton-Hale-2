@@ -4,15 +4,12 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.10.29"
+			"Latest"	"2.10.30"
 		}
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.10.29:"
-		"Notes"	"Added Cvar for controlling ammo pack conversions."
-		"Notes"	"Finally changed Bunny's weapon to a bottle as it should be."
-		"Notes"	"Not that anyone would care but updated VSH2 SourceGo files."
-		"Notes"	"Added error logging if attribute indices exceed the attribute limit for TF2Items stocks."
-		"Notes"	"Fixed a glitch with ConfigMap where it wasn't properly parsing the <enum> values when used as section names."
-		"Notes"	"Replaced total-weapon-replacement code with ConfigMap weapon replacement based code."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.10.30:"
+		"Notes"	"Removed 100% limit on rage."
+		"Notes"	"Added convenience methods for ConfigMap to use an int as a key for directly accessing an <enum> defined key."
+		"Notes"	"Fixed PrepareItemHandle glitch with attribute indices double incrementing."
 	}
 
 	"Files"

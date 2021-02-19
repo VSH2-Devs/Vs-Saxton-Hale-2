@@ -24,7 +24,7 @@
 #pragma semicolon            1
 #pragma newdecls             required
 
-#define PLUGIN_VERSION       "2.10.29"
+#define PLUGIN_VERSION       "2.10.30"
 #define PLUGIN_DESCRIPT      "VS Saxton Hale 2"
 
 
@@ -249,6 +249,8 @@ public void OnPluginStart()
 	AddCommandListener(BlockSuicide, "jointeam");
 	AddCommandListener(CheckLateSpawn, "joinclass");
 	AddCommandListener(CheckLateSpawn, "join_class");
+	//AddCommandListener(DoTaunt, "taunt");
+	//AddCommandListener(DoTaunt, "+taunt");
 
 	for( int i; i<MaxVSH2HUDs; i++ )
 		g_vsh2.m_hHUDs[i] = CreateHudSynchronizer();

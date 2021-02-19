@@ -714,11 +714,12 @@ methodmap BaseBoss < BaseFighter {
 		}
 	}
 	property float flRAGE {
-		public get() { /** Rage should never exceed or "inceed" 0.0 and 100.0 */
+		public get() { /** Rage should never go under 0.0 */
 			float i; g_vsh2.m_hPlayerFields[this.index].GetValue("flRAGE", i);
-			if( i > 100.0 )
+			/*if( i > 100.0 )
 				return 100.0;
-			else if( i < 0.0 )
+			else*/
+			if( i < 0.0 )
 				return 0.0;
 			return i;
 		}
