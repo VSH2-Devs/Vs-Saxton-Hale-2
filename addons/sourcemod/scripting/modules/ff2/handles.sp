@@ -36,10 +36,8 @@ void ProcessOnCallDownload()
 			
 			/// Precache Models
 			if( (model_precache = identity.hCfg.GetSection("mod_precache")) ) {
-				int pos = model_precache.Size - 1;
-				for( ; pos >= 0; pos-- ) {
-					IntToString(pos, _key, sizeof(_key));
-					if( model_precache.Get(_key, model_path, sizeof(model_path)) && model_path[0] )
+				for( int pos=model_precache.Size-1; pos >= 0; pos-- ) {
+					if( model_precache.GetIntKey(pos, model_path, sizeof(model_path)) && model_path[0] )
 						PrecacheModel(model_path);
 				}
 			}
