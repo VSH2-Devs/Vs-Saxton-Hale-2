@@ -59,12 +59,8 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 	ConfigMap exclude = cfg.GetSection("map_exclude");
 	if( exclude ) {
 		GetCurrentMap(path, PLATFORM_MAX_PATH);
-		int i = exclude.Size - 1;
-		char key[4];
-		
-		for( ; i>=0; i-- ) {
-			IntToString(i, key, sizeof(key));
-			if( exclude.Get(key, key_name, PLATFORM_MAX_PATH) && !StrContains(key_name, path) ) {
+		for( int i=exclude.Size-1; i>=0; i-- ) {
+			if( exclude.GetIntKey(i, key_name, PLATFORM_MAX_PATH) && !StrContains(key_name, path) ) {
 				DeleteCfg(cfg);
 				return false;
 			}
@@ -126,8 +122,7 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 	{
 		if( (stacks = this_char.GetSection("download")) ) {
 			for( int i = stacks.Size - 1; i >= 0; i-- ) {
-				IntToString(i, key_name, PLATFORM_MAX_PATH);
-				if( !stacks.Get(key_name, path, PLATFORM_MAX_PATH) )
+				if( !stacks.GetIntKey(i, path, PLATFORM_MAX_PATH) )
 					continue;
 
 				if( !FileExists(path, true) ) {
@@ -158,8 +153,7 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 
 		if( (stacks = this_char.GetSection("mod_download")) ) {
 			for( int i = stacks.Size - 1; i >= 0; i-- ) {
-				IntToString(i, key_name, PLATFORM_MAX_PATH);
-				if( !stacks.Get(key_name, path, PLATFORM_MAX_PATH) )
+				if( !stacks.GetIntKey(i, path, PLATFORM_MAX_PATH) )
 					continue;
 
 				for( int j = 0; j < sizeof(model_ext); j++ ) {
@@ -174,8 +168,7 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 		}
 		if( (stacks = this_char.GetSection("mat_download")) ) {
 			for( int i = stacks.Size - 1; i >= 0; i-- ) {
-				IntToString(i, key_name, PLATFORM_MAX_PATH);
-				if( !stacks.Get(key_name, path, PLATFORM_MAX_PATH) )
+				if( !stacks.GetIntKey(i, path, PLATFORM_MAX_PATH) )
 					continue;
 
 				FormatEx(key_name, PLATFORM_MAX_PATH, "%s.vmt", path);
@@ -205,7 +198,6 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 
 		char curSection[32], _key[48];
 
-		char strBuffer[PLATFORM_MAX_PATH];
 		float time; int slot_type;
 		char name[32], artist[32];
 
@@ -220,7 +212,7 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 
 				snd_list = identity.sndHash.GetOrCreateList(_key);
 
-				bool is_bgm_section = _list.Get("path1", strBuffer, sizeof(strBuffer)) > 0;
+				bool is_bgm_section = _list.Get("path1", key_name, PLATFORM_MAX_PATH) > 0;
 
 				for( int j = 0; j <= 15; j++ ) {
 					if( is_bgm_section ) {
@@ -241,7 +233,7 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 						 *
 						 */
 						Format(curSection, sizeof(curSection), "path%i", j + 1);
-						if( !_list.Get(curSection, strBuffer, sizeof(strBuffer)) )
+						if( !_list.Get(curSection, key_name, PLATFORM_MAX_PATH) )
 							break;
 
 						Format(curSection, sizeof(curSection), "time%i", j + 1);
@@ -256,11 +248,10 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 						if( !_list.Get(curSection, artist, sizeof(artist)) )
 							name = "Unknown Artist";
 
-						snd_id.Init(strBuffer, time, name, artist);
+						snd_id.Init(key_name, time, name, artist);
 						snd_list.PushArray(snd_id, sizeof(FF2SoundIdentity));
 					} else {
-						IntToString(j, curSection, 4);
-						if( !_list.Get(curSection, strBuffer, sizeof(strBuffer)) )
+						if( !_list.GetIntKey(j, key_name, PLATFORM_MAX_PATH) )
 							continue;
 
 						/**	catch_* 
@@ -297,6 +288,7 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 							 *
 							 *	"sound_*" {
 							 *		"<enum>"		"..."
+							 *		"slotX"			"..."	//	only used if section == "sound_ability"
 							 *	}
 							 */
 							FormatEx(_key, sizeof(_key), "slot%i", j);
@@ -306,7 +298,7 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 							FormatEx(_key, sizeof(_key), "slot%i_%i", j, slot_type);
 						}
 
-						snd_id.Init(strBuffer, 0.0, _key);
+						snd_id.Init(key_name, 0.0, _key);
 						snd_list.PushArray(snd_id, sizeof(FF2SoundIdentity));
 					}
 				}
@@ -333,13 +325,11 @@ methodmap FF2BossManager < StringMap {
 			ThrowError("Failed to find Section for characters.cfg: \"%s\"", pack_name);
 
 		StringMap map = new StringMap();
-		char key[4];
 		char[] name = new char[PLATFORM_MAX_PATH];
 
 		/// Iterate through the Pack, copy and verify boss path
 		for( int i = cfg.Size - 1; i >= 0; i-- ) {
-			IntToString(i, key, sizeof(key));
-			if( !cfg.Get(key, name, PLATFORM_MAX_PATH) )
+			if( !cfg.GetIntKey(i, name, PLATFORM_MAX_PATH) )
 				continue;
 
 			FF2Identity cur_id;

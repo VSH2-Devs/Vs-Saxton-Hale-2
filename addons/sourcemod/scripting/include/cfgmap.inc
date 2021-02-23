@@ -810,9 +810,9 @@ static stock bool ConfigMapToFile(const ConfigMap cfg, const char[] sec_name, co
 		snap.GetKey(i, key, strsize);
 		PackVal pack;
 		cfg.GetArray(key, pack, sizeof(pack));
-		pack.data.Reset();
 		switch( pack.tag ) {
 			case KeyValType_Value: {
+				pack.data.Reset();
 				int key_size = pack.size+10;
 				char[] key_val = new char[key_size];
 				pack.data.ReadString(key_val, key_size);
@@ -820,6 +820,7 @@ static stock bool ConfigMapToFile(const ConfigMap cfg, const char[] sec_name, co
 				file.WriteLine("%s\t\"%s\"\t \"%s\"", tab, key, key_val);
 			}
 			case KeyValType_Section: {
+				pack.data.Reset();
 				ConfigMap subsection = pack.data.ReadCell();
 				if( !ConfigMapToFile(subsection, key, file, deep + 1) ) {
 					delete snap;
