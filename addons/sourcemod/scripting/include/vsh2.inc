@@ -1080,11 +1080,11 @@ stock bool KeyToStr(any key, char buffer[12]) {
  * Packs a key, as an integer, into a null-terminated string buffer.
  */
 stock void PackItem(any key, char buffer[6]) {
-	buffer[0] = (key >> (7 * 4) & 0x7F) | 0x80;
-	buffer[1] = (key >> (7 * 3) & 0x7F) | 0x80;
-	buffer[2] = (key >> (7 * 2) & 0x7F) | 0x80;
-	buffer[3] = (key >> (7 * 1) & 0x7F) | 0x80;
-	buffer[4] = (key >> 7 & 0x7F) | 0x80;
+	buffer[0] = ((key >> (7 * 4)) & 0x7F) | 0x80;
+	buffer[1] = ((key >> (7 * 3)) & 0x7F) | 0x80;
+	buffer[2] = ((key >> (7 * 2)) & 0x7F) | 0x80;
+	buffer[3] = ((key >> (7 * 1)) & 0x7F) | 0x80;
+	buffer[4] = ((key >> (7 * 0)) & 0x7F) | 0x80;
 	buffer[5] = 0x00;
 }
 
