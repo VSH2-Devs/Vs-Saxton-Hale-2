@@ -179,7 +179,7 @@ methodmap CHale < BaseBoss {
 		event.SetString("weapon", "fists");
 		if( !GetRandomInt(0, 2) ) {
 			char kill_snd[PLATFORM_MAX_PATH];
-			TFClassType playerclass = TF2_GetPlayerClass(victim.index);
+			TFClassType playerclass = victim.GetTFClass();
 			switch( playerclass ) {
 				case TFClass_Scout: strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillScout132);
 				case TFClass_Pyro: strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillPyro132);

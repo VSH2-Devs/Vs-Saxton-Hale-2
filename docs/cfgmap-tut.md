@@ -162,6 +162,30 @@ Here's a better example to explain how `<enum>` and `<ENUM>` work:
 }
 ```
 
+Added for convience, `ConfigMap` also has methods that directly use integer values as the keys. These convience methods help reduce code required to take an integer, convert it to string, and use it to access `ConfigMap` sections.
+
+The methods are:
+```c
+int GetIntKeySize(int key);
+
+int GetIntKey(int key, char[] buffer, int buf_size);
+bool SetIntKey(int key, const char[] str);
+
+ConfigMap GetIntSection(int key);
+
+KeyValType GetIntKeyValType(int key);
+
+int GetIntKeyInt(int key, int& i, int base=10);
+bool SetIntKeyInt(int key, int i);
+
+int GetIntKeyFloat(int key, float& f);
+bool SetIntKeyFloat(int key, float f);
+
+int GetIntKeyBool(int key, bool& b, bool simple=true);
+```
+
+**Notice: The integer key based methods will NOT allow you to do python-style pathing like the string keys do.**
+
 ### Automatic Value Enumeration
 So, what if we actually wanted something similar to `<enum>` but for values instead of keys?
 For that, we have local and global iota! For local iota, `<iota>` and for global iota `<IOTA>`. They work exactly the same as `<enum>/<ENUM>` but their purpose is for use as values rather than keys.
@@ -218,7 +242,7 @@ static char class_help[][] = {
 };
 
 Panel panel = new Panel();
-TFClassType tfclass = TF2_GetPlayerClass(this.index);
+TFClassType tfclass = this.GetTFClass();
 int len = g_vsh2.m_hCfg.GetSize(class_help[tfclass]);
 char[] helpstr = new char[len];
 g_vsh2.m_hCfg.Get(class_help[tfclass], helpstr, len);

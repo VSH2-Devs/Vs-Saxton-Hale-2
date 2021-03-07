@@ -315,7 +315,7 @@ public void PlagueDoc_OnPlayerKilled(const VSH2Player attacker, const VSH2Player
 {
 	//int deathflags = event.GetInt("death_flags");
 	/// attacker is plague doctor!
-	if( attacker.GetPropInt("bIsBoss") && IsPlagueDoctor(attacker) ) {
+	if( attacker.bIsBoss && IsPlagueDoctor(attacker) ) {
 		ToCPlague(attacker).KilledPlayer(victim, event);
 	}
 	/// attacker is a plague doctor minion!
@@ -324,7 +324,7 @@ public void PlagueDoc_OnPlayerKilled(const VSH2Player attacker, const VSH2Player
 		if( IsPlagueDoctor(owner) )
 			ToCPlague(owner).KilledPlayer(victim, event);
 	}
-	if( victim.GetPropInt("bIsMinion") ) {
+	if( victim.bIsBoss ) {
 		/// Cap respawning minions by the amount of minions there are * 1.5.
 		/// If 10 minions, then respawn them in 15 seconds.
 		VSH2Player owner = victim.hOwnerBoss;
@@ -337,7 +337,7 @@ public void PlagueDoc_OnPlayerKilled(const VSH2Player attacker, const VSH2Player
 public void PlagueDoc_OnPlayerHurt(const VSH2Player attacker, const VSH2Player victim, Event event)
 {
 	int damage = event.GetInt("damageamount");
-	if( !victim.GetPropInt("bIsBoss") && victim.GetPropInt("bIsMinion") && !attacker.GetPropInt("bIsMinion") ) {
+	if( !victim.bIsBoss && victim.GetPropInt("bIsMinion") && !attacker.GetPropInt("bIsMinion") ) {
 		/** Have boss take damage if minions are hurt by players, this prevents bosses from hiding just because they gained minions.
 		 */
 		VSH2Player ownerBoss = victim.hOwnerBoss;
@@ -348,7 +348,7 @@ public void PlagueDoc_OnPlayerHurt(const VSH2Player attacker, const VSH2Player v
 		}
 		return;
 	}
-	if( IsPlagueDoctor(victim) && victim.GetPropInt("bIsBoss") )
+	if( IsPlagueDoctor(victim) && victim.bIsBoss )
 		victim.GiveRage(damage);
 }
 public void PlagueDoc_OnPlayerAirblasted(const VSH2Player airblaster, const VSH2Player airblasted, Event event)

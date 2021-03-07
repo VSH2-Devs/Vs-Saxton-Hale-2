@@ -6,7 +6,7 @@ public void SkipBossPanelNotify(const int client/*, bool newchoice = true*/)
 	Panel panel = new Panel();
 	char strNotify[64];
 
-	panel.SetTitle("[VSH2] You're The Next Boss!");
+	panel.SetTitle("[VSH 2] You're The Next Boss!");
 	Format(strNotify, sizeof(strNotify), "You are going to be a Boss soon! Type /halenext to check/reset your queue points.\nAlternatively, use !resetq.\nDon't forget to use !setboss to set your boss.");
 
 	panel.DrawItem(strNotify);

@@ -4,12 +4,20 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.10.30"
+			"Latest"	"2.11.0"
 		}
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.10.30:"
-		"Notes"	"Removed 100% limit on rage."
-		"Notes"	"Added convenience methods for ConfigMap to use an int as a key for directly accessing an <enum> defined key."
-		"Notes"	"Fixed PrepareItemHandle glitch with attribute indices double incrementing."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.11.0:"
+		"Notes"	"Added 3 new events: 'OnBannerDeployed', 'OnBannerEffect', 'OnUberLoopEnd'."
+		"Notes"	"Added new convenience method: `GetTFClass`."
+		"Notes"	"Slightly reformatted Heavy Shotgun Healing code to be more readable."
+		"Notes"	"Added error logging when trying to access a VSH2Player property that doesn't exist."
+		"Notes"	"Added new native for temporarily setting attributes directly on players and bosses."
+		"Notes"	"Added new stock 'MakePawnTimer' which works more flexibly than 'SetPawnTimer'."
+		"Notes"	"Added new cvars: 'vsh2_thirddegree_uber_gain', 'vsh2_uber_deploy_charge', 'vsh2_start_uber_charge', 'vsh2_sniper_climb_damage'."
+		"Notes"	"Removed 'repeat' macro function."
+		"Notes"	"Added client-sided music playing (closes issue #95)."
+		"Notes"	"Further expanded the int key based methods for ConfigMap."
+		"Notes"	"Added VSH2 Default Bosses Addon & Configs. (UNFINISHED)."
 	}
 
 	"Files"

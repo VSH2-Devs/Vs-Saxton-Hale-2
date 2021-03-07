@@ -74,6 +74,9 @@ Convenient `VSH2Player` wrapper over `iUberTarget` property.
 ### `iHealth`
 property wrapper over `GetClientHealth` and `SetEntityHealth`.
 
+### `bIsBoss`
+property wrapper over `bIsBoss` prop string.
+
 ### Native Methods
 
 ```c
@@ -115,6 +118,11 @@ void RemoveBack(int[] indices, const int len);
 int FindBack(int[] indices, const int len);
 int ShootRocket(bool bCrit=false, float vPosition[3], float vAngles[3], const float flSpeed, const float dmg, const char[] model, bool arc=false);
 void Heal(const int health, bool on_hud=false);
+TFClassType GetTFClass();
+
+/// NOTE: do not use this in 'OnPrepRedTeam' as spawning will remove attributes before you set it.
+/// 
+bool AddTempAttrib(const int attrib, const float val, const float dur = -1.0);
 
 void PlayMusic(const float vol=100.0);
 void StopMusic();
@@ -139,8 +147,8 @@ void PlayVoiceClip(const char[] voiceclip, const int flags);
 
 void SpeedThink(const float iota, const float minspeed=100.0);
 void GlowThink(const float decrease);
-bool SuperJumpThink(const float charging, const float jumpcharge);
-void WeighDownThink(const float weighdown_time, const float incr);
+bool SuperJumpThink(const float charging, const float jumpcharge, int buttons = (IN_ATTACK2|IN_DUCK));
+void WeighDownThink(const float weighdown_time, const float incr, int buttons = IN_DUCK);
 ```
 
 
@@ -365,7 +373,9 @@ OnHelpMenu,
 OnHelpMenuSelect,
 OnDrawGameTimer,
 OnPlayerClimb,
-OnBossConditionChange,
+OnBannerDeployed,
+OnBannerEffect,
+OnUberLoopEnd,
 ```
 
 ## VSH2HookCB (function typeset)
@@ -535,6 +545,24 @@ function void (const VSH2Player player, const int weapon, float& upwardvel, floa
 
 /// OnBossConditionChange
 function Action (const VSH2Player player, const TFCond cond, const bool removing);
+
+/// OnBannerDeployed
+/// 'owner' is the owner of the banner.
+/// Returning other than Plugin_Continue has no effect
+/// except preventing boss modules from getting this event.
+function Action (const VSH2Player owner, const BannerType banner);
+
+/// OnBannerEffect
+/// 'owner' is the owner of the banner.
+/// 'player' is buffed by the banner.
+/// Returning other than Plugin_Continue has no effect
+/// except preventing boss modules from getting this event.
+function Action (const VSH2Player player, const VSH2Player owner, const BannerType banner);
+
+
+/// OnUberLoopEnd
+/// target can be invalid so be careful.
+function Action (const VSH2Player medic, const VSH2Player target, float& reset_charge);
 ```
 
 ## VSH2 Hook Natives
@@ -548,14 +576,6 @@ native bool VSH2_UnhookEx(const int callbacktype, VSH2HookCB callback);
 - self explanatory hook and unhook natives. `callbacktype` is the VSH2 Hook Type enum value. `callback` is the name of a function that uses the required VSH2HookCB function prototype typesets above.
 
 ## VSH2 Stock/Helper Functions
-### VSH2 Common Boss Thinks
-```c
-void VSH2_SpeedThink(VSH2Player boss, const float iota);
-void VSH2_GlowThink(VSH2Player boss, const float decrease);
-bool VSH2_SuperJumpThink(VSH2Player boss, const float charging, const float jumpcharge);
-void VSH2_WeighDownThink(VSH2Player boss, const float weighdown_time, const float incr);
-```
-- Boss think functions that are commonly used by most boss abilities and mechanics.
 
 ### VSH2 Boss Asset Helpers
 ```c
@@ -569,4 +589,21 @@ int  PrepareModel(const char[] model_path, bool model_only = false);
 bool IsStockSound(char sample[PLATFORM_MAX_PATH]);
 bool IsVoiceLine(char sample[PLATFORM_MAX_PATH]);
 int  ShuffleIndex(const int size, const int curr_index);
+
+/// useful for getting an integer hash from an object.
+int  IntHash(any item);
+
+/// converts an object into a string of an integer for use with StringMap's.
+bool ItemToStr(any item, char buffer[4]);
+
+/// packs an integer into a string buffer.
+void PackItem(any key, char buffer[6]);
+
+/// Runs a function after a certain amount of time has elapsed with any amount of arguments.
+void MakePawnTimer(Function func, float thinktime=0.1, const any[] args=0, const int len, bool as_array=false);
+
+/// useful for cooldowns & stuff that happens in a certain period of time.
+bool IsPastSavedTime(float last_time);
+bool IsWithinGoalTime(float goal_time);
+void UpdateSavedTime(float& last_time, float delta=1.0);
 ```

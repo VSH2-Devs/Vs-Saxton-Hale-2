@@ -569,6 +569,15 @@ methodmap ConfigMap < StringMap {
 		return this.Get(key_str, buffer, buf_size);
 	}
 	
+	public bool SetIntKey(int key, const char[] str) {
+		if( key < 0 ) {
+			return false;
+		}
+		char key_str[12];
+		IntToString(key, key_str, sizeof(key_str));
+		return this.Set(key_str, str);
+	}
+	
 	/**
 	 * 
 	 * name:      GetIntSection
@@ -583,6 +592,58 @@ methodmap ConfigMap < StringMap {
 		char key_str[12];
 		IntToString(key, key_str, sizeof(key_str));
 		return this.GetSection(key_str);
+	}
+
+	public KeyValType GetIntKeyValType(int key) {
+		if( key < 0 ) {
+			return KeyValType_Null;
+		}
+		char key_str[12];
+		IntToString(key, key_str, sizeof(key_str));
+		return this.GetKeyValType(key_str);
+	}
+
+	public int GetIntKeyInt(int key, int& i, int base=10) {
+		if( key < 0 ) {
+			return 0;
+		}
+		char key_str[12];
+		IntToString(key, key_str, sizeof(key_str));
+		return this.GetInt(key_str, i, base);
+	}
+	public bool SetIntKeyInt(int key, int i) {
+		if( key < 0 ) {
+			return false;
+		}
+		char key_str[12];
+		IntToString(key, key_str, sizeof(key_str));
+		return this.SetInt(key_str, i);
+	}
+
+	public int GetIntKeyFloat(int key, float& f) {
+		if( key < 0 ) {
+			return 0;
+		}
+		char key_str[12];
+		IntToString(key, key_str, sizeof(key_str));
+		return this.GetFloat(key_str, f);
+	}
+	public bool SetIntKeyFloat(int key, float f) {
+		if( key < 0 ) {
+			return false;
+		}
+		char key_str[12];
+		IntToString(key, key_str, sizeof(key_str));
+		return this.SetFloat(key_str, f);
+	}
+
+	public int GetIntKeyBool(int key, bool& b, bool simple=true) {
+		if( key < 0 ) {
+			return 0;
+		}
+		char key_str[12];
+		IntToString(key, key_str, sizeof(key_str));
+		return this.GetBool(key_str, b, simple);
 	}
 };
 
@@ -687,10 +748,8 @@ stock bool ParseTargetPath(const char[] key, char[] buffer, int buffer_len)
 	/// parse something like: "root.section1.section2.section3.\\..dotsection"
 	int i = strlen(key) - 1;
 	while( i > 0 ) {
-		/// Patch: allow keys to use dot without interfering with dot path.
-		/// check if we hit a dot.
+		/// Allow escaping dots so we can use them in key-path iteration.
 		if( key[i]=='.' ) {
-			/// if we hit a dot, check if the previous char is an "escape" char.
 			if( key[i-1]=='\\' ) {
 				i--;
 			} else {
@@ -810,9 +869,9 @@ static stock bool ConfigMapToFile(const ConfigMap cfg, const char[] sec_name, co
 		snap.GetKey(i, key, strsize);
 		PackVal pack;
 		cfg.GetArray(key, pack, sizeof(pack));
+		pack.data.Reset();
 		switch( pack.tag ) {
 			case KeyValType_Value: {
-				pack.data.Reset();
 				int key_size = pack.size+10;
 				char[] key_val = new char[key_size];
 				pack.data.ReadString(key_val, key_size);
@@ -820,7 +879,6 @@ static stock bool ConfigMapToFile(const ConfigMap cfg, const char[] sec_name, co
 				file.WriteLine("%s\t\"%s\"\t \"%s\"", tab, key, key_val);
 			}
 			case KeyValType_Section: {
-				pack.data.Reset();
 				ConfigMap subsection = pack.data.ReadCell();
 				if( !ConfigMapToFile(subsection, key, file, deep + 1) ) {
 					delete snap;

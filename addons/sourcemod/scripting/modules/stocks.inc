@@ -48,32 +48,31 @@ stock bool IsHealedByMedic(const int client)
 	return false;
 }
 
-stock bool IsNearDispencer(const int client)
-{
-    int numhealers = GetEntProp(client, Prop_Send, "m_nNumHealers");
-    for (int i = 0; i < numhealers; ++i)
-    {
-        if (IsDispenserHeal(client, i))
-            return true;
-    }
-    return false;
+stock bool IsNearDispencer(const int client) {
+	int numhealers = GetEntProp(client, Prop_Send, "m_nNumHealers");
+	for( int i = 0; i < numhealers; i++ ) {
+		if( IsDispenserHeal(client, i) ) {
+			return true;
+		}
+	}
+	return false;
 }
 
 stock bool IsDispenserHeal(int client, int index)
 {
-    static int m_aHealers;
-    if (!m_aHealers)
-        m_aHealers = FindSendPropInfo("CTFPlayer", "m_nNumHealers") + 12;
+	static int m_aHealers;
+	if( !m_aHealers )
+		m_aHealers = FindSendPropInfo("CTFPlayer", "m_nNumHealers") + 12;
 
-    Address m_Shared = GetEntityAddress(client) + view_as<Address>(m_aHealers);
-    Address aHealers = view_as<Address>(LoadFromAddress(m_Shared, NumberType_Int32));
+	Address m_Shared = GetEntityAddress(client) + view_as<Address>(m_aHealers);
+	Address aHealers = view_as<Address>(LoadFromAddress(m_Shared, NumberType_Int32));
 
-    return !!LoadFromAddress(aHealers + view_as<Address>(index * 0x24 + 20), NumberType_Int8);
+	return !!LoadFromAddress(aHealers + view_as<Address>(index * 0x24 + 20), NumberType_Int8);
 }
 
 public bool TraceRayDontHitSelf(int entity, int mask, any data)
 {
-	return (entity != data);
+	return( entity != data );
 }
 public bool TraceRayIgnoreEnts(int entity, int mask, any data)
 {
@@ -520,33 +519,6 @@ public Action DoThink(Handle t, DataPack pack)
 	Call_Finish();
 	return Plugin_Continue;
 }
-
-
-stock void SetPawnTimerEx(Function func, float thinktime = 0.1, const any[] args, const int len)
-{
-	DataPack thinkpack = new DataPack();
-	thinkpack.WriteFunction(func);
-	thinkpack.WriteCell(len);
-	for( int i; i<len; i++ )
-		thinkpack.WriteCell(args[i]);
-	CreateTimer(thinktime, DoPawnTimer, thinkpack, TIMER_DATA_HNDL_CLOSE);
-}
-
-public Action DoPawnTimer(Handle t, DataPack pack)
-{
-	pack.Reset();
-	Function fn = pack.ReadFunction();
-	Call_StartFunction(null, fn);
-
-	int len = pack.ReadCell();
-	for( int i; i<len; i++ ) {
-		any param = pack.ReadCell();
-		Call_PushCell(param);
-	}
-	Call_Finish();
-	return Plugin_Continue;
-}
-
 
 stock void ForceClientTeamChange(const int client, const int iTeam)
 {

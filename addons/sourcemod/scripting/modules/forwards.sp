@@ -87,6 +87,9 @@ void InitializeForwards()
 		g_hForwards[i][OnDrawGameTimer] = new PrivateForward( ET_Hook, Param_CellByRef );
 		g_hForwards[i][OnPlayerClimb] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef, Param_FloatByRef, Param_CellByRef );
 		g_hForwards[i][OnBossConditionChange] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_Cell );
+		g_hForwards[i][OnBannerDeployed] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell );
+		g_hForwards[i][OnBannerEffect] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_Cell );
+		g_hForwards[i][OnUberLoopEnd] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef );
 	}
 }
 
@@ -1338,20 +1341,43 @@ Action Call_OnBossConditionChange(const BaseBoss player, const TFCond cond, cons
 	return act[0] > act[1] ? act[0] : act[1];
 }
 
-/*
-Action Call_OnRedReplaceWep(const BaseBoss player, int weap_ent, int wep_index, int slot)
+void Call_OnBannerDeployed(const BaseBoss owner, const int buff_type)
 {
-	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnRedReplaceWep]);
-		Call_PushCell(player);
-		Call_PushCell(wep_index);
-		Call_PushCell(weap_ent);
-		Call_PushCell(slot);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
+		Action act;
+		Call_StartForward(g_hForwards[i][OnBannerDeployed]);
+		Call_PushCell(owner);
+		Call_PushCell(buff_type);
+		Call_Finish(act);
+		if( act > Plugin_Continue )
+			break;
 	}
-	return act[0] > act[1] ? act[0] : act[1];
 }
-*/
+
+void Call_OnBannerEffect(const BaseBoss player, const BaseBoss owner, const int buff_type)
+{
+	for( int i; i<sizeof(g_hForwards); i++ ) {
+		Action act;
+		Call_StartForward(g_hForwards[i][OnBannerEffect]);
+		Call_PushCell(player);
+		Call_PushCell(owner);
+		Call_PushCell(buff_type);
+		Call_Finish(act);
+		if( act > Plugin_Continue )
+			break;
+	}
+}
+
+void Call_OnUberLoopEnd(const BaseBoss medic, const BaseBoss target, float& reset_charge)
+{
+	for( int i; i<sizeof(g_hForwards); i++ ) {
+		Action act;
+		Call_StartForward(g_hForwards[i][OnUberLoopEnd]);
+		Call_PushCell(medic);
+		Call_PushCell(target);
+		Call_PushFloatRef(reset_charge);
+		Call_Finish(act);
+		if( act > Plugin_Continue )
+			break;
+	}
+}

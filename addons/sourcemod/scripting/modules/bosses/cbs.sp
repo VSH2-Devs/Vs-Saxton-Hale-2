@@ -93,7 +93,7 @@ methodmap CChristian < BaseBoss {
 	{
 		int living = GetLivingPlayers(VSH2Team_Red);
 		if( !GetRandomInt(0, 3) && living != 1 ) {
-			switch( TF2_GetPlayerClass(victim.index) ) {
+			switch( victim.GetTFClass() ) {
 				case TFClass_Spy: {
 					this.PlayVoiceClip("vo/sniper_dominationspy04.mp3", VSH2_VOICE_SPREE);
 				}

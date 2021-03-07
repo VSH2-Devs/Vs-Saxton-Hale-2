@@ -9,7 +9,7 @@ methodmap VSH2Derived < VSH2Player {
 	public VSH2Derived(const int x, bool userid=false) {
 		return view_as< VSH2Derived >(VSH2Player(x, userid));
 	}
-
+	
 	property int iNewProperty {
 		public get() {
 			return this.GetPropInt("iNewProperty");
@@ -492,6 +492,44 @@ public void fwdOnPlayerClimb(const VSH2Player player, const int weapon, float& u
 	PrintToConsole(player.index, "fwdOnPlayerClimb:: ==> player name: %N | weapon index: %d | upwardvel: %f | health: %f | delay: %i", player.index, weapon, upwardvel, health, attackdelay);
 }
 
+public Action fwdOnBannerDeployed(const VSH2Player owner, const BannerType banner)
+{
+	/// m_bRageDraining, m_flRageMeter
+	char banner_name[64];
+	switch( banner ) {
+		case BannerBuff:
+			banner_name = "buff banner";
+		case BannerDefBuff:
+			banner_name = "battalion's backup";
+		case BannerHealBuff:
+			banner_name = "concheror";
+	}
+	PrintToChatAll("fwdOnBannerDeployed:: ==> player name: %N | banner type: %s", owner.index, banner_name);
+	return Plugin_Continue;
+}
+
+public Action fwdOnBannerEffect(const VSH2Player player, const VSH2Player owner, const BannerType banner)
+{
+	/// m_bRageDraining, m_flRageMeter
+	char banner_name[64];
+	switch( banner ) {
+		case BannerBuff:
+			banner_name = "buff banner";
+		case BannerDefBuff:
+			banner_name = "battalion's backup";
+		case BannerHealBuff:
+			banner_name = "concheror";
+	}
+	PrintToChatAll("fwdOnBannerEffect:: ==> player name: %N | banner owner: %N | banner type: %s", player.index, owner.index, banner_name);
+	return Plugin_Continue;
+}
+
+public Action fwdOnUberLoopEnd(const VSH2Player medic, const VSH2Player target, float& charge)
+{
+	PrintToChatAll("fwdOnUberLoopEnd:: ==> medic name: %N | charge: %f", medic.index, charge);
+	return Plugin_Continue;
+}
+
 public void LoadVSH2Hooks()
 {
 	if( !VSH2_HookEx(OnCallDownloads, fwdOnDownloadsCalled) )
@@ -718,4 +756,13 @@ public void LoadVSH2Hooks()
 
 	if( !VSH2_HookEx(OnPlayerClimb, fwdOnPlayerClimb) )
 		LogError("Error Hooking OnPlayerClimb forward for VSH2 Test plugin.");
+
+	if( !VSH2_HookEx(OnBannerDeployed, fwdOnBannerDeployed) )
+		LogError("Error Hooking OnBannerDeployed forward for VSH2 Test plugin.");
+
+	if( !VSH2_HookEx(OnBannerEffect, fwdOnBannerEffect) )
+		LogError("Error Hooking OnBannerEffect forward for VSH2 Test plugin.");
+
+	if( !VSH2_HookEx(OnUberLoopEnd, fwdOnUberLoopEnd) )
+		LogError("Error Hooking OnUberLoopEnd forward for VSH2 Test plugin.");
 }

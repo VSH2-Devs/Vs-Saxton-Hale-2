@@ -286,6 +286,10 @@ methodmap BaseFighter {
 		}
 	}
 
+	public TFClassType GetTFClass() {
+		return TF2_GetPlayerClass(this.index);
+	}
+
 	public void ConvertToMinion(const float time) {
 		this.bIsMinion = true;
 		SetPawnTimer(_MakePlayerMinion, time, this.userid);
@@ -473,7 +477,7 @@ methodmap BaseFighter {
 	public void ForceTeamChange(const int team) {
 		/// Living Spectator Bug:
 		/// If you force a player onto a team with their tfclass not set, they'll appear as a "living" spectator
-		if( TF2_GetPlayerClass(this.index) > TFClass_Unknown ) {
+		if( this.GetTFClass() > TFClass_Unknown ) {
 			SetEntProp(this.index, Prop_Send, "m_lifeState", 2);
 			ChangeClientTeam(this.index, team);
 			SetEntProp(this.index, Prop_Send, "m_lifeState", 0);
@@ -483,11 +487,6 @@ methodmap BaseFighter {
 	public bool ClimbWall(const int weapon, const float upwardvel, float health, bool attackdelay)
 	/// Credit to Mecha the Slag
 	{
-		/// override climb behaviour
-		/// Also, Have to baby players so they don't accidentally kill themselves trying to escape...
-		if( GetClientHealth(this.index) <= health )
-			return false;
-
 		int client = this.index;
 		float vecClientEyePos[3];
 		GetClientEyePosition(client, vecClientEyePos);   /// Get the position of the player's eyes
@@ -526,6 +525,9 @@ methodmap BaseFighter {
 
 		if( Call_OnPlayerClimb(view_as< BaseBoss >(this), weapon, fVelocity[2], health, attackdelay) > Plugin_Changed )
 			return false;
+		/// Also, Have to baby players so they don't accidentally kill themselves trying to escape...
+		else if( GetClientHealth(this.index) <= health )
+			return false;
 
 		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, fVelocity);
 		SDKHooks_TakeDamage(client, client, client, health, DMG_CLUB, 0); /// Inflictor is 0 to prevent Shiv self-bleed
@@ -554,7 +556,7 @@ methodmap BaseFighter {
 		};
 
 		Panel panel = new Panel();
-		TFClassType tfclass = TF2_GetPlayerClass(this.index);
+		TFClassType tfclass = this.GetTFClass();
 		int len = g_vsh2.m_hCfg.GetSize(class_help[tfclass]);
 		char[] helpstr = new char[len];
 		g_vsh2.m_hCfg.Get(class_help[tfclass], helpstr, len);
@@ -586,18 +588,54 @@ methodmap BaseFighter {
 		HealPlayer(this.index, health, on_hud);
 	}
 
+	public bool SetMusic(const char song[PLATFORM_MAX_PATH]) {
+		return g_vsh2.m_hPlayerFields[this.index].SetString("strMusic", song);
+	}
+	
+	public bool GetMusic(char buffer[PLATFORM_MAX_PATH]) {
+		return g_vsh2.m_hPlayerFields[this.index].GetString("strMusic", buffer, sizeof(buffer));
+	}
+
 	public void PlayMusic(const float vol, const char[] override = "") {
 		if( this.bNoMusic )
 			return;
-
-		if( override[0] != 0 ) {
-			strcopy(g_vsh2.m_strCurrSong, sizeof(g_vsh2.m_strCurrSong), override);
+		
+		if( g_vsh2.m_hCvars.PlayerMusic.BoolValue ) {
+			char song[PLATFORM_MAX_PATH]; this.GetMusic(song);
+			if( override[0] != 0 ) {
+				strcopy(song, sizeof(song), override);
+				this.SetMusic(song);
+			}
+			EmitSoundToClient(this.index, song, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+		} else {
+			if( override[0] != 0 ) {
+				strcopy(g_vsh2.m_strCurrSong, sizeof(g_vsh2.m_strCurrSong), override);
+			}
+			EmitSoundToClient(this.index, g_vsh2.m_strCurrSong, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
 		}
-		EmitSoundToClient(this.index, g_vsh2.m_strCurrSong, _, _, SNDLEVEL_NORMAL, SND_NOFLAGS, vol, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
 	}
 
 	public void StopMusic() {
-		StopSound(this.index, SNDCHAN_AUTO, g_vsh2.m_strCurrSong);
+		if( g_vsh2.m_hCvars.PlayerMusic.BoolValue ) {
+			char song[PLATFORM_MAX_PATH]; this.GetMusic(song);
+			StopSound(this.index, SNDCHAN_AUTO, song);
+		} else {
+			StopSound(this.index, SNDCHAN_AUTO, g_vsh2.m_strCurrSong);
+		}
+	}
+
+	public bool AddTempAttrib(const int attrib, const float val, const float dur = -1.0) {
+		bool res;
+#if defined _tf2attributes_included
+		bool tf2attribs; view_as< StringMap >(g_vsh2.m_hGamemode).GetValue("bTF2Attribs", tf2attribs);
+		if( tf2attribs ) {
+			res = TF2Attrib_SetByDefIndex(this.index, attrib, val);
+			if( res && dur > -1.0 ) {
+				SetPawnTimer(TF2AttribsRemove, dur, this.userid, attrib);
+			}
+		}
+#endif
+		return res;
 	}
 };
 
@@ -951,7 +989,7 @@ methodmap BaseBoss < BaseFighter {
 		if( flags & VSH2_VOICE_TOALL ) {
 			for( int i=MaxClients; i; --i ) {
 				if( IsClientInGame(i) && i != client ) {
-					repeat(2) {
+					for( int x; x<2; x++ ) {
 						EmitSoundToClient(i, vclip, client, (flags & VSH2_VOICE_ALLCHAN) ? SNDCHAN_AUTO : SNDCHAN_ITEM, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, (flags & VSH2_VOICE_BOSSPOS) ? pos : NULL_VECTOR, NULL_VECTOR, true, 0.0);
 					}
 				}
@@ -1017,4 +1055,18 @@ public void SetGravityNormal(const BaseBoss b)
 	int i = b.index;
 	if( IsClientValid(i) )
 		SetEntityGravity(i, 1.0);
+}
+
+public void TF2AttribsRemoveAll(const int ent)
+{
+#if defined _tf2attributes_included
+	TF2Attrib_RemoveAll(ent);
+#endif
+}
+
+public void TF2AttribsRemove(const int userid, const int attrib)
+{
+#if defined _tf2attributes_included
+	TF2Attrib_RemoveByDefIndex(GetClientOfUserId(userid), attrib);
+#endif
 }

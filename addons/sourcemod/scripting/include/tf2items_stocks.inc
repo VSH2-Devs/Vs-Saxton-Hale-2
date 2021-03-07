@@ -7,29 +7,49 @@
 
 methodmap TF2Item < Handle {
 	public TF2Item(int iFlags) {
-		return view_as< TF2Item >( TF2Items_CreateItem(iFlags) );
+		return view_as< TF2Item >(TF2Items_CreateItem(iFlags));
 	}
 	///////////////////////////////
 
 	property int iFlags {
-		public get()			{ return TF2Items_GetFlags(this); }
-		public set( int iVal )		{ TF2Items_SetFlags(this, iVal); }
+		public get() {
+			return TF2Items_GetFlags(this);
+		}
+		public set(int iVal) {
+			TF2Items_SetFlags(this, iVal);
+		}
 	}
 	property int iItemIndex {
-		public get()			{return TF2Items_GetItemIndex(this);}
-		public set( int iVal )		{TF2Items_SetItemIndex(this, iVal);}
+		public get() {
+			return TF2Items_GetItemIndex(this);
+		}
+		public set(int iVal) {
+			TF2Items_SetItemIndex(this, iVal);
+		}
 	}
-	property int iQuality {
-		public get()			{return TF2Items_GetQuality(this);}
-		public set( int iVal )		{TF2Items_SetQuality(this, iVal);}
+	property int iQuality   {
+		public get() {
+			return TF2Items_GetQuality(this);
+		}
+		public set(int iVal) {
+			TF2Items_SetQuality(this, iVal);
+		}
 	}
 	property int iLevel {
-		public get()			{return TF2Items_GetLevel(this);}
-		public set( int iVal )		{TF2Items_SetLevel(this, iVal);}
+		public get() {
+			return TF2Items_GetLevel(this);
+		}
+		public set(int iVal) {
+			TF2Items_SetLevel(this, iVal);
+		}
 	}
 	property int iNumAttribs {
-		public get()			{return TF2Items_GetNumAttributes(this);}
-		public set( int iVal )		{TF2Items_SetNumAttributes(this, iVal);}
+		public get() {
+			return TF2Items_GetNumAttributes(this);
+		}
+		public set(int iVal) {
+			TF2Items_SetNumAttributes(this, iVal);
+		}
 	}
 	///////////////////////////////
 

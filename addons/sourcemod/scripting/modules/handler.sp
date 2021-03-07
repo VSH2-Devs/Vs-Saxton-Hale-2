@@ -164,7 +164,10 @@ public void ManageOnBossSelected(const BaseBoss base)
 	}
 	for( int i; i<extra_bosses; i++ ) {
 		BaseBoss partner = VSHGameMode.FindNextBoss();
-		partner.MakeBossAndSwitch(GetRandomInt(VSH2Boss_Hale, MAXBOSS), false);
+		int preset_boss_type = partner.iPresetType;
+		if( preset_boss_type == -1 )
+			preset_boss_type = GetRandomInt(VSH2Boss_Hale, MAXBOSS);
+		partner.MakeBossAndSwitch(preset_boss_type, false);
 	}
 }
 
@@ -464,7 +467,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 			/// Gives 4 heads if successful sword killtaunt!
 			/// TODO: add cvar for this?
 			if( damagecustom == TF_CUSTOM_TAUNT_BARBARIAN_SWING ) {
-				repeat(4) {
+				for( int x; x<4; x++ ) {
 					IncrementHeadCount(attacker);
 				}
 				if( Call_OnBossTakeDamage_OnSwordTaunt(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) == Plugin_Changed )
@@ -479,7 +482,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					float bossGlow = victim.flGlowtime;
 					float chargelevel = (IsValidEntity(weapon) && weapon > MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
 					float time = (bossGlow > 10 ? 1.0 : 2.0);
-					time += (bossGlow > 10 ? (bossGlow > 20 ? 1 : 2) : 4)*(chargelevel/100);
+					time += (bossGlow > 10 ? (bossGlow > 20 ? 1 : 2) : 4) * (chargelevel / 100);
 					bossGlow += RoundToCeil(time);
 					if( bossGlow > 30.0 )
 						bossGlow = 30.0; /// TODO: Add cvar for this?
@@ -515,24 +518,23 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				case 593: {
 					int medics;
 					int numhealers = GetEntProp(attacker, Prop_Send, "m_nNumHealers");
-					int healer;
-					int i;
-					for( i=0; i<numhealers; i++ ) {
+					for( int i; i<numhealers; i++ ) {
 						/// Dispensers > MaxClients
 						if( 0 < GetHealerByIndex(attacker, i) <= MaxClients )
 							medics++;
 					}
-					for( i=0; i<numhealers; i++ ) {
+					for( int i; i<numhealers; i++ ) {
+						int healer;
 						if( 0 < (healer = GetHealerByIndex(attacker, i)) <= MaxClients ) {
 							int medigun = GetPlayerWeaponSlot(healer, TFWeaponSlot_Secondary);
 							if( IsValidEntity(medigun) ) {
-								char cls[32];
-								GetEdictClassname(medigun, cls, sizeof(cls));
+								char cls[32]; GetEdictClassname(medigun, cls, sizeof(cls));
 								if( !strcmp(cls, "tf_weapon_medigun", false) ) {
-									float uber = GetMediCharge(medigun) + (0.1/medics);
+									float gain = g_vsh2.m_hCvars.ThirdDegreeUberGain.FloatValue;
+									float uber = GetMediCharge(medigun) + (gain / medics);
 									float max = 1.0;
 									if( GetEntProp(medigun, Prop_Send, "m_bChargeRelease") )
-										max = 1.5;
+										max = g_vsh2.m_hCvars.UberDeployChargeAmnt.FloatValue;
 									if( uber > max )
 										uber = max;
 									SetMediCharge(medigun, uber);
@@ -981,7 +983,7 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 
 	if( !GetEntProp(attacker.index, Prop_Send, "m_bShieldEquipped")
 		&& GetPlayerWeaponSlot(attacker.index, TFWeaponSlot_Secondary) <= 0
-		&& TF2_GetPlayerClass(attacker.index) == TFClass_DemoMan )
+		&& attacker.GetTFClass() == TFClass_DemoMan )
 	{
 		int iReqDmg = g_vsh2.m_hCvars.ShieldRegenDmgReq.IntValue;
 		if( iReqDmg>0 ) {
@@ -1027,23 +1029,25 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 	}
 
 	/// Heavy Shotgun healing.
-	else if( TF2_GetPlayerClass(attacker.index)==TFClass_Heavy && weapon==TF_WEAPON_SHOTGUN_HWG ) {
+	else if( attacker.GetTFClass()==TFClass_Heavy && weapon==TF_WEAPON_SHOTGUN_HWG ) {
 		int health = GetClientHealth(attacker.index);
 		int maxhp = GetEntProp(attacker.index, Prop_Data, "m_iMaxHealth");
 		int heavy_overheal = RoundFloat(FindConVar("tf_max_health_boost").FloatValue * maxhp);
-
-		int health_from_dmg = ( health < maxhp ) ? (maxhp - health) % damage : (heavy_overheal - health) % damage;
-		HealPlayer(attacker.index, (!health_from_dmg) ?
-													((damage) >> view_as< int >((health > maxhp))) :
-													(health_from_dmg), true);
+		
+		int health_from_dmg = (( health < maxhp ) ? (maxhp - health) : (heavy_overheal - health)) % damage;
+		if( health_from_dmg==0 ) {
+			health_from_dmg = damage >> view_as< int >(health > maxhp);
+		}
+		HealPlayer(attacker.index, health_from_dmg, true);
 	}
 
 	/// Medics now count as 3/5 of a backstab, similar to telefrag assists.
 	int healers = GetEntProp(attacker.index, Prop_Send, "m_nNumHealers");
 	int healercount;
-	for( int i=0; i<healers; i++) {
-		if( 0 < GetHealerByIndex(attacker.index, i) <= MaxClients )
+	for( int i=0; i<healers; i++ ) {
+		if( 0 < GetHealerByIndex(attacker.index, i) <= MaxClients ) {
 			healercount++;
+		}
 	}
 
 	BaseBoss medic;
@@ -1262,7 +1266,7 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 		if( TF2_GetPlayerClass(client)==TFClass_Sniper
 				&& IsWeaponSlotActive(client, TFWeaponSlot_Melee)
 				&& g_vsh2.m_hCvars.AllowSniperClimbing.BoolValue ) {
-			base.ClimbWall(weapon, g_vsh2.m_hCvars.SniperClimbVelocity.FloatValue, 15.0, true);
+			base.ClimbWall(weapon, g_vsh2.m_hCvars.SniperClimbVelocity.FloatValue, g_vsh2.m_hCvars.SniperClimbDmg.FloatValue, true);
 		}
 	}
 	return Plugin_Continue;
@@ -1401,7 +1405,7 @@ public void ManageUberDeploy(const BaseBoss medic, const BaseBoss patient)
 			if( act > Plugin_Changed )
 				return;
 
-			SetMediCharge(medigun, 1.51);
+			SetMediCharge(medigun, g_vsh2.m_hCvars.UberDeployChargeAmnt.FloatValue);
 			TF2_AddCondition(medic.index, TFCond_CritOnWin, 0.5, medic.index);
 			if( IsClientValid(patient.index) && IsPlayerAlive(patient.index) ) {
 				TF2_AddCondition(patient.index, TFCond_CritOnWin, 0.5, medic.index);
@@ -1751,8 +1755,9 @@ public void PrepPlayers(const BaseBoss player)
 		case TFClass_Medic: {
 			int weapon = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 			/// 200; 1 for area of effect healing, 178; 0.75 Faster switch-to, 14; 0.0 perm overheal, 11; 1.25 Higher overheal
-			if( GetMediCharge(weapon) != 0.41 )
-				SetMediCharge(weapon, 0.41);
+			float start_uber = g_vsh2.m_hCvars.StartUberChargeAmnt.FloatValue;
+			if( GetMediCharge(weapon) != start_uber )
+				SetMediCharge(weapon, start_uber);
 		}
 	}
 #if defined _tf2attributes_included

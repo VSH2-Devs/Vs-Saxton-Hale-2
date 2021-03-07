@@ -150,7 +150,7 @@ public void LoadVSH2Hooks()
 		LogError("Error loading OnRoundEndInfo forwards for Template subplugin.");
 
 	if( !VSH2_HookEx(OnMusic, Template_Music) )
-		LogError("Error loading OnBossDealDamage forwards for Template subplugin.");
+		LogError("Error loading OnMusic forwards for Template subplugin.");
 
 	if( !VSH2_HookEx(OnBossDeath, Template_OnBossDeath) )
 		LogError("Error loading OnBossDeath forwards for Template subplugin.");
@@ -347,7 +347,7 @@ public void Template_OnPlayerKilled(const VSH2Player attacker, const VSH2Player 
 public void Template_OnPlayerHurt(const VSH2Player attacker, const VSH2Player victim, Event event)
 {
 	int damage = event.GetInt("damageamount");
-	if( IsTemplate(victim) && victim.GetPropInt("bIsBoss") )
+	if( IsTemplate(victim) && victim.bIsBoss )
 		victim.GiveRage(damage);
 }
 public void Template_OnPlayerAirblasted(const VSH2Player airblaster, const VSH2Player airblasted, Event event)
@@ -370,7 +370,7 @@ public void Template_OnBossMedicCall(const VSH2Player player)
 	VSH2Player[] players = new VSH2Player[MaxClients];
 	int in_range = player.GetPlayersInRange(players, radius);
 	for( int i; i<in_range; i++ ) {
-		if( players[i].GetPropAny("bIsBoss") || players[i].GetPropAny("bIsMinion") )
+		if( players[i].bIsBoss || players[i].bIsMinion )
 			continue;
 
 		/// do a distance based thing here.

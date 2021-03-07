@@ -72,7 +72,7 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 		victim.iLives--;
 	}
 
-	if( (TF2_GetPlayerClass(victim.index) == TFClass_Engineer) && !(death_flags & TF_DEATHFLAG_DEADRINGER) ) {
+	if( victim.GetTFClass() == TFClass_Engineer && !(death_flags & TF_DEATHFLAG_DEADRINGER) ) {
 		if( g_vsh2.m_hCvars.EngieBuildings.IntValue > 0 ) {
 			switch( g_vsh2.m_hCvars.EngieBuildings.IntValue ) {
 				case 1: {
@@ -488,4 +488,27 @@ public Action RPSTaunt(Event event, const char[] name, bool dontBroadcast)
 		return Plugin_Continue;
 
 	return Call_OnRPSTaunt(loser, winner);
+}
+
+public Action DeployBuffBanner(Event event, const char[] name, bool dontBroadcast)
+{
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2.m_hGamemode.iRoundState != StateRunning )
+		return Plugin_Continue;
+
+	int buff_type = event.GetInt("buff_type");
+	BaseBoss owner = BaseBoss(event.GetInt("buff_owner"), true);
+	Call_OnBannerDeployed(owner, buff_type);
+	return Plugin_Continue;
+}
+
+public Action OnPlayerBuff(Event event, const char[] name, bool dontBroadcast)
+{
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2.m_hGamemode.iRoundState != StateRunning )
+		return Plugin_Continue;
+
+	int buff_type = event.GetInt("buff_type");
+	BaseBoss owner = BaseBoss(event.GetInt("buff_owner"), true);
+	BaseBoss buffed_player = BaseBoss(event.GetInt("userid"), true);
+	Call_OnBannerEffect(buffed_player, owner, buff_type);
+	return Plugin_Continue;
 }

@@ -194,13 +194,12 @@ public void AddPlagueToMenu(Menu& menu)
 	//menu.AddItem(bossid, "Plague Doctor");
 }
 
-
-#if defined _tf2attributes_included
 public void TF2AttribsRemove(const int iEntity)
 {
+#if defined _tf2attributes_included
 	TF2Attrib_RemoveAll(iEntity);
-}
 #endif
+}
 public void RemoveWepFromSlot(const int client, const int wepslot)
 {
 	TF2_RemoveWeaponSlot(client, wepslot);

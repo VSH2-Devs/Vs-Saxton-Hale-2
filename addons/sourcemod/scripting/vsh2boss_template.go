@@ -155,7 +155,7 @@ func LoadVSH2Hooks() {
 	
 	if !VSH2_HookEx(OnPlayerHurt, func(attacker, victim VSH2Player, event Event) {
 		damage := event.GetInt("damageamount")
-		if IsTemplate(victim) && victim.GetPropInt("bIsBoss") > 0 {
+		if IsTemplate(victim) && victim.bIsBoss > 0 {
 			victim.GiveRage(damage)
 		}
 	}) {
@@ -208,7 +208,7 @@ func LoadVSH2Hooks() {
 		Format(song, len(song), "%s", TemplateThemes[theme])
 		*time = TemplateThemesTime[theme]
 	}) {
-		LogError("Error loading OnBossDealDamage forwards for Template subplugin.")
+		LogError("Error loading OnMusic forwards for Template subplugin.")
 	}
 	
 	if !VSH2_HookEx(OnBossDeath, func(player VSH2Player) {
@@ -286,11 +286,9 @@ func Template_OnCallDownloads() {
 		dl_section := assets.GetSection(dl_keys[i])
 		if dl_section != nil {
 			for n:=0; n < dl_section.Size; n++ {
-				var index [10]char
-				Format(index, len(index), "%i", n)
-				path_len := dl_section.GetSize(index)
+				path_len := dl_section.GetIntKeySize(n)
 				file := make([]char, path_len)
-				if dl_section.Get(index, file, path_len) > 0 {
+				if dl_section.GetIntKey(n, file, path_len) > 0 {
 					switch i {
 						case 0:
 							PrepareSound(file)
@@ -318,14 +316,10 @@ func Template_OnBossSelected(player VSH2Player) {
 	/// ConfigMap is also useful for automating custom prop creation.
 	custom_props := template_boss_cfg.GetSection("custom_props");
 	for i:=0; i<custom_props.Size; i++ {
-		var (
-			index [10]char
-			prop  PropName
-		)
-		IntToString(i, index, len(index))
-		prop_len := template_boss_cfg.GetSize(index)
+		prop_len := template_boss_cfg.GetIntKeySize(i)
 		prop_name := make([]char, prop_len)
-		template_boss_cfg.Get(index, prop_name, prop_len)
+		template_boss_cfg.GetIntKey(i, prop_name, prop_len)
+		var prop PropName
 		strcopy(prop, len(prop), prop_name)
 		player.SetPropInt(prop, 0)
 	}
@@ -437,7 +431,7 @@ func Template_OnBossMedicCall(player VSH2Player) {
 	players := make([]VSH2Player, MaxClients)
 	in_range := player.GetPlayersInRange(&players, radius)
 	for i:=0; i<in_range; i++ {
-		if players[i].GetPropAny("bIsBoss") || players[i].GetPropAny("bIsMinion") {
+		if players[i].bIsBoss || players[i].bIsMinion {
 			continue
 		}
 		/// do a distance based thing here.
@@ -472,31 +466,6 @@ func OnlyScoutsLeft(team int) bool {
 		}
 	}
 	return true
-}
-
-func MakePawnTimer(fn Function, thinktime float, args []any, argc int) {
-	var timer_data DataPack
-	__sp__(`timer_data = new DataPack();`)
-	timer_data.WriteFunction(fn)
-	timer_data.WriteCell(argc)
-	for i:=0; i<argc; i++ {
-		timer_data.WriteCell(args[i])
-	}
-	
-	CreateTimer(thinktime, func(timer Handle, data any) Action {
-		var dp DataPack = data
-		dp.Reset()
-		
-		fn := dp.ReadFunction()
-		Call_StartFunction(nil, fn)
-		
-		var argc int = dp.ReadCell()
-		for i:=0; i<argc; i++ {
-			Call_PushCell(dp.ReadCell())
-		}
-		Call_Finish()
-		return Plugin_Continue
-	}, timer_data, TIMER_DATA_HNDL_CLOSE)
 }
 
 func SetWeaponClip(weapon, ammo int) {

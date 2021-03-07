@@ -3,13 +3,14 @@
 #endif
 #define _vsh2_included
 
+#include <tf2_stocks>
 #include <tf2items_stocks>
 #include <cfgmap>
 
 
 enum {
-	MAXMESSAGE = 512,
-	MAX_PANEL_MSG = 512,
+	MAXMESSAGE         = 512,
+	MAX_PANEL_MSG      = 512,
 	MAX_BOSS_NAME_SIZE = 64
 };
 
@@ -75,6 +76,13 @@ enum { /** HUDs */
 	TimeLeftHUD,
 	HealthHUD,
 	MaxVSH2HUDs
+};
+
+
+enum BannerType {
+	BannerBuff     = 1,
+	BannerDefBuff,
+	BannerHealBuff
 };
 
 
@@ -165,7 +173,8 @@ methodmap VSH2Player {
 	 * float flRAGE
 	 * float flKillSpree
 	 * float flWeighDown
-	*/
+	 * float flMusicTime
+	 */
 
 	property int iHealth {
 		public get() {
@@ -191,6 +200,11 @@ methodmap VSH2Player {
 		}
 		public set(VSH2Player val) {
 			this.SetPropInt("iUberTarget", val.userid);
+		}
+	}
+	property bool bIsMinion {
+		public get() {
+			return this.GetPropAny("bIsMinion");
 		}
 	}
 
@@ -241,8 +255,17 @@ methodmap VSH2Player {
 	public native int FindBack(int[] indices, const int len);
 	public native int ShootRocket(bool bCrit=false, float vPosition[3], float vAngles[3], const float flSpeed, const float dmg, const char[] model, bool arc=false);
 	public native void Heal(const int health, bool on_hud=false);
+	public TFClassType GetTFClass() {
+		return TF2_GetPlayerClass(this.index);
+	}
+	public native bool AddTempAttrib(const int attrib, const float val, const float dur = -1.0);
 
-	/// Boss oriented methods
+	/// Boss oriented methods & properties.
+	property bool bIsBoss {
+		public get() {
+			return this.GetPropAny("bIsBoss");
+		}
+	}
 	public native void ConvertToBoss();
 	public native void GiveRage(const int damage);
 	public native void MakeBossAndSwitch(const int type, const bool callEvent);
@@ -269,11 +292,11 @@ methodmap VSH2Player {
 	public void GlowThink(const float decrease) {
 		VSH2_GlowThink(this, decrease);
 	}
-	public bool SuperJumpThink(const float charging, const float jumpcharge) {
-		return VSH2_SuperJumpThink(this, charging, jumpcharge);
+	public bool SuperJumpThink(const float charging, const float jumpcharge, int buttons = (IN_ATTACK2|IN_DUCK)) {
+		return VSH2_SuperJumpThink(this, charging, jumpcharge, buttons);
 	}
-	public void WeighDownThink(const float weighdown_time, const float incr) {
-		VSH2_WeighDownThink(this, weighdown_time, incr);
+	public void WeighDownThink(const float weighdown_time, const float incr, int buttons = IN_DUCK) {
+		VSH2_WeighDownThink(this, weighdown_time, incr, buttons);
 	}
 };
 
@@ -297,8 +320,9 @@ stock void VSH2_GlowThink(VSH2Player boss, const float decrease) {
 	if( glowtime > 0.0 ) {
 		SetEntProp(boss.index, Prop_Send, "m_bGlowEnabled", 1);
 		boss.SetPropFloat("flGlowtime", glowtime - decrease);
-	} else if( glowtime <= 0.0 )
+	} else if( glowtime <= 0.0 ) {
 		SetEntProp(boss.index, Prop_Send, "m_bGlowEnabled", 0);
+	}
 }
 
 stock bool VSH2_SuperJumpThink(VSH2Player boss, const float charging, const float jumpcharge, int button=(IN_ATTACK2|IN_DUCK)) {
@@ -306,17 +330,20 @@ stock bool VSH2_SuperJumpThink(VSH2Player boss, const float charging, const floa
 	int buttons = GetClientButtons(player);
 	float charge = boss.GetPropFloat("flCharge");
 	if( (buttons & button) && (charge >= 0.0) ) {
-		if( charge + charging < jumpcharge )
+		if( charge + charging < jumpcharge ) {
 			boss.SetPropFloat("flCharge", charge + charging);
-		else boss.SetPropFloat("flCharge", jumpcharge);
-	} else if( charge < 0.0 )
+		} else {
+			boss.SetPropFloat("flCharge", jumpcharge);
+		}
+	} else if( charge < 0.0 ) {
 		boss.SetPropFloat("flCharge", charge + charging);
-	else {
+	} else {
 		float EyeAngles[3]; GetClientEyeAngles(player, EyeAngles);
 		if( charge > 1.0 && EyeAngles[0] < -5.0 ) {
 			return true;
+		} else {
+			boss.SetPropFloat("flCharge", 0.0);
 		}
-		else boss.SetPropFloat("flCharge", 0.0);
 	}
 	return false;
 }
@@ -325,14 +352,16 @@ stock void VSH2_WeighDownThink(VSH2Player boss, const float weighdown_time, cons
 	int player = boss.index;
 	int buttons = GetClientButtons(player);
 	int flags = GetEntityFlags(player);
-	if( flags & FL_ONGROUND )
+	if( flags & FL_ONGROUND ) {
 		boss.SetPropFloat("flWeighDown", 0.0);
-	else boss.SetPropFloat("flWeighDown", boss.GetPropFloat("flWeighDown") + incr);
-
+	} else {
+		boss.SetPropFloat("flWeighDown", boss.GetPropFloat("flWeighDown") + incr);
+	}
 	if( (buttons & button) && boss.GetPropFloat("flWeighDown") >= weighdown_time ) {
 		float ang[3]; GetClientEyeAngles(player, ang);
-		if( ang[0] > 60.0 )
+		if( ang[0] > 60.0 ) {
 			boss.WeighDown(0.0);
+		}
 	}
 }
 
@@ -428,8 +457,39 @@ enum { /// VSH2HookType
 	OnDrawGameTimer,
 	OnPlayerClimb,
 	OnBossConditionChange,
+	OnBannerDeployed,
+	OnBannerEffect,
+	OnUberLoopEnd,
 	MaxVSH2Forwards
 };
+
+/*
+enum { /// OnBossTakeDamage (OBTD) & OnBossDealDamage (OBDD) bits.
+	OBDD_OnStomp                    = 1<<0,
+	OBDD_OnHitDefBuff               = 1<<1,
+	OBDD_OnHitCritMmmph             = 1<<2,
+	OBDD_OnHitMedic                 = 1<<3,
+	OBDD_OnHitDeadRinger            = 1<<4,
+	OBDD_OnHitCloakedSpy            = 1<<5,
+	OBDD_OnHitShield                = 1<<6,
+	
+	OBTD_OnStabbed                  = 1<<0,
+	OBTD_OnTelefragged              = 1<<1,
+	OBTD_OnSwordTaunt               = 1<<2,
+	OBTD_OnHeavyShotgun             = 1<<3,
+	OBTD_OnSniped                   = 1<<4,
+	OBTD_OnThirdDegreed             = 1<<5,
+	OBTD_OnHitSword                 = 1<<6,
+	OBTD_OnHitFanOWar               = 1<<7,
+	OBTD_OnHitCandyCane             = 1<<8,
+	OBTD_OnMarketGardened           = 1<<9,
+	OBTD_OnPowerJack                = 1<<10,
+	OBTD_OnKatana                   = 1<<11,
+	OBTD_OnAmbassadorHeadshot       = 1<<12,
+	OBTD_OnDiamondbackManmelterCrit = 1<<13,
+	OBTD_OnHolidayPunch             = 1<<14
+};
+*/
 
 /**
  * IF YOU'RE USING THE HOOKING SYSTEM FOR A CUSTOM BOSS,
@@ -579,10 +639,7 @@ typeset VSH2HookCB {
 	function void (const VSH2Player player, const int damage, float& calcd_rage);
 
 	/// OnBossCalcHealth
-	/**
-	 * Exercise caution using this, multiple plugins could call and modify 'max_health'.
-	 * It's preferred that you use/modify the 'iMaxHealth' property instead.
-	 */
+	/// It's preferred that you use/modify the 'iMaxHealth' property instead.
 	function Action (const VSH2Player player, int& max_health, const int boss_count, const int red_players);
 	function void (const VSH2Player player, int& max_health, const int boss_count, const int red_players);
 
@@ -609,6 +666,23 @@ typeset VSH2HookCB {
 
 	/// OnBossConditionChange
 	function Action (const VSH2Player player, const TFCond cond, const bool removing);
+
+	/// OnBannerDeployed
+	/// 'owner' is the owner of the banner.
+	/// Returning other than `Plugin_Continue` has no effect
+	/// except preventing boss modules from getting this event.
+	function Action (const VSH2Player owner, const BannerType banner);
+	
+	/// OnBannerEffect
+	/// 'owner' is the owner of the banner.
+	/// 'player' is buffed by the banner.
+	/// Returning other than `Plugin_Continue` has no effect
+	/// except preventing boss modules from getting this event.
+	function Action (const VSH2Player player, const VSH2Player owner, const BannerType banner);
+
+	/// OnUberLoopEnd
+	/// target can be invalid so be careful.
+	function Action (const VSH2Player medic, const VSH2Player target, float& reset_charge);
 };
 
 /// Use hooktype enum on these.
@@ -875,11 +949,13 @@ methodmap VSH2GameMode {
 /**
  * VSH2 Misc. Useful stocks.
  */
-stock void CheckDownload(const char[] file)
+stock bool CheckDownload(const char[] file)
 {
 	if( FileExists(file, true) ) {
 		AddFileToDownloadsTable(file);
+		return true;
 	}
+	return false;
 }
 
 stock void PrepareSound(const char[] sound_path)
@@ -979,11 +1055,81 @@ stock int ShuffleIndex(const int size, const int curr_index)
 	return new_index;
 }
 
-stock int int_hash(int h)
+stock int IntHash(any key)
 {
-	h ^= (h >> 20) ^ (h >> 12);
-	h = h ^ (h >> 7) ^ (h >> 4);
+	int h = view_as< int >(key);
+	h = (h+0x7ed55d16) + (h<<12);
+	h = (h^0xc761c23c) ^ (h>>19);
+	h = (h+0x165667b1) + (h<<5);
+	h = (h+0xd3a2646c) ^ (h<<9);
+	h = (h+0xfd7046c5) + (h<<3);
+	h = (h^0xb55a4f09) ^ (h>>16);
 	return h < 0 ? -h : h;
+}
+
+/**
+ * `int` can go from 2147483647 to -2147483648
+ * which is 10 characters + 1 for unary minus.
+ */
+stock bool KeyToStr(any key, char buffer[12]) {
+	return IntToString(key, buffer, sizeof(buffer)) != 0;
+}
+
+/**
+ * Credit: Asher 'Asherkin' Baker
+ * Packs a key, as an integer, into a null-terminated string buffer.
+ */
+stock void PackItem(any key, char buffer[6]) {
+	buffer[0] = (key >> (7 * 4) & 0x7F) | 0x80;
+	buffer[1] = (key >> (7 * 3) & 0x7F) | 0x80;
+	buffer[2] = (key >> (7 * 2) & 0x7F) | 0x80;
+	buffer[3] = (key >> (7 * 1) & 0x7F) | 0x80;
+	buffer[4] = (key >> 7 & 0x7F) | 0x80;
+	buffer[5] = 0x00;
+}
+
+
+stock void MakePawnTimer(Function func, float thinktime=0.1, const any[] args=0, const int len, bool as_array=false)
+{
+	DataPack thinkpack = new DataPack();
+	thinkpack.WriteFunction(func);
+	thinkpack.WriteCell(len);
+	thinkpack.WriteCell(as_array);
+	for( int i; i<len; i++ )
+		thinkpack.WriteCell(args[i]);
+	CreateTimer(thinktime, RunPawnFunc, thinkpack, TIMER_DATA_HNDL_CLOSE);
+}
+
+public Action RunPawnFunc(Handle t, DataPack pack)
+{
+	pack.Reset();
+	Function fn = pack.ReadFunction();
+	Call_StartFunction(null, fn);
+	
+	int len = pack.ReadCell();
+	bool as_array = pack.ReadCell();
+	if( as_array ) {
+		any[] parms = new any[len];
+		for( int i; i<len; i++ )
+			parms[i] = pack.ReadCell();
+		Call_PushArray(parms, len);
+	} else {
+		for( int i; i<len; i++ )
+			Call_PushCell(pack.ReadCell());
+	}
+	Call_Finish();
+	return Plugin_Continue;
+}
+
+/// useful for cooldowns & stuff that happens in a certain period of time.
+stock bool IsPastSavedTime(float last_time) {
+	return( last_time > GetGameTime() );
+}
+stock bool IsWithinGoalTime(float goal_time) {
+	return( GetGameTime() <= goal_time );
+}
+stock void UpdateSavedTime(float& last_time, float delta=1.0) {
+	last_time = GetGameTime() + delta;
 }
 
 
@@ -1040,6 +1186,7 @@ public void __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2Player.FindBack");
 	MarkNativeAsOptional("VSH2Player.ShootRocket");
 	MarkNativeAsOptional("VSH2Player.Heal");
+	MarkNativeAsOptional("VSH2Player.AddTempAttrib");
 
 	MarkNativeAsOptional("VSH2Player.ConvertToBoss");
 	MarkNativeAsOptional("VSH2Player.GiveRage");

@@ -9,7 +9,7 @@ For the example codes, I will use the Christian Brutal Sniper's single theme son
 In order to install music to play for our boss' round, we first need to (literally) define the song(s) that we want to play. CBS's theme song of The Millionaire's Holiday by Combustible Edison is defined through a macro.
 ```c++
 // cbs.sp
-#define CBSTheme		"saxton_hale/the_millionaires_holiday.mp3"
+#define CBSTheme    "saxton_hale/the_millionaires_holiday.mp3"
 ```
 
 After we've defined all the music we need, we then set the file to be downloaded by prepping the sound which will precache and add the file to the downloads table.
@@ -23,12 +23,12 @@ public void AddCBSToDownloads()
 ```
 ## Activating the Music
 Alright, our files are in place and we've defined our song, how do we get it to play? In a file called `handler.sp`, there's a function called `ManageMusic` which plays periodically.
-`ManageMusic` gives us two useful variables: `char song[PLATFORM_MAX_PATH]` which let's us copy our song's file name so that the VSH plugin internals will play the song for us AND `float &time` which is a float reference that let's us set how long to play the song for!
+`ManageMusic` gives us two useful variables: `char song[PLATFORM_MAX_PATH]` which let's us copy our song's file name so that the VSH plugin internals will play the song for us AND `float& time` which is a float reference that let's us set how long to play the song for!
 
 For example's sake, we want CBS's theme song to play for 140 seconds, which is longer than the actual song but the extra seconds are to leave some moment of silence. Setting up CBS's music looks exactly like this.
 
 ```c++
-public void ManageMusic(char song[PLATFORM_MAX_PATH], float &time)
+public void ManageMusic(char song[PLATFORM_MAX_PATH], float& time)
 {
 	/// UNFORTUNATELY, we have to get a random boss so we can set our music, tragic I know...
 	/// Remember that you can get a random boss filtered by type as well!

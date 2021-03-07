@@ -13,7 +13,10 @@
 
 package main
 
-import "sourcemod"
+import (
+	"sourcemod"
+	"tf2_stocks"
+)
 
 const (
 	MAXMESSAGE =            512
@@ -72,6 +75,10 @@ const (
 	TimeLeftHUD = 1
 	HealthHUD   = 2
 	MaxVSH2HUDs = 3
+
+	BannerBuff     = 1
+	BannerDefBuff  = 2
+	BannerHealBuff = 3
 )
 
 
@@ -79,9 +86,11 @@ type (
 	VSH2Player struct {
 		userid, index, iHealth int
 		hOwnerBoss, hUberTarget *VSH2Player
+		bIsBoss, bIsMinion bool
 	}
 	PropName = [64]char
 	BossName = [MAX_BOSS_NAME_SIZE]char
+	BannerType int
 )
 
 func (VSH2Player) GetPropInt(name PropName) int
@@ -118,8 +127,10 @@ func (VSH2Player) GetPlayersInRange(players *[]VSH2Player, dist float, trace boo
 
 func (VSH2Player) RemoveBack(indices []int, size int)
 func (VSH2Player) FindBack(indices []int, size int) Entity
-func (VSH2Player) ShootRocket(crit bool, position, angles Vec3, flSpeed, dmg float, model string, arc bool) Entity
+func (VSH2Player) ShootRocket(crit bool, position, angles Vec3, speed, dmg float, model string, arc bool) Entity
 func (VSH2Player) Heal(health int, on_hud bool)
+func (VSH2Player) GetTFClass() TFClassType
+func (VSH2Player) AddTempAttrib(attrib int, val, dur float) bool
 
 func (VSH2Player) ConvertToBoss()
 func (VSH2Player) GiveRage(damage int)
@@ -231,6 +242,9 @@ const (
 	OnDrawGameTimer
 	OnPlayerClimb
 	OnBossConditionChange
+	OnBannerDeployed
+	OnBannerEffect
+	OnUberLoopEnd
 	MaxVSH2Forwards
 )
 
@@ -302,3 +316,7 @@ func PrepareModel(model_path string, model_only bool) int
 func IsStockSound(sample PathStr) bool
 func IsVoiceLine(sample PathStr) bool
 func ShuffleIndex(size, curr_index int) int
+func MakePawnTimer(fn Function, thinktime float, args []any, len int, as_array bool)
+func IsPastSavedTime(last_time float) bool
+func IsWithinGoalTime(goal_time float) bool
+func UpdateSavedTime(last_time *float, delta float)
