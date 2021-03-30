@@ -625,6 +625,9 @@ public void OnClientPutInServer(int client)
 }
 public void OnClientDisconnect(int client)
 {
+	if( client <= 0 || client > MaxClients || g_vsh2.m_hPlayerFields[client]==null )
+		return;
+	
 	g_vsh2.m_hPlayerFields[client].SetValue("iBossType", -1);
 	ManageDisconnect(client);
 }
