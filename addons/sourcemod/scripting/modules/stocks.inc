@@ -1199,7 +1199,7 @@ stock void HealPlayer(const int client, const int health, bool on_hud=false)
 				event.SetInt("amount", to_set);
 				event.SetInt("entindex", client);
 				event.FireToClient(client);
-				delete event;
+				event.Cancel();
 			}
 		}
 	}
