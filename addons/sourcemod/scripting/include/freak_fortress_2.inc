@@ -198,7 +198,7 @@ methodmap FF2Player < VSH2Player {
 	 * @param type		check FF2RageType_t enum value
 	 * @param value		value to set
 	 */
-	public native float SetRageVar(FF2RageType_t type, float value) {
+	public float SetRageVar(FF2RageType_t type, float val) {
 		switch( type ) {
 			case RT_RAGE: 		this.SetPropFloat("flRAGE", val);
 			case RT_CHARGE: 	this.SetPropFloat("flCharge", val);
