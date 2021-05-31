@@ -741,8 +741,6 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 		default: {
 			victim.iHits++;
 			victim.flLastHit = GetGameTime();
-			if( damagetype & DMG_CRIT )
-				damagetype &= ~DMG_CRIT;
 
 			int client = victim.index;
 			if( damagecustom == TF_CUSTOM_BOOTS_STOMP ) {
