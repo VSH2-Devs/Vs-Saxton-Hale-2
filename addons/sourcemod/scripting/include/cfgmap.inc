@@ -921,7 +921,7 @@ static stock bool CloneConfigMap(const ConfigMap cfg, ConfigMap new_cfg, Handle 
 				ConfigMap new_subsec = view_as< ConfigMap >(new StringMap());
 
 				DataPack val = new DataPack();
-				val.WriteCell(CloneHandle(new_subsec, new_owner_pl));
+				val.WriteCell(new_subsec);
 				section_pack.data = view_as< DataPack >(CloneHandle(val, new_owner_pl));
 				delete val;
 
@@ -933,10 +933,8 @@ static stock bool CloneConfigMap(const ConfigMap cfg, ConfigMap new_cfg, Handle 
 
 				if( !CloneConfigMap(subsec, new_subsec, new_owner_pl) ) {
 					delete snap;
-					delete new_subsec;
 					return false;
 				}
-				delete new_subsec;
 			}
 		}
 	}
