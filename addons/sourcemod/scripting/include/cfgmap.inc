@@ -914,9 +914,24 @@ static stock bool CloneConfigMap(const ConfigMap cfg, ConfigMap new_cfg, Handle 
 				new_cfg.SetArray(key_buffer, pack, sizeof(pack));
 			}
 			case KeyValType_Section: {
+				PackVal section_pack;
+				section_pack.size = pack.size;
+				section_pack.tag = pack.tag;
+
+				ConfigMap new_subsec = view_as< ConfigMap >(new StringMap());
+
+				DataPack val = new DataPack();
+				val.WriteCell(new_subsec);
+				section_pack.data = view_as< DataPack >(CloneHandle(val, new_owner_pl));
+				delete val;
+
+				new_cfg.SetArray(key_buffer, section_pack, sizeof(section_pack));
+
 				pack.data.Reset();
+
 				ConfigMap subsec = pack.data.ReadCell();
-				if( !CloneConfigMap(subsec, new_cfg, new_owner_pl) ) {
+
+				if( !CloneConfigMap(subsec, new_subsec, new_owner_pl) ) {
 					delete snap;
 					return false;
 				}
