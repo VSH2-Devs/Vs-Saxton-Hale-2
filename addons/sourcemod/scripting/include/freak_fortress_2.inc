@@ -1382,7 +1382,7 @@ static void GetThisPluginName()
 {
 	char pluginName[80];
 	GetPluginFilename(INVALID_HANDLE, pluginName, sizeof(pluginName));
-	ReplaceString(pluginName, sizeof(pluginName), ".ff2", "", false);
+	ReplaceString(pluginName, sizeof(pluginName), ".smx", "", false);
 	int forwardSlash = -1;
 	int backwardSlash = -1;
 	int finalPluginName = -1;

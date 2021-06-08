@@ -99,7 +99,7 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 			if( !cur_ab || !cur_ab.Get("plugin_name", buffer, FF2_MAX_PLUGIN_NAME) )
 				continue;
 
-			BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/freaks/%s.ff2", buffer);
+			BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/freaks/%s.smx", buffer);
 			if( !FileExists(path) ) {
 				LogError("[VSH2/FF2] Character \"%s.cfg\" is missing \"%s\" subplugin!", identity.szName, path);
 			} else {

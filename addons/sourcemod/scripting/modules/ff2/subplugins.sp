@@ -62,7 +62,7 @@ methodmap FF2PluginList < ArrayList {
 		if( this.IsFull )
 			return false;
 
-		ServerCommand("sm plugins load \"freaks\\%s.ff2\"", name);
+		ServerCommand("sm plugins load \"freaks\\%s.smx\"", name);
 
 		infos.loading = true;
 		strcopy(infos.name, sizeof(FF2SubPlugin::name), name);
@@ -100,7 +100,7 @@ methodmap FF2PluginList < ArrayList {
 		FF2SubPlugin info;
 		for( int i; i < this.Length; i++ ) {
 			this.GetInfo(i, info);
-			ServerCommand("sm plugins unload \"freaks\\%s.ff2\"", info.name);
+			ServerCommand("sm plugins unload \"freaks\\%s.smx\"", info.name);
 		}
 		this.Clear();
 	}
@@ -110,7 +110,7 @@ methodmap FF2PluginList < ArrayList {
 static Handle _FindPlugin(const char[] name)
 {
 	char pl_name[PLATFORM_MAX_PATH];
-	FormatEx(pl_name, sizeof(pl_name), "freaks\\%s.ff2", name);
+	FormatEx(pl_name, sizeof(pl_name), "freaks\\%s.smx", name);
 	Handle pl = FindPluginByFile(pl_name);
 	if( !pl || GetPluginStatus(pl)!=Plugin_Running ) {
 		LogError("[VSH2/FF2] Failed to load plugin: %s", pl_name);

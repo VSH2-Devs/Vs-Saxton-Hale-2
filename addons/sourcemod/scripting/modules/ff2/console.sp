@@ -145,8 +145,8 @@ static Action Load_Plugin(int client, int argc)
 	char pl_name[FF2_MAX_PLUGIN_NAME];
 	char path[PLATFORM_MAX_PATH];
 	GetCmdArgString(pl_name, sizeof(pl_name));
-	
-	BuildPath(Path_SM, path, sizeof(path), "plugins\\freaks\\%s.ff2", pl_name);
+
+	BuildPath(Path_SM, path, sizeof(path), "plugins\\freaks\\%s.smx", pl_name);
 	if( !FileExists(path) ) {
 		ReplyToCommand(client, "[VSH2/FF2] Plugin: \"%s\" doesn't exists", pl_name);
 		return Plugin_Handled;
