@@ -1388,15 +1388,13 @@ static void GetThisPluginName()
 	char pluginName[80];
 	GetPluginFilename(INVALID_HANDLE, pluginName, sizeof(pluginName));
 	
-	/// make sure the file ends with ".ff2"
+	/// make sure the file ends with ".smx"
 	int extension_index = FindCharInString(plugin_buffer, '.', true);
-	if( extension_index == -1 || extension_index + 3 >= sizeof(pluginName) || plugin_buffer[extension_index+1] != 'f'|| plugin_buffer[extension_index+2] != 'f' || plugin_buffer[extension_index+3] != '2' ) {
+	if( extension_index == -1 || extension_index + 3 >= sizeof(pluginName) || plugin_buffer[extension_index+1] != 's'|| plugin_buffer[extension_index+2] != 'm' || plugin_buffer[extension_index+3] != 'x' ) {
 		return;
 	}
 
-	pluginName[extension_index+1] = 's';
-	pluginName[extension_index+2] = 'm';
-	pluginName[extension_index+3] = 'x';
+	pluginName[extension_index] = 0;
 	
 	int forwardSlash = -1;
 	int backwardSlash = -1;
