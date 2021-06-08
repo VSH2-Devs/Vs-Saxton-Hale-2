@@ -93,6 +93,7 @@ public void OnLibraryAdded(const char[] name)
 		InitConVars();
 		ff2.m_vsh2 = true;
 		FF2GameMode.LoadFF2();
+		FF2GameMode.PrepareSubplugins();
 		FF2GameMode.LateLoadSubplugins();
 	}
 }

@@ -26,6 +26,49 @@ methodmap FF2GameMode < VSH2GameMode {
 		ff2.m_plugins = new FF2PluginList();
 	}
 	
+
+	/// renames all subplugins ending in "ff2" with "smx" to comply with new plugin loading rule.
+	public static void PrepareSubplugins() {
+		char plugin_directory_path[PLATFORM_MAX_PATH];
+		BuildPath(Path_SM, plugin_directory_path, PLATFORM_MAX_PATH, "plugins/freaks");
+
+		Handle plugin_directory = OpenDirectory(plugin_directory_path);
+
+		/// return early if there is no directory to read from.
+		if( plugin_directory == INVALID_HANDLE ) {
+			return;
+		}
+
+		FileType file_type;
+		char plugin_buffer[PLATFORM_MAX_PATH];
+		char renamed_plugin_buffer[PLATFORM_MAX_PATH];
+		while(ReadDirEntry(plugin_directory, plugin_buffer, PLATFORM_MAX_PATH, file_type))
+		{
+			if( file_type != FileType_File ) {
+				continue;
+			}
+
+			/// make sure the file ends with ".ff2"
+			int extension_index = FindCharInString(plugin_buffer, '.', true);
+			if( extension_index == -1 || extension_index + 3 > PLATFORM_MAX_PATH || plugin_buffer[extension_index+1] != 'f'|| plugin_buffer[extension_index+2] != 'f' || plugin_buffer[extension_index+3] != '2' ) {
+				continue;
+			}
+
+			strcopy(renamed_plugin_buffer, PLATFORM_MAX_PATH, plugin_buffer);
+			plugin_buffer[extension_index+1] = 's';
+			plugin_buffer[extension_index+2] = 'm';
+			plugin_buffer[extension_index+3] = 'x';
+
+			/// put the paths in the buffers
+			Format(plugin_buffer, PLATFORM_MAX_PATH, "%s/%s", plugin_directory_path, plugin_buffer);
+			Format(renamed_plugin_buffer, PLATFORM_MAX_PATH, "%s/%s", plugin_directory_path, renamed_plugin_buffer);
+
+			/// remove existing file with colliding name and rename the subplugin file
+			DeleteFile(renamed_plugin_buffer);
+			RenameFile(renamed_plugin_buffer, plugin_buffer);
+		}
+	}
+
 	public static void LateLoadSubplugins() {
 		if( FF2GameMode.GetPropAny("iRoundState") == StateRunning ) {
 			FF2Player[] bosses = new FF2Player[MaxClients];
