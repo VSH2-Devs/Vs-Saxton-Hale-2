@@ -1,3 +1,4 @@
+#include "modules/ff2/subplugins.sp"
 
 methodmap FF2GameMode < VSH2GameMode {
 	public static void HookToVSH2() {
@@ -24,6 +25,8 @@ methodmap FF2GameMode < VSH2GameMode {
 		}
 		
 		ff2.m_plugins = new FF2PluginList();
+		FF2PluginList.ForceUnloadAllSubPlugins();
+		FF2PluginList.FixSubPlugins();
 	}
 	
 	public static void LateLoadSubplugins() {
@@ -42,17 +45,18 @@ methodmap FF2GameMode < VSH2GameMode {
 		}
 	}
 	
-	public static void RemoveSubplugins(bool do_delete=false) {
-		if( ff2.m_plugins != null ) {
+	public static void RemoveSubPlugins(bool do_delete=false) {
+		if( !do_delete && ff2.m_plugins ) {
 			ff2.m_plugins.UnloadAllSubPlugins();
 		}
-		if( do_delete ) {
+		else if( ff2.m_plugins ) {
+			FF2PluginList.ForceUnloadAllSubPlugins();
 			delete ff2.m_plugins;
 		}
 	}
 	
 	public static void RemoveCfgMgr() {
-		if( ff2_cfgmgr != null ) {
+		if( ff2_cfgmgr ) {
 			ff2_cfgmgr.DeleteAll();
 		}
 		delete ff2_cfgmgr;

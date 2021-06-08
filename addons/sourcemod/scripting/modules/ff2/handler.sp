@@ -27,7 +27,7 @@ void ProcessOnCallDownload()
 					for( int k = list.Length - 1; k >= 0; k-- ) {
 						list.At(k, snd_id);
 						if( snd_id.path[0] ) {
-							PrecacheSound(snd_id.path);
+							PrecacheSound(snd_id.path, true);
 						}
 					}
 				}
@@ -35,10 +35,13 @@ void ProcessOnCallDownload()
 			}
 			
 			/// Precache Models
-			if( (model_precache = identity.hCfg.GetSection("mod_precache")) ) {
+			model_precache = identity.hCfg.GetSection("character.mod_precache");
+			if( !model_precache )
+				model_precache = identity.hCfg.GetSection("character.mod_download");
+			if( model_precache ) {
 				for( int pos=model_precache.Size-1; pos >= 0; pos-- ) {
 					if( model_precache.GetIntKey(pos, model_path, sizeof(model_path)) && model_path[0] )
-						PrecacheModel(model_path);
+						PrecacheModel(model_path, true);
 				}
 			}
 		}

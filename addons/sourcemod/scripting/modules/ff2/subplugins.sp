@@ -62,7 +62,7 @@ methodmap FF2PluginList < ArrayList {
 		if( this.IsFull )
 			return false;
 
-		ServerCommand("sm plugins load \"freaks\\%s.ff2\"", name);
+		ServerCommand("sm plugins load \"freaks\\%s.smx\"", name);
 
 		infos.loading = true;
 		strcopy(infos.name, sizeof(FF2SubPlugin::name), name);
@@ -100,9 +100,45 @@ methodmap FF2PluginList < ArrayList {
 		FF2SubPlugin info;
 		for( int i; i < this.Length; i++ ) {
 			this.GetInfo(i, info);
-			ServerCommand("sm plugins unload \"freaks\\%s.ff2\"", info.name);
+			InsertServerCommand("sm plugins unload \"freaks\\%s.smx\"", info.name);
 		}
 		this.Clear();
+		ServerExecute();
+	}
+	
+	/// change subplugins extension from '.ff2' to '.smx'
+	/// source: https://github.com/50DKP/FF2-Official/blob/stable/addons/sourcemod/scripting/freak_fortress_2.sp#L10924
+	public static void FixSubPlugins() {		
+		char path[PLATFORM_MAX_PATH], filename[PLATFORM_MAX_PATH], filename_old[PLATFORM_MAX_PATH];
+		BuildPath(Path_SM, path, sizeof(path), "plugins/freaks");
+		FileType filetype;
+		Handle hDir = OpenDirectory(path);
+		while( ReadDirEntry(hDir, filename, sizeof(filename), filetype) ) {
+			if( filetype==FileType_File && StrContains(filename, ".ff2", false)!=-1 ) {
+				FormatEx(filename_old, sizeof(filename_old), "%s/%s", path, filename);
+				ReplaceString(filename, sizeof(filename), ".ff2", ".smx", false);
+				Format(filename, sizeof(filename), "%s/%s", path, filename);
+	
+				DeleteFile(filename); // Just in case filename.smx also exists: delete it and replace it with the new .smx version
+				RenameFile(filename, filename_old);
+			}
+		}
+		delete hDir;
+	}
+	
+	/// unloads all plugins with extension '.smx' in 'freaks' folder
+	public static void ForceUnloadAllSubPlugins() {
+		char path[PLATFORM_MAX_PATH], filename[PLATFORM_MAX_PATH];
+		BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/freaks");
+		FileType filetype;
+		Handle hDir = OpenDirectory(path);
+		while( ReadDirEntry(hDir, filename, sizeof(filename), filetype) ) {
+			if( filetype==FileType_File && StrContains(filename, ".smx", false)!=-1 ) {
+				InsertServerCommand("sm plugins unload freaks/%s", filename);
+			}
+		}
+		delete hDir;
+		ServerExecute();
 	}
 }
 
@@ -110,7 +146,7 @@ methodmap FF2PluginList < ArrayList {
 static Handle _FindPlugin(const char[] name)
 {
 	char pl_name[PLATFORM_MAX_PATH];
-	FormatEx(pl_name, sizeof(pl_name), "freaks\\%s.ff2", name);
+	FormatEx(pl_name, sizeof(pl_name), "freaks\\%s.smx", name);
 	Handle pl = FindPluginByFile(pl_name);
 	if( !pl || GetPluginStatus(pl)!=Plugin_Running ) {
 		LogError("[VSH2/FF2] Failed to load plugin: %s", pl_name);

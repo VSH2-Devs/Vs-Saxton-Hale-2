@@ -64,7 +64,7 @@ enum struct _ConVars {
 		this.ff2_solo_shame 		= FindConVar("ff2_solo_shame");
 	}
 }
-_ConVars m_ConVars;
+_ConVars ConVars;
 
 
 #define EXPLOSIVE_DANCE_ABILITY	"rage_explosive_dance"	
@@ -200,7 +200,7 @@ public void OnMapStart()
 
 void OnPluginStart2()
 {
-	m_ConVars.Init();
+	ConVars.Init();
 	
 	AbilityPool = new AbilityPool_t();
 	
@@ -529,10 +529,10 @@ Action Timer_Rage_Stun(Handle timer, FF2Player cur_boss)
 	int ignore = cur_boss.GetArgI(this_plugin_name, STUN_ABILITY, "uber", 1);
 
  /// Friendly Fire
-	bool friendly = cur_boss.GetArgB(this_plugin_name, STUN_ABILITY, "friendly", m_ConVars.mp_friendlyfire.BoolValue);
+	bool friendly = cur_boss.GetArgB(this_plugin_name, STUN_ABILITY, "friendly", ConVars.mp_friendlyfire.BoolValue);
 
  /// Remove Parachute
-	bool removeBaseJumperOnStun = cur_boss.GetArgB(this_plugin_name, STUN_ABILITY, "basejumper", m_ConVars.ff2_base_jumper_stun.BoolValue);
+	bool removeBaseJumperOnStun = cur_boss.GetArgB(this_plugin_name, STUN_ABILITY, "basejumper", ConVars.ff2_base_jumper_stun.BoolValue);
 
  /// Max Duration
 	float maxduration = cur_boss.GetArgF(this_plugin_name, STUN_ABILITY, "max", 6.0);
@@ -566,7 +566,7 @@ Action Timer_Rage_Stun(Handle timer, FF2Player cur_boss)
 	if( !count )
 		return Plugin_Continue;
 
-	if( count == 1 && (duration != soloduration || m_ConVars.ff2_solo_shame.BoolValue) ) {
+	if( count == 1 && (duration != soloduration || ConVars.ff2_solo_shame.BoolValue) ) {
 		char bossName[MAX_BOSS_NAME_SIZE];
 		if( cur_boss.GetName(bossName) )
 			FPrintToChatAll("{blue}%s{default} used {red}solo rage{default}!", bossName);
@@ -655,7 +655,7 @@ void Rage_Stun_Building(const FF2Player player)
 	 *	4 = teleporter
  	 */
 
-	bool friendly = player.GetArgB(this_plugin_name, STUN_BUILDING_ABILITY, "friendly", m_ConVars.mp_friendlyfire.BoolValue);
+	bool friendly = player.GetArgB(this_plugin_name, STUN_BUILDING_ABILITY, "friendly", ConVars.mp_friendlyfire.BoolValue);
 
 	char full_clsname[64];
 
@@ -922,7 +922,7 @@ void Rage_CBS_Bow(const FF2Player player)
 
 	player.GetArgS(this_plugin_name, CBS_BOW_ABILITY, "attributes",  attributes, sizeof(attributes));
 	if( !attributes[0] ) {
-		attributes = m_ConVars.ff2_strangewep.BoolValue ?
+		attributes = ConVars.ff2_strangewep.BoolValue ?
 					 "6 ; 0.5 ; 37 ; 0.0 ; 214 ; 333 ; 280 ; 19":
 					 "6 ; 0.5 ; 37 ; 0.0 ; 280 ; 19";
 	}
@@ -1056,7 +1056,7 @@ void Rage_Matrix(const FF2Player player)
 	float duration = player.GetArgF(this_plugin_name, MATRIX_ABILITY, "duration", 1.0) + 1.0;
 
 	player.SetPropInt("bNotifySMAC_CVars", 1);
-	m_ConVars.host_timescale.FloatValue = 0.5;
+	ConVars.host_timescale.FloatValue = 0.5;
 
 	ma_data.timer = CreateTimer(duration * timescale, Timer_StopSlowMo, player, TIMER_FLAG_NO_MAPCHANGE);
 	UpdateCheatValue("1");
@@ -1076,8 +1076,8 @@ Action Timer_StopSlowMo(Handle timer, FF2Player player)
 
 	ma_data.InValidate();
 
-	float timescale = m_ConVars.host_timescale.FloatValue;
-	m_ConVars.host_timescale.FloatValue = 1.0;
+	float timescale = ConVars.host_timescale.FloatValue;
+	ConVars.host_timescale.FloatValue = 1.0;
 
 	UpdateCheatValue("0");
 
@@ -1293,14 +1293,14 @@ Action Timer_EquipModel(Handle timer, DataPack pack)
 void UpdateCheatValue(const char[] value)
 {
 	for( int client = MaxClients; client > 0; client-- ) {
-		if(IsClientInGame(client) && !IsFakeClient(client))
-			m_ConVars.sv_cheats.ReplicateToClient(client, value);
+		if( IsClientInGame(client) && !IsFakeClient(client) )
+			ConVars.sv_cheats.ReplicateToClient(client, value);
 	}
 }
 
 int SpawnManyObjects(const char[] classname, const int client, const char[] model, const int skin=0, const int amount=14, const float distance=30.0)
 {
-	if(!client || !IsClientInGame(client))
+	if( !client || !IsClientInGame(client) )
 		return;
 
 	static int m_iPackType = 0;
@@ -1441,7 +1441,7 @@ void HandleAttackerKill(FF2Player victim, FF2Player player)
 
 void HandleVictimKill(FF2Player player, int flags)
 {
-	if(	player.HasAbility(this_plugin_name, CLONE_ATK_ABILITY) && player.GetArgI(this_plugin_name, CLONE_ATK_ABILITY, "slay on death", 1) && !(flags & TF_DEATHFLAG_DEADRINGER)) {
+	if(	player.HasAbility(this_plugin_name, CLONE_ATK_ABILITY) && player.GetArgI(this_plugin_name, CLONE_ATK_ABILITY, "slay on death", 1) && !(flags & TF_DEATHFLAG_DEADRINGER) ) {
 		FF2Player iter;
 		int client = player.index;
 		for( int i = 1; i <= MaxClients; i++ ) {

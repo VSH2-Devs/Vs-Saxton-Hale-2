@@ -35,6 +35,10 @@ enum FF2RageType_t {
 #define FF2CallType_t   int
 #define FF2RageType_t	int
 
+#define RT_RAGE 0
+#define RT_WEIGHDOWN 1
+#define RT_CHARGE 2
+
 enum {
 	FF2FLAG_UBERREADY            = (1<<1),  /// Used when medic says "I'm charged!"				
 	FF2FLAG_ISBUFFED             = (1<<2),  /// Used when soldier uses the Battalion's Backup	
@@ -402,7 +406,8 @@ stock bool FF2_IsFF2Enabled()
  */
 stock void FF2_GetFF2Version(int version[3])
 {
-	FF2GameMode.PluginVersion(version);
+	if( FF2GameMode.IsOn() )
+		FF2GameMode.PluginVersion(version);
 }
 
 /**
@@ -416,7 +421,7 @@ stock void FF2_GetFF2Version(int version[3])
  */
 stock bool FF2_GetForkVersion(int fversion[3])
 {
-	FF2GameMode.ForkVersion(version);
+	return FF2GameMode.IsOn() && FF2GameMode.ForkVersion(version);
 }
 
 /**
@@ -428,7 +433,7 @@ stock bool FF2_GetForkVersion(int fversion[3])
  */
 stock int FF2_GetRoundState()
 {
-	return VSH2GameMode.GetPropInt("iRoundState");
+	return FF2GameMode.IsOn() && VSH2GameMode.GetPropInt("iRoundState");
 }
 
 /**
@@ -1382,7 +1387,7 @@ static void GetThisPluginName()
 {
 	char pluginName[80];
 	GetPluginFilename(INVALID_HANDLE, pluginName, sizeof(pluginName));
-	ReplaceString(pluginName, sizeof(pluginName), ".ff2", "", false);
+	ReplaceString(pluginName, sizeof(pluginName), ".smx", "", false);
 	int forwardSlash = -1;
 	int backwardSlash = -1;
 	int finalPluginName = -1;
