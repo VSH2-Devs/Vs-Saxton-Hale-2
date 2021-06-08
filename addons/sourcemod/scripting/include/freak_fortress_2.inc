@@ -1387,31 +1387,41 @@ static void GetThisPluginName()
 {
 	char pluginName[80];
 	GetPluginFilename(INVALID_HANDLE, pluginName, sizeof(pluginName));
-	ReplaceString(pluginName, sizeof(pluginName), ".smx", "", false);
+	
+	/// make sure the file ends with ".ff2"
+	int extension_index = FindCharInString(plugin_buffer, '.', true);
+	if( extension_index == -1 || extension_index + 3 >= sizeof(pluginName) || plugin_buffer[extension_index+1] != 'f'|| plugin_buffer[extension_index+2] != 'f' || plugin_buffer[extension_index+3] != '2' ) {
+		return;
+	}
+
+	pluginName[extension_index+1] = 's';
+	pluginName[extension_index+2] = 'm';
+	pluginName[extension_index+3] = 'x';
+	
 	int forwardSlash = -1;
 	int backwardSlash = -1;
 	int finalPluginName = -1;
-	for(;;)
-	{
+	
+	for ( ;; ) {
 		forwardSlash = StrContains(pluginName[finalPluginName+1], "/");
 		backwardSlash = StrContains(pluginName[finalPluginName+1], "\\");
-		if((backwardSlash<forwardSlash && backwardSlash!=-1) || forwardSlash==-1)
-		{
-			if(backwardSlash == -1)
+		if( (backwardSlash<forwardSlash && backwardSlash!=-1) || forwardSlash==-1 ) {
+			if( backwardSlash == -1 )
 				break;
 
 			finalPluginName = backwardSlash;
 		}
-		else if((forwardSlash<backwardSlash && forwardSlash!=-1) || backwardSlash==-1)
-		{
+		else if( (forwardSlash<backwardSlash && forwardSlash!=-1) || backwardSlash==-1 ) {
 			if(forwardSlash == -1)
 				break;
 
 			finalPluginName = forwardSlash;
 		}
 	}
+	
 	strcopy(this_plugin_name, sizeof(this_plugin_name), pluginName[finalPluginName+1]);
 }
+
 
 public void OnPluginStart()
 {
