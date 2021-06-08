@@ -128,7 +128,7 @@ methodmap FF2PluginList < ArrayList {
 
 			/// make sure the file ends with ".ff2"
 			int extension_index = FindCharInString(plugin_buffer, '.', true);
-			if( extension_index == -1 || extension_index + 3 > PLATFORM_MAX_PATH || plugin_buffer[extension_index+1] != 'f'|| plugin_buffer[extension_index+2] != 'f' || plugin_buffer[extension_index+3] != '2' ) {
+			if( extension_index == -1 || extension_index > FF2_MAX_PLUGIN_NAME - 1 || plugin_buffer[extension_index+1] != 'f'|| plugin_buffer[extension_index+2] != 'f' || plugin_buffer[extension_index+3] != '2' || plugin_buffer[extension_index+4] != 0 ) {
 				continue;
 			}
 
