@@ -84,9 +84,9 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 
 	/// ability* || Ability*
 	/**
-	 *	"Ability: Rage Test" {	//	Can be ability5965841, ability*, as long as the key was unique && less than 64 characters
+	 *	"Ability: Rage Test" {	///	Can be ability5965841, ability*, as long as the key was unique && less than 64 characters
 	 *		"name"			"thing"
-	 *		"plugin_name"	"pl_name"
+	 *		"plugin_name"	"pl_name"	///	"pl_name.smx"
 	 *	}
 	 */
 	{
@@ -99,7 +99,7 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 			if( !cur_ab || !cur_ab.Get("plugin_name", buffer, FF2_MAX_PLUGIN_NAME) )
 				continue;
 
-			BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/freaks/%s.ff2", buffer);
+			BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins\\freaks\\%s.smx", buffer);
 			if( !FileExists(path) ) {
 				LogError("[VSH2/FF2] Character \"%s.cfg\" is missing \"%s\" subplugin!", identity.szName, path);
 			} else {
@@ -136,7 +136,7 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 
 	/// mat/mod download
 	/**
-	 *	"mat_download" {
+	 *	"mat_download" {	///	"mod_download"
 	 *		"<enum>"		"..."
 	 *		"<enum>"		"...."
 	 *		"<enum>"		".."
