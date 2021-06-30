@@ -829,6 +829,7 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 				&& !TF2_IsPlayerInCondition(client, TFCond_Ubercharged)
 				&& (weapon == GetPlayerWeaponSlot(attacker, 2)
 				|| damage >= GetClientHealth(client)+0.0) )	/// FIXME; crit damage is calculated after this and can kill regardless of shield!
+				CPrintToChatAll("[VSH] ", "Demo player", client,  "took", damage, "with damage type", damagetype);
 			{
 				if( Call_OnBossDealDamage_OnHitShield(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
 					/// Patch: Nov 14, 2017 - removing post-bonk slowdown.
