@@ -62,7 +62,7 @@ methodmap FF2PluginList < ArrayList {
 		if( this.IsFull )
 			return false;
 
-		ServerCommand("sm plugins load \"freaks\\%s.ff2\"", name);
+		ServerCommand("sm plugins load \"freaks\\%s.smx\"", name);
 
 		infos.loading = true;
 		strcopy(infos.name, sizeof(FF2SubPlugin::name), name);
@@ -100,9 +100,70 @@ methodmap FF2PluginList < ArrayList {
 		FF2SubPlugin info;
 		for( int i; i < this.Length; i++ ) {
 			this.GetInfo(i, info);
-			ServerCommand("sm plugins unload \"freaks\\%s.ff2\"", info.name);
+			InsertServerCommand("sm plugins unload \"freaks\\%s.smx\"", info.name);
 		}
 		this.Clear();
+		ServerExecute();
+	}
+	
+	/// renames all subplugins ending in "ff2" with "smx" to comply with new plugin loading rule.
+	public static void FixSubPlugins() {		
+		char plugin_directory_path[PLATFORM_MAX_PATH];
+		BuildPath(Path_SM, plugin_directory_path, PLATFORM_MAX_PATH, "plugins/freaks");
+
+		DirectoryListing plugin_directory = OpenDirectory(plugin_directory_path);
+
+		/// return early if there is no directory to read from.
+		if( plugin_directory==INVALID_HANDLE ) {
+			return;
+		}
+
+		FileType file_type;
+		char plugin_buffer[PLATFORM_MAX_PATH];
+		char renamed_plugin_buffer[PLATFORM_MAX_PATH];
+		while( plugin_directory.GetNext(plugin_buffer, PLATFORM_MAX_PATH, file_type) ) {
+			if( file_type != FileType_File ) {
+				continue;
+			}
+
+			/// make sure the file ends with ".ff2"
+			int extension_index = FindCharInString(plugin_buffer, '.', true);
+			if( extension_index == -1 || extension_index > FF2_MAX_PLUGIN_NAME - 1 || plugin_buffer[extension_index+1] != 'f'|| plugin_buffer[extension_index+2] != 'f' || plugin_buffer[extension_index+3] != '2' || plugin_buffer[extension_index+4] != 0 ) {
+				continue;
+			}
+
+			strcopy(renamed_plugin_buffer, PLATFORM_MAX_PATH, plugin_buffer);
+			plugin_buffer[extension_index+1] = 's';
+			plugin_buffer[extension_index+2] = 'm';
+			plugin_buffer[extension_index+3] = 'x';
+
+			/// put the paths in the buffers
+			Format(plugin_buffer, PLATFORM_MAX_PATH, "%s/%s", plugin_directory_path, plugin_buffer);
+			Format(renamed_plugin_buffer, PLATFORM_MAX_PATH, "%s/%s", plugin_directory_path, renamed_plugin_buffer);
+
+			/// remove existing file with colliding name and rename the subplugin file
+			DeleteFile(renamed_plugin_buffer);
+			RenameFile(renamed_plugin_buffer, plugin_buffer);
+		}
+		
+		delete plugin_directory;
+	}
+	
+	/// unloads all plugins with extension '.smx' in 'freaks' folder
+	public static void ForceUnloadAllSubPlugins() {
+		char path[PLATFORM_MAX_PATH], filename[PLATFORM_MAX_PATH];
+		BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/freaks");
+		
+		FileType filetype;
+		DirectoryListing pl_directory = OpenDirectory(path);
+		while( pl_directory.GetNext(filename, sizeof(filename), filetype) ) {
+			if( filetype==FileType_File && StrContains(filename, ".smx", false)!=-1 ) {
+				InsertServerCommand("sm plugins unload freaks/%s", filename);
+			}
+		}
+		
+		delete pl_directory;
+		ServerExecute();
 	}
 }
 
@@ -110,7 +171,7 @@ methodmap FF2PluginList < ArrayList {
 static Handle _FindPlugin(const char[] name)
 {
 	char pl_name[PLATFORM_MAX_PATH];
-	FormatEx(pl_name, sizeof(pl_name), "freaks\\%s.ff2", name);
+	FormatEx(pl_name, sizeof(pl_name), "freaks\\%s.smx", name);
 	Handle pl = FindPluginByFile(pl_name);
 	if( !pl || GetPluginStatus(pl)!=Plugin_Running ) {
 		LogError("[VSH2/FF2] Failed to load plugin: %s", pl_name);

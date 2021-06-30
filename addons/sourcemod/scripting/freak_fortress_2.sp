@@ -7,7 +7,7 @@
 #include <sdkhooks>
 
 #define PLYR           35
-#define PLUGIN_VERSION "1.0.5b"
+#define PLUGIN_VERSION "1.0.65b"
 
 #include <cfgmap>
 #include "modules/stocks.inc"
@@ -36,7 +36,6 @@ enum {
 };
 
 enum struct FF2ConVars {
-	ConVar m_enabled;
 	ConVar m_version;
 	ConVar m_fljarate;
 	ConVar m_flairblast;
@@ -70,20 +69,23 @@ FF2CompatPlugin ff2;
 VSH2GameMode    vsh2_gm;
 
 #include "modules/ff2/utils.sp"
+#include "modules/ff2/gamemode.sp"
 #include "modules/ff2/forwards.sp"
-#include "modules/ff2/handles.sp"
-#include "modules/ff2/formula_parser.sp"
+
+#include "modules/ff2/handler.sp"
 #include "modules/ff2/vsh2_bridge.sp"
+
 #include "modules/ff2/natives.sp"
 #include "modules/ff2/console.sp"
-#include "modules/ff2/gamemode.sp"
+#include "modules/ff2/formula_parser.sp"
 
 
 public void OnPluginEnd()
 {
 	if( ff2.m_vsh2 ) {
-		FF2GameMode.RemoveSubplugins();
+		FF2PluginList.ForceUnloadAllSubPlugins();
 		FF2GameMode.UnhookFromVSH2();
+		ff2.m_vsh2 = false;
 	}
 }
 
@@ -100,7 +102,7 @@ public void OnLibraryAdded(const char[] name)
 public void OnMapEnd()
 {
 	if( ff2.m_vsh2 ) {
-		FF2GameMode.RemoveSubplugins();
+		FF2GameMode.RemoveSubPlugins();
 		FF2GameMode.RemoveCfgMgr();
 
 		char pack[48];
@@ -114,7 +116,7 @@ public void OnLibraryRemoved(const char[] name)
 	if( StrEqual(name, "VSH2") && ff2.m_vsh2 ) {
 		ff2.m_vsh2 = false;
 		
-		FF2GameMode.RemoveSubplugins(true);
+		FF2GameMode.RemoveSubPlugins(true);
 		
 		FF2GameMode.UnhookFromVSH2();    /// ff2_cfgmgr will be deleted here
 		DeleteCfg(ff2.m_charcfg);

@@ -300,22 +300,21 @@ any Native_FF2Player_PlayBGM(Handle plugin, int numParams)
 /** FF2GameMode methodmaps */
 int Native_FF2GameMode_IsOn(Handle plugin, int numParams)
 {
-	return( ff2.m_cvars.m_enabled.BoolValue );
+	return( ff2.m_vsh2 );
 }
 
 int Native_FF2GameMode_PluginVersion(Handle plugin, int numParams)
 {
 	char version_str[10];
 	ff2.m_cvars.m_version.GetString(version_str, sizeof(version_str));
-
+	
 	char digit[3][10];
 	int version_ints[3];
 	if( ExplodeString(version_str, ".", digit, sizeof(digit[]), sizeof(digit[][])) == 3 ) {
 		for( int i; i<3; i++ )
 			version_ints[i] = StringToInt(digit[i]);
 	}
-	SetNativeArray(1, version_ints, sizeof(version_ints));
-	return 1;
+	return SetNativeArray(1, version_ints, sizeof(version_ints)) == SP_ERROR_NONE;
 }
 
 int Native_FF2GameMode_ForkVersion(Handle plugin, int numParams)

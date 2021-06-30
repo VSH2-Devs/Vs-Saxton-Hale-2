@@ -6,16 +6,20 @@ void InitConVars()
 	CreateConVar("ff2_base_jumper_stun", "0", "Whether or not the Base Jumper should be disabled when a player gets stunned", _, true, 0.0, true, 1.0);
 	CreateConVar("ff2_solo_shame", "0", "Always insult the boss for solo raging", _, true, 0.0, true, 1.0);
 	
-	ff2.m_cvars.m_enabled 		= FindConVar("vsh2_enabled");
 	ff2.m_cvars.m_version 		= FindConVar("vsh2_version");
 	ff2.m_cvars.m_fljarate 		= FindConVar("vsh2_jarate_rage");
 	ff2.m_cvars.m_flairblast 	= FindConVar("vsh2_airblast_rage");
 	ff2.m_cvars.m_flmusicvol 	= FindConVar("vsh2_music_volume");
 	ff2.m_cvars.m_nextmap 		= FindConVar("sm_nextmap");
-	ff2.m_cvars.m_companion_min	= CreateConVar("ff2_companion_min", "4", "Minimum players required to enable duos", FCVAR_NOTIFY, .hasMin = true, .min = 1.0, .hasMax = true, .max = 34.0);
-	ff2.m_cvars.m_pack_name 	= CreateConVar("ff2_current", "Freak Fortress 2", "Freak Fortress 2 current boss pack name", FCVAR_NOTIFY);
-	ff2.m_cvars.m_pack_limit	= CreateConVar("ff2_pack_limit", "16", "Minimum players required to enable duos", FCVAR_NOTIFY, .hasMin = true, .min = 2.0);
-	ff2.m_cvars.m_pack_scramble	= CreateConVar("ff2_pack_scramble", "1", "Minimum players required to enable duos", FCVAR_NOTIFY);
+	
+	if( !ff2.m_cvars.m_companion_min )
+		ff2.m_cvars.m_companion_min	= CreateConVar("ff2_companion_min", "4", "Minimum players required to enable duos", FCVAR_NOTIFY, .hasMin = true, .min = 1.0, .hasMax = true, .max = 34.0);
+	if( !ff2.m_cvars.m_pack_name )
+		ff2.m_cvars.m_pack_name 	= CreateConVar("ff2_current", "Freak Fortress 2", "Freak Fortress 2 current boss pack name", FCVAR_NOTIFY);
+	if( !ff2.m_cvars.m_pack_limit )
+		ff2.m_cvars.m_pack_limit	= CreateConVar("ff2_pack_limit", "16", "Minimum players required to enable duos", FCVAR_NOTIFY, .hasMin = true, .min = 2.0);
+	if( !ff2.m_cvars.m_pack_scramble )
+		ff2.m_cvars.m_pack_scramble	= CreateConVar("ff2_pack_scramble", "1", "Minimum players required to enable duos", FCVAR_NOTIFY);
 	
 	ff2.m_cvars.m_nextmap.AddChangeHook(_OnNextMap);
 	
