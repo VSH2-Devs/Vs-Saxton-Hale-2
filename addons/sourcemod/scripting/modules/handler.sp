@@ -599,6 +599,13 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 						return Plugin_Changed;
 					victim.flRAGE -= g_vsh2.m_hCvars.FanoWarRage.FloatValue;
 				}
+				/**
+				/// Jarate and its skin(s?)								
+				case 58, 1083, 1105: {
+					if( Call_OnBossJarated(jarateer, jarateed) == Plugin_Changed )
+						return Plugin_Changed;
+				}
+				**/
 				/// Candy Cane
 				case 317: {
 					if( Call_OnBossTakeDamage_OnHitCandyCane(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) == Plugin_Changed )
@@ -829,7 +836,6 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 				&& !TF2_IsPlayerInCondition(client, TFCond_Ubercharged)
 				&& (weapon == GetPlayerWeaponSlot(attacker, 2)
 				|| damage >= GetClientHealth(client)+0.0) )	/// FIXME; crit damage is calculated after this and can kill regardless of shield!
-				CPrintToChatAll("[VSH] ", "Demo player", client,  "took", damage, "with damage type", damagetype);
 			{
 				if( Call_OnBossDealDamage_OnHitShield(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
 					/// Patch: Nov 14, 2017 - removing post-bonk slowdown.
@@ -1171,16 +1177,16 @@ public void ManageBuildingDestroyed(const BaseBoss base, const int building, con
 		}
 	}
 }
-public void ManagePlayerJarated(const BaseBoss attacker, const BaseBoss victim)
+public void ManagePlayerJarated(const BaseBoss jarateer, const BaseBoss jarateed)
 {
-	Action act = Call_OnBossJarated(victim, attacker);
+	Action act = Call_OnBossJarated(jarateer, jarateed);
 	if( act > Plugin_Changed )
 		return;
 
-	switch( victim.iBossType ) {
+	switch( jarateed.iBossType ) {
 		case -1: {}
 		case VSH2Boss_Hale, VSH2Boss_Vagineer, VSH2Boss_CBS, VSH2Boss_HHHjr, VSH2Boss_Bunny:
-			victim.flRAGE -= g_vsh2.m_hCvars.JarateRage.FloatValue;
+			jarateed.flRAGE -= g_vsh2.m_hCvars.JarateRage.FloatValue;
 	}
 }
 
