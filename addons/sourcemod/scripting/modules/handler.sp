@@ -1181,7 +1181,7 @@ public void ManageBuildingDestroyed(const BaseBoss base, const int building, con
 		}
 	}
 }
-/**
+
 public void ManagePlayerJarated(const BaseBoss jarateer, const BaseBoss jarateed)			///NONWORKING Original(ish) Jarate Code
 {
 	Action act = Call_OnBossJarated(jarateer, jarateed);
@@ -1194,7 +1194,7 @@ public void ManagePlayerJarated(const BaseBoss jarateer, const BaseBoss jarateed
 			jarateed.flRAGE -= g_vsh2.m_hCvars.JarateRage.FloatValue;
 	}
 }
-**/
+
 public void IsBossJarated(const BaseBoss player)		///PATCH: Attempted slight rework of jarate rage removal code (working 2/7/21)
 {
 	Action act = Call_OnBossJaratedFix(player);
