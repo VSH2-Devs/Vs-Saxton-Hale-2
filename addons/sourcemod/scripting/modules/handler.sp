@@ -1128,8 +1128,12 @@ public void TF2_OnConditionAdded(int client, TFCond condition)
 			remove = true;
 	}
 
-	if( Call_OnBossConditionChange(player, condition, remove) <= Plugin_Changed && remove )
+	if( Call_OnBossConditionChange(player, condition, remove) <= Plugin_Changed && remove )		{
+		if (condition == TFCond_Jarated) {
+			IsBossJarated(player);
+		}
 		TF2_RemoveCondition(client, condition);
+	}
 }
 
 public void ManageBossMedicCall(const BaseBoss base)
@@ -1177,7 +1181,8 @@ public void ManageBuildingDestroyed(const BaseBoss base, const int building, con
 		}
 	}
 }
-public void ManagePlayerJarated(const BaseBoss jarateer, const BaseBoss jarateed)
+/**
+public void ManagePlayerJarated(const BaseBoss jarateer, const BaseBoss jarateed)			///NONWORKING Original(ish) Jarate Code
 {
 	Action act = Call_OnBossJarated(jarateer, jarateed);
 	if( act > Plugin_Changed )
@@ -1189,7 +1194,20 @@ public void ManagePlayerJarated(const BaseBoss jarateer, const BaseBoss jarateed
 			jarateed.flRAGE -= g_vsh2.m_hCvars.JarateRage.FloatValue;
 	}
 }
+**/
+public void IsBossJarated(const BaseBoss player)		///PATCH: Attempted slight rework of jarate rage removal code (working 2/7/21)
+{
+	Action act = Call_OnBossJaratedFix(player);
+	///BaseBoss client = BaseBoss(jarateed);
+	if( act > Plugin_Changed )
+		return;
 
+	switch( player.iBossType ) {
+		case -1: {}
+		case VSH2Boss_Hale, VSH2Boss_Vagineer, VSH2Boss_CBS, VSH2Boss_HHHjr, VSH2Boss_Bunny:
+			player.flRAGE -= g_vsh2.m_hCvars.JarateRage.FloatValue;
+	}
+}
 public Action HookSound(int clients[64], int& numClients, char sample[PLATFORM_MAX_PATH], int& entity, int& channel, float& volume, int& level, int& pitch, int& flags)
 {
 	if( !g_vsh2.m_hCvars.Enabled.BoolValue || !IsValidClient(entity) )

@@ -384,7 +384,18 @@ Action Call_OnBossJarated(const BaseBoss player, const BaseBoss attacker)
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
-
+Action Call_OnBossJaratedFix(const BaseBoss player)
+{
+	Action act[2];
+	for( int i; i<sizeof(g_hForwards); i++ ) {
+		Call_StartForward(g_hForwards[i][OnBossJarated]);
+		Call_PushCell(player);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
+	}
+	return act[0] > act[1] ? act[0] : act[1];
+}
 Action Call_OnMessageIntro(const BaseBoss player, char message[MAXMESSAGE])
 {
 	Action act[2];
