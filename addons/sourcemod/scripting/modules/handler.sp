@@ -4,7 +4,7 @@
 
 #define MAXBOSS    (MaxDefaultVSH2Bosses + (g_modsys.m_hBossesRegistered.Length - 1))
 
-#include "modules/bosses.sp"
+#include "bosses.sp"
 
 /**
 	PLEASE REMEMBER THAT PLAYERS THAT DON'T HAVE THEIR BOSS ID'S SET ARE NOT ACTUAL BOSSES.
