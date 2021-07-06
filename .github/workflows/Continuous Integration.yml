@@ -1,0 +1,63 @@
+name: Continuous Integration
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the develop branch
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build_linux:
+    name: (Linux) Compile SourcePawn ${{matrix.sm_version}}
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        # Set up Sourcemod versions to compile against
+        sm_version: ['1.10', '1.11']
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+        
+      # Sets up the SourcePawn compiler
+      - name: Setup SourcePawn Compiler ${{ matrix.sm_version }}
+        uses: rumblefrog/setup-sp@master
+        with:
+          version: ${{ matrix.sm_version }}
+      
+      # creates output directory and sets up environment variables for easy path access
+      - name: Setup Environment
+        run: |
+          mkdir output
+          SOURCEMOD_PATH=$GITHUB_WORKSPACE/addons/sourcemod
+          echo "SOURCEMOD_PATH=$SOURCEMOD_PATH" >> $GITHUB_ENV
+          echo "SCRIPTS_PATH=$SOURCEMOD_PATH/scripting" >> $GITHUB_ENV
+          
+      - name: Fetch plugin dependencies
+        run: |
+          wget https://raw.githubusercontent.com/asherkin/TF2Items/master/pawn/tf2items.inc -P $includePath
+          
+      - name: Compile Plugins
+        run: |
+          spcomp $SCRIPTS_PATH/vsh2.sp -i$SCRIPTS_PATH/include -O2 -v2 -o=output/vsh2.smx
+          spcomp $SCRIPTS_PATH/saxtonhale.sp -i$SCRIPTS_PATH/include -O2 -v2 -o=output/saxtonhale.smx
+          spcomp $SCRIPTS_PATH/freak_fortress_2.sp -i$SCRIPTS_PATH/include -O2 -v2 -o=output/freak_fortress_2.smx
+        
+      # bundle the plugins into a single tar file to limit artifact file uploads
+      - name: Bundle Plugins
+        run: tar cvf vsh2_plugins.tar -C output/ .
+        
+      - name: 'Upload Compilation Artifact'
+        uses: actions/upload-artifact@v2
+        with:
+          name: VSH2 (Linux SM ${{ matrix.sm_version }})
+          path: vsh2_plugins.tar
