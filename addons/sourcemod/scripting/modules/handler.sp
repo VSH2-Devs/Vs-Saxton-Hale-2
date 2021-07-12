@@ -353,8 +353,8 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 			if( TF2_IsPlayerInCondition(client, TFCond_Jarated)) {
 				ManageBossJarated(attacker, victim);
 				TF2_RemoveCondition(client, TFCond_Jarated);
-				///PrintCenterText(attacker, "You Jarated %s!", name);    ///Future WIP
-				PrintCenterText(victim.index, "You Were Just Jarated!");
+				///PrintCenterText(attacker, "You Jarated %s!", name);    ///Future WIP?
+				///PrintCenterText(victim.index, "You Were Just Jarated!");	
 			}
 			if( attacker <= 0 || attacker > MaxClients )
 				return Plugin_Continue;
