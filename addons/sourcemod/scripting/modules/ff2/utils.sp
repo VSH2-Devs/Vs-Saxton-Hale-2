@@ -38,9 +38,9 @@ enum {
 
 enum { FF2_MAX_LIST_KEY = FF2_MAX_PLUGIN_NAME + FF2_MAX_ABILITY_NAME + 2 };		/// sizeof key in FF2AbilityList
 
-#include "modules/ff2/sound_list.sp"
-#include "modules/ff2/character.sp"
-#include "modules/ff2/player.sp"
+#include "sound_list.sp"
+#include "character.sp"
+#include "player.sp"
 
 stock FF2Player ZeroBossToFF2Player()
 {
