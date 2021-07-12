@@ -322,6 +322,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 		case -1: {}
 		default: {
 			int bFallDamage = (damagetype & DMG_FALL);
+			int client = victim.index;
 			char trigger[32];
 			if( attacker > MaxClients && GetEdictClassname(attacker, trigger, sizeof(trigger)) && !strcmp(trigger, "trigger_hurt", false) )
 			{
@@ -349,7 +350,12 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				}
 				return Plugin_Changed;
 			}
-
+			if( TF2_IsPlayerInCondition(client, TFCond_Jarated)) {
+				ManageBossJarated(attacker, victim);
+				TF2_RemoveCondition(client, TFCond_Jarated);
+				///PrintCenterText(attacker, "You Jarated %s!", name);    ///Future WIP
+				PrintCenterText(victim.index, "You Were Just Jarated!");
+			}
 			if( attacker <= 0 || attacker > MaxClients )
 				return Plugin_Continue;
 
@@ -1124,14 +1130,11 @@ public void TF2_OnConditionAdded(int client, TFCond condition)
 
 	bool remove;
 	switch( condition ) {
-		case TFCond_Disguised, TFCond_Jarated, TFCond_MarkedForDeath:
+		case TFCond_Disguised, TFCond_MarkedForDeath:		///Jarate cond will be removed in some seperate logic
 			remove = true;
 	}
 
 	if( Call_OnBossConditionChange(player, condition, remove) <= Plugin_Changed && remove )		{
-		if (condition == TFCond_Jarated) {
-			IsBossJarated(player);
-		}
 		TF2_RemoveCondition(client, condition);
 	}
 }
@@ -1182,32 +1185,20 @@ public void ManageBuildingDestroyed(const BaseBoss base, const int building, con
 	}
 }
 
-public void ManagePlayerJarated(const BaseBoss jarateer, const BaseBoss jarateed)			///NONWORKING Original(ish) Jarate Code
+public void ManageBossJarated(int& attacker, const BaseBoss victim)			///Reworked code, Working 12/07/2021
 {
-	Action act = Call_OnBossJarated(jarateer, jarateed);
+	Action act = Call_OnBossJarated(attacker, victim);
 	if( act > Plugin_Changed )
 		return;
 
-	switch( jarateed.iBossType ) {
+	switch( victim.iBossType ) {
 		case -1: {}
 		case VSH2Boss_Hale, VSH2Boss_Vagineer, VSH2Boss_CBS, VSH2Boss_HHHjr, VSH2Boss_Bunny:
-			jarateed.flRAGE -= g_vsh2.m_hCvars.JarateRage.FloatValue;
+			victim.flRAGE -= g_vsh2.m_hCvars.JarateRage.FloatValue;
+			
 	}
 }
 
-public void IsBossJarated(const BaseBoss player)		///PATCH: Attempted slight rework of jarate rage removal code (working 2/7/21)
-{
-	Action act = Call_OnBossJaratedFix(player);
-	///BaseBoss client = BaseBoss(jarateed);
-	if( act > Plugin_Changed )
-		return;
-
-	switch( player.iBossType ) {
-		case -1: {}
-		case VSH2Boss_Hale, VSH2Boss_Vagineer, VSH2Boss_CBS, VSH2Boss_HHHjr, VSH2Boss_Bunny:
-			player.flRAGE -= g_vsh2.m_hCvars.JarateRage.FloatValue;
-	}
-}
 public Action HookSound(int clients[64], int& numClients, char sample[PLATFORM_MAX_PATH], int& entity, int& channel, float& volume, int& level, int& pitch, int& flags)
 {
 	if( !g_vsh2.m_hCvars.Enabled.BoolValue || !IsValidClient(entity) )
