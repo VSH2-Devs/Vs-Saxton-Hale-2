@@ -1185,7 +1185,7 @@ public void ManageBuildingDestroyed(const BaseBoss base, const int building, con
 	}
 }
 
-public void ManageBossJarated(const BaseBoss victim, int& attacker)			///Reworked code, Working 12/07/2021
+public void ManageBossJarated(const BaseBoss victim, const int attacker)			///Reworked code, Working 12/07/2021
 {
 	Action act = Call_OnBossJarated(victim, attacker);
 	if( act > Plugin_Changed )
