@@ -371,7 +371,7 @@ Action Call_OnBossKillBuilding(const BaseBoss player, const int building, Event 
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
-Action Call_OnBossJarated(int& attacker, const BaseBoss victim)
+Action Call_OnBossJarated(const BaseBoss victim, int& attacker)
 {
 	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {

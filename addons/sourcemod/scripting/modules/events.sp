@@ -291,8 +291,8 @@ public Action PlayerJarated(Event event, const char[] name, bool dontBroadcast)
 		return Plugin_Continue;
 	
 	BaseBoss victim = BaseBoss( event.GetInt("userid"), true );
-	int attacker = event.GetInt("attacker");
-	ManageBossJarated(attacker, victim);
+	int attacker = event.GetInt("attackerid");
+	ManageBossJarated(victim, attacker);
 	return Plugin_Continue;
 }
 

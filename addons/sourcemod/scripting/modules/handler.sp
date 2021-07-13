@@ -351,7 +351,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				return Plugin_Changed;
 			}
 			if( TF2_IsPlayerInCondition(client, TFCond_Jarated)) {
-				ManageBossJarated(attacker, victim);
+				ManageBossJarated(victim, attacker);
 				TF2_RemoveCondition(client, TFCond_Jarated);
 				///PrintCenterText(attacker, "You Jarated %s!", name);    ///Future WIP?
 				///PrintCenterText(victim.index, "You Were Just Jarated!");	
@@ -1185,9 +1185,9 @@ public void ManageBuildingDestroyed(const BaseBoss base, const int building, con
 	}
 }
 
-public void ManageBossJarated(int& attacker, const BaseBoss victim)			///Reworked code, Working 12/07/2021
+public void ManageBossJarated(const BaseBoss victim, int& attacker)			///Reworked code, Working 12/07/2021
 {
-	Action act = Call_OnBossJarated(attacker, victim);
+	Action act = Call_OnBossJarated(victim, attacker);
 	if( act > Plugin_Changed )
 		return;
 
