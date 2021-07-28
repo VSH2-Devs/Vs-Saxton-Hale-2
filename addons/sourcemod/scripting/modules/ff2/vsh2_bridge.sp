@@ -464,7 +464,7 @@ void OnPlayerKilledFF2(const VSH2Player attacker, const VSH2Player victim, Event
 				FF2SoundIdentity snd_id;
 				static const char tf_classes[] =  { "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer" };
 
-				int cls = view_as< int >(TF2_GetPlayerClass(victim.index)) - 1;
+				int cls = view_as< int >(victim.iTFClass) - 1;
 				char _key[36];
 				FormatEx(_key, sizeof(_key), "sound_hit_%s", tf_classes[cls]);
 

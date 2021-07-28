@@ -59,8 +59,9 @@ methodmap CHHHJr < BaseBoss {
 				}*/
 				target = GetRandomClient(_, VSH2Team_Red);
 				if( target != -1 ) {
+					BaseBoss t = BaseBoss(target);
 					/// Chdata's HHH teleport rework
-					if( TF2_GetPlayerClass(target) != TFClass_Scout && TF2_GetPlayerClass(target) != TFClass_Soldier ) {
+					if( t.iTFClass != TFClass_Scout && t.iTFClass != TFClass_Soldier ) {
 						/// Makes HHH clipping go away for player and some projectiles
 						SetEntProp(this.index, Prop_Send, "m_CollisionGroup", 2);
 						SetPawnTimer(HHHTeleCollisionReset, 2.0, this.userid);

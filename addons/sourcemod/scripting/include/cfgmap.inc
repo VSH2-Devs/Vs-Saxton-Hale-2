@@ -42,33 +42,33 @@ enum KeyValType {
 };
 
 enum struct PackVal {
-	DataPack data;
-	int size;
+	DataPack   data;
+	int        size;
 	KeyValType tag;
 }
 
 enum { SEC_SCOPE_SIZE=512 };
 enum struct KeyValState {
-	SMCParser parser;
-
+	SMCParser  parser;
+	
 	/// Stack to store old StringMap tops to pop back later.
 	ArrayStack cfgstack;
-
+	
 	/// store old (sub)section names.
 	ArrayStack secstack;
-
+	
 	/// store old (sub)section enum values.
 	ArrayStack enum_stack;
-
+	
 	/// the current StringMap instance we're working with.
-	StringMap top;
-
-	char curr_section[PLATFORM_MAX_PATH];
-
-	int enumer_global; /// for keeping track of <ENUM> value.
-	int enumer_local;  /// for keeping track of <enum> value.
-	int iota_global;   /// for keeping track of <IOTA> value.
-	int iota_local;    /// for keeping track of <iota> value.
+	StringMap  top;
+	
+	char       curr_section[PLATFORM_MAX_PATH];
+	
+	int        enumer_global; /// for keeping track of <ENUM> value.
+	int        enumer_local;  /// for keeping track of <enum> value.
+	int        iota_global;   /// for keeping track of <IOTA> value.
+	int        iota_local;    /// for keeping track of <iota> value.
 }
 
 static KeyValState g_kvstate;
@@ -78,20 +78,20 @@ methodmap ConfigMap < StringMap {
 	public ConfigMap(const char[] filename) {
 		char path[PLATFORM_MAX_PATH];
 		BuildPath(Path_SM, path, sizeof(path), filename);
-
+		
 		g_kvstate.cfgstack = new ArrayStack();
 		g_kvstate.enum_stack = new ArrayStack();
 		g_kvstate.secstack = new ArrayStack(PLATFORM_MAX_PATH);
 		g_kvstate.top = new StringMap();
 		g_kvstate.enumer_global = g_kvstate.iota_global = 0;
 		g_kvstate.enumer_local = g_kvstate.iota_local = 0;
-
+		
 		g_kvstate.parser = new SMCParser();
 		g_kvstate.parser.OnEnterSection = ConfigMap_OnNewSection;
 		g_kvstate.parser.OnKeyValue = ConfigMap_OnKeyValue;
 		g_kvstate.parser.OnLeaveSection = ConfigMap_OnEndSection;
 		g_kvstate.parser.OnRawLine = ConfigMap_OnCurrentLine;
-
+		
 		SMCError err = g_kvstate.parser.ParseFile(path);
 		//PrintCfg(view_as< ConfigMap >(g_kvstate.top));
 		if( err != SMCError_Okay ) {
@@ -101,7 +101,7 @@ methodmap ConfigMap < StringMap {
 			} else {
 				LogError("ConfigMap Err (%s) :: **** Unknown Fatal Parse Error ****", path);
 			}
-
+			
 			if( g_kvstate.top != null ) {
 				DeleteCfg(view_as< ConfigMap >(g_kvstate.top));
 			}
@@ -110,20 +110,20 @@ methodmap ConfigMap < StringMap {
 		delete g_kvstate.cfgstack;
 		delete g_kvstate.secstack;
 		delete g_kvstate.enum_stack;
-
+		
 		StringMap cfg = g_kvstate.top;
 		if( g_kvstate.top != null ) {
 			g_kvstate.top = null;
 		}
 		return view_as< ConfigMap >(cfg);
 	}
-
+	
 	public bool GetVal(const char[] key, PackVal valbuf)
 	{
 		if( this==null ) {
 			return false;
 		}
-
+		
 		/// first check if we're getting a singular value OR we iterate through a sectional path.
 		int dot = FindCharInString(key, '.');
 		/// Patch: dot and escaped dot glitching out the hashmap hashing...
@@ -136,13 +136,13 @@ methodmap ConfigMap < StringMap {
 			}
 			return false;
 		}
-
+		
 		/// ok, not a singular value, iterate to the specific linkmap section then.
 		/// parse the target key first.
 		int i; /// used for `key`.
 		char target_section[PLATFORM_MAX_PATH];
 		ParseTargetPath(key, target_section, sizeof(target_section));
-
+		
 		ConfigMap itermap = this;
 		while( itermap != null ) {
 			int n;
@@ -177,7 +177,7 @@ methodmap ConfigMap < StringMap {
 		}
 		return false;
 	}
-
+	
 	public bool SetVal(const char[] key, const char[] val_str = "", int val_size = 0) {
 		if( this==null ) {
 			return false;
@@ -619,7 +619,7 @@ methodmap ConfigMap < StringMap {
 		IntToString(key, key_str, sizeof(key_str));
 		return this.SetInt(key_str, i);
 	}
-
+	
 	public int GetIntKeyFloat(int key, float& f) {
 		if( key < 0 ) {
 			return 0;
@@ -636,7 +636,7 @@ methodmap ConfigMap < StringMap {
 		IntToString(key, key_str, sizeof(key_str));
 		return this.SetFloat(key_str, f);
 	}
-
+	
 	public int GetIntKeyBool(int key, bool& b, bool simple=true) {
 		if( key < 0 ) {
 			return 0;
@@ -657,7 +657,7 @@ public SMCResult ConfigMap_OnNewSection(SMCParser smc, const char[] name, bool o
 	if( g_kvstate.curr_section[0] != 0 ) {
 		g_kvstate.secstack.PushString(g_kvstate.curr_section);
 	}
-
+	
 	g_kvstate.top = new StringMap();
 	strcopy(g_kvstate.curr_section, sizeof(g_kvstate.curr_section), name);
 	g_kvstate.enum_stack.Push(g_kvstate.enumer_local);
@@ -687,7 +687,7 @@ public SMCResult ConfigMap_OnKeyValue(SMCParser smc, const char[] key, const cha
 		val.size = strlen(value) + 1;
 	}
 	val.tag = KeyValType_Value;
-
+	
 	if( StrEqual(key, "<ENUM>") ) {
 		int enum_val = g_kvstate.enumer_global++;
 		char enum_val_str[15]; IntToString(enum_val, enum_val_str, sizeof enum_val_str);
@@ -776,7 +776,7 @@ stock void DeleteCfg(ConfigMap& cfg, bool clear_only=false) {
 	if( cfg==null ) {
 		return;
 	}
-
+	
 	StringMapSnapshot snap = cfg.Snapshot();
 	if( snap==null ) {
 		return;
@@ -800,7 +800,7 @@ stock void DeleteCfg(ConfigMap& cfg, bool clear_only=false) {
 		}
 	}
 	delete snap;
-
+	
 	if( clear_only ) {
 		cfg.Clear();
 	} else {
@@ -812,7 +812,7 @@ stock void PrintCfg(ConfigMap cfg) {
 	if( cfg==null ) {
 		return;
 	}
-
+	
 	StringMapSnapshot snap = cfg.Snapshot();
 	if( snap==null ) {
 		return;
@@ -858,8 +858,9 @@ static stock bool ConfigMapToFile(const ConfigMap cfg, const char[] sec_name, co
 	}
 	
 	char[] tab = new char[deep];
-	for( int i; i<deep; i++ )
+	for( int i; i<deep; i++ ) {
 		tab[i]='\t';
+	}
 	file.WriteLine("%s\"%s\" {", tab, sec_name);
 	
 	int size = snap.Length;
@@ -917,20 +918,18 @@ static stock bool CloneConfigMap(const ConfigMap cfg, ConfigMap new_cfg, Handle 
 				PackVal section_pack;
 				section_pack.size = pack.size;
 				section_pack.tag = pack.tag;
-
 				ConfigMap new_subsec = view_as< ConfigMap >(new StringMap());
-
+				
 				DataPack val = new DataPack();
 				val.WriteCell(new_subsec);
 				section_pack.data = view_as< DataPack >(CloneHandle(val, new_owner_pl));
 				delete val;
-
+				
 				new_cfg.SetArray(key_buffer, section_pack, sizeof(section_pack));
-
+				
 				pack.data.Reset();
-
 				ConfigMap subsec = pack.data.ReadCell();
-
+				
 				if( !CloneConfigMap(subsec, new_subsec, new_owner_pl) ) {
 					delete snap;
 					return false;

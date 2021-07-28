@@ -10,163 +10,78 @@
 #tryinclude <tf2attributes>
 #define REQUIRE_PLUGIN
 
-#define PlagueModel    "models/player/medic.mdl"
-#define ZombieModel    "models/player/scout.mdl"
-
-/// voicelines
-#define PlagueIntro    "vo/medic_specialcompleted10.mp3"
-#define PlagueRage1    "vo/medic_specialcompleted05.mp3"
-#define PlagueRage2    "vo/medic_specialcompleted06.mp3"
-
-
-VSH2GameMode vsh2_gm;
-
-methodmap CPlague < VSH2Player {
-	public CPlague(const int ind, bool uid=false) {
-		return view_as< CPlague >( VSH2Player(ind, uid) );
-	}
-	
-	property float flCharge {
-		public get() {
-			return this.GetPropFloat("flCharge");
-		}
-		public set(const float val) {
-			this.SetPropFloat("flCharge", val);
-		}
-	}
-	property float flWeighDown {
-		public get() {
-			return this.GetPropFloat("flWeighDown");
-		}
-		public set(const float val) {
-			this.SetPropFloat("flWeighDown", val);
-		}
-	}
-	property float flRAGE {
-		public get() {
-			return this.GetPropFloat("flRAGE");
-		}
-		public set(const float val) {
-			this.SetPropFloat("flRAGE", val);
-		}
-	}
-	
-	public void PlaySpawnClip() {
-		this.PlayVoiceClip(PlagueIntro, VSH2_VOICE_INTRO);
-	}
-	
-	public void Equip() {
-		this.SetName("The Plague Doctor");
-		this.RemoveAllItems();
-		char attribs[128]; Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.3; 259; 1.0; 252; 0.75; 200; 1.0; 551; 1.0");
-		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_shovel", 304, 100, 5, attribs);
-		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
-	}
-	public void RageAbility()
-	{
-		int attribute = 0;
-		float value = 0.0;
-		TF2_AddCondition(this.index, TFCond_MegaHeal, 10.0);
-		switch( GetRandomInt(0, 2) ) {
-			case 0: { attribute = 2; value = 2.0; }	 /// Extra damage
-			case 1: { attribute = 26; value = 100.0; }	/// Extra health
-			case 2: { attribute = 107; value = 2.0; }	/// Extra speed
-		}
-		VSH2Player minion;
-		for( int i=MaxClients; i; --i ) {
-			if( !IsValidClient(i) || !IsPlayerAlive(i) || GetClientTeam(i) != VSH2Team_Boss )
-				continue;
-			minion = VSH2Player(i);
-			bool IsMinion = minion.GetPropAny("bIsMinion");
-			/// PATCH: only boost OUR minions, nobody elses...
-			if( IsMinion && minion.hOwnerBoss == this ) {
-			#if defined _tf2attributes_included
-				bool tf2attribs_enabled = VSH2GameMode.GetPropAny("bTF2Attribs");
-				if( tf2attribs_enabled ) {
-					TF2Attrib_SetByDefIndex(i, attribute, value);
-					SetPawnTimer(TF2AttribsRemove, 10.0, i);
-				} else {
-					char pdapower[32]; Format(pdapower, sizeof(pdapower), "%i; %f", attribute, value);
-					int wep = minion.SpawnWeapon("tf_weapon_builder", 28, 5, 10, pdapower);
-					SetPawnTimer(RemoveWepFromSlot, 10.0, i, GetSlotFromWeapon(i, wep));
-				}
-			#else
-				char pdapower[32]; Format(pdapower, sizeof(pdapower), "%i; %f", attribute, value);
-				int wep = minion.SpawnWeapon("tf_weapon_builder", 28, 5, 10, pdapower);
-				SetPawnTimer(RemoveWepFromSlot, 10.0, i, GetSlotFromWeapon(i, wep));
-			#endif
-			}
-		}
-		if( GetRandomInt(0, 2) )
-			this.PlayVoiceClip(PlagueRage1, VSH2_VOICE_RAGE);
-		else this.PlayVoiceClip(PlagueRage2, VSH2_VOICE_RAGE);
-	}
-	public void KilledPlayer(const VSH2Player victim, Event event) {
-		/// GLITCH: suiciding allows boss to become own minion.
-		if( this.userid == victim.userid )
-			return;
-		/// PATCH: Hitting spy with active deadringer turns them into Minion...
-		else if( event.GetInt("death_flags") & TF_DEATHFLAG_DEADRINGER )
-			return;
-		/// PATCH: killing spy with teammate disguise kills both spy and the teammate he disguised as...
-		else if( TF2_IsPlayerInCondition(victim.index, TFCond_Disguised) )
-			TF2_RemovePlayerDisguise(victim.index); //event.SetInt("userid", victim.userid);
-		victim.hOwnerBoss = this;
-		victim.ConvertToMinion(0.4);
-	}
-	public void Help() {
-		if( IsVoteInProgress() )
-			return;
-		char helpstr[] = "Plague Doctor: Kill enemies and turn them into loyal Zombies!\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Powerup Minions): taunt when Rage is full to give powerups to your Zombies.";
-		Panel panel = new Panel();
-		panel.SetTitle(helpstr);
-		panel.DrawItem("Exit");
-		panel.Send(this.index, HintPanel, 10);
-		delete panel;
-	}
-};
-
-/// plague doctor conversion helper function.
-public CPlague ToCPlague(const VSH2Player guy)
-{
-	return view_as< CPlague >(guy);
-}
-
 
 #if defined _tf2attributes_included
-public void TF2AttribsRemove(const int iEntity)
-{
+public void TF2AttribsRemove(const int iEntity) {
 	TF2Attrib_RemoveAll(iEntity);
 }
 #endif
-public void RemoveWepFromSlot(const int client, const int wepslot)
-{
+
+public void RemoveWepFromSlot(const int client, const int wepslot) {
 	TF2_RemoveWeaponSlot(client, wepslot);
 }
 
 
 public Plugin myinfo = {
-	name = "VSH2 Plague Doctor Subplugin",
-	author = "Nergal/Assyrian",
+	name        = "VSH2 Plague Doctor Subplugin",
+	author      = "Nergal/Assyrian",
 	description = "",
-	version = "1.0",
-	url = "sus"
+	version     = "1.0",
+	url         = "https://github.com/VSH2-Devs/Vs-Saxton-Hale-2"
 };
 
-int g_iPlagueDocID;
+enum struct PlagueDoc {
+	VSH2GameMode gm;
+	ConfigMap    cfg;
+	int          id;
+	ConVar       scout_rage_gen;
+	ConVar       airblast_rage;
+	ConVar       jarate_rage;
+	
+	/// Boss custom cvars.
+	ConVar       run_speed;
+	ConVar       glow_iota;
+	ConVar       charge_amnt;
+	ConVar       max_jmp_charge;
+	ConVar       jmp_reset;
+	ConVar       wghdwn_time;
+	ConVar       wghdwn_iota;
+	ConVar       minion_uber_time;
+	ConVar       minion_climb_vel;
+	ConVar       minion_spawn;
+	ConVar       rage_time;
+}
 
-ConVar
-	g_vsh2_scout_rage_gen,
-	g_vsh2_airblast_rage,
-	g_vsh2_jarate_rage
-;
+PlagueDoc plague_doc;
+
 
 public void OnLibraryAdded(const char[] name) {
 	if( StrEqual(name, "VSH2") ) {
-		g_vsh2_scout_rage_gen = FindConVar("vsh2_scout_rage_gen");
-		g_vsh2_airblast_rage = FindConVar("vsh2_airblast_rage");
-		g_vsh2_jarate_rage = FindConVar("vsh2_jarate_rage");
-		g_iPlagueDocID = VSH2_RegisterPlugin("plague_doctor");
+		plague_doc.scout_rage_gen = FindConVar("vsh2_scout_rage_gen");
+		plague_doc.airblast_rage  = FindConVar("vsh2_airblast_rage");
+		plague_doc.jarate_rage    = FindConVar("vsh2_jarate_rage");
+		plague_doc.cfg            = new ConfigMap("configs/saxton_hale/boss_cfgs/plague_doctor.cfg");
+		
+		plague_doc.run_speed = CreateConVar("vsh2_plaguedoc_speed", "340.0", "How fast, based on health, Plague Doctor can move.", FCVAR_NOTIFY, true, 1.0, true, 99999.0);
+		plague_doc.glow_iota = CreateConVar("vsh2_plaguedoc_glow_iota", "0.1", "How fast Plague Doctor's glow time decreases.", FCVAR_NOTIFY, true, 0.0, true, 99999.0);
+		plague_doc.charge_amnt = CreateConVar("vsh2_plaguedoc_jmp_charge", "2.5", "How much superjump charge should increase when holding jump buttons.", FCVAR_NOTIFY, true, 0.0, true, 99999.0);
+		plague_doc.max_jmp_charge = CreateConVar("vsh2_plaguedoc_max_jmp_charge", "25.0", "maximum charge that superjump can charge to.", FCVAR_NOTIFY, true, 0.0, true, 99999.0);
+		plague_doc.jmp_reset = CreateConVar("vsh2_plaguedoc_jmp_reset", "-100.0", "amount to reset the superjump charge after superjumping.", FCVAR_NOTIFY, false, _, true, 99999.0);
+		plague_doc.wghdwn_time = CreateConVar("vsh2_plaguedoc_weighdown_time", "3.0", "how much time the plague doctor has to be in the air for weighdown to work.", FCVAR_NOTIFY, true, 0.0, true, 99999.0);
+		plague_doc.wghdwn_iota = CreateConVar("vsh2_plaguedoc_weighdown_iota", "0.1", "How fast Plague Doctor's weighdown time decreases.", FCVAR_NOTIFY, true, 0.0, true, 99999.0);
+		plague_doc.minion_uber_time = CreateConVar("vsh2_plaguedoc_minion_uber_time", "3.0", "How long plague doctor minion spawn ubers last.", FCVAR_NOTIFY, true, 0.0, true, 99999.0);
+		plague_doc.minion_climb_vel = CreateConVar("vsh2_plaguedoc_minion_climb_vel", "400.0", "plague doctor minion upward climbing velocity (in hammer units).", FCVAR_NOTIFY, true, 0.0, true, 99999.0);
+		plague_doc.rage_time = CreateConVar("vsh2_plaguedoc_rage_time", "10.0", "how long in seconds does the plague doctor rage boost (applies to minions as well) work for.", FCVAR_NOTIFY, true, 0.0, true, 99999.0);
+		plague_doc.minion_spawn = CreateConVar("vsh2_plaguedoc_minion_spawn_time", "1.5", "amount, multiplied by the minion count, for minions to spawn.", FCVAR_NOTIFY, true, 0.0, true, 99999.0);
+		
+		/// If config is null, do not register boss.
+		if( plague_doc.cfg==null ) {
+			LogError("[VSH 2] ERROR :: **** couldn't find 'configs/saxton_hale/boss_cfgs/plague_doctor.cfg'. Failed to register Plague Doctor boss module. ****");
+			return;
+		}
+		char plugin_name_str[MAX_BOSS_NAME_SIZE];
+		plague_doc.cfg.Get("boss.plugin name", plugin_name_str, sizeof(plugin_name_str));
+		plague_doc.id = VSH2_RegisterPlugin(plugin_name_str);
 		LoadVSH2Hooks();
 	}
 }
@@ -225,90 +140,209 @@ public void LoadVSH2Hooks()
 
 
 stock bool IsPlagueDoctor(const VSH2Player player) {
-	return player.GetPropInt("iBossType") == g_iPlagueDocID;
+	return player.GetPropInt("iBossType") == plague_doc.id;
 }
 
-public void PlagueDoc_OnCallDownloads()
-{
-	PrecacheModel(PlagueModel, true);
-	PrecacheModel(ZombieModel, true);
-	
-	char sounds_list[][] = {
-		PlagueIntro, PlagueRage1, PlagueRage2
-	};
-	PrecacheSoundList(sounds_list, sizeof(sounds_list));
+public void PlagueDoc_OnCallDownloads() {
+	{
+		int boss_mdl_len = plague_doc.cfg.GetSize("boss.model");
+		char[] boss_mdl_str = new char[boss_mdl_len];
+		if( plague_doc.cfg.Get("boss.model", boss_mdl_str, boss_mdl_len) > 0 ) {
+			PrepareModel(boss_mdl_str);
+		}
+		ConfigMap skins = plague_doc.cfg.GetSection("boss.skins");
+		PrepareAssetsFromCfgMap(skins, ResourceMaterial);
+	}
+	{
+		int zomb_mdl_len = plague_doc.cfg.GetSize("boss.minion model");
+		char[] zomb_mdl_str = new char[zomb_mdl_len];
+		if( plague_doc.cfg.Get("boss.minion model", zomb_mdl_str, zomb_mdl_len) > 0 ) {
+			PrepareModel(zomb_mdl_str);
+		}
+		ConfigMap skins = plague_doc.cfg.GetSection("boss.minion skins");
+		PrepareAssetsFromCfgMap(skins, ResourceMaterial);
+	}
+	{
+		ConfigMap sounds_sect = plague_doc.cfg.GetSection("boss.sounds");
+		if( sounds_sect != null ) {
+			PrepareAssetsFromCfgMap(sounds_sect.GetSection("intro"),     ResourceSound);
+			PrepareAssetsFromCfgMap(sounds_sect.GetSection("rage"),      ResourceSound);
+			PrepareAssetsFromCfgMap(sounds_sect.GetSection("superjump"), ResourceSound);
+		}
+	}
 }
-public void PlagueDoc_OnBossMenu(Menu &menu)
-{
-	char tostr[10]; IntToString(g_iPlagueDocID, tostr, sizeof(tostr));
+
+public void PlagueDoc_OnBossMenu(Menu &menu) {
+	char tostr[10]; IntToString(plague_doc.id, tostr, sizeof(tostr));
 	menu.AddItem(tostr, "Plague Doctor (Custom Boss)");
 }
-public void PlagueDoc_OnBossSelected(const VSH2Player player)
-{
-	if( !IsPlagueDoctor(player) )
+
+public void PlagueDoc_OnBossSelected(const VSH2Player player) {
+	if( !IsPlagueDoctor(player) || IsVoteInProgress() ) {
 		return;
-	ToCPlague(player).Help();
-}
-public void PlagueDoc_OnBossThink(const VSH2Player boss)
-{
-	int client = boss.index;
-	if( !IsPlayerAlive(client) || !IsPlagueDoctor(boss) )
-		return;
-	
-	CPlague player = ToCPlague(boss);
-	
-	player.SpeedThink(340.0);
-	player.GlowThink(0.1);
-	if( player.SuperJumpThink(2.5, 25.0) ) {
-		player.SuperJump(player.flCharge, -100.0);
-		player.PlayVoiceClip("vo/medic_yes01.mp3", VSH2_VOICE_ABILITY);
 	}
 	
-	if( OnlyScoutsLeft(VSH2Team_Red) )
-		player.flRAGE += g_vsh2_scout_rage_gen.FloatValue;
+	int help_len = plague_doc.cfg.GetSize("boss.help panel");
+	char[] help_str = new char[help_len];
+	plague_doc.cfg.Get("boss.help panel", help_str, help_len);
 	
-	player.WeighDownThink(3.0, 0.1);
+	Panel panel = new Panel();
+	panel.SetTitle(help_str);
+	panel.DrawItem("Exit");
+	panel.Send(player.index, HintPanel, 10);
+	delete panel;
+}
+
+public void PlagueDoc_OnBossThink(const VSH2Player player)
+{
+	int client = player.index;
+	if( !IsPlayerAlive(client) || !IsPlagueDoctor(player) ) {
+		return;
+	}
+	
+	player.SpeedThink(plague_doc.run_speed.FloatValue);
+	player.GlowThink(plague_doc.glow_iota.FloatValue);
+	if( player.SuperJumpThink(plague_doc.charge_amnt.FloatValue, plague_doc.max_jmp_charge.FloatValue) ) {
+		player.SuperJump(player.GetPropFloat("flCharge"), plague_doc.jmp_reset.FloatValue);
+		ConfigMap superjump_sect = plague_doc.cfg.GetSection("boss.sounds.superjump");
+		player.PlayRandVoiceClipCfgMap(superjump_sect, VSH2_VOICE_ABILITY);
+	}
+	
+	if( OnlyScoutsLeft() ) {
+		player.SetPropFloat("flRAGE", player.GetPropFloat("flRAGE") + plague_doc.scout_rage_gen.FloatValue);
+	}
+	player.WeighDownThink(plague_doc.wghdwn_time.FloatValue, plague_doc.wghdwn_iota.FloatValue);
 	
 	/// hud code
 	SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
-	Handle hHudText = vsh2_gm.hHUD;
-	float jmp = player.flCharge;
-	if( player.flRAGE >= 100.0 )
-		ShowSyncHudText(client, hHudText, "Jump: %i%% | Rage: FULL - Call Medic (default: E) to activate", player.GetPropInt("bSuperCharge") ? 1000 : RoundFloat(jmp) * 4);
-	else ShowSyncHudText(client, hHudText, "Jump: %i%% | Rage: %0.1f", player.GetPropInt("bSuperCharge") ? 1000 : RoundFloat(jmp) * 4, player.flRAGE);
+	Handle hud = plague_doc.gm.hHUD;
+	float jmp = player.GetPropFloat("flCharge");
+	float rage = player.GetPropFloat("flRAGE");
+	if( rage >= 100.0 ) {
+		ShowSyncHudText(client, hud, "Jump: %i%% | Rage: FULL - Call Medic (default: E) to activate", player.GetPropInt("bSuperCharge") ? 1000 : RoundFloat(jmp) * 4);
+	} else {
+		ShowSyncHudText(client, hud, "Jump: %i%% | Rage: %0.1f", player.GetPropInt("bSuperCharge") ? 1000 : RoundFloat(jmp) * 4, rage);
+	}
 }
-public void PlagueDoc_OnBossModelTimer(const VSH2Player player)
-{
-	if( !IsPlagueDoctor(player) )
+
+public void PlagueDoc_OnBossModelTimer(const VSH2Player player) {
+	if( !IsPlagueDoctor(player) ) {
 		return;
+	}
 	int client = player.index;
-	SetVariantString(PlagueModel);
+	int boss_mdl_len = plague_doc.cfg.GetSize("boss.model");
+	char[] boss_mdl = new char[boss_mdl_len];
+	plague_doc.cfg.Get("boss.model", boss_mdl, boss_mdl_len);
+	SetVariantString(boss_mdl);
 	AcceptEntityInput(client, "SetCustomModel");
 	SetEntProp(client, Prop_Send, "m_bUseClassAnimations", 1);
 }
-public void PlagueDoc_OnBossEquipped(const VSH2Player player)
-{
-	if( !IsPlagueDoctor(player) )
+
+public void PlagueDoc_OnBossEquipped(const VSH2Player player) {
+	if( !IsPlagueDoctor(player) ) {
 		return;
-	ToCPlague(player).Equip();
+	}
+	char boss_name_str[MAX_BOSS_NAME_SIZE];
+	plague_doc.cfg.Get("boss.name", boss_name_str, sizeof(boss_name_str));
+	player.SetName(boss_name_str);
+	player.RemoveAllItems();
+	
+	ConfigMap melee_wep = plague_doc.cfg.GetSection("boss.melee");
+	if( melee_wep==null ) {
+		return;
+	}
+	
+	int attribs_len = melee_wep.GetSize("attribs");
+	char[] attribs_str = new char[attribs_len];
+	melee_wep.Get("attribs", attribs_str, attribs_len);
+	
+	int classname_len = melee_wep.GetSize("classname");
+	char[] classname_str = new char[classname_len];
+	melee_wep.Get("classname", classname_str, classname_len);
+	
+	int index, level, quality;
+	melee_wep.GetInt("index",   index);
+	melee_wep.GetInt("level",   level);
+	melee_wep.GetInt("quality", quality);
+	
+	int wep = player.SpawnWeapon(classname_str, index, level, quality, attribs_str);
+	SetEntPropEnt(player.index, Prop_Send, "m_hActiveWeapon", wep);
 }
-public void PlagueDoc_OnBossInitialized(const VSH2Player player)
-{
+
+public void PlagueDoc_OnBossInitialized(const VSH2Player player) {
 	if( !IsPlagueDoctor(player) )
 		return;
+	
 	SetEntProp(player.index, Prop_Send, "m_iClass", view_as< int >(TFClass_Medic));
 }
-public void PlagueDoc_OnMinionInitialized(const VSH2Player player, const VSH2Player master)
-{
+
+public void PlagueDoc_OnMinionInitialized(const VSH2Player player, const VSH2Player master) {
 	if( !IsPlagueDoctor(master) )
 		return;
-	RecruitMinion(player);
+	
+	int client = player.index;
+	TF2_SetPlayerClass(client, TFClass_Scout, _, false);
+	player.RemoveAllItems();
+#if defined _tf2attributes_included
+	if( VSH2GameMode.GetPropInt("bTF2Attribs") )
+		TF2Attrib_RemoveAll(client);
+#endif
+	ConfigMap melee_wep = plague_doc.cfg.GetSection("boss.minion melee");
+	if( melee_wep==null ) {
+		return;
+	}
+	
+	int attribs_len = melee_wep.GetSize("attribs");
+	char[] attribs_str = new char[attribs_len];
+	melee_wep.Get("attribs", attribs_str, attribs_len);
+	
+	int classname_len = melee_wep.GetSize("classname");
+	char[] classname_str = new char[classname_len];
+	melee_wep.Get("classname", classname_str, classname_len);
+	
+	int index, level, quality;
+	melee_wep.GetInt("index",   index);
+	melee_wep.GetInt("level",   level);
+	melee_wep.GetInt("quality", quality);
+	int weapon = player.SpawnWeapon(classname_str, index, level, quality, attribs_str);
+	
+	SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
+	TF2_AddCondition(client, TFCond_Ubercharged, plague_doc.minion_uber_time.FloatValue);
+	SetEntityHealth(client, 200);
+	
+	int zomb_mdl_len = plague_doc.cfg.GetSize("boss.minion model");
+	char[] zomb_mdl = new char[zomb_mdl_len];
+	plague_doc.cfg.Get("boss.minion model", zomb_mdl, zomb_mdl_len);
+	SetVariantString(zomb_mdl);
+	
+	AcceptEntityInput(client, "SetCustomModel");
+	SetEntProp(client, Prop_Send, "m_bUseClassAnimations", 1);
+	SetEntProp(client, Prop_Send, "m_nBody", 0);
+	SetEntityRenderMode(client, RENDER_TRANSCOLOR);
+	SetEntityRenderColor(client, 30, 160, 255, 255);
 }
-public void PlagueDoc_OnBossPlayIntro(const VSH2Player player)
-{
+
+public void PlagueDoc_OnBossPlayIntro(const VSH2Player player) {
 	if( !IsPlagueDoctor(player) )
 		return;
-	ToCPlague(player).PlaySpawnClip();
+	
+	ConfigMap intro_sect = plague_doc.cfg.GetSection("boss.sounds.intro");
+	player.PlayRandVoiceClipCfgMap(intro_sect, VSH2_VOICE_INTRO);
+}
+
+public void KilledPlayer(const VSH2Player attacker, const VSH2Player victim, Event event) {
+	/// GLITCH: suiciding allows boss to become own minion.
+	if( attacker.userid==victim.userid ) {
+		return;
+	} else if( event.GetInt("death_flags") & TF_DEATHFLAG_DEADRINGER ) {
+		/// PATCH: Hitting spy with active deadringer turns them into Minion...
+		return;
+	} else if( TF2_IsPlayerInCondition(victim.index, TFCond_Disguised) ) {
+		/// PATCH: killing spy with teammate disguise kills both spy and the teammate he disguised as...
+		TF2_RemovePlayerDisguise(victim.index); //event.SetInt("userid", victim.userid);
+	}
+	victim.hOwnerBoss = attacker;
+	victim.ConvertToMinion(0.4);
 }
 
 public void PlagueDoc_OnPlayerKilled(const VSH2Player attacker, const VSH2Player victim, Event event)
@@ -316,30 +350,31 @@ public void PlagueDoc_OnPlayerKilled(const VSH2Player attacker, const VSH2Player
 	//int deathflags = event.GetInt("death_flags");
 	/// attacker is plague doctor!
 	if( attacker.bIsBoss && IsPlagueDoctor(attacker) ) {
-		ToCPlague(attacker).KilledPlayer(victim, event);
-	}
-	/// attacker is a plague doctor minion!
-	else if( attacker.GetPropInt("bIsMinion") ) {
+		KilledPlayer(attacker, victim, event);
+	} else if( attacker.GetPropInt("bIsMinion") ) {
+		/// attacker is a plague doctor minion!
 		VSH2Player owner = attacker.hOwnerBoss;
-		if( IsPlagueDoctor(owner) )
-			ToCPlague(owner).KilledPlayer(victim, event);
+		if( IsPlagueDoctor(owner) ) {
+			KilledPlayer(owner, victim, event);
+		}
 	}
-	if( victim.bIsBoss ) {
+	
+	if( victim.GetPropInt("bIsMinion") ) {
 		/// Cap respawning minions by the amount of minions there are * 1.5.
 		/// If 10 minions, then respawn them in 15 seconds.
 		VSH2Player owner = victim.hOwnerBoss;
 		if( IsPlagueDoctor(owner) && IsPlayerAlive(owner.index) ) {
-			int minions = VSH2GameMode.CountMinions(false);
-			victim.ConvertToMinion(minions * 1.5);
+			int minions = VSH2GameMode.CountMinions(false, owner);
+			victim.ConvertToMinion(minions * plague_doc.minion_spawn.FloatValue);
 		}
 	}
 }
-public void PlagueDoc_OnPlayerHurt(const VSH2Player attacker, const VSH2Player victim, Event event)
-{
+
+public void PlagueDoc_OnPlayerHurt(const VSH2Player attacker, const VSH2Player victim, Event event) {
 	int damage = event.GetInt("damageamount");
 	if( !victim.bIsBoss && victim.GetPropInt("bIsMinion") && !attacker.GetPropInt("bIsMinion") ) {
-		/** Have boss take damage if minions are hurt by players, this prevents bosses from hiding just because they gained minions.
-		 */
+		/// Have boss take damage if minions are hurt by players,
+		/// this prevents bosses from hiding just because they gained minions.
 		VSH2Player ownerBoss = victim.hOwnerBoss;
 		if( IsPlagueDoctor(ownerBoss) ) {
 			//ownerBoss.SetPropInt("iHealth", GetClientHealth(ownerBoss.index)-damage);
@@ -348,18 +383,22 @@ public void PlagueDoc_OnPlayerHurt(const VSH2Player attacker, const VSH2Player v
 		}
 		return;
 	}
-	if( IsPlagueDoctor(victim) && victim.bIsBoss )
+	
+	if( IsPlagueDoctor(victim) && victim.bIsBoss ) {
 		victim.GiveRage(damage);
+	}
 }
+
 public void PlagueDoc_OnPlayerAirblasted(const VSH2Player airblaster, const VSH2Player airblasted, Event event)
 {
 	if( !IsPlagueDoctor(airblasted) )
 		return;
+	
 	float rage = airblasted.GetPropFloat("flRAGE");
-	airblasted.SetPropFloat("flRAGE", rage + g_vsh2_airblast_rage.FloatValue);
+	airblasted.SetPropFloat("flRAGE", rage + plague_doc.airblast_rage.FloatValue);
 }
-public void PlagueDoc_OnBossMedicCall(const VSH2Player rager)
-{
+
+public void PlagueDoc_OnBossMedicCall(const VSH2Player rager) {
 	if( !IsPlagueDoctor(rager) )
 		return;
 	
@@ -367,90 +406,105 @@ public void PlagueDoc_OnBossMedicCall(const VSH2Player rager)
 	if( rage < 100.0 )
 		return;
 	
-	ToCPlague(rager).RageAbility();
+	float rage_time = plague_doc.rage_time.FloatValue;
+	int attribute = 0;
+	float value = 0.0;
+	TF2_AddCondition(rager.index, TFCond_MegaHeal, rage_time);
+	switch( GetRandomInt(0, 2) ) {
+		case 0: { attribute = 2;   value = 2.0;   } /// Extra damage
+		case 1: { attribute = 26;  value = 100.0; } /// Extra health
+		case 2: { attribute = 107; value = 2.0;   } /// Extra speed
+	}
+	
+	VSH2Player[] minions = new VSH2Player[MaxClients];
+	int minion_count = VSH2GameMode.GetMinions(minions, false, rager);
+	for( int i; i<minion_count; i++ ) {
+		if( minions[i].hOwnerBoss != rager )
+			continue;
+		
+		int m = minions[i].index;
+	#if defined _tf2attributes_included
+		bool tf2attribs_enabled = VSH2GameMode.GetPropAny("bTF2Attribs");
+		if( tf2attribs_enabled ) {
+			TF2Attrib_SetByDefIndex(m, attribute, value);
+			SetPawnTimer(TF2AttribsRemove, rage_time, m);
+		} else {
+			char pdapower[32]; Format(pdapower, sizeof(pdapower), "%i ; %f", attribute, value);
+			int wep = minions[i].SpawnWeapon("tf_weapon_builder", 28, 5, 10, pdapower);
+			SetPawnTimer(RemoveWepFromSlot, rage_time, m, GetSlotFromWeapon(m, wep));
+		}
+	#else
+		char pdapower[32]; Format(pdapower, sizeof(pdapower), "%i ; %f", attribute, value);
+		int wep = minions[i].SpawnWeapon("tf_weapon_builder", 28, 5, 10, pdapower);
+		SetPawnTimer(RemoveWepFromSlot, rage_time, m, GetSlotFromWeapon(m, wep));
+	#endif
+	}
 	rager.SetPropFloat("flRAGE", 0.0);
+	ConfigMap rage_sect = plague_doc.cfg.GetSection("boss.sounds.rage");
+	rager.PlayRandVoiceClipCfgMap(rage_sect, VSH2_VOICE_RAGE);
 }
-public void PlagueDoc_OnBossJarated(const VSH2Player victim, const VSH2Player thrower)
-{
+
+public void PlagueDoc_OnBossJarated(const VSH2Player victim, const VSH2Player thrower) {
 	if( !IsPlagueDoctor(victim) )
 		return;
+	
 	float rage = victim.GetPropFloat("flRAGE");
-	victim.SetPropFloat("flRAGE", rage - g_vsh2_jarate_rage.FloatValue);
+	victim.SetPropFloat("flRAGE", rage - plague_doc.jarate_rage.FloatValue);
 }
+
 public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname, bool &result)
 {
 	VSH2Player player = VSH2Player(client);
 	if( player.GetPropInt("bIsMinion") ) {
-		VSH2Player ownerBoss = player.hOwnerBoss;
-		if( IsPlagueDoctor(ownerBoss) )
-			player.ClimbWall(weapon, 400.0, 0.0, false);
-		
+		if( IsPlagueDoctor(player.hOwnerBoss) ) {
+			player.ClimbWall(weapon, plague_doc.minion_climb_vel.FloatValue, 0.0, false);
+		}
 		result = false;
 		return Plugin_Changed;
 	}
 	return Plugin_Continue;
 }
 
-public void PlagueDoc_OnRoundEndInfo(const VSH2Player player, bool bossBool, char message[MAXMESSAGE])
+public void PlagueDoc_OnRoundEndInfo(const VSH2Player player, bool boss_won, char message[MAXMESSAGE])
 {
-	if( !IsPlagueDoctor(player) )
+	if( !IsPlagueDoctor(player) ) {
 		return;
+	}
 	
-	if( bossBool ) {
+	if( boss_won ) {
 		/// play Boss Wins sounds here!
 	}
 }
 
 
-void RecruitMinion(const VSH2Player base)
-{
-	int client = base.index;
-	TF2_SetPlayerClass(client, TFClass_Scout, _, false);
-	base.RemoveAllItems();
-#if defined _tf2attributes_included
-	if( VSH2GameMode.GetPropInt("bTF2Attribs") )
-		TF2Attrib_RemoveAll(client);
-#endif
-	int weapon = base.SpawnWeapon("tf_weapon_bat", 572, 100, 5, "6; 0.5; 57; 15.0; 26; 75.0; 49; 1.0; 68; -2.0");
-	SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
-	TF2_AddCondition(client, TFCond_Ubercharged, 3.0);
-	SetEntityHealth(client, 200);
-	SetVariantString(ZombieModel);
-	AcceptEntityInput(client, "SetCustomModel");
-	SetEntProp(client, Prop_Send, "m_bUseClassAnimations", 1);
-	SetEntProp(client, Prop_Send, "m_nBody", 0);
-	SetEntityRenderMode(client, RENDER_TRANSCOLOR);
-	SetEntityRenderColor(client, 30, 160, 255, 255);
-}
-
-
-stock bool IsValidClient(const int client, bool nobots=false)
-{
+stock bool IsValidClient(const int client, bool nobots=false) {
 	if( client <= 0 || client > MaxClients || !IsClientConnected(client) || (nobots && IsFakeClient(client)) )
 		return false;
+	
 	return IsClientInGame(client);
 }
-stock int GetSlotFromWeapon(const int iClient, const int iWeapon)
-{
-	for( int i; i<5; i++ )
-		if( iWeapon == GetPlayerWeaponSlot(iClient, i) )
+
+stock int GetSlotFromWeapon(const int iClient, const int iWeapon) {
+	for( int i; i<5; i++ ) {
+		if( iWeapon==GetPlayerWeaponSlot(iClient, i) ) {
 			return i;
-	
+		}
+	}
 	return -1;
 }
-stock bool OnlyScoutsLeft(const int team)
-{
-	for( int i=MaxClients; i; --i ) {
-		if( !IsValidClient(i) || !IsPlayerAlive(i) )
-			continue;
-		else if( GetClientTeam(i) == team && TF2_GetPlayerClass(i) != TFClass_Scout )
+
+stock bool OnlyScoutsLeft() {
+	VSH2Player[] players = new VSH2Player[MaxClients];
+	int len = VSH2GameMode.GetFighters(players);
+	for( int i; i<len; i++ ) {
+		if( players[i].iTFClass != TFClass_Scout ) {
 			return false;
+		}
 	}
 	return true;
 }
 
-stock void SetPawnTimer(Function func, float thinktime = 0.1, any param1 = -999, any param2 = -999)
-{
+stock void SetPawnTimer(Function func, float thinktime = 0.1, any param1 = -999, any param2 = -999) {
 	DataPack thinkpack = new DataPack();
 	thinkpack.WriteFunction(func);
 	thinkpack.WriteCell(param1);
@@ -458,8 +512,7 @@ stock void SetPawnTimer(Function func, float thinktime = 0.1, any param1 = -999,
 	CreateTimer(thinktime, DoThink, thinkpack, TIMER_DATA_HNDL_CLOSE);
 }
 
-public Action DoThink(Handle hTimer, DataPack hndl)
-{
+public Action DoThink(Handle hTimer, DataPack hndl) {
 	hndl.Reset();
 	
 	Function pFunc = hndl.ReadFunction();
@@ -477,9 +530,6 @@ public Action DoThink(Handle hTimer, DataPack hndl)
 	return Plugin_Continue;
 }
 
-
-
-public int HintPanel(Menu menu, MenuAction action, int param1, int param2)
-{
+public int HintPanel(Menu menu, MenuAction action, int param1, int param2) {
 	return;
 }

@@ -1,5 +1,4 @@
-/** all game mode oriented code should be handled HERE ONLY */
-
+/// all game mode oriented code should be handled HERE ONLY.
 methodmap VSHGameMode < StringMap {
 	public VSHGameMode() {
 		return view_as< VSHGameMode >(new StringMap());
@@ -160,6 +159,16 @@ methodmap VSHGameMode < StringMap {
 		}
 	}
 	
+	property float flRoundStartTime {
+		public get() {
+			float i; this.GetValue("flRoundStartTime", i);
+			return i;
+		}
+		public set(const float val) {
+			this.SetValue("flRoundStartTime", val);
+		}
+	}
+	
 	property BaseBoss hNextBoss {
 		public get() {
 			BaseBoss i; this.GetValue("hNextBoss", i);
@@ -194,29 +203,29 @@ methodmap VSHGameMode < StringMap {
 		this.bTeleToSpawn = false;
 		this.flHealthTime = 0.0;
 		this.flMusicTime = 0.0;
+		this.flRoundStartTime = 0.0;
 		this.hNextBoss = view_as< BaseBoss >(0);
 	}
 	
 	public static BaseBoss GetRandomBoss(const bool balive) {
 		int count;
-		BaseBoss boss;
 		BaseBoss[] bosses = new BaseBoss[MaxClients];
 		for( int i=MaxClients; i; --i ) {
 			if( !IsValidClient(i) || (balive && !IsPlayerAlive(i)) )
 				continue;
-			boss = BaseBoss(i);
+			BaseBoss boss = BaseBoss(i);
 			if( !boss.bIsBoss )
 				continue;
 			bosses[count++] = boss;
 		}
 		return (!count ? view_as< BaseBoss >(0) : bosses[GetRandomInt(0, count-1)]);
 	}
+	
 	public static BaseBoss GetBossByType(const bool balive, const int type) {
-		BaseBoss boss;
 		for( int i=MaxClients; i; --i ) {
 			if( !IsValidClient(i) || (balive && !IsPlayerAlive(i)) )
 				continue;
-			boss = BaseBoss(i);
+			BaseBoss boss = BaseBoss(i);
 			if( !boss.bIsBoss )
 				continue;
 			else if( boss.iBossType==type )
@@ -225,9 +234,9 @@ methodmap VSHGameMode < StringMap {
 		return view_as< BaseBoss >(0);
 	}
 	public static void CheckArena(const bool type) {
-		if( type )
+		if( type ) {
 			SetArenaCapEnableTime( float(45+g_vsh2.m_hCvars.PointDelay.IntValue*(GetLivingPlayers(VSH2Team_Red)-1)) );
-		else {
+		} else {
 			SetArenaCapEnableTime(0.0);
 			SetControlPoint(false);
 		}
@@ -240,8 +249,9 @@ methodmap VSHGameMode < StringMap {
 				continue;
 			
 			BaseBoss boss = BaseBoss(i);
-			if( boss.bIsBoss )
+			if( boss.bIsBoss ) {
 				continue;
+			}
 			players[k++] = boss;
 		}
 		
@@ -263,26 +273,26 @@ methodmap VSHGameMode < StringMap {
 		return players[0];
 	}
 	
-	public static int CountMinions(const bool balive) {
-		BaseBoss boss;
+	public static int CountMinions(const bool balive, BaseBoss owner=view_as< BaseBoss >(0)) {
 		int count=0;
 		for( int i=MaxClients; i; --i ) {
 			if( !IsValidClient(i) || (balive && !IsPlayerAlive(i)) )
 				continue;
-			boss = BaseBoss(i);
-			if( !boss.bIsMinion )
+			BaseBoss minion = BaseBoss(i);
+			if( !minion.bIsMinion ) {
 				continue;
-			++count;
+			} else if( !owner || owner.userid==minion.iOwnerBoss ) {
+				++count;
+			}
 		}
 		return count;
 	}
 	public static int CountBosses(const bool balive) {
-		BaseBoss boss;
 		int count=0;
 		for( int i=MaxClients; i; --i ) {
 			if( !IsValidClient(i) || (balive && !IsPlayerAlive(i)) )
 				continue;
-			boss = BaseBoss(i);
+			BaseBoss boss = BaseBoss(i);
 			if( !boss.bIsBoss )
 				continue;
 			++count;
@@ -290,13 +300,12 @@ methodmap VSHGameMode < StringMap {
 		return count;
 	}
 	public static int GetTotalBossHealth() {
-		BaseBoss boss;
 		int count=0;
 		for( int i=MaxClients; i; --i ) {
 			if( !IsValidClient(i) )
 				continue;
 			
-			boss = BaseBoss(i);
+			BaseBoss boss = BaseBoss(i);
 			if( !boss.bIsBoss )
 				continue;
 			count += boss.iHealth;
@@ -349,52 +358,60 @@ methodmap VSHGameMode < StringMap {
 				foundHealth = (count > 3);
 		}
 		
-		if( !foundAmmo )
+		if( !foundAmmo ) {
 			SpawnRandomAmmo(
 				g_vsh2.m_hCvars.AmmoKitLimitMax.IntValue,
 				g_vsh2.m_hCvars.AmmoKitLimitMin.IntValue
 			);
-		if( !foundHealth )
+		}
+		if( !foundHealth ) {
 			SpawnRandomHealth(
 				g_vsh2.m_hCvars.HealthKitLimitMax.IntValue,
 				g_vsh2.m_hCvars.HealthKitLimitMin.IntValue
 			);
+		}
 	}
 	public void UpdateBossHealth() {
-		BaseBoss boss;
 		int totalHealth, bosscount;
 		for( int i=MaxClients; i; --i ) {
 			/// don't count dead bosses
-			if( !IsValidClient(i) || !IsPlayerAlive(i) )
+			if( !IsValidClient(i) || !IsPlayerAlive(i) ) {
 				continue;
-			boss = BaseBoss(i);
-			if( !boss.bIsBoss )
+			}
+			
+			BaseBoss boss = BaseBoss(i);
+			if( !boss.bIsBoss ) {
 				continue;
+			}
 			bosscount++;
 			totalHealth += boss.iHealth;
 		}
-		if( bosscount > 0 )
+		if( bosscount > 0 ) {
 			this.iHealthBar.SetHealthPercent(totalHealth, this.iTotalMaxHealth);
+		}
 	}
 	public void GetBossType()
 	{
 		if( this.hNextBoss && this.hNextBoss.iPresetType > -1 ) {
 			this.iSpecial = this.hNextBoss.iPresetType;
-			if( this.iSpecial > MAXBOSS )
+			if( this.iSpecial > MAXBOSS ) {
 				this.iSpecial = MAXBOSS;
+			}
 			return;
 		}
 		
 		BaseBoss boss = VSHGameMode.FindNextBoss();
 		if( boss.iPresetType > -1 && this.iSpecial == -1 ) {
 			this.iSpecial = boss.iPresetType;
-			if( this.iSpecial > MAXBOSS )
+			if( this.iSpecial > MAXBOSS ) {
 				this.iSpecial = MAXBOSS;
+			}
 			return;
 		}
 		if( this.iSpecial > -1 ) {    /// Clamp the chosen special so we don't error out.
-			if( this.iSpecial > MAXBOSS )
+			if( this.iSpecial > MAXBOSS ) {
 				this.iSpecial = MAXBOSS;
+			}
 		} else {
 			this.iSpecial = GetRandomInt(VSH2Boss_Hale, MAXBOSS);
 		}
@@ -496,9 +513,9 @@ methodmap VSHGameMode < StringMap {
 		
 		while( !file.EndOfFile() && file.ReadLine(config, sizeof(config)) ) {
 			Format(config, strlen(config) - 1, config);
-			if( !strncmp(config, "//", 2, false) )
+			if( !strncmp(config, "//", 2, false) ) {
 				continue;
-			else if( StrContains(currentmap, config, false) != -1 || !StrContains(config, "all", false) ) {
+			} else if( StrContains(currentmap, config, false) != -1 || !StrContains(config, "all", false) ) {
 				this.bTeleToSpawn = true;
 				delete file;
 				return;
@@ -509,14 +526,13 @@ methodmap VSHGameMode < StringMap {
 	
 	public static int GetBosses(BaseBoss[] bossarray, const bool balive) {
 		int count;
-		BaseBoss boss;
 		for( int i=MaxClients; i; --i ) {
 			if( !IsClientInGame(i) )
 				continue;
 			else if( balive && !IsPlayerAlive(i) )
 				continue;
 			
-			boss = BaseBoss(i);
+			BaseBoss boss = BaseBoss(i);
 			if( boss.bIsBoss )
 				bossarray[count++] = boss;
 		}
@@ -524,14 +540,13 @@ methodmap VSHGameMode < StringMap {
 	}
 	public static int GetBossesByType(BaseBoss[] bossarray, const int type, const bool balive=true) {
 		int count;
-		BaseBoss boss;
 		for( int i=MaxClients; i; --i ) {
 			if( !IsClientInGame(i) )
 				continue;
 			else if( balive && !IsPlayerAlive(i) )
 				continue;
 			
-			boss = BaseBoss(i);
+			BaseBoss boss = BaseBoss(i);
 			if( boss.bIsBoss && boss.iBossType==type )
 				bossarray[count++] = boss;
 		}
@@ -539,33 +554,59 @@ methodmap VSHGameMode < StringMap {
 	}
 	public static int GetFighters(BaseBoss[] redarray, const bool balive) {
 		int count;
-		BaseBoss red;
 		for( int i=MaxClients; i; --i ) {
-			if( !IsClientInGame(i) )
+			if( !IsClientInGame(i) || GetClientTeam(i) <= VSH2Team_Spectator )
 				continue;
 			else if( balive && !IsPlayerAlive(i) )
 				continue;
 			
-			red = BaseBoss(i);
+			BaseBoss red = BaseBoss(i);
 			if( !red.bIsBoss && !red.bIsMinion )
 				redarray[count++] = red;
 		}
 		return count;
 	}
-	public static int GetMinions(BaseBoss[] marray, const bool balive) {
+	public static int GetFightersByClass(BaseBoss[] redarray, TFClassType tfclass, const bool balive) {
 		int count;
-		BaseBoss minion;
 		for( int i=MaxClients; i; --i ) {
-			if( !IsClientInGame(i) )
+			if( !IsClientInGame(i) || GetClientTeam(i) <= VSH2Team_Spectator ) {
 				continue;
-			else if( balive && !IsPlayerAlive(i) )
+			} else if( balive && !IsPlayerAlive(i) ) {
 				continue;
-			
-			minion = BaseBoss(i);
-			if( minion.bIsMinion )
-				marray[count++] = minion;
+			}
+			BaseBoss red = BaseBoss(i);
+			if( !red.bIsBoss && !red.bIsMinion && red.iTFClass==tfclass ) {
+				redarray[count++] = red;
+			}
 		}
 		return count;
+	}
+	public static int GetMinions(BaseBoss[] marray, const bool balive, BaseBoss owner=view_as< BaseBoss >(0)) {
+		int count;
+		for( int i=MaxClients; i; --i ) {
+			if( !IsClientInGame(i) ) {
+				continue;
+			} else if( balive && !IsPlayerAlive(i) ) {
+				continue;
+			}
+			BaseBoss minion = BaseBoss(i);
+			if( minion.bIsMinion && (!owner || owner.userid==minion.iOwnerBoss) ) {
+				marray[count++] = minion;
+			}
+		}
+		return count;
+	}
+	
+	public static int CalcBossMaxHP(int red_players, int boss_count) {
+		/// In stocks.sp
+		int max_health = CalcBossHealth(760.8, red_players, 1.0, 1.0341, 2046.0) / (boss_count);
+		if( max_health < 3000 && boss_count==1 ) {
+			max_health = 3000;
+		} else if( max_health > 3000 && boss_count > 1 ) {
+			/// Putting in multiboss Handicap from complaints of fighting multiple bosses being too overpowered since teamwork itself is overpowered :)
+			max_health -= g_vsh2.m_hCvars.MultiBossHandicap.IntValue;
+		}
+		return max_health;
 	}
 };
 

@@ -369,7 +369,6 @@ any Native_FF2GameMode_SubPlugins(Handle plugins, int numParams)
 		return 0;
 
 	StringMap map = new StringMap();
-
 	FF2SubPlugin info;
 	for( int i; i < list.Length; i++ ) {
 		list.GetInfo(i, info);
@@ -381,7 +380,6 @@ any Native_FF2GameMode_SubPlugins(Handle plugins, int numParams)
 /** End of FF2GameMode methodmaps */
 
 
-/** TODO ZZZZZZZZZZZZZZZZZZZZZZZZZZZ */
 /*
 public any Native_ZZZ(Handle plugin, int numParams)
 {

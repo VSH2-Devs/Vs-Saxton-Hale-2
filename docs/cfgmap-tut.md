@@ -195,8 +195,6 @@ For that, we have local and global iota! For local iota, `<iota>` and for global
 
 ## Usage within VSH2
 Within VSH2, `ConfigMap` is used (and useful) for a variety of different subsystems that make VSH2 do what it does best. A good example is managing the general download list inside `vsh2.cfg`:
-
-[Link To Code](https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/blob/develop/addons/sourcemod/scripting/modules/handler.sp#L23-L46)
 ```c++
 char download_keys[][] = {
 	"downloads.sounds",
@@ -242,7 +240,7 @@ static char class_help[][] = {
 };
 
 Panel panel = new Panel();
-TFClassType tfclass = this.GetTFClass();
+TFClassType tfclass = this.iTFClass;
 int len = g_vsh2.m_hCfg.GetSize(class_help[tfclass]);
 char[] helpstr = new char[len];
 g_vsh2.m_hCfg.Get(class_help[tfclass], helpstr, len);

@@ -3,7 +3,8 @@ stock int GetHealingTarget(const int client)
 	int medigun = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 	if( !IsValidEntity(medigun) ) {
 		return -1;
-	} else if( HasEntProp(medigun, Prop_Send, "m_bHealing") && GetEntProp(medigun, Prop_Send, "m_bHealing") ) {
+	} else if( HasEntProp(medigun, Prop_Send, "m_bHealing")
+			&& GetEntProp(medigun, Prop_Send, "m_bHealing") ) {
 		return GetEntPropEnt(medigun, Prop_Send, "m_hHealingTarget");
 	}
 	return -1;
@@ -254,7 +255,7 @@ stock void SetClientOverlay(const int client, const char[] strOverlay)
 
 stock bool IsClientValid(const int client)
 {
-	return( 0 < client && client <= MaxClients && IsClientInGame(client) );
+	return( 0 < client <= MaxClients && IsClientInGame(client) );
 }
 
 stock bool IsValidClient(const int client, bool replaycheck=true)
@@ -375,7 +376,7 @@ stock int GetLivingPlayers(const int team)
 	return AlivePlayers;
 }
 
-stock void IncrementHeadCount(const int client, bool addhealth = true, int addheads = 1)
+stock void IncrementHeadCount(const int client, bool addhealth = true, int addheads = 1, int heal_amount=15)
 {
 	/// Apply this condition to Demomen to give them their glowing eye effect.
 	if( (TF2_GetPlayerClass(client) == TFClass_DemoMan) && !TF2_IsPlayerInCondition(client, TFCond_DemoBuff) )
@@ -383,7 +384,7 @@ stock void IncrementHeadCount(const int client, bool addhealth = true, int addhe
 	int decapitations = GetEntProp(client, Prop_Send, "m_iDecapitations");
 	SetEntProp(client, Prop_Send, "m_iDecapitations", decapitations + addheads);
 	if( addhealth )
-		HealPlayer(client, 15 * addheads, true);
+		HealPlayer(client, heal_amount * addheads, true);
 
 	/// recalc their speed
 	TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
@@ -1129,7 +1130,7 @@ stock int FindMatchingTeleporter(const int tele)
 {
 	if( !HasEntProp(tele, Prop_Send, "m_bMatchBuilding") )
 		return;
-
+	
 	int offset = FindSendPropInfo("CObjectTeleporter", "m_bMatchBuilding")+4;
 	return GetEntDataEnt2(tele, offset);
 }
@@ -1148,19 +1149,22 @@ stock bool TF2_IsKillable(const int entity)
 	}
 	if( GetEntProp(entity, Prop_Data, "m_takedamage") != 2 )
 		res = false;
-
+	
 	return res;
 }
+
 stock int SetMetal(const int client, const int amount)
 {
 	int iMetalTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
 	SetEntData(client, iMetalTable + (4*3), amount, 4, true);
 }
+
 stock void SetActiveWep(const int client, const int wep)
 {
 	if( wep > MaxClients && IsValidEntity(wep) )
 		SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", wep);
 }
+
 stock int GetRandomClient(bool balive=true, int team=0)
 {
 	int[] players = new int[MaxClients];
@@ -1172,31 +1176,39 @@ stock int GetRandomClient(bool balive=true, int team=0)
 			continue;
 		else if( team && GetClientTeam(i) != team )
 			continue;
-
+		
 		players[count++] = i;
 	}
 	return !count ? -1 : players[GetRandomInt(0, count-1)];
 }
+
 stock int GetThrower(const int ent)
 {
 	return IsValidEntity(ent) ? GetEntPropEnt(ent, Prop_Send, "m_hThrower") : -1;
 }
-stock void HealPlayer(const int client, const int health, bool on_hud=false)
+
+stock void HealPlayer(const int client, const int health, bool on_hud=false, bool overridehp=false, int overheal_limit=0)
 {
-	int hp = GetEntProp(client, Prop_Data, "m_iHealth");
-	int maxhp = GetEntProp(client, Prop_Data, "m_iMaxHealth");
-	int to_set = health;
-
+	int hp     = GetEntProp(client, Prop_Data, "m_iHealth");
+	int maxhp  = GetEntProp(client, Prop_Data, "m_iMaxHealth");
+	int diff = health;
+	
 	int max_overheal = RoundFloat(FindConVar("tf_max_health_boost").FloatValue * maxhp);
-	if( to_set > max_overheal - hp )
-		to_set = max_overheal - hp;
-
-	if( to_set > 0 ) {
-		SetEntityHealth(client, hp + to_set);
+	if( !overridehp && diff > max_overheal - hp ) {
+		diff = max_overheal - hp;
+	}
+	if( overridehp && overheal_limit > 0 ) {
+		if( diff > overheal_limit - hp ) {
+			diff = overheal_limit - hp;
+		}
+	}
+	
+	if( diff > 0 ) {
+		SetEntityHealth(client, hp + diff);
 		if( on_hud ) {
 			Event event = CreateEvent("player_healonhit");
 			if( event ) {
-				event.SetInt("amount", to_set);
+				event.SetInt("amount", diff);
 				event.SetInt("entindex", client);
 				event.FireToClient(client);
 				event.Cancel();
@@ -1204,6 +1216,7 @@ stock void HealPlayer(const int client, const int health, bool on_hud=false)
 		}
 	}
 }
+
 stock int TF2_GetNumWearables(int client)
 {
 	/// 3552 linux
@@ -1211,6 +1224,7 @@ stock int TF2_GetNumWearables(int client)
 	int offset = FindSendPropInfo("CTFPlayer", "m_flMaxspeed") - 20 + 12;
 	return GetEntData(client, offset);
 }
+
 stock int TF2_GetWearable(int client, int wearableidx)
 {
 	/// 3540 linux

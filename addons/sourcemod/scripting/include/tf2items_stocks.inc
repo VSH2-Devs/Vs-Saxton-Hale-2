@@ -10,7 +10,7 @@ methodmap TF2Item < Handle {
 		return view_as< TF2Item >(TF2Items_CreateItem(iFlags));
 	}
 	///////////////////////////////
-
+	
 	property int iFlags {
 		public get() {
 			return TF2Items_GetFlags(this);
@@ -79,15 +79,17 @@ stock TF2Item TF2Item_PrepareItemHandle(TF2Item hItem, char[] name = "", int ind
 	static TF2Item hWeapon = null;
 	char weaponAttribsArray[32][32];
 	int attribCount = ExplodeString(att, "; ", weaponAttribsArray, 32, 32);
-
 	int flags = OVERRIDE_ATTRIBUTES;
-	if( !dontpreserve )
+	if( !dontpreserve ) {
 		flags |= PRESERVE_ATTRIBUTES;
-
-	if( !hWeapon )
+	}
+	
+	if( !hWeapon ) {
 		hWeapon = new TF2Item(flags);
-	else hWeapon.iFlags = flags;
-
+	} else {
+		hWeapon.iFlags = flags;
+	}
+	
 	if( hItem != null ) {
 		int addattribs = hItem.iNumAttribs;
 		if( addattribs ) {
@@ -131,8 +133,9 @@ stock TF2Item TF2Item_PrepareItemHandle(TF2Item hItem, char[] name = "", int ind
 			
 			hWeapon.SetAttribute(att_index, StringToInt(weaponAttribsArray[i]), StringToFloat(weaponAttribsArray[i+1]));
 		}
+	} else {
+		hWeapon.iNumAttribs = 0;
 	}
-	else hWeapon.iNumAttribs = 0;
 	hWeapon.iFlags = flags;
 	return hWeapon;
 }

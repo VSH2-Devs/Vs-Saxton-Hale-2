@@ -90,6 +90,10 @@ void InitializeForwards()
 		g_hForwards[i][OnBannerDeployed] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell );
 		g_hForwards[i][OnBannerEffect] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_Cell );
 		g_hForwards[i][OnUberLoopEnd] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef );
+		g_hForwards[i][OnRedPlayerThinkPost] = new PrivateForward( ET_Hook, Param_Cell );
+		g_hForwards[i][OnRedPlayerHUD] = new PrivateForward( ET_Hook, Param_Cell, Param_String );
+		g_hForwards[i][OnRedPlayerCrits] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef );
+		g_hForwards[i][OnShowStats] = new PrivateForward( ET_Hook, Param_Array );
 	}
 }
 
@@ -371,12 +375,12 @@ Action Call_OnBossKillBuilding(const BaseBoss player, const int building, Event 
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
-Action Call_OnBossJarated(const BaseBoss player, const BaseBoss attacker)
+Action Call_OnBossJarated(const BaseBoss victim, const BaseBoss attacker)
 {
 	Action act[2];
 	for( int i; i<sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossJarated]);
-		Call_PushCell(player);
+		Call_PushCell(victim);
 		Call_PushCell(attacker);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -1380,4 +1384,55 @@ void Call_OnUberLoopEnd(const BaseBoss medic, const BaseBoss target, float& rese
 		if( act > Plugin_Continue )
 			break;
 	}
+}
+
+Action Call_OnRedPlayerThinkPost(const BaseBoss player)
+{
+	Action act[2];
+	for( int i; i<sizeof(g_hForwards); i++ ) {
+		Call_StartForward(g_hForwards[i][OnRedPlayerThinkPost]);
+		Call_PushCell(player);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
+	}
+	return act[0] > act[1] ? act[0] : act[1];
+}
+
+Action Call_OnRedPlayerHUD(const BaseBoss player, char playerhud[PLAYER_HUD_SIZE]) {
+	Action act[2];
+	for( int i; i<sizeof(g_hForwards); i++ ) {
+		Call_StartForward(g_hForwards[i][OnRedPlayerHUD]);
+		Call_PushCell(player);
+		Call_PushStringEx(playerhud, PLAYER_HUD_SIZE, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
+	}
+	return act[0] > act[1] ? act[0] : act[1];
+}
+
+Action Call_OnRedPlayerCrits(const BaseBoss player, int &crit_flags) {
+	Action act[2];
+	for( int i; i<sizeof(g_hForwards); i++ ) {
+		Call_StartForward(g_hForwards[i][OnRedPlayerCrits]);
+		Call_PushCell(player);
+		Call_PushCellRef(crit_flags);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
+	}
+	return act[0] > act[1] ? act[0] : act[1];
+}
+
+Action Call_OnShowStats(BaseBoss players[3]) {
+	Action act[2];
+	for( int i; i<sizeof(g_hForwards); i++ ) {
+		Call_StartForward(g_hForwards[i][OnShowStats]);
+		Call_PushArrayEx(players, 3, 0);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed )
+			return act[i];
+	}
+	return act[0] > act[1] ? act[0] : act[1];
 }

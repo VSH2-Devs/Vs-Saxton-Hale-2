@@ -2,8 +2,8 @@
 #include <morecolors>
 #include <vsh2>
 
-#pragma semicolon		1
-#pragma newdecls		required
+#pragma semicolon    1
+#pragma newdecls     required
 
 methodmap VSH2Derived < VSH2Player {
 	public VSH2Derived(const int x, bool userid=false) {
@@ -21,11 +21,11 @@ methodmap VSH2Derived < VSH2Player {
 };
 
 public Plugin myinfo = {
-	name = "vsh2_natives_tester",
-	author = "Assyrian/Nergal",
+	name        = "vsh2_natives_tester",
+	author      = "Assyrian/Nergal",
 	description = "plugin for testing vsh2 natives and forwards",
-	version = "1.0",
-	url = "http://www.sourcemod.net/"
+	version     = "1.0",
+	url         = "https://github.com/VSH2-Devs/Vs-Saxton-Hale-2"
 };
 
 
@@ -45,7 +45,7 @@ public Action CommandInfo(int client, int args)
 		PrintToConsole(client, "player.index = %d | player.userid = %d", player.index, player.userid);
 		int damage = player.GetPropInt("iDamage");
 		PrintToConsole(client, "players damage is %d", damage);
-
+		
 		player.SetPropInt("iState", 999);
 		int boss_status = player.GetPropInt("iState");
 		PrintToConsole(client, "players state is %d", boss_status);
@@ -56,20 +56,30 @@ public Action CommandInfo(int client, int args)
 		deriver.SetPropInt("iState", 3245);
 		boss_status = deriver.GetPropInt("iState");
 		PrintToConsole(client, "testing inheritance and boss status is %d", boss_status);
+		
+		int max_bosses = VSH2_GetMaxBosses();
+		for( int i; i<=max_bosses; i++ ) {
+			char boss_name[MAX_BOSS_NAME_SIZE];
+			VSH2_GetBossNameByIndex(i, boss_name);
+			PrintToConsole(client, "VSH2_GetBossNames :: name[%d]: '%s'", i, boss_name);
+		}
 	}
 	return Plugin_Handled;
 }
 
 public void fwdOnDownloadsCalled()
 {
-	for( int i; i<5; ++i )
+	for( int i; i<3; ++i ) {
 		PrintToServer("Forward OnDownloadsCalled called");
+	}
 }
 public Action fwdBossSelected(const VSH2Player base)
 {
-	for( int i=MaxClients; i; --i )
-		if( IsClientInGame(i) )
+	for( int i=MaxClients; i; --i ) {
+		if( IsClientInGame(i) ) {
 			PrintToConsole(i, "fwdBossSelected:: ==> %N @ index: %i", base.index, base.index);
+		}
+	}
 }
 
 public void fwdOnTouchPlayer(const VSH2Player victim, const VSH2Player attacker)
@@ -85,17 +95,17 @@ public void fwdOnTouchBuilding(const VSH2Player attacker, const int building)
 
 public Action fwdOnBossThink(const VSH2Player player)
 {
-	player.iHealth += 1;
+	PrintToConsole(player.index, "fwdOnBossThink:: ==> player name: %N", player.index);
 }
 
 public Action fwdOnBossThinkPost(const VSH2Player player)
 {
-	player.SetPropFloat("flRAGE", player.GetPropFloat("flRAGE") + 1.0);
+	PrintToConsole(player.index, "fwdOnBossThinkPost:: ==> player name: %N", player.index);
 }
 
 public Action fwdOnBossModelTimer(const VSH2Player player)
 {
-	player.SetPropFloat("flRAGE", player.GetPropFloat("flRAGE") + 1.0);
+	PrintToConsole(player.index, "fwdOnBossModelTimer:: ==> player name: %N", player.index);
 }
 
 public void fwdOnBossDeath(const VSH2Player player)
@@ -370,9 +380,11 @@ public void fwdOnRoundEndInfo(const VSH2Player player, bool bossBool, char messa
 }
 public void fwdOnLastPlayer(const VSH2Player boss)
 {
-	for( int i=MaxClients; i; --i )
-		if( IsClientInGame(i) )
+	for( int i=MaxClients; i; --i ) {
+		if( IsClientInGame(i) ) {
 			PrintToConsole(i, "fwdOnLastPlayer:: ==> Called");
+		}
+	}
 }
 
 public void fwdOnBossHealthCheck(const VSH2Player player, bool bossBool, char message[MAXMESSAGE])
@@ -385,23 +397,25 @@ public void fwdOnControlPointCapped(char cappers[MAXPLAYERS+1], const int team)
 	int cappers_len = strlen(cappers);
 	for( int i; i<cappers_len; i++ ) {
 		int client = cappers[i];
-		if( 0 < client <= MaxClients && IsClientInGame(client) )
+		if( 0 < client <= MaxClients && IsClientInGame(client) ) {
 			PrintToConsole(client, "fwdOnControlPointCapped:: capper: %i %N", client, client);
+		}
 	}
 }
 
-public void fwdOnPrepRedTeam(const VSH2Player player)
-{
+public void fwdOnPrepRedTeam(const VSH2Player player) {
 	PrintToConsole(player.index, "fwdOnPrepRedTeam:: %N", player.index);
 }
 
-public void fwdOnRedPlayerThink(const VSH2Player player)
-{
-	player.SetPropInt("iDamage", player.GetPropInt("iDamage") + 1);
+public void fwdOnRedPlayerThink(const VSH2Player player) {
+	PrintToConsole(player.index, "fwdOnRedPlayerThink:: %N", player.index);
 }
 
-public Action fwdOnScoreTally(const VSH2Player player, int& points_earned, int& queue_earned)
-{
+public void fwdOnRedPlayerThinkPost(const VSH2Player player) {
+	PrintToConsole(player.index, "fwdOnRedPlayerThinkPost:: %N", player.index);
+}
+
+public Action fwdOnScoreTally(const VSH2Player player, int& points_earned, int& queue_earned) {
 	PrintToChatAll("fwdOnScoreTally:: %N: points - %i, queue - %i", player.index, points_earned, queue_earned);
 }
 
@@ -462,10 +476,12 @@ public void fwdOnSoundHook(const VSH2Player player, char sample[PLATFORM_MAX_PAT
 */
 public void fwdOnRoundStart(const VSH2Player[] bosses, const int boss_count, const VSH2Player[] red_players, const int red_count)
 {
-	for( int i; i<boss_count; i++ )
+	for( int i; i<boss_count; i++ ) {
 		PrintToChatAll("fwdOnRoundStart :: boss name: %N", bosses[i].index);
-	for( int i; i<red_count; i++ )
+	}
+	for( int i; i<red_count; i++ ) {
 		PrintToChatAll("fwdOnRoundStart :: red name: %N", red_players[i].index);
+	}
 }
 
 public void fwdOnHelpMenu(const VSH2Player player, Menu menu)
@@ -497,12 +513,9 @@ public Action fwdOnBannerDeployed(const VSH2Player owner, const BannerType banne
 	/// m_bRageDraining, m_flRageMeter
 	char banner_name[64];
 	switch( banner ) {
-		case BannerBuff:
-			banner_name = "buff banner";
-		case BannerDefBuff:
-			banner_name = "battalion's backup";
-		case BannerHealBuff:
-			banner_name = "concheror";
+		case BannerBuff:     banner_name = "buff banner";
+		case BannerDefBuff:  banner_name = "battalion's backup";
+		case BannerHealBuff: banner_name = "concheror";
 	}
 	PrintToChatAll("fwdOnBannerDeployed:: ==> player name: %N | banner type: %s", owner.index, banner_name);
 	return Plugin_Continue;
@@ -513,12 +526,9 @@ public Action fwdOnBannerEffect(const VSH2Player player, const VSH2Player owner,
 	/// m_bRageDraining, m_flRageMeter
 	char banner_name[64];
 	switch( banner ) {
-		case BannerBuff:
-			banner_name = "buff banner";
-		case BannerDefBuff:
-			banner_name = "battalion's backup";
-		case BannerHealBuff:
-			banner_name = "concheror";
+		case BannerBuff:     banner_name = "buff banner";
+		case BannerDefBuff:  banner_name = "battalion's backup";
+		case BannerHealBuff: banner_name = "concheror";
 	}
 	PrintToChatAll("fwdOnBannerEffect:: ==> player name: %N | banner owner: %N | banner type: %s", player.index, owner.index, banner_name);
 	return Plugin_Continue;
@@ -530,239 +540,264 @@ public Action fwdOnUberLoopEnd(const VSH2Player medic, const VSH2Player target, 
 	return Plugin_Continue;
 }
 
-public void LoadVSH2Hooks()
-{
+public void fwdOnRedPlayerHUD(const VSH2Player player, char hud[PLAYER_HUD_SIZE]) {
+	PrintToConsole(player.index, "fwdOnRedPlayerHUD:: ==> '%s'", hud);
+}
+
+public void fwdOnRedPlayerCrits(const VSH2Player player, int& crit_flags) {
+	PrintToConsole(player.index, "fwdOnRedPlayerCrits:: ==> crit flags: '%i'", crit_flags);
+}
+
+public void fwdOnShowStats(const VSH2Player top_players[3]) {
+	for( int i; i<3; i++ ) {
+		PrintToChatAll("fwdOnShowStats:: ==> #%i: %N", i, top_players[i].index);
+	}
+}
+
+public void LoadVSH2Hooks() {
 	if( !VSH2_HookEx(OnCallDownloads, fwdOnDownloadsCalled) )
 		LogError("Error Hooking OnCallDownloads forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossSelected, fwdBossSelected) )
 		LogError("Error Hooking OnBossSelected forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnTouchPlayer, fwdOnTouchPlayer) )
 		LogError("Error Hooking OnTouchPlayer forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnTouchBuilding, fwdOnTouchBuilding) )
 		LogError("Error Hooking OnTouchBuilding forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossThink, fwdOnBossThink) )
 		LogError("Error Hooking OnBossThink forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossModelTimer, fwdOnBossModelTimer) )
 		LogError("Error Hooking OnBossModelTimer forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossDeath, fwdOnBossDeath) )
 		LogError("Error Hooking OnBossDeath forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossEquipped, fwdOnBossEquipped) )
 		LogError("Error Hooking OnBossEquipped forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossInitialized, fwdOnBossInitialized) )
 		LogError("Error Hooking OnBossInitialized forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnMinionInitialized, fwdOnMinionInitialized) )
 		LogError("Error Hooking OnMinionInitialized forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossPlayIntro, fwdOnBossPlayIntro) )
 		LogError("Error Hooking OnBossPlayIntro forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTakeDamage, fwdOnBossTakeDamage) )
 		LogError("Error Hooking OnBossTakeDamage forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossDealDamage, fwdOnBossDealDamage) )
 		LogError("Error Hooking OnBossDealDamage forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnPlayerKilled, fwdOnPlayerKilled) )
 		LogError("Error Hooking OnPlayerKilled forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnPlayerAirblasted, fwdOnPlayerAirblasted) )
 		LogError("Error Hooking OnPlayerAirblasted forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnTraceAttack, fwdOnTraceAttack) )
 		LogError("Error Hooking OnTraceAttack forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossMedicCall, fwdOnBossMedicCall) )
 		LogError("Error Hooking OnBossMedicCall forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTaunt, fwdOnBossTaunt) )
 		LogError("Error Hooking OnBossTaunt forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossKillBuilding, fwdOnBossKillBuilding) )
 		LogError("Error Hooking OnBossKillBuilding forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossJarated, fwdOnBossJarated) )
 		LogError("Error Hooking OnBossJarated forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnMessageIntro, fwdOnMessageIntro) )
 		LogError("Error Hooking OnMessageIntro forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossPickUpItem, fwdOnBossPickUpItem) )
 		LogError("Error Hooking OnBossPickUpItem forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnVariablesReset, fwdOnVariablesReset) )
 		LogError("Error Hooking OnVariablesReset forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnUberDeployed, fwdOnUberDeployed) )
 		LogError("Error Hooking OnUberDeployed forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnUberLoop, fwdOnUberLoop) )
 		LogError("Error Hooking OnUberLoop forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnMusic, fwdOnMusic) )
 		LogError("Error Hooking OnMusic forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnRoundEndInfo, fwdOnRoundEndInfo) )
 		LogError("Error Hooking OnRoundEndInfo forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnLastPlayer, fwdOnLastPlayer) )
 		LogError("Error Hooking OnLastPlayer forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossHealthCheck, fwdOnBossHealthCheck) )
 		LogError("Error Hooking OnBossHealthCheck forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnControlPointCapped, fwdOnControlPointCapped) )
 		LogError("Error Hooking OnControlPointCapped forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnPrepRedTeam, fwdOnPrepRedTeam) )
 		LogError("Error Hooking OnPrepRedTeam forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnRedPlayerThink, fwdOnRedPlayerThink) )
 		LogError("Error Hooking OnRedPlayerThink forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnScoreTally, fwdOnScoreTally) )
 		LogError("Error Hooking OnScoreTally forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnItemOverride, fwdOnItemOverride) )
 		LogError("Error Hooking OnItemOverride forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossDealDamage_OnStomp, fwdOnBossDealDamage_OnStomp) )
 		LogError("Error Hooking OnBossDealDamage_OnStomp forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossDealDamage_OnHitDefBuff, fwdOnBossDealDamage_OnHitDefBuff) )
 		LogError("Error Hooking OnBossDealDamage_OnHitDefBuff forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossDealDamage_OnHitCritMmmph, fwdOnBossDealDamage_OnHitCritMmmph) )
 		LogError("Error Hooking OnBossDealDamage_OnHitCritMmmph forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossDealDamage_OnHitMedic, fwdOnBossDealDamage_OnHitMedic) )
 		LogError("Error Hooking OnBossDealDamage_OnHitMedic forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossDealDamage_OnHitDeadRinger, fwdOnBossDealDamage_OnHitDeadRinger) )
 		LogError("Error Hooking OnBossDealDamage_OnHitDeadRinger forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossDealDamage_OnHitCloakedSpy, fwdOnBossDealDamage_OnHitCloakedSpy) )
 		LogError("Error Hooking OnBossDealDamage_OnHitCloakedSpy forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossDealDamage_OnHitShield, fwdOnBossDealDamage_OnHitShield) )
 		LogError("Error Hooking OnBossDealDamage_OnHitShield forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTakeDamage_OnStabbed, fwdOnBossTakeDamage_OnStabbed) )
 		LogError("Error Hooking OnBossTakeDamage_OnStabbed forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTakeDamage_OnTelefragged, fwdOnBossTakeDamage_OnTelefragged) )
 		LogError("Error Hooking OnBossTakeDamage_OnTelefragged forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTakeDamage_OnSwordTaunt, fwdOnBossTakeDamage_OnSwordTaunt) )
 		LogError("Error Hooking OnBossTakeDamage_OnSwordTaunt forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTakeDamage_OnHeavyShotgun, fwdOnBossTakeDamage_OnHeavyShotgun) )
 		LogError("Error Hooking OnBossTakeDamage_OnHeavyShotgun forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTakeDamage_OnSniped, fwdOnBossTakeDamage_OnSniped) )
 		LogError("Error Hooking OnBossTakeDamage_OnSniped forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTakeDamage_OnThirdDegreed, fwdOnBossTakeDamage_OnThirdDegreed) )
 		LogError("Error Hooking OnBossTakeDamage_OnThirdDegreed forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTakeDamage_OnHitSword, fwdOnBossTakeDamage_OnHitSword) )
 		LogError("Error Hooking OnBossTakeDamage_OnHitSword forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTakeDamage_OnHitFanOWar, fwdOnBossTakeDamage_OnHitFanOWar) )
 		LogError("Error Hooking OnBossTakeDamage_OnHitFanOWar forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTakeDamage_OnHitCandyCane, fwdOnBossTakeDamage_OnHitCandyCane) )
 		LogError("Error Hooking OnBossTakeDamage_OnHitCandyCane forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTakeDamage_OnMarketGardened, fwdOnBossTakeDamage_OnMarketGardened) )
 		LogError("Error Hooking OnBossTakeDamage_OnMarketGardened forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTakeDamage_OnPowerJack, fwdOnBossTakeDamage_OnPowerJack) )
 		LogError("Error Hooking OnBossTakeDamage_OnPowerJack forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTakeDamage_OnKatana, fwdOnBossTakeDamage_OnKatana) )
 		LogError("Error Hooking OnBossTakeDamage_OnKatana forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTakeDamage_OnAmbassadorHeadshot, fwdOnBossTakeDamage_OnAmbassadorHeadshot) )
 		LogError("Error Hooking OnBossTakeDamage_OnAmbassadorHeadshot forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTakeDamage_OnDiamondbackManmelterCrit, fwdOnBossTakeDamage_OnDiamondbackManmelterCrit) )
 		LogError("Error Hooking OnBossTakeDamage_OnDiamondbackManmelterCrit forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTakeDamage_OnHolidayPunch, fwdOnBossTakeDamage_OnHolidayPunch) )
 		LogError("Error Hooking OnBossTakeDamage_OnHolidayPunch forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossSuperJump, fwdOnBossSuperJump) )
 		LogError("Error Hooking OnBossSuperJump forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossDoRageStun, fwdOnBossDoRageStun) )
 		LogError("Error Hooking OnBossDoRageStun forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossWeighDown, fwdOnBossWeighDown) )
 		LogError("Error Hooking OnBossWeighDown forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnRPSTaunt, fwdOnRPSTaunt) )
 		LogError("Error Hooking OnRPSTaunt forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossAirShotProj, fwdOnBossAirShotProj) )
 		LogError("Error Hooking OnBossAirShotProj forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTakeFallDamage, fwdOnBossTakeFallDamage) )
 		LogError("Error Hooking OnBossTakeFallDamage forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossGiveRage, fwdOnBossGiveRage) )
 		LogError("Error Hooking OnBossGiveRage forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossCalcHealth, fwdOnBossCalcHealth) )
 		LogError("Error Hooking OnBossCalcHealth forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTakeDamage_OnTriggerHurt, fwdOnBossTakeDamage_OnTriggerHurt) )
 		LogError("Error Hooking OnBossTakeDamage_OnTriggerHurt forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossTakeDamage_OnMantreadsStomp, fwdOnBossTakeDamage_OnMantreadsStomp) )
 		LogError("Error Hooking OnBossTakeDamage_OnMantreadsStomp forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossThinkPost, fwdOnBossThinkPost) )
 		LogError("Error Hooking OnBossThinkPost forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBossEquippedPost, fwdOnBossEquippedPost) )
 		LogError("Error Hooking OnBossEquippedPost forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnPlayerTakeFallDamage, fwdOnPlayerTakeFallDamage) )
 		LogError("Error Hooking OnPlayerTakeFallDamage forward for VSH2 Test plugin.");
-
+	
 	//if( !VSH2_HookEx(OnSoundHook, fwdOnSoundHook) )
 	//	LogError("Error Hooking OnSoundHook forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnRoundStart, fwdOnRoundStart) )
 		LogError("Error Hooking OnRoundStart forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnHelpMenu, fwdOnHelpMenu) )
 		LogError("Error Hooking OnHelpMenu forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnHelpMenuSelect, fwdOnHelpMenuSelect) )
 		LogError("Error Hooking OnHelpMenuSelect forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnDrawGameTimer, fwdOnDrawGameTimer) )
 		LogError("Error Hooking OnDrawGameTimer forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnPlayerClimb, fwdOnPlayerClimb) )
 		LogError("Error Hooking OnPlayerClimb forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBannerDeployed, fwdOnBannerDeployed) )
 		LogError("Error Hooking OnBannerDeployed forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnBannerEffect, fwdOnBannerEffect) )
 		LogError("Error Hooking OnBannerEffect forward for VSH2 Test plugin.");
-
+	
 	if( !VSH2_HookEx(OnUberLoopEnd, fwdOnUberLoopEnd) )
 		LogError("Error Hooking OnUberLoopEnd forward for VSH2 Test plugin.");
+	
+	if( !VSH2_HookEx(OnRedPlayerThinkPost, fwdOnRedPlayerThinkPost) )
+		LogError("Error Hooking OnRedPlayerThinkPost forward for VSH2 Test plugin.");
+	
+	if( !VSH2_HookEx(OnRedPlayerHUD, fwdOnRedPlayerHUD) )
+		LogError("Error Hooking OnRedPlayerHUD forward for VSH2 Test plugin.");
+	
+	if( !VSH2_HookEx(OnRedPlayerCrits, fwdOnRedPlayerCrits) )
+		LogError("Error Hooking OnRedPlayerCrits forward for VSH2 Test plugin.");
+	
+	if( !VSH2_HookEx(OnShowStats, fwdOnShowStats) )
+		LogError("Error Hooking OnShowStats forward for VSH2 Test plugin.");
 }
