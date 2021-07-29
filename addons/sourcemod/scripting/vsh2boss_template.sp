@@ -11,65 +11,6 @@
 #define REQUIRE_PLUGIN
 
 
-#define TemplateModel    "models/templatefolder/templateboss.mdl"
-
-/// voicelines
-char TemplateIntro[][] = {
-	"template_snd/start1.mp3",
-	"template_snd/start2.mp3"
-};
-
-char TemplateJump[][] = {
-	"template_snd/jump1.mp3",
-	"template_snd/jump2.mp3"
-};
-
-char TemplateStab[][] = {
-	"template_snd/stab1.mp3",
-	"template_snd/stab2.mp3"
-};
-
-char TemplateDeath[][] = {
-	"template_snd/death1.mp3",
-	"template_snd/death2.mp3"
-};
-
-char TemplateLast[][] = {
-	"template_snd/lastguy1.mp3",
-	"template_snd/lastguy2.mp3"
-};
-
-char TemplateRage[][] = {
-	"template_snd/rage1.mp3",
-	"template_snd/rage2.mp3"
-};
-
-char TemplateKill[][] = {
-	"template_snd/kill1.mp3",
-	"template_snd/kill2.mp3"
-};
-
-char TemplateSpree[][] = {
-	"template_snd/spree1.mp3",
-	"template_snd/spree2.mp3"
-};
-
-char TemplateWin[][] = {
-	"template_snd/win1.mp3",
-	"template_snd/win2.mp3"
-};
-
-char TemplateThemes[][] = {
-	"template_snd/theme1.mp3",
-	"template_snd/theme2.mp3"
-};
-
-float TemplateThemesTime[] = {
-	60.0,
-	60.0
-};
-
-
 public Plugin myinfo = {
 	name        = "VSH2 Template Boss Module",
 	author      = "Nergal/Assyrian",
@@ -79,25 +20,31 @@ public Plugin myinfo = {
 };
 
 
-int g_iTemplateID;
-
-enum struct VSH2CVars {
-	ConVar scout_rage_gen;
-	ConVar airblast_rage;
-	ConVar jarate_rage;
+enum struct TemplateBoss {
+	int          id;
+	VSH2GameMode gm;
+	ConfigMap    cfg;
+	ConVar       scout_rage_gen;
+	ConVar       airblast_rage;
+	ConVar       jarate_rage;
 }
+TemplateBoss template_boss;
 
-VSH2CVars    g_vsh2_cvars;
-VSH2GameMode vsh2_gm;
-ConfigMap    template_boss_cfg;
 
 public void OnLibraryAdded(const char[] name) {
 	if( StrEqual(name, "VSH2") ) {
-		g_vsh2_cvars.scout_rage_gen = FindConVar("vsh2_scout_rage_gen");
-		g_vsh2_cvars.airblast_rage  = FindConVar("vsh2_airblast_rage");
-		g_vsh2_cvars.jarate_rage    = FindConVar("vsh2_jarate_rage");
-		g_iTemplateID = VSH2_RegisterPlugin("template_boss");
-		template_boss_cfg = new ConfigMap("path/to/template_boss/config.cfg");
+		template_boss.scout_rage_gen = FindConVar("vsh2_scout_rage_gen");
+		template_boss.airblast_rage  = FindConVar("vsh2_airblast_rage");
+		template_boss.jarate_rage    = FindConVar("vsh2_jarate_rage");
+		template_boss.cfg            = new ConfigMap("configs/saxton_hale/boss_cfgs/template_boss.cfg");
+		if( template_boss.cfg==null ) {
+			/// prevent template boss from registering if no config file was found.
+			LogError("[VSH 2] ERROR :: **** couldn't find 'configs/saxton_hale/boss_cfgs/template_boss.cfg'. Failed to register Template Boss module. ****");
+			return;
+		}
+		char plugin_name_str[MAX_BOSS_NAME_SIZE];
+		template_boss.cfg.Get("boss.plugin name", plugin_name_str, sizeof(plugin_name_str));
+		template_boss.id = VSH2_RegisterPlugin(plugin_name_str);
 		LoadVSH2Hooks();
 	}
 }
@@ -166,43 +113,45 @@ public void LoadVSH2Hooks() {
 
 
 stock bool IsTemplate(const VSH2Player player) {
-	return player.GetPropInt("iBossType") == g_iTemplateID;
+	return player.GetPropInt("iBossType") == template_boss.id;
 }
 
-public void Template_OnCallDownloads()
-{
-	PrepareModel(TemplateModel);
-	DownloadSoundList(TemplateIntro,  sizeof(TemplateIntro));
-	DownloadSoundList(TemplateJump,   sizeof(TemplateJump));
-	DownloadSoundList(TemplateStab,   sizeof(TemplateStab));
-	DownloadSoundList(TemplateDeath,  sizeof(TemplateDeath));
-	DownloadSoundList(TemplateLast,   sizeof(TemplateLast));
-	DownloadSoundList(TemplateRage,   sizeof(TemplateRage));
-	DownloadSoundList(TemplateKill,   sizeof(TemplateKill));
-	DownloadSoundList(TemplateSpree,  sizeof(TemplateSpree));
-	DownloadSoundList(TemplateWin,    sizeof(TemplateWin));
-	DownloadSoundList(TemplateThemes, sizeof(TemplateThemes));
+public void Template_OnCallDownloads() {
+	{
+		/// model.
+		int boss_mdl_len = template_boss.cfg.GetSize("boss.model");
+		char[] boss_mdl_str = new char[boss_mdl_len];
+		if( template_boss.cfg.Get("boss.model", boss_mdl_str, boss_mdl_len) > 0 ) {
+			PrepareModel(boss_mdl_str);
+		}
+		
+		/// model skins.
+		ConfigMap skins = template_boss.cfg.GetSection("boss.skins");
+		PrepareAssetsFromCfgMap(skins, ResourceMaterial);
+	}
 	
-	PrepareMaterial("materials/models/template_snd/skin_red");
-	PrepareMaterial("materials/models/template_snd/skin_blu");
-	PrepareMaterial("materials/models/template_snd/normals");
-	
-	/// ConfigMap used for asset downloading.
-	char dl_keys[][] = { "sounds", "models", "materials" };
-	ConfigMap assets = template_boss_cfg.GetSection("assets");
-	for( int i; i<sizeof dl_keys; i++ ) {
-		ConfigMap dl_section = assets.GetSection(dl_keys[i]);
-		PrepareAssetsFromCfgMap(dl_section, i);
+	ConfigMap sounds_sect = template_boss.cfg.GetSection("boss.sounds");
+	if( sounds_sect != null ) {
+		PrepareAssetsFromCfgMap(sounds_sect.GetSection("intro"),      ResourceSound);
+		PrepareAssetsFromCfgMap(sounds_sect.GetSection("rage"),       ResourceSound);
+		PrepareAssetsFromCfgMap(sounds_sect.GetSection("jump"),       ResourceSound);
+		PrepareAssetsFromCfgMap(sounds_sect.GetSection("backstab"),   ResourceSound);
+		PrepareAssetsFromCfgMap(sounds_sect.GetSection("death"),      ResourceSound);
+		PrepareAssetsFromCfgMap(sounds_sect.GetSection("lastplayer"), ResourceSound);
+		PrepareAssetsFromCfgMap(sounds_sect.GetSection("kill"),       ResourceSound);
+		PrepareAssetsFromCfgMap(sounds_sect.GetSection("spree"),      ResourceSound);
+		PrepareAssetsFromCfgMap(sounds_sect.GetSection("win"),        ResourceSound);
+		PrepareAssetsFromCfgMap(sounds_sect.GetSection("music"),      ResourceSound);
 	}
 }
 
 public void Template_OnBossMenu(Menu& menu) {
-	char tostr[10]; IntToString(g_iTemplateID, tostr, sizeof(tostr));
+	char tostr[10]; IntToString(template_boss.id, tostr, sizeof(tostr));
 	/// ConfigMap can be used to store the boss name.
-	int name_len = template_boss_cfg.GetSize("boss_name");
-	char[] name = new char[name_len];
-	template_boss_cfg.Get("boss_name", name, name_len);
-	menu.AddItem(tostr, name);
+	int menu_name_len = template_boss.cfg.GetSize("boss.menu name");
+	char[] menu_name_str = new char[menu_name_len];
+	template_boss.cfg.Get("boss.menu name", menu_name_str, menu_name_len);
+	menu.AddItem(tostr, menu_name_str);
 }
 
 public void Template_OnBossSelected(const VSH2Player player) {
@@ -214,28 +163,29 @@ public void Template_OnBossSelected(const VSH2Player player) {
 	player.SetPropAny("hCustomProp", player);
 	
 	/// ConfigMap is also useful for automating custom prop creation.
-	ConfigMap custom_props = template_boss_cfg.GetSection("custom_props");
-	for( int i; i<custom_props.Size; i++ ) {
-		int prop_len = template_boss_cfg.GetIntKeySize(i);
-		char[] prop_name = new char[prop_len];
-		template_boss_cfg.GetIntKey(i, prop_name, prop_len);
-		
-		char prop[64]; strcopy(prop, sizeof prop, prop_name);
-		player.SetPropInt(prop, 0);
+	ConfigMap custom_props = template_boss.cfg.GetSection("boss.custom props");
+	if( custom_props != null ) {
+		for( int i; i<custom_props.Size; i++ ) {
+			int prop_len = template_boss.cfg.GetIntKeySize(i);
+			char[] prop_name = new char[prop_len];
+			template_boss.cfg.GetIntKey(i, prop_name, prop_len);
+			
+			char prop[64]; strcopy(prop, sizeof prop, prop_name);
+			player.SetPropInt(prop, 0);
+		}
 	}
 	
 	Panel panel = new Panel();
-	int panel_len = template_boss_cfg.GetSize("panel_msg");
+	int panel_len = template_boss.cfg.GetSize("boss.help panel");
 	char[] panel_info = new char[panel_len];
-	template_boss_cfg.Get("panel_msg", panel_info, panel_len);
+	template_boss.cfg.Get("boss.help panel", panel_info, panel_len);
 	panel.SetTitle(panel_info);
 	panel.DrawItem("Exit");
 	panel.Send(player.index, HintPanel, 999);
 	delete panel;
 }
 
-public void Template_OnBossThink(const VSH2Player player)
-{
+public void Template_OnBossThink(const VSH2Player player) {
 	int client = player.index;
 	if( !IsPlayerAlive(client) || !IsTemplate(player) )
 		return;
@@ -243,22 +193,18 @@ public void Template_OnBossThink(const VSH2Player player)
 	player.SpeedThink(340.0);
 	player.GlowThink(0.1);
 	if( player.SuperJumpThink(2.5, 25.0) ) {
-		/**
-		ConfigMap superjump_sect = template_boss_cfg.GetSection("boss.sounds.superjump");
-		player.PlayRandVoiceClipCfgMap(superjump_sect, VSH2_VOICE_ABILITY);
-		*/
-		player.PlayVoiceClip(TemplateJump[GetRandomInt(0, sizeof(TemplateJump)-1)], VSH2_VOICE_ABILITY);
+		player.PlayRandVoiceClipCfgMap(template_boss.cfg.GetSection("boss.sounds.jump"), VSH2_VOICE_ABILITY);
 		player.SuperJump(player.GetPropFloat("flCharge"), -100.0);
 	}
 	
 	if( OnlyScoutsLeft() ) {
-		player.SetPropFloat("flRAGE", player.GetPropFloat("flRAGE") + g_vsh2_cvars.scout_rage_gen.FloatValue);
+		player.SetPropFloat("flRAGE", player.GetPropFloat("flRAGE") + template_boss.scout_rage_gen.FloatValue);
 	}
 	player.WeighDownThink(2.0, 0.1);
 	
 	/// hud code
 	SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
-	Handle hud = vsh2_gm.hHUD;
+	Handle hud = template_boss.gm.hHUD;
 	float  jmp = player.GetPropFloat("flCharge");
 	float  rage = player.GetPropFloat("flRAGE");
 	if( rage >= 100.0 ) {
@@ -268,56 +214,65 @@ public void Template_OnBossThink(const VSH2Player player)
 	}
 }
 
-public void Template_OnBossModelTimer(const VSH2Player player)
-{
+public void Template_OnBossModelTimer(const VSH2Player player) {
 	if( !IsTemplate(player) )
 		return;
 	
 	int client = player.index;
-	SetVariantString(TemplateModel);
+	int boss_mdl_len = template_boss.cfg.GetSize("boss.model");
+	char[] boss_mdl = new char[boss_mdl_len];
+	template_boss.cfg.Get("boss.model", boss_mdl, boss_mdl_len);
+	SetVariantString(boss_mdl);
 	AcceptEntityInput(client, "SetCustomModel");
 	SetEntProp(client, Prop_Send, "m_bUseClassAnimations", 1);
 }
 
-public void Template_OnBossEquipped(const VSH2Player player)
-{
+public void Template_OnBossEquipped(const VSH2Player player) {
 	if( !IsTemplate(player) )
 		return;
 	
-	int boss_name_len = template_boss_cfg.GetSize("boss_name");
-	char[] boss_name_str = new char[boss_name_len];
-	template_boss_cfg.Get("boss_name", boss_name_str, boss_name_len);
 	char name[MAX_BOSS_NAME_SIZE];
-	strcopy(name, sizeof name, boss_name_str);
+	template_boss.cfg.Get("boss.name", name, sizeof(name));
 	player.SetName(name);
 	
 	player.RemoveAllItems();
-	int attribs_len = template_boss_cfg.GetSize("melee_attribs");
-	char[] attribs = new char[attribs_len];
-	template_boss_cfg.Get("melee_attribs", attribs, attribs_len);
-	//char attribs[128]; Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.1; 259; 1.0; 252; 0.6; 214; %d", GetRandomInt(999, 9999));
-	int wep = player.SpawnWeapon("tf_weapon_shovel", 5, 100, 5, attribs);
+	ConfigMap melee_wep = template_boss.cfg.GetSection("boss.melee");
+	if( melee_wep==null ) {
+		return;
+	}
+	
+	int attribs_len = melee_wep.GetSize("attribs");
+	char[] attribs_str = new char[attribs_len];
+	melee_wep.Get("attribs", attribs_str, attribs_len);
+	
+	int classname_len = melee_wep.GetSize("classname");
+	char[] classname_str = new char[classname_len];
+	melee_wep.Get("classname", classname_str, classname_len);
+	
+	int index, level, quality;
+	melee_wep.GetInt("index",   index);
+	melee_wep.GetInt("level",   level);
+	melee_wep.GetInt("quality", quality);
+	
+	int wep = player.SpawnWeapon(classname_str, index, level, quality, attribs_str);
 	SetEntPropEnt(player.index, Prop_Send, "m_hActiveWeapon", wep);
 }
 
-public void Template_OnBossInitialized(const VSH2Player player)
-{
+public void Template_OnBossInitialized(const VSH2Player player) {
 	if( !IsTemplate(player) )
 		return;
 	
 	SetEntProp(player.index, Prop_Send, "m_iClass", view_as< int >(TFClass_Soldier));
 }
 
-public void Template_OnBossPlayIntro(const VSH2Player player)
-{
+public void Template_OnBossPlayIntro(const VSH2Player player) {
 	if( !IsTemplate(player) )
 		return;
 	
-	player.PlayVoiceClip(TemplateIntro[GetRandomInt(0, sizeof(TemplateIntro)-1)], VSH2_VOICE_INTRO);
+	player.PlayRandVoiceClipCfgMap(template_boss.cfg.GetSection("boss.sounds.intro"), VSH2_VOICE_INTRO);
 }
 
-public void Template_OnPlayerKilled(const VSH2Player attacker, const VSH2Player victim, Event event)
-{
+public void Template_OnPlayerKilled(const VSH2Player attacker, const VSH2Player victim, Event event) {
 	if( !IsTemplate(attacker) )
 		return;
 	
@@ -328,30 +283,28 @@ public void Template_OnPlayerKilled(const VSH2Player attacker, const VSH2Player 
 		attacker.SetPropInt("iKills", 0);
 	}
 	
-	attacker.PlayVoiceClip(TemplateKill[GetRandomInt(0, sizeof(TemplateKill)-1)], VSH2_VOICE_SPREE);
-	if( attacker.GetPropInt("iKills") == 3 && vsh2_gm.iLivingReds != 1 ) {
-		attacker.PlayVoiceClip(TemplateSpree[GetRandomInt(0, sizeof(TemplateSpree)-1)], VSH2_VOICE_SPREE);
+	attacker.PlayRandVoiceClipCfgMap(template_boss.cfg.GetSection("boss.sounds.kill"), VSH2_VOICE_SPREE);
+	if( attacker.GetPropInt("iKills") == 3 && template_boss.gm.iLivingReds != 1 ) {
+		attacker.PlayRandVoiceClipCfgMap(template_boss.cfg.GetSection("boss.sounds.spree"), VSH2_VOICE_SPREE);
 		attacker.SetPropInt("iKills", 0);
 	} else {
 		attacker.SetPropFloat("flKillSpree", curtime + 5.0);
 	}
 }
 
-public void Template_OnPlayerHurt(const VSH2Player attacker, const VSH2Player victim, Event event)
-{
+public void Template_OnPlayerHurt(const VSH2Player attacker, const VSH2Player victim, Event event) {
 	int damage = event.GetInt("damageamount");
 	if( IsTemplate(victim) && victim.bIsBoss ) {
 		victim.GiveRage(damage);
 	}
 }
 
-public void Template_OnPlayerAirblasted(const VSH2Player airblaster, const VSH2Player airblasted, Event event)
-{
+public void Template_OnPlayerAirblasted(const VSH2Player airblaster, const VSH2Player airblasted, Event event) {
 	if( !IsTemplate(airblasted) )
 		return;
 	
 	float rage = airblasted.GetPropFloat("flRAGE");
-	airblasted.SetPropFloat("flRAGE", rage + g_vsh2_cvars.airblast_rage.FloatValue);
+	airblasted.SetPropFloat("flRAGE", rage + template_boss.airblast_rage.FloatValue);
 }
 
 public void Template_OnBossMedicCall(const VSH2Player player)
@@ -359,11 +312,7 @@ public void Template_OnBossMedicCall(const VSH2Player player)
 	if( !IsTemplate(player) || player.GetPropFloat("flRAGE") < 100.0 )
 		return;
 	
-	/// use ConfigMap to set how large the rage radius is!
-	float radius = 800.0; /// in case of failure, default value!
-	template_boss_cfg.GetFloat("rage_dist", radius);
-	
-	player.DoGenericStun(radius);
+	player.DoGenericStun(800.0);
 	VSH2Player[] players = new VSH2Player[MaxClients];
 	int in_range = player.GetPlayersInRange(players, radius);
 	for( int i; i<in_range; i++ ) {
@@ -372,7 +321,7 @@ public void Template_OnBossMedicCall(const VSH2Player player)
 		}
 		/// do a distance based thing here.
 	}
-	player.PlayVoiceClip(TemplateRage[GetRandomInt(0, sizeof(TemplateRage)-1)], VSH2_VOICE_RAGE);
+	player.PlayRandVoiceClipCfgMap(template_boss.cfg.GetSection("boss.sounds.rage"), VSH2_VOICE_RAGE);
 	player.SetPropFloat("flRAGE", 0.0);
 }
 
@@ -382,36 +331,41 @@ public void Template_OnBossJarated(const VSH2Player victim, const VSH2Player thr
 		return;
 	
 	float rage = victim.GetPropFloat("flRAGE");
-	victim.SetPropFloat("flRAGE", rage - g_vsh2_cvars.jarate_rage.FloatValue);
+	victim.SetPropFloat("flRAGE", rage - template_boss.jarate_rage.FloatValue);
 }
 
 
-public void Template_OnRoundEndInfo(const VSH2Player player, bool boss_won, char message[MAXMESSAGE])
-{
+public void Template_OnRoundEndInfo(const VSH2Player player, bool boss_won, char message[MAXMESSAGE]) {
 	if( !IsTemplate(player) ) {
 		return;
 	} else if( boss_won ) {
-		player.PlayVoiceClip(TemplateWin[GetRandomInt(0, sizeof(TemplateWin)-1)], VSH2_VOICE_WIN);
+		player.PlayRandVoiceClipCfgMap(template_boss.cfg.GetSection("boss.sounds.win"), VSH2_VOICE_WIN);
 	}
 }
 
 
-public void Template_Music(char song[PLATFORM_MAX_PATH], float &time, const VSH2Player player)
-{
+public void Template_Music(char song[PLATFORM_MAX_PATH], float &time, const VSH2Player player) {
 	if( !IsTemplate(player) )
 		return;
 	
-	int theme = GetRandomInt(0, sizeof(TemplateThemes)-1);
-	Format(song, sizeof(song), "%s", TemplateThemes[theme]);
-	time = TemplateThemesTime[theme];
+	ConfigMap music_sect = template_boss.cfg.GetSection("boss.sounds.music");
+	ConfigMap music_time_sect = template_boss.cfg.GetSection("boss.sounds.music time");
+	if( music_sect==null || music_time_sect==null ) {
+		return;
+	}
+	
+	int size = (music_sect.Size > music_time_sect.Size)? music_time_sect.Size : music_sect.Size;
+	static int index;
+	index = ShuffleIndex(size, index);
+	sect.GetIntKey(index, song, sizeof(song));
+	music_time_sect.GetIntKeyFloat(index, time);
 }
 
-public void Template_OnBossDeath(const VSH2Player player)
-{
+public void Template_OnBossDeath(const VSH2Player player) {
 	if( !IsTemplate(player) )
 		return;
 	
-	player.PlayVoiceClip(TemplateDeath[GetRandomInt(0, sizeof(TemplateDeath)-1)], VSH2_VOICE_LOSE);
+	player.PlayRandVoiceClipCfgMap(template_boss.cfg.GetSection("boss.sounds.death"), VSH2_VOICE_LOSE);
 }
 
 public Action Template_OnStabbed(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
@@ -419,15 +373,15 @@ public Action Template_OnStabbed(VSH2Player victim, int& attacker, int& inflicto
 	if( !IsTemplate(victim) )
 		return Plugin_Continue;
 	
-	victim.PlayVoiceClip(TemplateStab[GetRandomInt(0, sizeof(TemplateStab)-1)], VSH2_VOICE_STABBED);
+	player.PlayRandVoiceClipCfgMap(template_boss.cfg.GetSection("boss.sounds.backstab"), VSH2_VOICE_STABBED);
 	return Plugin_Continue;
 }
 
-public void Template_OnLastPlayer(const VSH2Player player)
-{
+public void Template_OnLastPlayer(const VSH2Player player) {
 	if( !IsTemplate(player) )
 		return;
-	player.PlayVoiceClip(TemplateLast[GetRandomInt(0, sizeof(TemplateLast)-1)], VSH2_VOICE_LASTGUY);
+	
+	player.PlayRandVoiceClipCfgMap(template_boss.cfg.GetSection("boss.sounds.lastplayer"), VSH2_VOICE_LASTGUY);
 }
 
 public Action Template_OnSoundHook(const VSH2Player player, char sample[PLATFORM_MAX_PATH], int& channel, float& volume, int& level, int& pitch, int& flags)
@@ -442,15 +396,13 @@ public Action Template_OnSoundHook(const VSH2Player player, char sample[PLATFORM
 }
 
 /// Stocks =============================================
-stock bool IsValidClient(const int client, bool nobots=false)
-{
+stock bool IsValidClient(const int client, bool nobots=false) {
 	if( client <= 0 || client > MaxClients || !IsClientConnected(client) || (nobots && IsFakeClient(client)) )
 		return false;
 	return IsClientInGame(client);
 }
 
-stock int GetSlotFromWeapon(const int client, const int wep)
-{
+stock int GetSlotFromWeapon(const int client, const int wep) {
 	for( int i; i<5; i++ )
 		if( wep==GetPlayerWeaponSlot(client, i) )
 			return i;
@@ -469,8 +421,7 @@ stock bool OnlyScoutsLeft() {
 	return true;
 }
 
-stock void SetPawnTimerEx(Function func, float thinktime = 0.1, const any[] args, const int len)
-{
+stock void SetPawnTimerEx(Function func, float thinktime = 0.1, const any[] args, const int len) {
 	DataPack thinkpack = new DataPack();
 	thinkpack.WriteFunction(func);
 	thinkpack.WriteCell(len);
@@ -480,8 +431,7 @@ stock void SetPawnTimerEx(Function func, float thinktime = 0.1, const any[] args
 	CreateTimer(thinktime, DoPawnTimer, thinkpack, TIMER_DATA_HNDL_CLOSE);
 }
 
-public Action DoPawnTimer(Handle t, DataPack pack)
-{
+public Action DoPawnTimer(Handle t, DataPack pack) {
 	pack.Reset();
 	Function fn = pack.ReadFunction();
 	Call_StartFunction(null, fn);
@@ -495,8 +445,7 @@ public Action DoPawnTimer(Handle t, DataPack pack)
 	return Plugin_Continue;
 }
 
-stock int SetWeaponClip(const int weapon, const int ammo)
-{
+stock int SetWeaponClip(const int weapon, const int ammo) {
 	if( IsValidEntity(weapon) ) {
 		int iAmmoTable = FindSendPropInfo("CTFWeaponBase", "m_iClip1");
 		SetEntData(weapon, iAmmoTable, ammo, 4, true);
@@ -505,7 +454,6 @@ stock int SetWeaponClip(const int weapon, const int ammo)
 }
 
 
-public int HintPanel(Menu menu, MenuAction action, int param1, int param2)
-{
+public int HintPanel(Menu menu, MenuAction action, int param1, int param2) {
 	return;
 }
