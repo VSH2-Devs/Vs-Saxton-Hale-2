@@ -294,7 +294,7 @@ public void Template_OnPlayerKilled(const VSH2Player attacker, const VSH2Player 
 
 public void Template_OnPlayerHurt(const VSH2Player attacker, const VSH2Player victim, Event event) {
 	int damage = event.GetInt("damageamount");
-	if( IsTemplate(victim) && victim.bIsBoss ) {
+	if( victim.bIsBoss && IsTemplate(victim) ) {
 		victim.GiveRage(damage);
 	}
 }
@@ -307,8 +307,7 @@ public void Template_OnPlayerAirblasted(const VSH2Player airblaster, const VSH2P
 	airblasted.SetPropFloat("flRAGE", rage + template_boss.airblast_rage.FloatValue);
 }
 
-public void Template_OnBossMedicCall(const VSH2Player player)
-{
+public void Template_OnBossMedicCall(const VSH2Player player) {
 	if( !IsTemplate(player) || player.GetPropFloat("flRAGE") < 100.0 )
 		return;
 	
@@ -325,8 +324,7 @@ public void Template_OnBossMedicCall(const VSH2Player player)
 	player.SetPropFloat("flRAGE", 0.0);
 }
 
-public void Template_OnBossJarated(const VSH2Player victim, const VSH2Player thrower)
-{
+public void Template_OnBossJarated(const VSH2Player victim, const VSH2Player thrower) {
 	if( !IsTemplate(victim) )
 		return;
 	
@@ -373,7 +371,7 @@ public Action Template_OnStabbed(VSH2Player victim, int& attacker, int& inflicto
 	if( !IsTemplate(victim) )
 		return Plugin_Continue;
 	
-	player.PlayRandVoiceClipCfgMap(template_boss.cfg.GetSection("boss.sounds.backstab"), VSH2_VOICE_STABBED);
+	victim.PlayRandVoiceClipCfgMap(template_boss.cfg.GetSection("boss.sounds.backstab"), VSH2_VOICE_STABBED);
 	return Plugin_Continue;
 }
 
