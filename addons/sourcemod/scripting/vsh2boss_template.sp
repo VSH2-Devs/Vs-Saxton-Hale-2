@@ -313,7 +313,7 @@ public void Template_OnBossMedicCall(const VSH2Player player) {
 	
 	player.DoGenericStun(800.0);
 	VSH2Player[] players = new VSH2Player[MaxClients];
-	int in_range = player.GetPlayersInRange(players, radius);
+	int in_range = player.GetPlayersInRange(players, 800.0);
 	for( int i; i<in_range; i++ ) {
 		if( players[i].bIsBoss || players[i].bIsMinion ) {
 			continue;
