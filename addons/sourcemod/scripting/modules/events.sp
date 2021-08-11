@@ -366,8 +366,8 @@ public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 			continue;
 		if( g_vsh2.m_hGamemode.bTF2Attribs )
 			TF2Attrib_RemoveByDefIndex(i, 26);
-#endif
 	}
+#endif
 	StopBackGroundMusic();         /// in handler.sp
 	ShowPlayerScores();            /// In vsh2.sp
 	SetPawnTimer(CalcScores, 3.0); /// In vsh2.sp
