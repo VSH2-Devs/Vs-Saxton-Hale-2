@@ -7,7 +7,7 @@
 #include <sdkhooks>
 
 #define PLYR           35
-#define PLUGIN_VERSION "1.0.65b"
+#define PLUGIN_VERSION "1.0.67b"
 
 #include <cfgmap>
 #include "modules/stocks.inc"
@@ -74,6 +74,7 @@ VSH2GameMode    vsh2_gm;
 
 #include "modules/ff2/handler.sp"
 #include "modules/ff2/vsh2_bridge.sp"
+#include "modules/ff2/backwards_compatibility.sp"
 
 #include "modules/ff2/natives.sp"
 #include "modules/ff2/console.sp"

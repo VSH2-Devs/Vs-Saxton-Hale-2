@@ -73,16 +73,14 @@ methodmap FF2PluginList < ArrayList {
 	}
 
 	public void LoadPlugins(FF2AbilityList query_abilities) {
-		char pl_ab_key[FF2_MAX_LIST_KEY];
 		char plugin_name[FF2_MAX_PLUGIN_NAME];
+		int size = query_abilities.Length;
 
-		StringMapSnapshot snap = query_abilities.Snapshot();
-		for( int i; i < snap.Length && !this.IsFull; i++ ) {
-			snap.GetKey(i, pl_ab_key, sizeof(pl_ab_key));
-			SplitString(pl_ab_key, "##", plugin_name, sizeof(plugin_name));
+		for( int i; i<size && !this.IsFull; i++ ) {
+			FF2Ability ability = query_abilities.Get(i);
+			ability.GetPlugin(plugin_name);
 			this.TryLoadSubPlugin(plugin_name);
 		}
-		delete snap;
 	}
 
 	public void FindAndErase(const char[] name) {

@@ -1,4 +1,4 @@
-#include "subplugins.sp"
+#include "modules/ff2/subplugins.sp"
 
 methodmap FF2GameMode < VSH2GameMode {
 	public static void HookToVSH2() {

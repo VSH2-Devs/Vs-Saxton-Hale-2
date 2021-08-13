@@ -15,8 +15,6 @@ void InitNatives()
 	CREATE_NATIVE(LoadAbility);
 	CREATE_NATIVE(SubPlugins);
 
-
-
 	/// Natives For FF2Player
 	#undef CREATE_NATIVE
 	#define CREATE_NATIVE(%0)        CreateNative("FF2Player."...#%0,          Native_FF2Player_%0    )
@@ -41,6 +39,7 @@ void InitNatives()
 	CREATE_NATIVE(ForceAbility);
 
 	CREATE_NATIVE(RandomSound);
+///	CREATE_NATIVE(GetSounds); TODO
 	CREATE_NATIVE(RageDist);
 
 	CREATE_NATIVE_GET(SoundCache);
@@ -153,30 +152,26 @@ any Native_FF2Player_RandomSound(Handle plugin, int numParams)
 	if( !ff2_cfgmgr.FindIdentity(player.GetPropInt("iBossType"), identity) )
 		return 0;
 
-	int size = GetNativeCell(4);
-	
 	int key_size; GetNativeStringLength(2, key_size); ++key_size;
 
 	char[] key = new char[key_size];
 	GetNativeString(2, key, key_size);
 
-	bool sound_exists;
-
-	FF2SoundIdentity snd_id;
-	FF2SoundList list = identity.sndHash.GetList(key);
-
-	if( list ) {
-		if( !StrContains(key, "sound_ability") ) {
-			FF2CallType_t slot = GetNativeCell(5);
-			sound_exists = RandomAbilitySound(list, slot, snd_id.path, size);
-		} else {
-			sound_exists = list.RandomSound(snd_id);
-		}
+	FF2SoundSection sec;
+	
+	if( !StrContains(key, "ability") ) {
+		FF2CallType_t slot = GetNativeCell(4);
+		RandomAbilitySound(identity.soundMap.GetSection(key), slot, sec);
+	} else {
+		sec = identity.soundMap.RandomEntry(key);
 	}
 
-	if( !sound_exists )
+	if( !sec )
 		return false;
-	return( SetNativeString(3, snd_id.path, size) == SP_ERROR_NONE );
+
+	FF2SoundIdentity snd_info;
+	sec.FullInfo(snd_info);
+	return( SetNativeArray(3, snd_info, sizeof(snd_info)) == SP_ERROR_NONE );
 }
 
 any Native_FF2Player_RageDist(Handle plugin, int numParams)
@@ -188,10 +183,9 @@ any Native_FF2Player_RageDist(Handle plugin, int numParams)
 	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
 	char ability_name[64]; GetNativeString(3, ability_name, sizeof(ability_name));
 
-	ConfigMap cfg = player.iCfg;
 	if( !ability_name[0] ) {
 		float f;
-		return( cfg.GetFloat("ragedist", f) > 0 ) ? f : 0.0;
+		return( player.BossConfig.Config.GetFloat("info.ragedist", f) > 0 ) ? f : 0.0;
 	}
 
 	ConfigMap section = JumpToAbility(player, plugin_name, ability_name);
@@ -200,7 +194,7 @@ any Native_FF2Player_RageDist(Handle plugin, int numParams)
 		return 0.0;
 
 	if( !section.GetFloat("dist", see) && !section.GetFloat("ragedist", see) ) {
-		cfg.GetFloat("ragedist", see);
+		player.BossConfig.Config.GetFloat("info.ragedist", see);
 	}
 
 	return( see );
@@ -212,9 +206,9 @@ any Native_FF2Player_GetConfigName(Handle plugin, int numParams)
 
 	FF2Identity id;
 	if( !ff2_cfgmgr.FindIdentity(player.iBossType, id) )
-		return;
+		return 0;
 
-	SetNativeString(2, id.szName, GetNativeCell(3));
+	return( SetNativeString(2, id.name, GetNativeCell(3)) == SP_ERROR_NONE );
 }
 
 any Native_FF2Player_GetInt(Handle plugin, int numParams)
@@ -224,7 +218,7 @@ any Native_FF2Player_GetInt(Handle plugin, int numParams)
 	char key_name[64]; GetNativeString(2, key_name, sizeof(key_name));
 
 	int val;
-	if( player.iCfg.GetInt(key_name, val) ) {
+	if( player.BossConfig.Config.GetInt(key_name, val) ) {
 		SetNativeCellRef(3, val);
 		return true;
 	}
@@ -238,7 +232,7 @@ any Native_FF2Player_GetFloat(Handle plugin, int numParams)
 	char key_name[64]; GetNativeString(2, key_name, sizeof(key_name));
 
 	float val;
-	if( player.iCfg.GetFloat(key_name, val) ) {
+	if( player.BossConfig.Config.GetFloat(key_name, val) ) {
 		SetNativeCellRef(3, val);
 		return true;
 	}
@@ -253,7 +247,7 @@ any Native_FF2Player_GetString(Handle plugin, int numParams)
 
 	int len = GetNativeCell(4);
 	char[] res = new char[len];
-	if( player.iCfg.Get(key_name, res, len) ) {
+	if( player.BossConfig.Config.Get(key_name, res, len) ) {
 		return SetNativeString(3, res, len)==SP_ERROR_NONE;
 	}
 	return 0;
@@ -265,8 +259,7 @@ any Native_FF2Player_GetSection(Handle plugin, int numParams)
 
 	char key_name[64]; GetNativeString(2, key_name, sizeof(key_name));
 
-	ConfigMap sec;
-	sec = player.iCfg.GetSection(key_name);
+	ConfigMap sec = player.BossConfig.Config.GetSection(key_name);
 	return sec.Clone(plugin);
 }
 
@@ -283,7 +276,25 @@ any Native_FF2Player_SoundCache_Get(Handle plugin, int numParams)
 	if( !ff2_cfgmgr.FindIdentity(player.iBossType, identity) )
 		return 0;
 
-	return( identity.sndHash );
+	StringMap out_cfg = new StringMap();
+	StringMapSnapshot snap = identity.soundMap.Snapshot();
+	int size = snap.Length - 1;
+	
+	
+	while( size > 0) {
+		int len = snap.KeyBufferSize(size);
+		char[] key = new char[len];
+		snap.GetKey(size, key, len);
+		
+		ConfigMap section;
+		identity.soundMap.GetValue(key, section);
+		out_cfg.SetValue(key, section.Clone(plugin));
+		
+		--size;
+	}
+	
+	delete snap;
+	return( out_cfg );
 }
 
 any Native_FF2Player_PlayBGM(Handle plugin, int numParams)

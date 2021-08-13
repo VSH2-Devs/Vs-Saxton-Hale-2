@@ -6,7 +6,9 @@
 
 #define IsClientValid(%1)        ( 0 < (%1) && (%1) <= MaxClients && IsClientInGame((%1)) )
 
-#define	PATH_TO_CHAR_CFG    "data/freak_fortress_2/characters.cfg"
+#define	PATH_TO_CHAR_CFG    	"data/freak_fortress_2/characters.cfg"
+	
+#define FF2_CHARACTER_KEY		"character"
 
 
 enum FF2CallType_t {
@@ -15,6 +17,7 @@ enum FF2CallType_t {
 	CT_RAGE          = 0b000000010,
 	CT_CHARGE        = 0b000000100,
 	CT_UNUSED_DEMO   = 0b000001000, /// UNUSED
+	CT_INACTIVE		 = CT_UNUSED_DEMO,
 	CT_WEIGHDOWN     = 0b000010000,
 	CT_PLAYER_KILLED = 0b000100000,
 	CT_BOSS_KILLED   = 0b001000000,
@@ -38,9 +41,13 @@ enum {
 
 enum { FF2_MAX_LIST_KEY = FF2_MAX_PLUGIN_NAME + FF2_MAX_ABILITY_NAME + 2 };		/// sizeof key in FF2AbilityList
 
-#include "sound_list.sp"
-#include "character.sp"
-#include "player.sp"
+enum { FF2_MAX_BOSS_NAME_SIZE = MAX_BOSS_NAME_SIZE - 5 };	///	MAX_BOSS_NAME_SIZE - (sizeof("_FF2") - NULL_TERMINATOR)
+
+enum { FF2_MAX_RANDOM_SOUNDS = 15 };
+
+#include "modules/ff2/sound_list.sp"
+#include "modules/ff2/character.sp"
+#include "modules/ff2/player.sp"
 
 stock FF2Player ZeroBossToFF2Player()
 {
@@ -54,15 +61,10 @@ stock FF2Player ZeroBossToFF2Player()
 stock ConfigMap JumpToAbility(const FF2Player player, const char[] plugin_name, const char[] ability_name)
 {
 	FF2AbilityList list = player.HookedAbilities;
-	
-	static char actual_key[FF2_MAX_LIST_KEY];
-	FormatEx(actual_key, sizeof(actual_key), "%s##%s", plugin_name, ability_name);
-	
 	ConfigMap ability = null;
-	char pos[64];
 	
-	if( list && list.GetString(actual_key, pos, sizeof(pos)) ) {
-		ability = player.iCfg.GetSection(pos);
+	if( list ) {
+		ability = list.GetAbility(plugin_name, ability_name).Config;
 	}
 	
 	return( ability );
@@ -120,15 +122,59 @@ stock void FPrintToChat(int client, const char[] message, any ...)
 
 stock int FF2_RegisterFakeBoss(const char[] name)
 {
-	if( strlen(name) >= MAX_BOSS_NAME_SIZE - 6 )
+	if( strlen(name) >= FF2_MAX_BOSS_NAME_SIZE )
 		return( INVALID_FF2_BOSS_ID );
 	char final_name[MAX_BOSS_NAME_SIZE];
 	FormatEx(final_name, sizeof(final_name), "%s_FF2", name);
 	
 	int id;
-	if( (id = VSH2_GetBossID(final_name)) != INVALID_FF2_BOSS_ID ) {
+	if( (id=VSH2_GetBossID(final_name)) != INVALID_FF2_BOSS_ID ) {
 		return( id );
 	}
 	
 	return( VSH2_RegisterPlugin(final_name) );
+}
+
+stock void FF2_ReplaceEscapeSeq(char[] str, int size)
+{
+	char list[][][] = {
+		{ "\t", "\\t" },
+		{ "\n", "\\n" },
+		{ "\r", "\\r" }
+	};
+	for( int i; i<sizeof(list); i++ ) {
+		ReplaceString(str, size, list[i][0], list[i][1]);
+	}
+}
+
+///	https://github.com/01Pollux/FF2ConfigToVSH2/blob/main/ff2_config_to_vsh2.sp#L385
+stock FF2CallType_t FF2_OldNumToBitSlot(int slot)
+{
+	/**
+	 * -2 - Invalid slot(internally used by FF2 for detecting missing "arg0" argument). Don't use!
+	 * -1 - When Boss loses a life (if he has over 1)
+     * 0 - Rage
+     * 1 - Used by charging brave Jump. Fired every 0.2s
+     * 2 - Demopan's charge of targe, projectiles etc.
+     * 3 - Weighdown
+     * 4 - Killed player (not used for sounds)
+     * 5 - Boss killed (not used for sounds)
+     * 6 - Boss backstabbed (not used for sounds)
+     * 7 - Boss market gardened (not used for sounds)
+     */
+	switch (slot)
+	{
+ 	case -2, 2: {
+	// 2, -2 should never be used unless you're calling with FF2Player.ForceAbility
+	return CT_UNUSED_DEMO;
+	}
+	case -1: return CT_LIFE_LOSS;
+	case 1: return CT_CHARGE;
+	case 0: return CT_RAGE;
+
+//	case 3, 4, 5, 6, 7:
+	default: {
+		return view_as<FF2CallType_t>(1 << (1 + slot));
+	}
+	}
 }

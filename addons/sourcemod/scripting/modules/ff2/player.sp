@@ -12,7 +12,7 @@ methodmap FF2Player < VSH2Player {
 		return view_as< FF2Player >(VSH2Player(index, userid));
 	}
 
-	property ConfigMap iCfg {
+	property FF2Character BossConfig {
 		public get() {
 			return GetFF2Config(this);
 		}
@@ -89,14 +89,14 @@ methodmap FF2Player < VSH2Player {
 	}
 }
 
-static ConfigMap GetFF2Config(FF2Player player)
+static FF2Character GetFF2Config(FF2Player player)
 {
-	static FF2Identity id;
-	return ( ff2_cfgmgr.FindIdentity(player.iBossType, id) ? id.hCfg.GetSection("character") : null );
+	FF2Identity id;
+	return ( ff2_cfgmgr.FindIdentity(player.iBossType, id) ? FF2Character(id.hCfg) : FF2Character(null) );
 }
 
 static FF2AbilityList GetFF2AbilityList(FF2Player player)
 {
-	static FF2Identity id;
-	return ( ff2_cfgmgr.FindIdentity(player.iBossType, id) ? id.ablist : null );
+	FF2Identity id;
+	return ( ff2_cfgmgr.FindIdentity(player.iBossType, id) ? id.abilityList : null );
 }

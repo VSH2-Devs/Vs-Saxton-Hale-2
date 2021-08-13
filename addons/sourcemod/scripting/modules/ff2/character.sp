@@ -1,312 +1,174 @@
-methodmap FF2AbilityList < StringMap {
-	public FF2AbilityList() {
-		return( view_as< FF2AbilityList >(new StringMap()) );
+methodmap FF2Character {
+	public FF2Character(ConfigMap cfg) {
+		return view_as<FF2Character>(cfg.GetSection(FF2_CHARACTER_KEY));
 	}
-	
-	public void Insert(const char[] key, const char[] str) {
-		this.SetString(key, str);
+
+	property ConfigMap Config {
+		public get() { return( view_as<ConfigMap>(this) ); }
 	}
-	
-	public static void GetKeyVal(const char[] key, char[][] pl_ab) {
-		ExplodeString(key, "##", pl_ab, 2, FF2_MAX_PLUGIN_NAME);
+
+	property ConfigMap InfoSection {
+		public get() { return( this.Config.GetSection("info") ); }
+	}
+
+	property ConfigMap WeaponSection {
+		public get() { return( this.Config.GetSection("info") ); }
+	}
+
+	property ConfigMap MapExcludeSection {
+		public get() { return( this.Config.GetSection("map_exclude") ); }
+	}
+
+	public void ResolveBackwardCompatibility() {
+		_ResolveBackwardCompatibility(this);
 	}
 }
+
+methodmap FF2Ability {
+	public FF2Ability(ConfigMap current) {
+		return( view_as< FF2Ability >(current) );
+	}
+
+	property ConfigMap Config {
+		public get() { return view_as<ConfigMap>(this); }
+	}
+
+	public void GetPlugin(char[] buffer) {
+		this.Config.Get("plugin_name", buffer, FF2_MAX_PLUGIN_NAME);
+	}
+
+	public void GetAbility(char[] buffer) {
+		this.Config.Get("name", buffer, FF2_MAX_ABILITY_NAME);
+	}
+
+	public void GetPluginAndAbility(char[] pl_name, char[] ab_name) {
+		this.GetPlugin(pl_name);
+		this.GetAbility(ab_name);
+	}
+
+	public void GetId(char[] id, int id_size) {
+		this.Config.Get("_id", id, id_size);
+	}
+
+	public FF2CallType_t GetSlot() {
+		int s;
+		return( this.Config.GetInt("slot", s, 2) ? view_as<FF2CallType_t>(s) : CT_RAGE );
+	}
+
+	public bool ContainsBitSlot(FF2CallType_t bitslot) {
+		return( ( this.GetSlot() & bitslot ) == bitslot );
+	}
+}
+
+// using ArrayList to allow access of multiple FF2AbilityList
+methodmap FF2AbilityList < ArrayList {
+	public FF2AbilityList() {
+		return( view_as< FF2AbilityList >(new ArrayList()));
+	}
+	
+	public void Insert(ConfigMap cfg) {
+		this.Push(cfg);
+	}
+
+	public FF2Ability GetAbility(const char[] plugin_name, const char[] ability_name, int start_index = 0) {
+		int size = this.Length;
+		char buffer[FF2_MAX_PLUGIN_NAME];
+		for( int i=start_index; i<size; i++ ) {
+			FF2Ability cur = this.Get(i);
+
+			cur.GetPlugin(buffer);
+			if( !strcmp(buffer, plugin_name) ) {
+
+				cur.GetAbility(buffer);
+				if( !strcmp(buffer, ability_name) ) 
+					return cur;
+			}
+		}
+		return FF2Ability(null);
+	}
+}
+
 
 /**
  * Boss identity struct
  *
  * VSH2ID = iBossType
- * sndHash = map of precached sounds to use instead of iterating through ConfigMap.Snapshot()
- * ablist = list of encoded abilities to use instead of iterating rought Snapshot, eg:
- *								[{ "plugin_name##ability_name", "ability*" }, { "plugin_name##ability_name", "ability**" }, ...)
- * szName = boss config name in character.cfg
+ * soundMap = map of precached sounds to use instead of iterating through ConfigMap.Snapshot()
+ * abilityList = list of 'ConfigMap' that points to the ability section
+ * name = boss config name in character.cfg
  */
 enum struct FF2Identity {
-	int            VSH2ID;
-	ConfigMap      hCfg;
-	FF2SoundHash   sndHash;
-	FF2AbilityList ablist;
-	char           szName[48];
-	
+	int				VSH2ID;
+	ConfigMap		hCfg;
+	FF2SoundMap		soundMap;
+	FF2AbilityList	abilityList;
+	char			name[FF2_MAX_BOSS_NAME_SIZE];
+	bool			isNewAPI;
+
 	void Release() {
-		if( this.sndHash ) {
-			this.sndHash.DeleteAll();
-			delete this.sndHash;
-		}
+		delete this.soundMap;
+		delete this.abilityList;
 		DeleteCfg(this.hCfg);
-		delete this.ablist;
 	}
 }
 
 static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 {
-	char[] key_name = new char[PLATFORM_MAX_PATH];
+	char key_name[PLATFORM_MAX_PATH];
 
-	FormatEx(key_name, PLATFORM_MAX_PATH, "configs/freak_fortress_2/%s.cfg", identity.szName);
+	FormatEx(key_name, PLATFORM_MAX_PATH, "configs/freak_fortress_2/%s.cfg", identity.name);
 	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "%s", key_name);
 	if( !FileExists(path) ) {
-		LogError("[VSH2/FF2] Unable to find \"%s\"!", identity.szName);
+		LogError("[VSH2/FF2] Unable to find \"%s\"!", identity.name);
 		return false;
 	}
 
 	ConfigMap cfg = new ConfigMap(key_name);
-
 	if( !cfg ) {
-		LogError("[VSH2/FF2] Failed to find \"%s\" character!", identity.szName);
+		LogError("[VSH2/FF2] Failed to find \"%s\" character!", identity.name);
 		return false;
 	}
 	
-	ConfigMap exclude = cfg.GetSection("map_exclude");
-	if( exclude ) {
-		GetCurrentMap(path, PLATFORM_MAX_PATH);
-		for( int i=exclude.Size-1; i>=0; i-- ) {
-			if( exclude.GetIntKey(i, key_name, PLATFORM_MAX_PATH) && !StrContains(key_name, path) ) {
-				DeleteCfg(cfg);
-				return false;
+	FF2Character this_char = FF2Character(cfg);
+	
+	/// Check if our boss support the current map
+	{
+		ConfigMap exclude = this_char.MapExcludeSection;
+		if( exclude ) {
+			GetCurrentMap(path, PLATFORM_MAX_PATH);
+			for( int i=exclude.Size-1; i>=0; i-- ) {
+				if( exclude.GetIntKey(i, key_name, sizeof(key_name)) && !StrContains(key_name, path) ) {
+					DeleteCfg(cfg);
+					return false;
+				}
 			}
 		}
 	}
 
-	identity.VSH2ID = FF2_RegisterFakeBoss(identity.szName);
-	if( identity.VSH2ID == INVALID_FF2_BOSS_ID ) {
-		DeleteCfg(cfg);
-		return false;
+	///	Failed to register the boss, possible duplicate
+	{
+		identity.VSH2ID = FF2_RegisterFakeBoss(identity.name);
+		if( identity.VSH2ID == INVALID_FF2_BOSS_ID ) {
+			DeleteCfg(cfg);
+			return false;
+		}
 	}
-
-	char buffer[64];
-
+	
 	identity.hCfg = cfg;
-	ConfigMap this_char = cfg.GetSection("character");
-	identity.ablist = new FF2AbilityList();
+	identity.abilityList = new FF2AbilityList();
 
-	StringMapSnapshot snap = this_char.Snapshot();
-	int size_of_snapshot = snap.Length;
-
-	/// ability* || Ability*
-	/**
-	 *	"Ability: Rage Test" {	///	Can be ability5965841, ability*, as long as the key was unique && less than 64 characters
-	 *		"name"			"thing"
-	 *		"plugin_name"	"pl_name"	///	"pl_name.smx"
-	 *	}
-	 */
 	{
-		for( int i = size_of_snapshot - 1; i >= 0 && identity.ablist.Size < FF2_MAX_SUBPLUGINS; i-- ) {
-			snap.GetKey(i, key_name, FF2_MAX_ABILITY_KEY);
-			if( strncmp(key_name, "ability", 7, false) )
-				continue;
+		identity.isNewAPI = this_char.Config.GetSection("info") ? true : false;
+		if( !identity.isNewAPI )
+			FF2_ResolveBackwardCompatibility(this_char.Config);
 
-			ConfigMap cur_ab = this_char.GetSection(key_name);
-			if( !cur_ab || !cur_ab.Get("plugin_name", buffer, FF2_MAX_PLUGIN_NAME) )
-				continue;
+		FF2Character_RegisterAbilities(this_char, identity.isNewAPI, identity.name, identity.abilityList);
 
-			BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins\\freaks\\%s.smx", buffer);
-			if( !FileExists(path) ) {
-				LogError("[VSH2/FF2] Character \"%s.cfg\" is missing \"%s\" subplugin!", identity.szName, path);
-			} else {
-				cur_ab.Get("name", path, FF2_MAX_ABILITY_NAME);
-				Format(path, FF2_MAX_LIST_KEY, "%s##%s", buffer, path);
-				identity.ablist.Insert(path, key_name);
-			}
-		}
+		FF2Character_ProcessDownloads(this_char, identity.isNewAPI, identity.name);
+
+		FF2Character_ProcessToSoundMap(this_char, identity.name, identity.soundMap);
 	}
 
-	ConfigMap stacks;
-
-	/**
-	 *	"download" {
-	 *		"<enum>"		"..."
-	 *		"<enum>"		"...."
-	 *		"<enum>"		".."
-	 *	}
-	 */
-	{
-		if( (stacks = this_char.GetSection("download")) ) {
-			for( int i = stacks.Size - 1; i >= 0; i-- ) {
-				if( !stacks.GetIntKey(i, path, PLATFORM_MAX_PATH) )
-					continue;
-
-				if( !FileExists(path, true) ) {
-					LogError("[VSH2/FF2] Character \"%s\" is missing file \"%s\"!", identity.szName, path);
-				} else {
-					AddFileToDownloadsTable(path);
-				}
-			}
-		}
-	}
-
-	/// mat/mod download
-	/**
-	 *	"mat_download" {	///	"mod_download"
-	 *		"<enum>"		"..."
-	 *		"<enum>"		"...."
-	 *		"<enum>"		".."
-	 *	}
-	 */
-	{
-		char model_ext[][] = {
-			".mdl",
-			".dx80.vtx", ".dx90.vtx",
-			".sw.vtx",
-			".vvd",
-			".phy"
-		};
-
-		if( (stacks = this_char.GetSection("mod_download")) ) {
-			for( int i = stacks.Size - 1; i >= 0; i-- ) {
-				if( !stacks.GetIntKey(i, path, PLATFORM_MAX_PATH) )
-					continue;
-
-				for( int j = 0; j < sizeof(model_ext); j++ ) {
-					FormatEx(key_name, PLATFORM_MAX_PATH, "%s%s", path, model_ext[j]);
-					if( FileExists(key_name, true) ) {
-						AddFileToDownloadsTable(key_name);
-					} else if( StrContains(key_name, ".phy") == -1 ) {
-						LogError("[VSH2/FF2] Character \"%s.cfg\" is missing file \"%s\"!", identity.szName, key_name);
-					}
-				}
-			}
-		}
-		if( (stacks = this_char.GetSection("mat_download")) ) {
-			for( int i = stacks.Size - 1; i >= 0; i-- ) {
-				if( !stacks.GetIntKey(i, path, PLATFORM_MAX_PATH) )
-					continue;
-
-				FormatEx(key_name, PLATFORM_MAX_PATH, "%s.vmt", path);
-				if( !FileExists(key_name, true) ) {
-					LogError("[VSH2/FF2] Character \"%s\" is missing file \"%s\"!", identity.szName, key_name);
-				} else {
-					AddFileToDownloadsTable(key_name);
-				}
-
-				FormatEx(key_name, PLATFORM_MAX_PATH, "%s.vtf", path);
-				if( !FileExists(key_name, true) ) {
-					LogError("[VSH2/FF2] Character \"%s\" is missing file \"%s\"!", identity.szName, key_name);
-				} else {
-					AddFileToDownloadsTable(key_name);
-				}
-			}
-		}
-	}
-
-	/// Prepare Sound list
-	{
-		identity.sndHash = new FF2SoundHash();
-
-		ConfigMap _list;
-		FF2SoundList snd_list;
-		FF2SoundIdentity snd_id;
-
-		char curSection[32], _key[48];
-
-		float time; int slot_type;
-		char name[32], artist[32];
-
-		for( int i = size_of_snapshot - 1; i >= 0; i-- ) {
-			snap.GetKey(i, _key, sizeof(_key));
-			bool is_catch_snd = !strncmp(_key, "catch_", 6);
-
-			if (!strncmp(_key, "sound", 5, false) || is_catch_snd ) {
-				_list = this_char.GetSection(_key);
-				if( !_list )	///	sound_block_vo or any other ky that contains soun
-					continue;
-
-				snd_list = identity.sndHash.GetOrCreateList(_key);
-
-				bool is_bgm_section = _list.Get("path1", key_name, PLATFORM_MAX_PATH) > 0;
-
-				for( int j = 0; j <= 15; j++ ) {
-					if( is_bgm_section ) {
-						/**	sound* contains pathX & timeX
-						 *	FF2SoundIdentity = {
-						 *		Path,
-						 *		Time,
-						 *		Song_Name,
-						 *		Atrist_Name
-						 *	};
-						 *
-						 *	"sound_bgm" {
-						 *		"pathX"		"..."	///	required
-						 *		"timeX"		"..."	///	required
-						 *		"nameX"		"..."	///	optional
-						 *		"artistX"	"..."	///	optional
-						 *	}
-						 *
-						 */
-						Format(curSection, sizeof(curSection), "path%i", j + 1);
-						if( !_list.Get(curSection, key_name, PLATFORM_MAX_PATH) )
-							break;
-
-						Format(curSection, sizeof(curSection), "time%i", j + 1);
-						if( !_list.GetFloat(curSection, time) )
-							break;
-
-						Format(curSection, sizeof(curSection), "name%i", j + 1);
-						if( !_list.Get(curSection, name, sizeof(name)) )
-							name = "Unknown Song";
-
-						Format(curSection, sizeof(curSection), "artist%i", j + 1);
-						if( !_list.Get(curSection, artist, sizeof(artist)) )
-							name = "Unknown Artist";
-
-						snd_id.Init(key_name, time, name, artist);
-						snd_list.PushArray(snd_id, sizeof(FF2SoundIdentity));
-					} else {
-						if( !_list.GetIntKey(j, key_name, PLATFORM_MAX_PATH) )
-							continue;
-
-						/**	catch_* 
-						 *	FF2SoundIdentity = {
-						 *		Path,
-						 *		UNUSED,
-						 *		String To Replace || UNUSUED for catch_phrase,
-						 *		UNUSED
-						 *	};
-						 *
-						 *	"catch_phrase" {
-						 *		"<enum>"	"..."	///	required
-						 *		"voX"		"..."	///	required
-						 *	}
-						 *
-						 *	"catch_phrase" {
-						 *		"<enum>"		"..."
-						 *	}
-						 *
-						 */
-						if( is_catch_snd ) {
-							FormatEx(_key, sizeof(_key), "vo%i", j);
-							if( !_list.Get(_key, buffer, sizeof(buffer)) )
-								buffer[0] = '\0';
-						}
-						else {
-							/** sound*
-							 *	FF2SoundIdentity = {
-							 * 		Path,
-							 *		UNUSED,
-							 *		slot'Position'_'FF2CallType_t',
-							 *		UNUSED
-							 *	}; 
-							 *
-							 *	"sound_*" {
-							 *		"<enum>"		"..."
-							 *		"slotX"			"..."	//	only used if section == "sound_ability"
-							 *	}
-							 */
-							FormatEx(_key, sizeof(_key), "slot%i", j);
-							if( !_list.GetInt(_key, slot_type, 2) )
-								slot_type = view_as< int >(CT_RAGE);
-
-							FormatEx(_key, sizeof(_key), "slot%i_%i", j, slot_type);
-						}
-
-						snd_id.Init(key_name, 0.0, _key);
-						snd_list.PushArray(snd_id, sizeof(FF2SoundIdentity));
-					}
-				}
-			}
-		}
-	}
-	
-	delete snap;
 	return true;
 }
 
@@ -333,9 +195,9 @@ methodmap FF2BossManager < StringMap {
 				continue;
 
 			FF2Identity cur_id;
-			strcopy(cur_id.szName, sizeof(FF2Identity::szName), name);
+			strcopy(cur_id.name, sizeof(FF2Identity::name), name);
 			if( FF2_LoadCharacter(cur_id, name) ) {
-				map.SetArray(cur_id.szName, cur_id, sizeof(FF2Identity));
+				map.SetArray(cur_id.name, cur_id, sizeof(FF2Identity));
 			}
 		}
 		return( view_as< FF2BossManager >(map) );
@@ -401,14 +263,311 @@ methodmap FF2BossManager < StringMap {
 		bool res;
 		for( int i = snap.Length - 1; i >= 0 && !res; i-- ) {
 			snap.GetKey(i, key_name, sizeof(key_name));
-			if( this.GetIdentity(key_name, identity) && !strcmp(name, identity.szName) ) {
+			if( this.GetIdentity(key_name, identity) && !strcmp(name, identity.name) ) {
 				res = true;
 			}
 		}
-
 		delete snap;
 		return res;
 	}
 }
 
 FF2BossManager ff2_cfgmgr;
+
+
+static void FF2Character_RegisterAbilities(FF2Character this_char, bool new_api, const char[] boss_name, FF2AbilityList& outablist)
+{
+	///	using "abilities" section for new api, and "character" for old api
+	ConfigMap abilities_section = new_api ? this_char.Config.GetSection("abilities") : this_char.Config;
+	if( !abilities_section )
+		return;
+	///	using "<enum>" keyword for new api, and snapshot with key that start with "ability"
+	StringMapSnapshot snap;
+	if( !new_api )
+		snap = abilities_section.Snapshot();
+	int iter_size 				= new_api ? abilities_section.Size : snap.Length;
+	int free_abilities 			= FF2_MAX_SUBPLUGINS - outablist.Length;
+
+	/**
+	 * new api:
+	 *	"abilities" {
+	 *		"<enum>" {
+	 *			"_id"		"My Ability Id"
+	 *			"_hidden"	"true"	// same as slot == '0b1000'
+	 *		///	"slot"		"1000"	// <unused> flag	///	https://github.com/01Pollux/FF2-Library/wiki/Important-Changes
+	 *		///	"arg0"		"-2"	// default, unused slot
+	 *
+	 *			"name"		"rage_stunsg"
+	 *			"plugin_name"	"default_abilities"
+	 *			
+	 *			"something arg" "100.0"
+	 *		
+	 *			// boss won't be registered without the required subplugins / abilities
+	 *			"requires" {
+	 *				"<enum>"	"MySubpluginName1"
+	 *				"<enum>"	"MySubpluginName2"
+	 *				"<enum>"	"ff2vsh2_defaults"
+	 *			}
+	 *
+	 *			"call" {
+	 *				// next 10 sec, call this ability
+	 *				"timer"		"10.0"
+	 *				// Recursive call every 10.0 sec
+	 *				"name"		"My Ability Id"
+	 *			}
+	 *		}
+	 *	}
+	 *
+	 * old api:
+	 *	/// unlike the actual default api, i'll still allow insertion of multiple abilities with same key, and remove the strict enumeration for it
+	 *	///
+	 *	///	"ability: My Custom Name"
+	 *	///	"AbiLITY_zeaeallalllxxww"
+	 *	///	"AbiLITY41151561515115"
+	 *	///	"ability1" spammed across every ability
+	 *	"ability1" {
+	 *		"name"		"rage_stunsg"
+	 *		"plugin_name"	"default_abilities" 
+	 *
+	 *		"slot"		"0"	///	Batfoxkid's api
+	 *		/// "arg0"	"0"	///	default
+	 *
+	 *		"something arg" "100.0"	/// Batfoxkid's api
+	 *		/// "arg1"		"100.0"	///	default
+	 *	}
+	 *
+	 */
+
+	char path[PLATFORM_MAX_PATH], plugin_name[FF2_MAX_PLUGIN_NAME];
+	for( int i; i<iter_size && free_abilities>0; i++ ) {
+		ConfigMap cur_section;
+		if( new_api ) {
+			cur_section = abilities_section.GetIntSection(i);
+		}
+		else {
+			snap.GetKey(i, path, FF2_MAX_ABILITY_KEY);
+			if( strncmp(path, "ability", 7) )
+				continue;
+			cur_section = abilities_section.GetSection(path);
+		}
+
+		if( !cur_section || !cur_section.Get("plugin_name", plugin_name, sizeof(plugin_name)) )
+			continue;
+		
+		if( !strcmp(plugin_name, "ffbat_defaults") || !strcmp(plugin_name, "default_abilities") ) {
+			LogError("[VSH2/FF2] Character \"%s.cfg\" is using a non supported subplugin \"%s\"!, switching to \"ff2_vsh2defaults\"", boss_name, plugin_name);
+			plugin_name = "ff2_vsh2defaults";
+		}
+
+		BuildPath(Path_SM, path, sizeof(path), "plugins\\freaks\\%s.smx", plugin_name);
+
+		if( !FileExists(path) ) {
+			LogError("[VSH2/FF2] Character \"%s.cfg\" is missing \"%s\" subplugin!", boss_name, plugin_name);
+			continue;
+		} else {
+			bool hide;
+			if( new_api && cur_section.GetBool("_hidden", hide) )
+				cur_section.SetInt("slot", view_as<int>(CT_INACTIVE));
+
+			outablist.Insert(cur_section);
+			--free_abilities;
+		}
+
+		///	Resolve the 'arg0' and the old 'slot'
+		if( !new_api ) {
+			int slot;
+			if( !cur_section.GetInt("arg0", slot) )
+				cur_section.GetInt("slot", slot);
+			cur_section.SetInt("slot", view_as<int>(FF2_OldNumToBitSlot(slot)));	///	defaulted to CT_RAGE in case of rage
+		}
+	}
+
+	delete snap;
+}
+
+static void FF2Character_ProcessDownloads(FF2Character this_char, bool new_api, char[] boss_name)
+{
+	char path[PLATFORM_MAX_PATH], key_name[PLATFORM_MAX_PATH];
+	ConfigMap stacks;
+	ConfigMap downloads_section = new_api ? this_char.Config.GetSection("downloads") : this_char.Config;
+	int extra = new_api ? 0 : 1;
+
+	/**
+	 *	
+	 * new api:
+	 *	"downloads"
+	 *	{
+	 *		"any" {
+	 *			"<enum>"	"..."
+	 *		}
+	 *		"materials" {
+	 *			"<enum>"	"..."
+	 *		}
+	 *		"models" {
+	 *			"<enum>"	"..."
+	 *		}
+	 *	}
+	 *
+	 *
+	 * old api:
+	 *	"download" {
+	 *		"<enum>"		"..."
+	 *		"<enum>"		"...."
+	 *		"<enum>"		".."
+	 *	}
+	 *
+	 *	"mat_download" {	///	"mod_download"
+	 *		"<enum>"		"..."
+	 *		"<enum>"		"...."
+	 *		"<enum>"		".."
+	 *	}
+	 */
+	
+	/// download any
+	{
+		if( (stacks = downloads_section.GetSection(new_api ? "any" : "download")) ) {
+			for( int i = stacks.Size - 1; i >= 0; i-- ) {
+				if( !stacks.GetIntKey(i+extra, path, sizeof(path)) )
+					continue;
+
+				if( !FileExists(path, true) ) {
+					LogError("[VSH2/FF2] Character \"%s\" is missing file \"%s\"!", boss_name, path);
+				} else {
+					AddFileToDownloadsTable(path);
+				}
+			}
+		}
+	}
+
+	{
+		char model_ext[][] = {
+			".mdl",
+			".dx80.vtx", ".dx90.vtx",
+			".sw.vtx",
+			".vvd",
+			".phy"
+		};
+		/// models only
+		if( (stacks = downloads_section.GetSection(new_api ? "models" : "mod_download")) ) {
+			for( int i = stacks.Size - 1; i >= 0; i-- ) {
+				if( !stacks.GetIntKey(i+extra, path, PLATFORM_MAX_PATH) )
+					continue;
+
+				for( int j = 0; j < sizeof(model_ext); j++ ) {
+					FormatEx(key_name, sizeof(key_name), "%s%s", path, model_ext[j]);
+					if( FileExists(key_name, true) ) {
+						AddFileToDownloadsTable(key_name);
+					} else if( StrContains(key_name, ".phy") == -1 ) {
+						LogError("[VSH2/FF2] Character \"%s.cfg\" is missing file \"%s\"!", boss_name, key_name);
+					}
+				}
+			}
+		}
+
+		char mat_ext[][] = {
+			".vmt",
+			".vtf"
+		};
+		/// materials only
+		if( (stacks = downloads_section.GetSection(new_api ? "materials" : "mat_download")) ) {
+			for( int i = stacks.Size - 1; i >= 0; i-- ) {
+				if( !stacks.GetIntKey(i+extra, path, PLATFORM_MAX_PATH) )
+					continue;
+
+				for( int j = 0; j < sizeof(mat_ext); j++ ) {
+					FormatEx(key_name, sizeof(key_name), "%s%s", path, mat_ext[j]);
+					if( FileExists(key_name, true) ) {
+						AddFileToDownloadsTable(key_name);
+					} else if( StrContains(key_name, ".phy") == -1 ) {
+						LogError("[VSH2/FF2] Character \"%s.cfg\" is missing file \"%s\"!", boss_name, key_name);
+					}
+				}
+			}
+		}
+	}
+}
+
+static void FF2Character_ProcessToSoundMap(FF2Character this_char, const char[] boss_name, FF2SoundMap& out_soundmap)
+{
+	out_soundmap = new FF2SoundMap();
+
+	ConfigMap sounds = this_char.Config.GetSection("sounds");
+	StringMapSnapshot snap = sounds.Snapshot();
+	int snap_size = snap.Length;
+
+	for( int i=snap_size-1; i>=0; i-- ) {
+		int len = snap.KeyBufferSize(i);
+		char[] sec_key = new char[len];
+		snap.GetKey(i, sec_key, len);
+		if( !out_soundmap.SetSection(sec_key, sounds.GetSection(sec_key)) ) {
+			LogError("[VSH2/FF2] Character \"%s\" has a duplicate section \"%s\"!", boss_name, sec_key);
+		}
+	}
+
+	delete snap;
+}
+
+///	Instead of checking for literary each time if we should use info section or anything new, why not reparse the config to the new format
+static void _ResolveBackwardCompatibility(FF2Character boss_cfg)
+{
+	bool skip;
+	if( this.Config.GetBool("using.VSH2/FF2 new API", skip) && skip )
+		return;
+
+	ConfigMap cfg = boss_cfg.Config;
+	StringMapSnapshot snap = cfg.Snapshot();
+	int snap_size = snap.Size;
+
+	char import_to_info__new_key[][] = {
+		/// { KEY, NEW_KEY }, don't change for empty new key
+		{ "name", 				"" },
+		{ "model", 				"" },
+		
+		{ "class", 				"" },
+		{ "lives",				"" },
+		
+		{ "health_formula",		"health" },
+		
+		{ "nofirst",			"" },
+		{ "permission",			"" },
+		{ "blocked",			"" },
+		
+		{ "speed",				"speed.min" },
+		{ "minspeed",			"speed.min" },
+		{ "maxspeed",			"speed.max" },
+		
+		{ "companion",			"companion.1" },	//	"companion.<enum>"
+		
+		{ "sound_block_vo",		"mute" },
+		{ "version",			"" },
+	};
+	
+	bool skip_imports[sizeof(import_to_info__new_key)];
+	int skips;
+	PackVal datapack;
+	
+	for( int i; i<snap_size; i++ ) {
+		int len = snap.KeyBufferSize(i);
+		char[] key = new char[len];
+		snap.GetKey(i, key, len);
+		
+		if( skips!=sizeeof(skip_imports) ) {
+			for( int j; j<sizeof(skip_imports); j++ ) {
+				if( skip_imports[j] )
+					continue;
+				if( strcmp(import_to_info__new_key[i][0], key) )
+					continue;
+
+				skips++;
+				if( cfg.GetVal(key, datapack) ) {
+					cfg.SetArray(import_to_info__new_key[i][1], datapack);
+					cfg.Remove(key);
+				}
+			}
+		}
+	}
+	
+	char import_to_info__description[] = {
+		
+	};
+}
