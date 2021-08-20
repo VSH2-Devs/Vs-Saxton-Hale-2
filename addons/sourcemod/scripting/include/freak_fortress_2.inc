@@ -17,6 +17,7 @@ enum FF2CallType_t {
 	CT_RAGE          = 0b000000010,
 	CT_CHARGE        = 0b000000100,
 	CT_UNUSED_DEMO   = 0b000001000, /// UNUSED
+	CT_INACTIVE		 = CT_UNUSED_DEMO,
 	CT_WEIGHDOWN     = 0b000010000,
 	CT_PLAYER_KILLED = 0b000100000,
 	CT_BOSS_KILLED   = 0b001000000,
@@ -82,11 +83,24 @@ enum {
 enum { FF2_MAX_LIST_KEY = FF2_MAX_PLUGIN_NAME + FF2_MAX_ABILITY_NAME + 2 };		/// sizeof key in FF2AbilityList
 enum { INVALID_FF2_BOSS_ID = -1 };	//Invalid VSH2 iBossType
 
+
 enum struct FF2SoundIdentity {
-	char  path[PLATFORM_MAX_PATH];
-	char  name[32];
-	char  artist[32];
-	float time;
+	char path[PLATFORM_MAX_PATH];	///	full sound path
+	float time;						/// 0.0, or song duration
+	char name[32];					///	song name
+	char artist[32];				///	song artist name
+
+	int bit_slot;					/// sound slot property
+
+	int channel;					/// sound channel, default to SNDCHAN_VOICE
+	int flags;						///	sound flags, default to SND_CHANGEPITCH
+	int level;						/// sound level, default to SNDLEVEL_TRAFFIC
+	float volume;					/// sound volume, default = SNDVOL_NORMAL
+	int pitch;						/// sound pitch, default to SNDPITCH_NORMAL
+	
+	bool IsSlotCompatible(FF2CallType_t bit_slot) {
+		return (this.bit_slot & view_as<int>(bit_slot))==bit_slot;
+	}
 }
 
 /**
@@ -114,15 +128,16 @@ methodmap FF2Player < VSH2Player {
 	public native FF2Player(const int index, const bool userid = false);
 	
 	/**
-	 * list of abilities the current boss has
-	 *
-	 * @return				{ { "plugin_name##ability_name", "ability key" }, ... }
+	 * @return		list of ConfigMap, each containing a valid ability
 	 */
-	property StringMap HookedAbilities {
+	property ArrayList HookedAbilities {
 		public native get();
 	}
 	
-	property StringMap SoundCache {
+	/**
+	 * @return		list of ConfigMap, each containing a valid sound entry
+	 */
+	property StringMap SoundMap {
 		public native get();
 	}
 	
@@ -317,19 +332,47 @@ methodmap FF2Player < VSH2Player {
 	 * @note				this will NOT remove/reduce boss charge
 	 */
 	public native void ForceAbility(FF2CallType_t slot);
-	
+
 	/**
 	 * Starts a random Boss sound from its config file
 	 *
 	 * @param keyvalue		Name of sound container
-	 * @param buffer		Buffer for result sound path
-	 * @param bufferLength	Length of buffer
+	 * @param buffer		FF2SoundIdentity Buffer for results
 	 * @param slot 			Only for "sound_ability" - slot of ability
 	 *
 	 * @return		True if sound has been found, false otherwise
 	 */
-	public native bool RandomSound(const char[] key_name, char[] buffer, int maxlen, FF2CallType_t slot=view_as< FF2CallType_t >(2));
+	public native bool RandomSound(const char[] key_name, any[] snd_info, FF2CallType_t slot=view_as< FF2CallType_t >(2));
+
+	public static void ReleaseHookedAbilities(ArrayList& hab) {
+		if( !hab )
+			return;
+		for( int i=hab.Length-1; i>=0; i-- ) {
+			DeleteCfg(view_as<ConfigMap>(hab.Get(i)));
+		}
+		delete hab;
+	}
+
+	public static void ReleaseSoundMap(StringMap& smap) {
+		if( !smap )
+			return;
+		StringMapSnapshot snap = smap.Snapshot();
+
+		for( int i=smap.Length-1; i>=0; i-- ) {
+			int len = snap.KeyBufferSize(i);
+			char[] key = new char[len];
+			snap.GetKey(i, key, len);
+
+			ConfigMap cfg;
+			smap.GetValue(key, cfg);
+			DeleteCfg(cfg);
+		}
+
+		delete snap;
+		delete smap;
+	}
 }
+
 
 /**
  * bPackSelected
@@ -373,7 +416,7 @@ methodmap FF2GameMode < VSH2GameMode
 	public static native StringMap SubPlugins();
 
 	property bool FF2IsOn {
-		public get() { return FF2GameMode.IsOn(); }
+		public get() { return LibraryExists("VSH2") && FF2GameMode.IsOn(); }
 	}
 
 	property int RoundState {
@@ -396,7 +439,8 @@ methodmap FF2GameMode < VSH2GameMode
  */
 stock bool FF2_IsFF2Enabled()
 {
-	return FF2GameMode.IsOn();
+	FF2GameMode gm;
+	return gm.FF2IsOn;
 }
 
 /**
@@ -831,7 +875,11 @@ stock void FF2_GetArgNamedS(int boss, const char[] pluginName, const char[] abil
  */
 stock bool FF2_RandomSound(const char[] keyvalue, char[] buffer, int bufferLength, int boss=0, int slot=0)
 {
-	return FF2Player(boss, true).RandomSound(keyvalue, buffer, bufferLength, view_as< FF2CallType_t >(slot));
+	FF2SoundIdentity info;
+	if(! FF2Player(boss, true).RandomSound(keyvalue, info, view_as< FF2CallType_t >(slot)) ) {
+		return false;
+	}
+	return strcopy(buffer, bufferLength, info.path) > 0;
 }
 
 /**
@@ -999,9 +1047,9 @@ stock void FF2_SetClientGlow(int client, float time1, float time2=-1.0)
 stock void FF2_LogError(const char[] message, any ...)
 {
 	int len = PLATFORM_MAX_PATH + strlen(message);
-	char str[len];
-	VFormat(str, len, message, 2);
-	FF2GameMode.LogError(str);
+	char[] err = new char[len];
+	VFormat(err, len, message, 2);
+	FF2GameMode.LogError(err);
 }
 
 /**
@@ -1389,8 +1437,13 @@ static void GetThisPluginName()
 	GetPluginFilename(INVALID_HANDLE, pluginName, sizeof(pluginName));
 	
 	/// make sure the file ends with ".smx"
-	int extension_index = FindCharInString(plugin_buffer, '.', true);
-	if( extension_index == -1 || extension_index + 3 >= sizeof(pluginName) || plugin_buffer[extension_index+1] != 's'|| plugin_buffer[extension_index+2] != 'm' || plugin_buffer[extension_index+3] != 'x' ) {
+	int extension_index = FindCharInString(pluginName, '.', true);
+	if( extension_index == -1 ||
+		extension_index + 3 >= sizeof(pluginName) ||
+		pluginName[extension_index+1] != 's'||
+		pluginName[extension_index+2] != 'm' ||
+		pluginName[extension_index+3] != 'x' 
+	  ) {
 		return;
 	}
 
@@ -1424,7 +1477,9 @@ static void GetThisPluginName()
 public void OnPluginStart()
 {
 	GetThisPluginName();
-	OnPluginStart2();
+	FF2GameMode gm;
+	if( gm.FF2IsOn )
+		OnPluginStart2();
 }
 
 #if defined FF2_USING_AUTO_PLUGIN

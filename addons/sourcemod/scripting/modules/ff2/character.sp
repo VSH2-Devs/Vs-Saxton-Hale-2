@@ -292,8 +292,8 @@ static void FF2Character_RegisterAbilities(FF2Character this_char, bool new_api,
 	 * new api:
 	 *	"abilities" {
 	 *		"<enum>" {
-	 *			"_id"		"My Ability Id"
-	 *			"_hidden"	"true"	// same as slot == '0b1000'
+	 *			"ability id"		"My Ability Id"
+	 *			"hidden slot"	"true"	// same as slot == '0b1000'
 	 *		///	"slot"		"1000"	// <unused> flag	///	https://github.com/01Pollux/FF2-Library/wiki/Important-Changes
 	 *		///	"arg0"		"-2"	// default, unused slot
 	 *
@@ -366,7 +366,7 @@ static void FF2Character_RegisterAbilities(FF2Character this_char, bool new_api,
 			continue;
 		} else {
 			bool hide;
-			if( new_api && cur_section.GetBool("_hidden", hide) )
+			if( new_api && cur_section.GetBool("hidden slot", hide) && hide )
 				cur_section.SetInt("slot", view_as<int>(CT_INACTIVE));
 
 			outablist.Insert(cur_section);

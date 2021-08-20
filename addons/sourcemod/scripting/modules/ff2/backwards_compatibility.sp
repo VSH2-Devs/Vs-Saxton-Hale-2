@@ -9,122 +9,191 @@
 	PrintToServer("%.12f", time)
 */
 
-static ConfigMap ConfigMap_NewSection(ConfigMap parent, const char[] name)
-{
-	PackVal val;
-	StringMap sm = new StringMap();
-	
-	val.tag = KeyValType_Section;
-	val.data = new DataPack();
-	val.data.WriteCell(sm);
-	val.size = sizeof(StringMap);
-	
-	parent.SetArray(name, val, sizeof(val));
-	return view_as<ConfigMap>(sm);
-}
+methodmap ConfigMapAllocator {
+	public ConfigMapAllocator(ConfigMap cfg) {
+		return view_as< ConfigMapAllocator >( cfg );
+	}
 
-/// Insert a packval to the ConfigMap, if the key doesn't exists, create its new (sub)section(s)
-static ConfigMap _EnsureSectionExists(ConfigMap section, const char[] key, PackVal pack, int enumeration = 0, KeyValType type = KeyValType_Value)
-{
-	int i; /// used for `key`.
-	char final_section[PLATFORM_MAX_PATH];
-	ParseTargetPath(key, final_section, sizeof(final_section));
-		
-	bool skip_call = false;	///	don't care StringMap::GetArray during the next iterations
-	ConfigMap itermap = section;
-	while( itermap != null ) {
-		int n;
-		char curr_section[PLATFORM_MAX_PATH];
-		/// Patch: allow keys to use dot without interfering with dot path.
-		while( key[i] != 0 ) {
-			if( key[i]=='\\' && key[i+1] != 0 && key[i+1]=='.' ) {
-				i++;
-				if( n<PLATFORM_MAX_PATH ) {
-					curr_section[n++] = key[i++];
-				}
-			} else if( key[i]=='.' ) {
-				i++;
-				break;
-			} else {
-				if( n<PLATFORM_MAX_PATH ) {
-					curr_section[n++] = key[i++];
-				}
-			}
-		}
+	property ConfigMap Config {
+		public get() { return view_as< ConfigMap >( this );}
+	}
 
+	public ConfigMap NewSection(const char[] name) {
 		PackVal val;
-		if( StrEqual(curr_section, final_section) ) {
-			/// this is a new section
-			if( skip_call || !itermap.GetArray(curr_section, val, sizeof(val)) ) {
-				/// an enumerated section
-				if( enumeration > 0 ) {
-					ConfigMap final_cfg = ConfigMap_NewSection(itermap, curr_section);
-					char int_key[10];
-					if( type==KeyValType_Section ) {
-						for( int j; j<enumeration; j++ ) {
-							IntToString(j, int_key, sizeof(int_key));
-							PackVal sec;
-							
-							sec.data = new DataPack();
-							sec.size = sizeof(StringMap);
-							sec.data.WriteCell(new StringMap());
-							sec.tag = KeyValType_Section;
-							
-							final_cfg.SetArray(int_key, sec, sizeof(sec));
-						}
-					}
-					itermap = final_cfg;
-				}
-				else {
-					StringMap retsm = itermap;
-					if( type==KeyValType_Section ) {
-						retsm = new StringMap();
+		StringMap sm = new StringMap();
+		
+		val.tag = KeyValType_Section;
+		val.data = new DataPack();
+		val.data.WriteCell(sm);
+		val.size = sizeof(StringMap);
+		
+		this.Config.SetArray(name, val, sizeof(val));
+		return view_as<ConfigMap>(sm);
+	}
+	
+	public void NewValue(const char[] name, const char[] value, int size) {
+		PackVal val;
 
-						pack.tag = KeyValType_Section;
-						pack.data = new DataPack();
-						pack.data.WriteCell(retsm);
-						pack.size = sizeof(StringMap);
+		val.tag = KeyValType_Value;
+		val.data = new DataPack();
+		val.data.WriteString(value);
+		val.size = size;
+		
+		this.Config.SetArray(name, val, sizeof(val));
+	}
+
+	/// Insert a packval to the ConfigMap, if the key doesn't exists, create its new (sub)section(s)
+	///	if enumeration is greater than 0
+	/// 	if KeyValType_Section or (KeyValType_Value and enumeration greater than 1)
+	///			packval must be null
+	///	else 
+	///		if KeyValType_Section
+	///			packval must be null
+	public ConfigMap EnsureSectionExists(const char[] key, PackVal pack, int enumeration = 0, KeyValType type = KeyValType_Value) {
+		int i; /// used for `key`.
+		char final_section[PLATFORM_MAX_PATH];
+		ParseTargetPath(key, final_section, sizeof(final_section));
+			
+		bool skip_call = false;	///	don't care and skip StringMap::GetArray during the next iterations
+		ConfigMap itermap = this.Config;
+		while( itermap != null ) {
+			int n;
+			char curr_section[PLATFORM_MAX_PATH];
+			/// Patch: allow keys to use dot without interfering with dot path.
+			while( key[i] != 0 ) {
+				if( key[i]=='\\' && key[i+1] != 0 && key[i+1]=='.' ) {
+					i++;
+					if( n<PLATFORM_MAX_PATH ) {
+						curr_section[n++] = key[i++];
 					}
-					
-					itermap.SetArray(curr_section, pack, sizeof(pack));
-					itermap = view_as<ConfigMap>(retsm);
+				} else if( key[i]=='.' ) {
+					i++;
+					break;
+				} else {
+					if( n<PLATFORM_MAX_PATH ) {
+						curr_section[n++] = key[i++];
+					}
 				}
 			}
-			return itermap;
+	
+			PackVal val;
+			if( StrEqual(curr_section, final_section) ) {
+				/// this is a new section
+				if( skip_call || !itermap.GetArray(curr_section, val, sizeof(val)) ) {
+					/// an enumerated section
+					if( enumeration > 0 ) {
+						ConfigMapAllocator final_cfg = ConfigMapAllocator(ConfigMapAllocator(itermap).NewSection(curr_section));
+						char int_key[10];
+
+						switch( type ) {
+						case KeyValType_Section: {
+							for( int j; j<enumeration; j++ ) {
+								IntToString(j, int_key, sizeof(int_key));
+								final_cfg.NewSection(int_key);
+							}
+						}
+						case KeyValType_Value: {
+							if( enumeration>1 ) {
+								for( int j; j<enumeration; j++ ) {
+									IntToString(j, int_key, sizeof(int_key));
+									final_cfg.NewValue(int_key, "", 0);
+								}
+							}
+							else {
+								int size = pack.size;
+								char[] str = new char[size];
+								pack.data.Reset();
+								pack.data.ReadString(str, size);
+								final_cfg.Config.SetArray("0", pack, sizeof(pack));
+								//final_cfg.NewValue("0", str, size);
+							}
+						}
+						default: { }
+						}
+
+						itermap = final_cfg.Config;
+					}
+					else {
+						/// a key-value
+						StringMap retsm = itermap;
+						switch( type ) {
+						case KeyValType_Section: {
+							if( pack.data )
+								delete pack.data;
+
+							retsm = new StringMap();
+
+							pack.tag = KeyValType_Section;
+							pack.data = new DataPack();
+							pack.data.WriteCell(retsm);
+							pack.size = sizeof(StringMap);
+						}
+						case KeyValType_Value: {
+							/// Section was moved
+							if( !pack.data ) {
+								pack.tag = KeyValType_Value;
+								pack.data = new DataPack();
+								pack.data.WriteString("");
+								pack.size = 0;
+							}
+						}
+						default: { }
+						}
+						
+						itermap.SetArray(curr_section, pack, sizeof(pack));
+						itermap = view_as<ConfigMap>(retsm);
+					}
+				}
+				return itermap;
+			}
+			if( skip_call || !itermap.GetArray(curr_section, val, sizeof(val)) ) {
+				itermap = ConfigMapAllocator(itermap).NewSection(curr_section);
+				skip_call = true;
+			} else if( val.tag==KeyValType_Section ) {
+				val.data.Reset();
+				itermap = val.data.ReadCell();
+			}
+			///	we don't care about value, its the end of parsing
+			else break;
 		}
-		bool result = skip_call || itermap.GetArray(curr_section, val, sizeof(val));
-		if( !result ) {
-			itermap = ConfigMap_NewSection(itermap, curr_section);
-			skip_call = true;
-		} else if( val.tag==KeyValType_Section ) {
-			val.data.Reset();
-			itermap = val.data.ReadCell();
+		return null;
+	}
+
+	public ConfigMap ReserveNewSection(const char[] new_key, int enumeration = 0) {
+		PackVal empty;
+		return this.EnsureSectionExists(new_key, empty, enumeration, KeyValType_Section);
+	}
+
+	public void ReserveNewValues(const char[] new_key, int enumeration = 0) {
+		PackVal empty;
+		this.EnsureSectionExists(new_key, empty, enumeration, KeyValType_Value);
+	}
+
+	public void CloneToSection(const char[] old_key, const char[] new_key, int enumeration = 0) {
+		PackVal datapack;
+		if( this.Config.GetVal(old_key, datapack) ) {
+			datapack.data = view_as<DataPack>(CloneHandle(datapack.data));
+			this.EnsureSectionExists(new_key, datapack, enumeration, KeyValType_Value);
 		}
-		///	we don't care about value, its the end of parsing
-		else break;
 	}
-	return null;
-}
-
-static void _InsertNewSectionToConfigMap(ConfigMap cfg, const char[] old_key, const char[] new_key, int enumeration = 0, KeyValType type = KeyValType_Null)
-{
-	PackVal datapack;
-	if( cfg.GetVal(old_key, datapack) ) {
-		datapack.data = view_as<DataPack>(CloneHandle(datapack.data));
-		_EnsureSectionExists(cfg, new_key, datapack, enumeration, type);
+	
+	public void MoveToSection(const char[] cur_key, ConfigMap target, const char[] new_key) {
+		PackVal pack;
+		if( this.Config.GetArray(cur_key, pack, sizeof(pack)) ) {
+			target.SetArray(new_key, pack, sizeof(pack));
+			pack.data = null;
+			pack.tag = KeyValType_Null;
+			pack.size = 0;
+			this.Config.SetArray(cur_key, pack, sizeof(pack));
+		}
 	}
 }
 
-static ConfigMap _ReserveNewSectionForConfigMap(const ConfigMap cfg, const char[] new_key, int enumeration = 0, KeyValType type = KeyValType_Section)
-{
-	PackVal datapack;
-	return _EnsureSectionExists(cfg, new_key, datapack, enumeration, type);
-}
+#define KeyValType_MovedSection view_as<KeyValType>(KeyValType_Value + 1)
 
+#define FF2_RESOLVE_FUNC(%0)	static stock void FF2Resolve_%0(ArrayList delete_list, const ConfigMapAllocator cfg, char[] key, int len)
 
-#define FF2_RESOLVE_FUNC(%0)	static stock void FF2Resolve_%0(ArrayList delete_list, const ConfigMap cfg, char[] key, int len)
-
-static bool FF2Resolve_GenericInfo(ArrayList delete_list, const ConfigMap cfg, char[] key, bool[] skip_imports, int skips)
+static bool FF2Resolve_GenericInfo(ArrayList delete_list, const ConfigMapAllocator cfg, char[] key, bool[] skip_imports, int skips)
 {
 	char generic_info_keys[][][] = {
 		///{ old section,		new section,		enumeration for <enum> }
@@ -150,8 +219,8 @@ static bool FF2Resolve_GenericInfo(ArrayList delete_list, const ConfigMap cfg, c
 		{ "sound_block_vo",		"info.mute",		'0' },	/// 12
 		{ "version",			"info.version",		'0' },	/// 13
 	};
-
 	const int size_of_skips = sizeof(generic_info_keys);
+
 	///	generic_info_keys section
 	/// import some required keys to the info section
 	if( skips!=size_of_skips ) {
@@ -166,16 +235,15 @@ static bool FF2Resolve_GenericInfo(ArrayList delete_list, const ConfigMap cfg, c
 				else skip_imports[j] = true;
 			skips++;
 	
-			_InsertNewSectionToConfigMap(
-				cfg,
-				generic_info_keys[j][0],
-				generic_info_keys[j][1],
-				generic_info_keys[j][2][0]-'0',
-				KeyValType_Value
+			cfg.CloneToSection(
+				generic_info_keys[j][0],		///	old_key
+				generic_info_keys[j][1],		///	new_key
+				generic_info_keys[j][2][0]-'0'	///	enumeration
 			);
 			return true;
 		}
 	}
+
 	return false;
 }
 
@@ -189,12 +257,10 @@ FF2_RESOLVE_FUNC(Description)
 		FormatEx(new_key, len, "%s", key);
 		new_key[pos] = '\0';
 		Format(new_key, len+5, "info.%s.%s", new_key, new_key[pos+1]);
-		_InsertNewSectionToConfigMap(
-			cfg,
+		cfg.CloneToSection(
 			key,
 			new_key,
-			0,
-			KeyValType_Value
+			0
 		);
 	}
 }
@@ -211,8 +277,8 @@ FF2_RESOLVE_FUNC(WeaponSection)
 
 	FormatEx(tmp_key, 24, "weapons.%i", num);
 
-	ConfigMap to_move_to = _ReserveNewSectionForConfigMap(cfg, tmp_key, 0);
-	ConfigMap to_move_from = cfg.GetSection(key);
+	ConfigMap to_move_to = cfg.ReserveNewSection(tmp_key);
+	ConfigMap to_move_from = cfg.Config.GetSection(key);
 	StringMapSnapshot sub_snap = to_move_from.Snapshot();
 
 	///	Move sections from "weapon%i" to "weapons.%i"
@@ -264,11 +330,11 @@ FF2_RESOLVE_FUNC(SoundSection)
 		!strcmp(key[4], "h_replace") ? SST_REPLACE :
 		SST_GENERIC;
 
-	ConfigMap sound_section = cfg.GetSection(key);
+	ConfigMapAllocator sound_section = ConfigMapAllocator(cfg.Config.GetSection(key));
 	int sections_count;
 
 	///	find all highest section index
-	StringMapSnapshot snap = sound_section.Snapshot();
+	StringMapSnapshot snap = sound_section.Config.Snapshot();
 	int snap_size = snap.Length;
 	for( int i=snap_size-1; i>=0; i-- ) {
 		char intkey[12];
@@ -288,11 +354,9 @@ FF2_RESOLVE_FUNC(SoundSection)
 	FormatEx(final_outkey, len + 7, "sounds.%s", key[6]);
 	
 	ConfigMap final_section =
-		_ReserveNewSectionForConfigMap(
-			cfg,
+		cfg.ReserveNewSection(
 			final_outkey, 
-			sections_count, 
-			KeyValType_Section
+			sections_count
 		);
 
 	PackVal pack;
@@ -306,13 +370,7 @@ FF2_RESOLVE_FUNC(SoundSection)
 			char rkey[4];
 			IntToString(i+1, rkey, sizeof(rkey));
 			
-			if( sound_section.GetArray(rkey, pack, sizeof(pack)) ) {
-				cur_final.SetArray("path", pack, sizeof(pack));
-				pack.data = null;
-				pack.tag = KeyValType_Null;
-				pack.size = 0;
-				sound_section.SetArray(rkey, pack, sizeof(pack));
-			}
+			sound_section.MoveToSection(rkey, cur_final, "path");
 		}
 		case SST_BGM: {
 			char keys[][] = {
@@ -325,13 +383,7 @@ FF2_RESOLVE_FUNC(SoundSection)
 
 			for( int j; j<sizeof(keys); j++ ) {
 				FormatEx(rkey, sizeof(rkey), "%s%i", keys[j], i+1);
-				if( sound_section.GetArray(rkey, pack, sizeof(pack)) ) {
-					cur_final.SetArray(keys[j], pack, sizeof(pack));
-					pack.data = null;
-					pack.tag = KeyValType_Null;
-					pack.size = 0;
-					sound_section.SetArray(rkey, pack, sizeof(pack));
-				}
+				sound_section.MoveToSection(rkey, cur_final, keys[j]);
 			}
 		}
 		case SST_ABILITY: {
@@ -347,7 +399,7 @@ FF2_RESOLVE_FUNC(SoundSection)
 
 			for( int j; j<sizeof(set_keys); j++ ) {
 				FormatEx(rkey, sizeof(rkey), "%s%i", fetch_keys[j], i+1);
-				if( sound_section.GetArray(rkey, pack, sizeof(pack)) ) {
+				if( sound_section.Config.GetArray(rkey, pack, sizeof(pack)) ) {
 					if( j ) {
 						char tmp[16];
 						pack.data.Reset();
@@ -364,7 +416,7 @@ FF2_RESOLVE_FUNC(SoundSection)
 					pack.data = null;
 					pack.tag = KeyValType_Null;
 					pack.size = 0;
-					sound_section.SetArray(rkey, pack, sizeof(pack));
+					sound_section.Config.SetArray(rkey, pack, sizeof(pack));
 				}
 			}
 		}
@@ -381,13 +433,7 @@ FF2_RESOLVE_FUNC(SoundSection)
 
 			for( int j; j<sizeof(keys); j++ ) {
 				FormatEx(rkey, sizeof(rkey), "%s%i", keys[j], i+1);
-				if( sound_section.GetArray(rkey, pack, sizeof(pack)) ) {
-					cur_final.SetArray(set_keys[j], pack, sizeof(pack));
-					pack.data = null;
-					pack.tag = KeyValType_Null;
-					pack.size = 0;
-					sound_section.SetArray(rkey, pack, sizeof(pack));
-				}
+				sound_section.MoveToSection(rkey, cur_final, set_keys[j]);
 			}
 		}
 		}
@@ -400,12 +446,13 @@ FF2_RESOLVE_FUNC(SoundSection)
 ///	Instead of checking for literary each time if we should use info section or anything new, why not reparse the config to the new format
 /// Note: some keys will be discared and ignored unless you have "using.VSH2/FF2 new API" key set to true
 /// TODO: don't process all in one frame, try creating multiple frames each time until it ends
-void FF2_ResolveBackwardCompatibility(ConfigMap cfg)
+void FF2_ResolveBackwardCompatibility(ConfigMap charcfg)
 {
-	StringMapSnapshot snap = cfg.Snapshot();
+	StringMapSnapshot snap = charcfg.Snapshot();
 	int snap_size = snap.Length;
 
 	ArrayList delete_list = new ArrayList(ByteCountToCells(64));
+	ConfigMapAllocator cfg = ConfigMapAllocator(charcfg);
 
 	/// resolve info section
 	{
@@ -461,7 +508,7 @@ void FF2_ResolveBackwardCompatibility(ConfigMap cfg)
 		char key[64];
 		for ( int j; j<delete_list.Length; j++ ) {
 			delete_list.GetString(j, key, sizeof(key));
-			cfg.DeleteSection(key);
+			charcfg.DeleteSection(key);
 		}
 	}
 

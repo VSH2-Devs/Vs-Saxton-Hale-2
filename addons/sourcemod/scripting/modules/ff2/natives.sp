@@ -39,10 +39,9 @@ void InitNatives()
 	CREATE_NATIVE(ForceAbility);
 
 	CREATE_NATIVE(RandomSound);
-///	CREATE_NATIVE(GetSounds); TODO
 	CREATE_NATIVE(RageDist);
 
-	CREATE_NATIVE_GET(SoundCache);
+	CREATE_NATIVE_GET(SoundMap);
 	CREATE_NATIVE_GET(HookedAbilities);
 	CREATE_NATIVE(PlayBGM);
 
@@ -266,10 +265,20 @@ any Native_FF2Player_GetSection(Handle plugin, int numParams)
 any Native_FF2Player_HookedAbilities_Get(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
-	return( player.HookedAbilities );
+	ArrayList cur_list = player.HookedAbilities;
+	if( !cur_list ) {
+		return 0;
+	}
+
+	ArrayList out_list = new ArrayList();
+	for( int i=cur_list.Length-1; i>=0; i-- ) {
+		out_list.Push(view_as<ConfigMap>(cur_list.Get(i)).Clone(plugin));
+	}
+
+	return out_list;
 }
 
-any Native_FF2Player_SoundCache_Get(Handle plugin, int numParams)
+any Native_FF2Player_SoundMap_Get(Handle plugin, int numParams)
 {
 	FF2Player player = GetNativeCell(1);
 	FF2Identity identity;
@@ -278,19 +287,15 @@ any Native_FF2Player_SoundCache_Get(Handle plugin, int numParams)
 
 	StringMap out_cfg = new StringMap();
 	StringMapSnapshot snap = identity.soundMap.Snapshot();
-	int size = snap.Length - 1;
-	
-	
-	while( size > 0) {
-		int len = snap.KeyBufferSize(size);
+
+	for( int i=snap.Length-1; i>=0; i-- ) {
+		int len = snap.KeyBufferSize(i);
 		char[] key = new char[len];
-		snap.GetKey(size, key, len);
+		snap.GetKey(i, key, len);
 		
 		ConfigMap section;
 		identity.soundMap.GetValue(key, section);
 		out_cfg.SetValue(key, section.Clone(plugin));
-		
-		--size;
 	}
 	
 	delete snap;

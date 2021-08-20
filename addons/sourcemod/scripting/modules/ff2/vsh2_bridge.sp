@@ -141,9 +141,16 @@ void OnBossCalcHealthFF2(const VSH2Player player, int& max_health, const int bos
 
 	ConfigMap cfg = FF2Character(identity.hCfg).InfoSection;
 	char formula[64];
-	if( cfg.Get("health_formula", formula, sizeof(formula)) ) {
+	if( cfg.Get("health", formula, sizeof(formula)) ) {
 		max_health = RoundToFloor(ParseFormula(formula, boss_count + red_players));
 	}
+
+	int health_cfg;
+	if( cfg.GetInt("max health", health_cfg) && health_cfg > 0 && max_health > health_cfg )
+		max_health = health_cfg;
+
+	if( cfg.GetInt("min health", health_cfg) && health_cfg > 0 && health_cfg < max_health )
+		max_health = health_cfg;
 
 	///	Support for multilives: https://github.com/01Pollux/FF2-Library/blob/VSH2/addons/sourcemod/scripting/ff2_multilives.sp
 	int lives;
@@ -332,7 +339,7 @@ Action OnBossSuperJumpFF2(const VSH2Player vsh2player)
 		return Plugin_Continue;
 
 	Call_FF2OnAbility(player, CT_CHARGE);
-	identity.soundMap.PlaySoundClipFromInfo(vsh2player, identity.hCfg.GetSection("info.Superjump"), CT_CHARGE);
+	identity.soundMap.PlayAbilitySound(vsh2player, identity.hCfg.GetSection("info.Superjump"), CT_CHARGE);
 	return Plugin_Continue;
 }
 
@@ -343,7 +350,7 @@ void OnBossWeighDownFF2(const VSH2Player vsh2player)
 		return;
 	
 	Call_FF2OnAbility(ToFF2Player(vsh2player), CT_WEIGHDOWN);
-	identity.soundMap.PlaySoundClipFromInfo(vsh2player, identity.hCfg.GetSection("info.Weighdown"), CT_WEIGHDOWN);
+	identity.soundMap.PlayAbilitySound(vsh2player, identity.hCfg.GetSection("info.Weighdown"), CT_WEIGHDOWN);
 }
 
 void OnBossModelTimerFF2(const VSH2Player player)
@@ -355,7 +362,6 @@ void OnBossModelTimerFF2(const VSH2Player player)
 	int client = player.index;
 	char model[PLATFORM_MAX_PATH];
 	if( identity.hCfg.Get("character.info.model", model, sizeof(model)) ) {
-		PrintToServer("%s", model);
 		SetVariantString(model);
 		AcceptEntityInput(client, "SetCustomModel");
 		SetEntProp(client, Prop_Send, "m_bUseClassAnimations", 1);

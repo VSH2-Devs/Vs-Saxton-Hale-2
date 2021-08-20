@@ -190,7 +190,7 @@ methodmap FF2SoundMap < StringMap  {
 		return this.SetValue(name, sec, false);
 	}
 
-	public void PlaySoundClipFromInfo(VSH2Player player, ConfigMap section, FF2CallType_t type) {
+	public void PlayAbilitySound(VSH2Player player, ConfigMap section, FF2CallType_t type) {
 		bool play_any = false;
 		if( section.GetBool("custom", play_any) && play_any )
 			return;

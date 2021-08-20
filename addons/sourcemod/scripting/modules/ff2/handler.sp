@@ -41,16 +41,13 @@ void ProcessOnCallDownload()
 			if( !precache_section ) precache_section = cfg.Config.GetSection(new_api ? "downloads.models" : "mod_download");
 			int extra = new_api ? 0 : 1;	///	offset and start at 1 instead of 0
 
-			PrintToServer("BegPrecaching\n");
 			if( precache_section ) {
 				for( int j=precache_section.Size-1; j>=0; j-- ) {
 					if( precache_section.GetIntKey(j + extra, path, sizeof(path)) && path[0] ) {
 						PrecacheModel(path, true);
-						PrintToServer("Precaching: %s", path);
 					}
 				}
 			}
-			PrintToServer("EndPrecaching\n");
 		}
 		delete snap;
 	}
