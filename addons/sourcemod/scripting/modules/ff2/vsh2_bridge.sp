@@ -115,8 +115,8 @@ void OnBossMenuFF2(Menu& menu, const VSH2Player player)
 			bool tmp;
 			if( 
 				( !cfg.Get("name", boss_name, sizeof(boss_name)) ) ||
-				( cfg.GetBool("blocked", tmp) && tmp ) || 
-				( cfg.GetBool("nofirst", tmp) && tmp && !num_rounds )
+				( cfg.GetBool("blocked", tmp, false) && tmp ) || 
+				( cfg.GetBool("nofirst", tmp, false) && tmp && !num_rounds )
 			  )
 				continue;
 
@@ -217,7 +217,7 @@ void OnBossThinkFF2(const VSH2Player vsh2player)
 	{
 		ConfigMap speed_sec = info_sec.GetSection("speed");
 		bool custom;
-		if( !speed_sec.GetBool("managed", custom) || !custom ) {
+		if( !speed_sec.GetBool("managed", custom, false) || !custom ) {
 			float start_speed;
 			if( !speed_sec.GetFloat("min", start_speed) )
 				start_speed = 350.0;
@@ -420,9 +420,9 @@ void OnBossInitializedFF2(const VSH2Player vsh2player)
 	SetEntProp(player.index, Prop_Send, "m_iClass", cls);
 	{
 		bool tmp;
-		player.bNoSuperJump = cfg.GetBool("Superjump.custom", tmp) && tmp;
-		player.bNoWeighdown = cfg.GetBool("Weightdown.custom", tmp) && tmp;
-		player.bHideHUD 	= cfg.GetBool("HUD.custom", tmp) && tmp;
+		player.bNoSuperJump = cfg.GetBool("Superjump.custom", tmp, false) && tmp;
+		player.bNoWeighdown = cfg.GetBool("Weightdown.custom", tmp, false) && tmp;
+		player.bHideHUD 	= cfg.GetBool("HUD.custom", tmp, false) && tmp;
 	}
 
 	/// Process Set Companion
@@ -741,7 +741,7 @@ Action OnSoundHookFF2(const VSH2Player player, char sample[PLATFORM_MAX_PATH], i
 		}
 
 		bool sound_block;
-		if( identity.hCfg.GetBool("character.info.mute", sound_block) && sound_block ) {
+		if( identity.hCfg.GetBool("character.info.mute", sound_block, false) && sound_block ) {
 			return Plugin_Stop;
 		}
 	}

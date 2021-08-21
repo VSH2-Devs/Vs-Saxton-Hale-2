@@ -18,10 +18,6 @@ methodmap FF2Character {
 	property ConfigMap MapExcludeSection {
 		public get() { return( this.Config.GetSection("map_exclude") ); }
 	}
-
-	public void ResolveBackwardCompatibility() {
-		_ResolveBackwardCompatibility(this);
-	}
 }
 
 methodmap FF2Ability {
@@ -366,7 +362,7 @@ static void FF2Character_RegisterAbilities(FF2Character this_char, bool new_api,
 			continue;
 		} else {
 			bool hide;
-			if( new_api && cur_section.GetBool("hidden slot", hide) && hide )
+			if( new_api && cur_section.GetBool("hidden slot", hide, false) && hide )
 				cur_section.SetInt("slot", view_as<int>(CT_INACTIVE));
 
 			outablist.Insert(cur_section);
@@ -505,69 +501,4 @@ static void FF2Character_ProcessToSoundMap(FF2Character this_char, const char[] 
 	}
 
 	delete snap;
-}
-
-///	Instead of checking for literary each time if we should use info section or anything new, why not reparse the config to the new format
-static void _ResolveBackwardCompatibility(FF2Character boss_cfg)
-{
-	bool skip;
-	if( this.Config.GetBool("using.VSH2/FF2 new API", skip) && skip )
-		return;
-
-	ConfigMap cfg = boss_cfg.Config;
-	StringMapSnapshot snap = cfg.Snapshot();
-	int snap_size = snap.Size;
-
-	char import_to_info__new_key[][] = {
-		/// { KEY, NEW_KEY }, don't change for empty new key
-		{ "name", 				"" },
-		{ "model", 				"" },
-		
-		{ "class", 				"" },
-		{ "lives",				"" },
-		
-		{ "health_formula",		"health" },
-		
-		{ "nofirst",			"" },
-		{ "permission",			"" },
-		{ "blocked",			"" },
-		
-		{ "speed",				"speed.min" },
-		{ "minspeed",			"speed.min" },
-		{ "maxspeed",			"speed.max" },
-		
-		{ "companion",			"companion.1" },	//	"companion.<enum>"
-		
-		{ "sound_block_vo",		"mute" },
-		{ "version",			"" },
-	};
-	
-	bool skip_imports[sizeof(import_to_info__new_key)];
-	int skips;
-	PackVal datapack;
-	
-	for( int i; i<snap_size; i++ ) {
-		int len = snap.KeyBufferSize(i);
-		char[] key = new char[len];
-		snap.GetKey(i, key, len);
-		
-		if( skips!=sizeeof(skip_imports) ) {
-			for( int j; j<sizeof(skip_imports); j++ ) {
-				if( skip_imports[j] )
-					continue;
-				if( strcmp(import_to_info__new_key[i][0], key) )
-					continue;
-
-				skips++;
-				if( cfg.GetVal(key, datapack) ) {
-					cfg.SetArray(import_to_info__new_key[i][1], datapack);
-					cfg.Remove(key);
-				}
-			}
-		}
-	}
-	
-	char import_to_info__description[] = {
-		
-	};
 }

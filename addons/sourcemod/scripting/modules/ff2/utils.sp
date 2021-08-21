@@ -78,7 +78,7 @@ stock int GetArgNamedB(FF2Player player, const char[] plugin_name, const char[] 
 	}
 	
 	bool result;
-	return( section.GetBool(argument, result) ? result:defval );
+	return( section.GetBool(argument, result, false) ? result:defval );
 }
 
 stock int GetArgNamedI(FF2Player player, const char[] plugin_name, const char[] ability_name, const char[] argument, int defval = 0)
