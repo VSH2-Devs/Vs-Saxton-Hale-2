@@ -445,8 +445,8 @@ void OnBossInitializedFF2(const VSH2Player vsh2player)
 					}
 
 					for( ; cur_player < count && cur_player <= max_companions; cur_player++ ) {
-						if( !next_players[i].GetPropAny("bNoCompanion") ) {
-							next_players[i].MakeBossAndSwitch(identity.VSH2ID, true);
+						if( !next_players[cur_player].GetPropAny("bNoCompanion") ) {
+							next_players[cur_player].MakeBossAndSwitch(identity.VSH2ID, true);
 							break;
 						}
 					}
