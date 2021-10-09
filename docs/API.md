@@ -323,11 +323,6 @@ bool VSH2_GetBossNameByIndex(int index, char name_buffer[MAX_BOSS_NAME_SIZE]);
 - Gets the name of a boss by index.
 
 ```c
-stock char[][] VSH2_GetBossNames(int &count);
-```
-- Gets every boss name (registered and builtin) and returns a 2D string-array.
-
-```c
 void VSH2_StopMusic(bool reset_time=true);
 ```
 - Stops the current background music, set `reset_time` to false if you don't want another song to immediately play.
