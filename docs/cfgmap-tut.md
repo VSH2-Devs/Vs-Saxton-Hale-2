@@ -56,7 +56,7 @@ You probably noticed that to get `"value"`, we added a dot between "root" and "k
 
 **WARNING: if you have a key that uses a dot in it (like a URL or something), you must access it by using `\.` or you glitch/mistraverse the pathing.**
 
-If you're trying to access a key such as `"mywebsite.com"`, then you'd have to use a string like `"mywebsite\\\.com"` to access the value.
+If you're trying to access a key such as `"mywebsite.com"`, then you'd have to use a string like `"mywebsite\\.com"` to access the value.
 
 
 ### Grabbing Subsections
