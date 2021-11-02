@@ -12,7 +12,7 @@ methodmap FF2Character {
 	}
 
 	property ConfigMap WeaponSection {
-		public get() { return( this.Config.GetSection("info") ); }
+		public get() { return( this.Config.GetSection("weapons") ); }
 	}
 
 	property ConfigMap MapExcludeSection {
@@ -73,8 +73,8 @@ methodmap FF2AbilityList < ArrayList {
 			FF2Ability cur = this.Get(i);
 
 			cur.GetPlugin(buffer);
-			if( !strcmp(buffer, plugin_name) ) {
-
+			// Using !StrContains instead of !strcmp to allow old subplugins that were compiled as '.ff2' and have an extension-less 'this_plugin_name' 
+			if( !StrContains(plugin_name, buffer) ) {
 				cur.GetAbility(buffer);
 				if( !strcmp(buffer, ability_name) ) 
 					return cur;
@@ -351,7 +351,7 @@ static void FF2Character_RegisterAbilities(FF2Character this_char, bool new_api,
 			continue;
 		
 		if( !strcmp(plugin_name, "ffbat_defaults") || !strcmp(plugin_name, "default_abilities") ) {
-			LogError("[VSH2/FF2] Character \"%s.cfg\" is using a non supported subplugin \"%s\"!, switching to \"ff2_vsh2defaults\"", boss_name, plugin_name);
+			LogError("[VSH2/FF2] Character \"%s.cfg\" is using a non supported subplugin \"%s\"!, switching to \"ff2_vsh2defaults\".", boss_name, plugin_name);
 			plugin_name = "ff2_vsh2defaults";
 		}
 

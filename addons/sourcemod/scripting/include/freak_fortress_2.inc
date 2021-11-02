@@ -98,8 +98,8 @@ enum struct FF2SoundIdentity {
 	float volume;					/// sound volume, default = SNDVOL_NORMAL
 	int pitch;						/// sound pitch, default to SNDPITCH_NORMAL
 	
-	bool IsSlotCompatible(FF2CallType_t bit_slot) {
-		return (this.bit_slot & view_as<int>(bit_slot))==bit_slot;
+	bool IsSlotCompatible(FF2CallType_t slot) {
+		return view_as<int>(slot) & this.bit_slot ? true : false;
 	}
 }
 
@@ -114,6 +114,8 @@ enum struct FF2SoundIdentity {
  * bSupressRAGE
  * bNotifySMAC_CVars
  * bNoCompanion
+ * flWeighdownCd
+ * iFlags
  */
 methodmap FF2Player < VSH2Player {
 	/** [ C O N S T R U C T O R ]
@@ -348,7 +350,8 @@ methodmap FF2Player < VSH2Player {
 		if( !hab )
 			return;
 		for( int i=hab.Length-1; i>=0; i-- ) {
-			DeleteCfg(view_as<ConfigMap>(hab.Get(i)));
+			any cfg = hab.Get(i);
+			DeleteCfg(view_as<ConfigMap>(cfg));
 		}
 		delete hab;
 	}
@@ -358,7 +361,7 @@ methodmap FF2Player < VSH2Player {
 			return;
 		StringMapSnapshot snap = smap.Snapshot();
 
-		for( int i=smap.Length-1; i>=0; i-- ) {
+		for( int i=smap.Size-1; i>=0; i-- ) {
 			int len = snap.KeyBufferSize(i);
 			char[] key = new char[len];
 			snap.GetKey(i, key, len);
@@ -463,7 +466,7 @@ stock void FF2_GetFF2Version(int version[3])
  *
  * @return		true if the plugin is running on beta version, false otherwise
  */
-stock bool FF2_GetForkVersion(int fversion[3])
+stock bool FF2_GetForkVersion(int version[3])
 {
 	return FF2GameMode.IsOn() && FF2GameMode.ForkVersion(version);
 }
@@ -532,7 +535,7 @@ stock int FF2_GetBossTeam()
 stock bool FF2_GetBossSpecial(int boss=0, char[] buffer, int bufferLength, int bossMeaning=0)
 {
 	FF2Player player = FF2Player(boss, true);
-	if(!player.bIsBoss)
+	if( !player.bIsBoss )
 		return false;
 	
 	if( bossMeaning ) {
@@ -708,7 +711,7 @@ stock void FF2_SetClientDamage(int client, int damage)
  *
  * @param boss		Boss's index
  * @param pluginName	Name of plugin with this ability
- * @param abilityName	Name of ability (use null string if you want get boss's global "ragedist" value)
+ * @param abilityName	Name of ability (use an empty string if you want get boss's global "ragedist" value)
  *
  * @return		Ability's rage distance
  */
@@ -762,7 +765,7 @@ stock void FF2_DoAbility(int boss, const char[] pluginName, const char[] ability
 stock int FF2_GetAbilityArgument(int boss, const char[] pluginName, const char[] abilityName, int argument, int defValue=0)
 {
 	FF2Player player = FF2Player(boss, true);
-	static char arg_[8];
+	char arg_[8];
 	FormatEx(arg_, sizeof(arg_), "arg%i", argument);
 	return player.GetArgI(pluginName, abilityName, arg_, defValue);
 }
@@ -783,7 +786,7 @@ stock int FF2_GetAbilityArgument(int boss, const char[] pluginName, const char[]
 stock float FF2_GetAbilityArgumentFloat(int boss, const char[] plugin_name, const char[] ability_name, int argument, float defValue=0.0)
 {
 	FF2Player player = FF2Player(boss, true);
-	static char arg_[8];
+	char arg_[8];
 	FormatEx(arg_, sizeof(arg_), "arg%i", argument);
 	return player.GetArgF(plugin_name, ability_name, arg_, defValue);
 }
@@ -803,7 +806,7 @@ stock float FF2_GetAbilityArgumentFloat(int boss, const char[] plugin_name, cons
 stock void FF2_GetAbilityArgumentString(int boss, const char[] pluginName, const char[] abilityName, int argument, char[] buffer, int bufferLength)
 {
 	FF2Player player = FF2Player(boss, true);
-	static char arg_[8];
+	char arg_[8];
 	FormatEx(arg_, sizeof(arg_), "arg%i", argument);
 	player.GetArgS(pluginName, abilityName, arg_, buffer, bufferLength);
 }
@@ -876,7 +879,8 @@ stock void FF2_GetArgNamedS(int boss, const char[] pluginName, const char[] abil
 stock bool FF2_RandomSound(const char[] keyvalue, char[] buffer, int bufferLength, int boss=0, int slot=0)
 {
 	FF2SoundIdentity info;
-	if(! FF2Player(boss, true).RandomSound(keyvalue, info, view_as< FF2CallType_t >(slot)) ) {
+	int first_underscore = FindCharInString(keyvalue, '_') + 1;
+	if( !FF2Player(boss, true).RandomSound(keyvalue[first_underscore], info, FF2_OldNumToBitSlot(slot)) ) {
 		return false;
 	}
 	return strcopy(buffer, bufferLength, info.path) > 0;
@@ -888,7 +892,7 @@ stock bool FF2_RandomSound(const char[] keyvalue, char[] buffer, int bufferLengt
  * @param client	Client's index (0 for all clients)
  * @param bgm		music path
  */
-stock void FF2_StartMusic(int client = 0, const char[] bgm = "")
+stock void FF2_StartMusic(int client = 0, const char bgm[PLATFORM_MAX_PATH] = "")
 {
 	if( !client ) {
 		for( int i = 1; i <= MaxClients; i++ ) {
@@ -1330,6 +1334,37 @@ stock void FReplyToCommand(int client, const char[] message, any ...)
 	}
 }
 
+///	https://github.com/01Pollux/FF2ConfigToVSH2/blob/main/ff2_config_to_vsh2.sp#L385
+stock FF2CallType_t FF2_OldNumToBitSlot(int slot)
+{
+	/**
+	 * -2 - Invalid slot(internally used by FF2 for detecting missing "arg0" argument). Don't use!
+	 * -1 - When Boss loses a life (if he has over 1)
+     * 0 - Rage
+     * 1 - Used by charging brave Jump. Fired every 0.2s
+     * 2 - Demopan's charge of targe, projectiles etc.
+     * 3 - Weighdown
+     * 4 - Killed player (not used for sounds)
+     * 5 - Boss killed (not used for sounds)
+     * 6 - Boss backstabbed (not used for sounds)
+     * 7 - Boss market gardened (not used for sounds)
+     */
+	switch (slot)
+	{
+ 	case -2, 2: {
+	// 2, -2 should never be used unless you're calling with FF2Player.ForceAbility
+	return CT_UNUSED_DEMO;
+	}
+	case -1: return CT_LIFE_LOSS;
+	case 1: return CT_CHARGE;
+	case 0: return CT_RAGE;
+
+//	case 3, 4, 5, 6, 7:
+	default: {
+		return view_as<FF2CallType_t>(1 << (1 + slot));
+	}
+	}
+}
 
 
 /**

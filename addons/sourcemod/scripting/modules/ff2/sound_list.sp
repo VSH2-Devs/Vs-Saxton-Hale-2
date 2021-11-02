@@ -43,8 +43,8 @@ enum struct FF2SoundIdentity {
 	float volume;					/// sound volume, default = SNDVOL_NORMAL
 	int pitch;						/// sound pitch, default to SNDPITCH_NORMAL
 	
-	bool IsSlotCompatible(int bit_slot) {
-		return (this.bit_slot & bit_slot)==bit_slot;
+	bool IsSlotCompatible(FF2CallType_t slot) {
+		return (view_as<int>(slot) & this.bit_slot) ? true : false;
 	}
 }
 
@@ -77,7 +77,7 @@ methodmap FF2SoundSection {
 
 	public bool IsSlotCompatible(FF2CallType_t bit_slot) {
 		FF2CallType_t slot;
-		return( !bit_slot || this.Config.GetInt("slot", view_as<int>(slot), 2) ? (slot & bit_slot)==bit_slot : false );
+		return( (bit_slot && this.Config.GetInt("slot", view_as<int>(slot), 2)) && (slot & bit_slot) ? true : false );
 	}
 
 	public void FullInfo(FF2SoundIdentity info) {
@@ -192,18 +192,17 @@ methodmap FF2SoundMap < StringMap  {
 
 	public void PlayAbilitySound(VSH2Player player, ConfigMap section, FF2CallType_t type) {
 		bool play_any = false;
-		if( section.GetBool("custom", play_any) && play_any )
+		if( section && section.GetBool("custom", play_any) && play_any )
 			return;
 
 		char buffer[PLATFORM_MAX_PATH];
 
-		if( !section.Get("sound", buffer, sizeof(buffer)) )
+		if( !section.Get("sounds", buffer, sizeof(buffer)) )
 			buffer = "sound_ability";
-		else play_any = true;
 
 		ConfigMap snd_list = this.GetSection(buffer);
 		FF2SoundSection sec;
-		if( snd_list && RandomAbilitySound(snd_list, play_any ? CT_NONE : type, sec) ) {
+		if( snd_list && RandomAbilitySound(snd_list, type, sec) ) {
 			sec.GetPath(buffer, sizeof(buffer));
 			player.PlayVoiceClip(buffer, VSH2_VOICE_ABILITY);
 		}

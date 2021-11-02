@@ -256,13 +256,14 @@ void OnBossThinkFF2(const VSH2Player vsh2player)
 	///	Handle weighdown
 	{
 		if( !player.bNoWeighdown ) {
-			float curCd = player.GetPropFloat("flWeighdownCd") - GetGameTime();
+			float cur_time = GetGameTime();
+			float curCd = player.GetPropFloat("flWeighdownCd") - cur_time;
 			if( curCd <= 0.0 ) {
 				int buttons = GetClientButtons(client);
 				int flags = GetEntityFlags(client);
 				if( flags & FL_ONGROUND )
 					player.SetPropFloat("flWeighDown", 0.0);
-				else player.SetPropFloat("flWeighDown", GetGameTime() + 0.07);
+				else player.SetPropFloat("flWeighDown", cur_time + 0.07);
 
 				if( (buttons & IN_DUCK) && player.GetPropFloat("flWeighDown") >= 0.1 ) {
 					float ang[3]; GetClientEyeAngles(client, ang);
@@ -270,7 +271,7 @@ void OnBossThinkFF2(const VSH2Player vsh2player)
 						if( !cfg.GetFloat("Weightdown.cooldown", ang[0]) )
 							ang[0] = 5.0;
 
-						player.SetPropFloat("flWeighdownCd", GetGameTime() + ang[0]);
+						player.SetPropFloat("flWeighdownCd", cur_time + ang[0]);
 						player.WeighDown(0.0);
 					}
 				}
@@ -381,11 +382,10 @@ void OnBossEquippedFF2(const VSH2Player player)
 	player.RemoveAllItems();
 
 	ConfigMap wepcfg = boss_cfg.WeaponSection;
-
+	
 	int wep_count = wepcfg.Size;
 	char attr[64]; int index; int lvl; int qual;
 	for( int i; i<wep_count; i++ ) {
-		FormatEx(name, sizeof(name), "weapon%i", i);
 		ConfigMap wep = wepcfg.GetIntSection(i);
 		if( !wep )
 			break;
@@ -811,13 +811,14 @@ void OnVariablesResetFF2(const VSH2Player vsh2player)
 {
 	FF2Player player = ToFF2Player(vsh2player);
 	
-	player.SetPropAny("bNotifySMAC_CVars", false);
-	
 	player.iMaxLives = 0;
 	player.bNoSuperJump = false;
 	player.bNoWeighdown = false;
 	player.bHideHUD = false;
+	player.SetPropAny("bNotifySMAC_CVars", false);
 	player.SetPropAny("bSupressRAGE", false);
+	player.SetPropFloat("flWeighdownCd", 0.0);
+	player.SetPropInt("iFlags", 0);
 }
 
 

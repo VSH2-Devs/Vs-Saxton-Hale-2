@@ -273,15 +273,15 @@ FF2_RESOLVE_FUNC(WeaponSection)
 		return;
 
 	delete_list.PushString(key);
-	char[] tmp_key = new char[36];
+	char tmp_key[36];
 
-	FormatEx(tmp_key, 24, "weapons.%i", num);
+	FormatEx(tmp_key, 24, "weapons.%i", num - 1);
 
 	ConfigMap to_move_to = cfg.ReserveNewSection(tmp_key);
 	ConfigMap to_move_from = cfg.Config.GetSection(key);
 	StringMapSnapshot sub_snap = to_move_from.Snapshot();
 
-	///	Move sections from "weapon%i" to "weapons.%i"
+	///	Move sections from "weapon%i" to "weapons.(%i-1)"
 	int sub_size = sub_snap.Length;
 	char[][] keys = new char[sub_size][36];
 	PackVal pack;
@@ -401,13 +401,11 @@ FF2_RESOLVE_FUNC(SoundSection)
 				FormatEx(rkey, sizeof(rkey), "%s%i", fetch_keys[j], i+1);
 				if( sound_section.Config.GetArray(rkey, pack, sizeof(pack)) ) {
 					if( j ) {
-						char tmp[16];
+						char tmp[32];
 						pack.data.Reset();
 						pack.data.ReadString(tmp, sizeof(tmp));
 						
-						int ftmp = view_as<int>(FF2_OldNumToBitSlot(StringToInt(tmp)));
-						IntToString(ftmp, tmp, sizeof(tmp));
-						FormatEx(tmp, sizeof(tmp), "%b", ftmp);
+						pack.size = FormatEx(tmp, sizeof(tmp), "%b", FF2_OldNumToBitSlot(StringToInt(tmp))) + 1;
 
 						pack.data.Reset();
 						pack.data.WriteString(tmp);
@@ -445,7 +443,6 @@ FF2_RESOLVE_FUNC(SoundSection)
 #define FF2_RESOLVE_FUNC(%0)	FF2Resolve_%0(delete_list, cfg, key, len)
 ///	Instead of checking for literary each time if we should use info section or anything new, why not reparse the config to the new format
 /// Note: some keys will be discared and ignored unless you have "using.VSH2/FF2 new API" key set to true
-/// TODO: don't process all in one frame, try creating multiple frames each time until it ends
 void FF2_ResolveBackwardCompatibility(ConfigMap charcfg)
 {
 	StringMapSnapshot snap = charcfg.Snapshot();
