@@ -23,7 +23,7 @@ If you do require help in setting up the bosses or at least need some info on th
 * VSH2 was created to facilitate easier boss additions to a VSH-esque gamemode while having extensive customisation capabilities, even more so than FF2.
 * VSH2 operates through a series of Event Handling functions across different Boss, non-Boss actions, and clear cut API which allows developers to control boss code at will and with ease.
 * VSH2's game state is controlled through a singleton instance of the VSHGameMode methodmap which allows for easier management of the entire gamemode's state.
-* VSH2 gives you the option to either hard code your new bosses directly into the plugin or use VSH2's vast API to build bosses as subplugins/modules!
+* VSH2 has a vast API to build bosses as wide reaching as your imagination and TF2's limitations!
 * 'ConfigMap' allows you to not only have the power of VSH2's API but have FF2-like configuration for a powerful combination of customization through code and config alike.
 
 ### How do I get set up?
