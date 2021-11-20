@@ -9,6 +9,7 @@ void InitVSH2Bridge()
 	VSH2_Hook(OnBossMenu,							OnBossMenuFF2);
 	VSH2_Hook(OnBossCalcHealth,						OnBossCalcHealthFF2);
 	VSH2_Hook(OnBossSelected,						OnBossSelectedFF2);
+	VSH2_Hook(OnRedPlayerThink,						OnRedPlayerThinkFF2);
 	VSH2_Hook(OnBossThink,							OnBossThinkFF2);
 	VSH2_Hook(OnBossSuperJump,						OnBossSuperJumpFF2);
 	VSH2_Hook(OnBossWeighDown,						OnBossWeighDownFF2);
@@ -23,6 +24,7 @@ void InitVSH2Bridge()
 	VSH2_Hook(OnBossMedicCall,						OnBossTriggerRageFF2);
 	VSH2_Hook(OnBossTaunt,							OnBossTriggerRageFF2);
 	VSH2_Hook(OnBossJarated,						OnBossJaratedFF2);
+	VSH2_Hook(OnRoundStart,							OnRoundStartFF2);
 	VSH2_Hook(OnRoundEndInfo,						OnRoundEndInfoFF2);
 	VSH2_Hook(OnMusic,								OnMusicFF2);
 	VSH2_Hook(OnBossDeath,							OnBossDeathFF2);
@@ -41,6 +43,7 @@ void RemoveVSH2Bridge()
 	VSH2_Unhook(OnBossMenu,							OnBossMenuFF2);
 	VSH2_Unhook(OnBossCalcHealth,					OnBossCalcHealthFF2);
 	VSH2_Unhook(OnBossSelected,						OnBossSelectedFF2);
+	VSH2_Unhook(OnRedPlayerThink,					OnRedPlayerThinkFF2);
 	VSH2_Unhook(OnBossThink,						OnBossThinkFF2);
 	VSH2_Unhook(OnBossSuperJump,					OnBossSuperJumpFF2);
 	VSH2_Unhook(OnBossWeighDown,					OnBossWeighDownFF2);
@@ -55,6 +58,7 @@ void RemoveVSH2Bridge()
 	VSH2_Unhook(OnBossMedicCall,					OnBossTriggerRageFF2);
 	VSH2_Unhook(OnBossTaunt,						OnBossTriggerRageFF2);
 	VSH2_Unhook(OnBossJarated,						OnBossJaratedFF2);
+	VSH2_Unhook(OnRoundStart,						OnRoundStartFF2);
 	VSH2_Unhook(OnRoundEndInfo,						OnRoundEndInfoFF2);
 	VSH2_Unhook(OnMusic,							OnMusicFF2);
 	VSH2_Unhook(OnBossDeath,						OnBossDeathFF2);
@@ -203,9 +207,15 @@ Action OnBossSelectedFF2(const VSH2Player player)
 	return Plugin_Changed;
 }
 
+void OnRedPlayerThinkFF2(const VSH2Player vsh2player)
+{
+	LiveSys_DisplayForClient(vsh2player.index);
+}
+
 void OnBossThinkFF2(const VSH2Player vsh2player)
 {
 	FF2Player player = ToFF2Player(vsh2player);
+	LiveSys_DisplayForClient(player.index);
 
 	static FF2Identity identity;
 	if( !ff2_cfgmgr.FindIdentity(ToFF2Player(player).iBossType, identity) )
@@ -603,9 +613,6 @@ Action OnBossJaratedFF2(const VSH2Player victim, const VSH2Player attacker)
 
 	FF2Player player = ToFF2Player(victim);
 	float rage = player.flRAGE;
-	Action res = Call_OnBossJarated(ToFF2Player(victim), ToFF2Player(attacker), rage);
-	if( res==Plugin_Stop )
-		return Plugin_Changed;
 
 	rage -= ff2.m_cvars.m_fljarate.FloatValue;
 	if( rage <= 0.0 )
@@ -613,6 +620,11 @@ Action OnBossJaratedFF2(const VSH2Player victim, const VSH2Player attacker)
 
 	player.flRAGE = rage;
 	return Plugin_Changed;
+}
+
+void OnRoundStartFF2(const VSH2Player[] bosses, const int boss_count, const VSH2Player[] red_players, const int red_count)
+{
+	LiveSys_OnRoundStart(bosses, boss_count);
 }
 
 void OnRoundEndInfoFF2(const VSH2Player player, bool bossBool, char message[MAXMESSAGE])
@@ -630,6 +642,8 @@ void OnRoundEndInfoFF2(const VSH2Player player, bool bossBool, char message[MAXM
 		if( sec )
 			sec.PlaySound(player.index, VSH2_VOICE_WIN);
 	}
+
+	LiveSys_OnRoundEndInfo(player, message);
 }
 
 Action OnMusicFF2(char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player)
@@ -773,7 +787,7 @@ void FinishQueueArray()
 {
 	VSH2GameMode.SetProp("bQueueChecking", false);
 
-	int[] points = new int[MaxClients];
+	int[] points = new int[MaxClients + 1];
 	for( int i=1; i<=MaxClients; i++ )
 		points[i] = ff2.m_queuePoints[i];
 
@@ -804,7 +818,7 @@ Action OnBossTriggerHurtFF2(VSH2Player victim, int& attacker, int& inflictor, fl
 	FF2Identity identity;
 	if( !ff2_cfgmgr.FindIdentity(ToFF2Player(victim).iBossType, identity) )
 		return Plugin_Continue;
-	return Call_OnTakeDamage_OnBossTriggerHurt(victim.userid, attacker, damage);
+	return Call_OnTakeDamage_OnBossTriggerHurt(victim.index, attacker, damage);
 }
 
 void OnVariablesResetFF2(const VSH2Player vsh2player)
@@ -815,10 +829,15 @@ void OnVariablesResetFF2(const VSH2Player vsh2player)
 	player.bNoSuperJump = false;
 	player.bNoWeighdown = false;
 	player.bHideHUD = false;
+
 	player.SetPropAny("bNotifySMAC_CVars", false);
 	player.SetPropAny("bSupressRAGE", false);
 	player.SetPropFloat("flWeighdownCd", 0.0);
 	player.SetPropInt("iFlags", 0);
+
+	/// https://github.com/01Pollux/FF2-Library/blob/VSH2/addons/sourcemod/scripting/ff2_nopacks.sp
+	player.SetPropAny("bNoHealthPacks", false);
+	player.SetPropAny("bNoAmmoPacks", false);
 }
 
 

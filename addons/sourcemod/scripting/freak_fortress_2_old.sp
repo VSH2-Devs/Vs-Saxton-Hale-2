@@ -376,25 +376,7 @@ any Native_GetFF2flags(Handle plugin, int numParams)
 
 any Native_SetFF2flags(Handle plugin, int numParams)
 {
-	FF2Player player = FF2Player(GetNativeCell(1));
-	int flags = GetNativeCell(2);
-	
-	/// The most commonly used flags:
-	
-	/// https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/blob/develop/addons/sourcemod/scripting/modules/ff2/vsh2_bridge.sp#L276
-	player.SetPropInt("bHideHUD", (flags & FF2FLAG_HUDDISABLED) ? 1 : 0);
-	
-	/// https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki/VSH-2-Internal-API-Reference#general-boss-and-player-api-modulesbasesp
-	player.SetPropInt("bIsMinion", (flags & FF2FLAG_ALLOWSPAWNINBOSSTEAM) ? 1 : 0);
-	
-	/// https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/blob/develop/addons/sourcemod/scripting/freak_fortress_2.sp#L164
-	player.SetPropInt("bNotifySMAC_CVars", (flags & FF2FLAG_CHANGECVAR) ? 1 : 0);
-	
-	/// requires https://github.com/01Pollux/FF2-Library/blob/VSH2/addons/sourcemod/scripting/ff2_nopacks.sp
-	player.SetPropInt("bNoHealthPacks", (flags & FF2FLAG_ALLOW_HEALTH_PICKUPS) ? 1 : 0);
-	player.SetPropInt("bNoAmmoPacks", (flags & FF2FLAG_ALLOW_AMMO_PICKUPS) ? 1 : 0);
-	
-	player.SetPropInt("iFlags", flags);
+	FF2_SetFF2flags(GetNativeCell(1), GetNativeCell(2));
 }
 
 any Native_GetQueuePoints(Handle plugin, int numParams)

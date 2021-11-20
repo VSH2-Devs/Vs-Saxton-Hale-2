@@ -61,6 +61,7 @@ void Call_FF2OnAbility(const FF2Player player, FF2CallType_t call_type)
 
 	static char pl_name[FF2_MAX_PLUGIN_NAME], ab_name[FF2_MAX_ABILITY_NAME];
 	int size = list.Length;
+	int boss_index = player.index;
 
 	for( int i; i<size; i++ ) {
 		FF2Ability cur = list.Get(i);
@@ -71,7 +72,7 @@ void Call_FF2OnAbility(const FF2Player player, FF2CallType_t call_type)
 		cur.GetPluginAndAbility(pl_name, ab_name);
 
 		Call_StartForward(ff2.m_forwards[FF2OnPreAbility]);
-		Call_PushCell(player);
+		Call_PushCell(boss_index);
 		Call_PushString(pl_name);
 		Call_PushString(ab_name);
 		Call_PushCell(call_type);
@@ -84,7 +85,7 @@ void Call_FF2OnAbility(const FF2Player player, FF2CallType_t call_type)
 		}
 
 		Call_StartForward(ff2.m_forwards[FF2OnAbility]);
-		Call_PushCell(player);
+		Call_PushCell(boss_index);
 		Call_PushString(pl_name);
 		Call_PushString(ab_name);
 		Call_PushCell(call_type);

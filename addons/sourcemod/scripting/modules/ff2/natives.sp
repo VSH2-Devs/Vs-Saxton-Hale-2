@@ -126,10 +126,10 @@ any Native_FF2Player_DoAbility(Handle plugin, int numParams)
 	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
 	char ability_name[64]; GetNativeString(3, ability_name, sizeof(ability_name));
 
-	int slot = GetNativeCell(4);
+	FF2CallType_t slot = GetNativeCell(4);
 
 	Call_StartForward(ff2.m_forwards[FF2OnAbility]);
-	Call_PushCell(player);
+	Call_PushCell(player.index);
 	Call_PushString(plugin_name);
 	Call_PushString(ability_name);
 	Call_PushCell(slot);

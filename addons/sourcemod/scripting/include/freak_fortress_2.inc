@@ -483,6 +483,12 @@ stock int FF2_GetRoundState()
 	return FF2GameMode.IsOn() && VSH2GameMode.GetPropInt("iRoundState");
 }
 
+static FF2Player FF2_ZeroBossToFF2Player()
+{
+	FF2Player[] players = new FF2Player[MaxClients];
+	return VSH2GameMode.GetBosses(ToFF2Player(players), false) < 1 ? INVALID_FF2PLAYER : players[0];
+}
+
 /**
  * Gets UserID of current Boss
  * Redundant, use FF2Player if compiling for VSH2
@@ -493,7 +499,7 @@ stock int FF2_GetRoundState()
  */
 stock int FF2_GetBossUserId(int boss=0)
 {
-	FF2Player player = FF2Player(boss, true);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	return player.bIsBoss ? player.userid:-1;
 }
 
@@ -508,7 +514,7 @@ stock int FF2_GetBossUserId(int boss=0)
 stock int FF2_GetBossIndex(int client)
 {
 	FF2Player player = FF2Player(client);
-	return player.Valid && player.bIsBoss ? player.userid:-1;
+	return player.Valid && player.bIsBoss ? client:-1;
 }
 
 /**
@@ -534,7 +540,7 @@ stock int FF2_GetBossTeam()
  */
 stock bool FF2_GetBossSpecial(int boss=0, char[] buffer, int bufferLength, int bossMeaning=0)
 {
-	FF2Player player = FF2Player(boss, true);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	if( !player.bIsBoss )
 		return false;
 	
@@ -558,7 +564,7 @@ stock bool FF2_GetBossSpecial(int boss=0, char[] buffer, int bufferLength, int b
  */
 stock int FF2_GetBossHealth(int boss=0)
 {
-	FF2Player player = FF2Player(boss, true);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	return player.bIsBoss ? player.GetPropInt("iHealth"):0;
 }
 
@@ -570,7 +576,7 @@ stock int FF2_GetBossHealth(int boss=0)
  */
 stock void FF2_SetBossHealth(int boss, int health)
 {
-	FF2Player player = FF2Player(boss, true);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	if( player.bIsBoss ) {
 		player.SetPropInt("iHealth", health);
 	}
@@ -587,7 +593,7 @@ stock void FF2_SetBossHealth(int boss, int health)
  */
 stock int FF2_GetBossMaxHealth(int boss=0)
 {
-	FF2Player player = FF2Player(boss, true);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	return player.bIsBoss ? player.GetPropInt("iMaxHealth"):0;
 }
 
@@ -599,7 +605,7 @@ stock int FF2_GetBossMaxHealth(int boss=0)
  */
 stock void FF2_SetBossMaxHealth(int boss, int health)
 {
-	FF2Player player = FF2Player(boss, true);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	if( player.bIsBoss ) {
 		player.SetPropInt("iMaxHealth", health);
 	}
@@ -614,7 +620,7 @@ stock void FF2_SetBossMaxHealth(int boss, int health)
  */
 stock int FF2_GetBossLives(int boss)
 {
-	FF2Player player = FF2Player(boss, true);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	return player.bIsBoss ? player.GetPropInt("iLives"):0;
 }
 
@@ -626,7 +632,7 @@ stock int FF2_GetBossLives(int boss)
  */
 stock void FF2_SetBossLives(int boss, int lives)
 {
-	FF2Player player = FF2Player(boss, true);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	if( player.bIsBoss ) {
 		player.SetPropInt("iLives", lives);
 	}
@@ -641,7 +647,7 @@ stock void FF2_SetBossLives(int boss, int lives)
  */
 stock int FF2_GetBossMaxLives(int boss)
 {
-	FF2Player player = FF2Player(boss, true);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	return player.bIsBoss ? player.GetPropInt("iMaxLives"):0;
 }
 
@@ -653,7 +659,7 @@ stock int FF2_GetBossMaxLives(int boss)
  */
 stock void FF2_SetBossMaxLives(int boss, int lives)
 {
-	FF2Player player = FF2Player(boss, true);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	if( player.bIsBoss ) {
 		player.SetPropInt("iMaxLives", lives);
 	}
@@ -668,7 +674,8 @@ stock void FF2_SetBossMaxLives(int boss, int lives)
  */
 stock float FF2_GetBossCharge(int boss, int slot)
 {
-	return FF2Player(boss, true).GetRageVar(view_as<FF2RageType_t>(slot));
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
+	return player.GetRageVar(view_as<FF2RageType_t>(slot));
 }
 
 /**
@@ -679,7 +686,8 @@ stock float FF2_GetBossCharge(int boss, int slot)
  */
 stock void FF2_SetBossCharge(int boss, int slot, float value)
 {
-	FF2Player(boss, true).SetRageVar(view_as<FF2RageType_t>(slot), value);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
+	player.SetRageVar(view_as<FF2RageType_t>(slot), value);
 }
 
 /**
@@ -717,7 +725,8 @@ stock void FF2_SetClientDamage(int client, int damage)
  */
 stock float FF2_GetRageDist(int boss=0, const char[] pluginName="", const char[] abilityName="")
 {
-	return FF2Player(boss, true).RageDist(pluginName, abilityName);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
+	return player.RageDist(pluginName, abilityName);
 }
 
 /**
@@ -733,7 +742,8 @@ stock float FF2_GetRageDist(int boss=0, const char[] pluginName="", const char[]
  */
 stock bool FF2_HasAbility(int boss, const char[] pluginName, const char[] abilityName)
 {
-	return FF2Player(boss, true).HasAbility(pluginName, abilityName);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
+	return player.HasAbility(pluginName, abilityName);
 }
 
 /**
@@ -748,7 +758,8 @@ stock bool FF2_HasAbility(int boss, const char[] pluginName, const char[] abilit
 	 */
 stock void FF2_DoAbility(int boss, const char[] pluginName, const char[] abilityName, int slot)
 {
-	FF2Player(boss, true).DoAbility(pluginName, abilityName, view_as< FF2CallType_t >(slot));
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
+	player.DoAbility(pluginName, abilityName, view_as< FF2CallType_t >(slot));
 }
 
 /**
@@ -764,7 +775,7 @@ stock void FF2_DoAbility(int boss, const char[] pluginName, const char[] ability
  */
 stock int FF2_GetAbilityArgument(int boss, const char[] pluginName, const char[] abilityName, int argument, int defValue=0)
 {
-	FF2Player player = FF2Player(boss, true);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	char arg_[8];
 	FormatEx(arg_, sizeof(arg_), "arg%i", argument);
 	return player.GetArgI(pluginName, abilityName, arg_, defValue);
@@ -785,7 +796,7 @@ stock int FF2_GetAbilityArgument(int boss, const char[] pluginName, const char[]
  */
 stock float FF2_GetAbilityArgumentFloat(int boss, const char[] plugin_name, const char[] ability_name, int argument, float defValue=0.0)
 {
-	FF2Player player = FF2Player(boss, true);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	char arg_[8];
 	FormatEx(arg_, sizeof(arg_), "arg%i", argument);
 	return player.GetArgF(plugin_name, ability_name, arg_, defValue);
@@ -805,7 +816,7 @@ stock float FF2_GetAbilityArgumentFloat(int boss, const char[] plugin_name, cons
  */
 stock void FF2_GetAbilityArgumentString(int boss, const char[] pluginName, const char[] abilityName, int argument, char[] buffer, int bufferLength)
 {
-	FF2Player player = FF2Player(boss, true);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	char arg_[8];
 	FormatEx(arg_, sizeof(arg_), "arg%i", argument);
 	player.GetArgS(pluginName, abilityName, arg_, buffer, bufferLength);
@@ -826,7 +837,7 @@ stock void FF2_GetAbilityArgumentString(int boss, const char[] pluginName, const
  */
 stock int FF2_GetArgNamedI(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, int defValue=0)
 {
-	FF2Player player = FF2Player(boss, true);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	return player.GetArgI(pluginName, abilityName, argument, defValue);
 }
 
@@ -845,7 +856,7 @@ stock int FF2_GetArgNamedI(int boss, const char[] pluginName, const char[] abili
  */
 stock float FF2_GetArgNamedF(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, float defValue=0.0)
 {
-	FF2Player player = FF2Player(boss, true);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	return player.GetArgF(pluginName, abilityName, argument, defValue);
 }
 
@@ -861,7 +872,7 @@ stock float FF2_GetArgNamedF(int boss, const char[] pluginName, const char[] abi
  */
 stock void FF2_GetArgNamedS(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, char[] buffer, int bufferLength)
 {
-	FF2Player player = FF2Player(boss, true);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	player.GetArgS(pluginName, abilityName, argument, buffer, bufferLength);
 }
 
@@ -880,7 +891,8 @@ stock bool FF2_RandomSound(const char[] keyvalue, char[] buffer, int bufferLengt
 {
 	FF2SoundIdentity info;
 	int first_underscore = FindCharInString(keyvalue, '_') + 1;
-	if( !FF2Player(boss, true).RandomSound(keyvalue[first_underscore], info, FF2_OldNumToBitSlot(slot)) ) {
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
+	if( !player.RandomSound(keyvalue[first_underscore], info, FF2_OldNumToBitSlot(slot)) ) {
 		return false;
 	}
 	return strcopy(buffer, bufferLength, info.path) > 0;
@@ -952,10 +964,33 @@ stock Handle FF2_GetSpecialKV(int boss, int specialIndex=0)
 stock int FF2_GetFF2flags(int client)
 {
 #if defined FF2_USING_AUTO_PLUGIN__OLD
-	#warning this doesn't return what you think it does, use FF2Player.GetProp[Int, Float, Any] instead.
+	#warning Using this function might have undesired behaviours, such as some flags might not be set. Use FF2Player.GetProp[Int, Float, Any] instead.
 #endif
 	FF2Player player = FF2Player(client);
-	return player.GetPropInt("iFlags");
+	int flags = player.GetPropInt("iFlags");
+	
+	/// The most commonly used flags:
+	/// https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/blob/develop/addons/sourcemod/scripting/modules/ff2/vsh2_bridge.sp#L276
+	if (!(flags & (1<<4) /* FF2FLAG_HUDDISABLED */) && player.GetPropInt("bHideHUD"))
+		flags |= (1<<4) /* FF2FLAG_HUDDISABLED */;
+	
+	/// https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki/VSH-2-Internal-API-Reference#general-boss-and-player-api-modulesbasesp
+	if (!(flags & (1<<7) /* FF2FLAG_ALLOWSPAWNINBOSSTEAM */) && player.GetPropInt("bIsMinion"))
+		flags |= (1<<7) /* FF2FLAG_ALLOWSPAWNINBOSSTEAM */;
+
+	/// https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/blob/develop/addons/sourcemod/scripting/freak_fortress_2.sp#L164
+	if (!(flags & (1<<12) /* FF2FLAG_CHANGECVAR */) && player.GetPropInt("bNotifySMAC_CVars"))
+		flags |= (1<<12) /* FF2FLAG_CHANGECVAR */;
+	
+	/// requires https://github.com/01Pollux/FF2-Library/blob/VSH2/addons/sourcemod/scripting/ff2_nopacks.sp
+	if (!(flags & (1<<13) /* FF2FLAG_ALLOW_HEALTH_PICKUPS */) && player.GetPropInt("bNoHealthPacks"))
+		flags |= (1<<13) /* FF2FLAG_ALLOW_HEALTH_PICKUPS */;
+	
+	/// requires https://github.com/01Pollux/FF2-Library/blob/VSH2/addons/sourcemod/scripting/ff2_nopacks.sp
+	if (!(flags & (1<<14) /* FF2FLAG_ALLOW_AMMO_PICKUPS */) && player.GetPropInt("bNoAmmoPacks"))
+		flags |= (1<<14) /* FF2FLAG_ALLOW_AMMO_PICKUPS */;
+	
+	return flags;
 }
 
 /**
@@ -967,9 +1002,27 @@ stock int FF2_GetFF2flags(int client)
 stock void FF2_SetFF2flags(int client, int flags)
 {
 #if defined FF2_USING_AUTO_PLUGIN__OLD
-	#warning this doesn't return what you think it does, use FF2Player.SetProp[Int, Float, Any] instead.
+	#warning Using this function might have undesired behaviours, such as some flags might not be set. Use FF2Player.GetProp[Int, Float, Any] instead.
+
 #endif
 	FF2Player player = FF2Player(client);
+	
+	/// The most commonly used flags:
+	/// https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/blob/develop/addons/sourcemod/scripting/modules/ff2/vsh2_bridge.sp#L276
+	player.SetPropInt("bHideHUD", (flags & (1<<4) /* FF2FLAG_HUDDISABLED */) ? 1 : 0);
+	
+	/// https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki/VSH-2-Internal-API-Reference#general-boss-and-player-api-modulesbasesp
+	player.SetPropInt("bIsMinion", (flags & (1<<7) /* FF2FLAG_ALLOWSPAWNINBOSSTEAM */) ? 1 : 0);
+	
+	/// https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/blob/develop/addons/sourcemod/scripting/freak_fortress_2.sp#L164
+	player.SetPropInt("bNotifySMAC_CVars", (flags & (1<<12) /* FF2FLAG_CHANGECVAR */) ? 1 : 0);
+	
+	/// requires https://github.com/01Pollux/FF2-Library/blob/VSH2/addons/sourcemod/scripting/ff2_nopacks.sp
+	player.SetPropInt("bNoHealthPacks", (flags & (1<<13) /* FF2FLAG_ALLOW_HEALTH_PICKUPS */) ? 1 : 0);
+
+	/// requires https://github.com/01Pollux/FF2-Library/blob/VSH2/addons/sourcemod/scripting/ff2_nopacks.sp
+	player.SetPropInt("bNoAmmoPacks", (flags & (1<<14) /* FF2FLAG_ALLOW_AMMO_PICKUPS */) ? 1 : 0);
+	
 	player.SetPropInt("iFlags", flags);
 }
 
@@ -1131,34 +1184,30 @@ stock bool FF2_MakeBoss(int client, const char[] boss_name, bool call_event = tr
  *
  * @note		Use FF2_PreAbility with enabled=false ONLY to prevent FF2_OnAbility!
  *
- * @param boss			Boss' index
+ * @param boss			Boss/client's index
  * @param pluginName	Name of plugin with this ability
  * @param abilityName 	Name of ability
  * @param calltype		reason for the call
  * @param enabled		enabled = false to prevent the ability from being called
  */
-#if !defined FF2_USING_AUTO_PLUGIN__OLD
-forward void FF2_PreAbility(FF2Player boss, const char[] pluginName, const char[] abilityName, FF2CallType_t calltype, bool &enabled);
-#else
 forward void FF2_PreAbility(int boss, const char[] pluginName, const char[] abilityName, FF2CallType_t calltype, bool &enabled);
-#endif
 
 /**
  * Called when a Boss uses an ability (see FF2CallType_t)
  *
- * @param boss	 		Boss's index
+ * @param boss	 		Boss/client's index
  * @param pluginName	Name of plugin with this ability
  * @param abilityName 	Name of ability
  * @param calltype		reason for the call
  */
-forward void FF2_OnAbility(const FF2Player player, const char[] pluginName, const char[] abilityName, FF2CallType_t calltype);
+forward void FF2_OnAbility(int boss, const char[] pluginName, const char[] abilityName, FF2CallType_t calltype);
 
 /**
  * Called when a Boss gets hurt by environmental damage
  *
- * @param boss	 	Boss's index
+ * @param boss			Boss/client's index
  * @param triggerHurt	Entity index of "trigger_hurt"
- * @param damage 	Damage by "trigger_hurt".  Cutomizable.
+ * @param damage 		Damage by "trigger_hurt".  Cutomizable.
  *
  * @return		Plugin_Stop will prevent forward, Plugin_Changed will change damage.
  */
@@ -1167,30 +1216,26 @@ forward Action FF2_OnTriggerHurt(int boss, int triggerHurt, float &damage);
 /**
  * Called when a Boss's music begins
  *
- * @param player
+ * @param boss		Boss/client's index
  * @param path 		Path to music sound file
  * @param time		Length of music
  *
  * @return		Plugin_Stop will prevent music, Plugin_Changed will change it.
  */
-forward Action FF2_OnMusic(
-#if !defined FF2_USING_AUTO_PLUGIN__OLD
-							const FF2Player player,
-#endif
-							char[] path, float &time);
+forward Action FF2_OnMusic(int boss, char[] path, float& time);
 
 
 /**
  * Called when FF2 picks a character for a Boss
  *
- * @param boss		Boss index
+ * @param boss			Boss/client's index
  * @param character   	Character index
  * @param characterName	Character name
- * @param preset	True if the boss was set using a command such as ff2_special
+ * @param preset		True if the boss was set using a command such as ff2_special
  *
  * @return		You can NOT use Plugin_Stop to prevent this, but you can change characterName and use Plugin_Changed to change the boss.  If you want to change 'character', then make 'characterName' null.
  */
-forward Action FF2_OnBossSelected(FF2Player player, char[] characterName, bool preset);
+forward Action FF2_OnBossSelected(int boss, char[] characterName, bool preset);
 
 /**
  * Called when FF2 adds queue points
@@ -1199,7 +1244,7 @@ forward Action FF2_OnBossSelected(FF2Player player, char[] characterName, bool p
  *
  * @return		Plugin_Stop will prevent this, Plugin_Changed will change it.
  */
-forward Action FF2_OnAddQueuePoints(int add_points[MAXPLAYERS+1]);
+forward Action FF2_OnAddQueuePoints(int add_points[MAXPLAYERS + 1]);
 
 /**
  * Called when a Boss loses a life
@@ -1210,19 +1255,18 @@ forward Action FF2_OnAddQueuePoints(int add_points[MAXPLAYERS+1]);
  *
  * @return		Plugin_Stop or Plugin_Handled to prevent damage that would remove a life, Plugin_Changed if you want to change the number of lives left.
  */
-forward Action FF2_OnLoseLife(int boss, int &lives, int maxLives);
+forward Action FF2_OnLoseLife(int boss, int& lives, int maxLives);
 
 /**
  * Called when a boss is backstabbed
  *
- * @param boss		Boss's index
- * @param client	Boss's client index
+ * @param boss		Boss/client's index
  * @param attacker	Attacker's client index
  * @param damage	Damage dealt (includes crit bonus)
  *
  * @return		Plugin_Changed to adjust the damage dealt, Plugin_Handled to prevent damage being dealt but continue sounds, stuns, etc, Plugin_Stop to prevent the backstab all together
  */
-forward Action FF2_OnBackStabbed(int boss, int client, int attacker);
+forward Action FF2_OnBackStabbed(int boss, int attacker);
 
 /**
  * Gives ammo to a weapon
@@ -1518,6 +1562,7 @@ public void OnPluginStart()
 }
 
 #if defined FF2_USING_AUTO_PLUGIN
+// void FF2_OnAbility2(const FF2Player, const char[], const char[], FF2CallType_t);
 public void FF2_OnAbility(const FF2Player player, const char[] pluginName, const char[] abilityName, FF2CallType_t calltype)
 {
 	if( !strcmp(pluginName, this_plugin_name) ) {
@@ -1526,15 +1571,15 @@ public void FF2_OnAbility(const FF2Player player, const char[] pluginName, const
 }
 
 #else
-
+// void FF2_OnAbility2(int, const char[], const char[], int);
 public void FF2_OnAbility(const FF2Player player, const char[] pluginName, const char[] abilityName, FF2CallType_t calltype)
 {
 	if( !strcmp(pluginName, this_plugin_name) ) {
-		FF2_OnAbility2(player.userid, pluginName, abilityName, view_as< int >(calltype));
+		FF2_OnAbility2(player.index, pluginName, abilityName, view_as< int >(calltype));
 	}
 }
+#endif // FF2_USING_AUTO_PLUGIN
 
-#endif
-#endif
+#endif // FF2_USING_AUTO_PLUGIN || FF2_USING_AUTO_PLUGIN__OLD
 
 #file "Freak Fortress 2 Include"
