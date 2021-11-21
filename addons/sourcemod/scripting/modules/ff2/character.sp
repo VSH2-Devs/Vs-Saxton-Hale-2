@@ -213,7 +213,7 @@ methodmap FF2BossManager < StringMap {
 		StringMapSnapshot snap = this.Snapshot();
 		char name[48];
 		FF2Identity identity;
-		for( int i = snap.Length - 1; i >= 0; i-- ) {
+		for( int i=snap.Length-1; i>=0; i-- ) {
 			snap.GetKey(i, name, sizeof(name));
 			if( this.GetIdentity(name, identity) ) {
 				identity.Release();
@@ -227,7 +227,7 @@ methodmap FF2BossManager < StringMap {
 		StringMapSnapshot snap = this.Snapshot();
 		char name[48];
 		bool res;
-		for( int i = snap.Length - 1; i >= 0; i-- ) {
+		for( int i=snap.Length-1; i>=0; i-- ) {
 			snap.GetKey(i, name, sizeof(name));
 			if( this.GetIdentity(name, identity) && identity.VSH2ID == ID ) {
 				res = true;
@@ -242,7 +242,7 @@ methodmap FF2BossManager < StringMap {
 		StringMapSnapshot snap = this.Snapshot();
 		char name[48];
 		bool res;
-		for( int i = snap.Length - 1; i >= 0; i-- ) {
+		for( int i=snap.Length-1; i>=0; i-- ) {
 			snap.GetKey(i, name, sizeof(name));
 			if( this.GetIdentity(name, identity) && identity.hCfg == cfg ) {
 				res = true;
@@ -257,10 +257,11 @@ methodmap FF2BossManager < StringMap {
 		StringMapSnapshot snap = this.Snapshot();
 		char key_name[48];
 		bool res;
-		for( int i = snap.Length - 1; i >= 0 && !res; i-- ) {
+		for( int i=snap.Length-1; i>=0 && !res; i-- ) {
 			snap.GetKey(i, key_name, sizeof(key_name));
 			if( this.GetIdentity(key_name, identity) && !strcmp(name, identity.name) ) {
 				res = true;
+				break;
 			}
 		}
 		delete snap;

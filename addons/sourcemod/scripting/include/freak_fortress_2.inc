@@ -1563,19 +1563,18 @@ public void OnPluginStart()
 
 #if defined FF2_USING_AUTO_PLUGIN
 // void FF2_OnAbility2(const FF2Player, const char[], const char[], FF2CallType_t);
-public void FF2_OnAbility(const FF2Player player, const char[] pluginName, const char[] abilityName, FF2CallType_t calltype)
+public void FF2_OnAbility(int boss, const char[] pluginName, const char[] abilityName, FF2CallType_t calltype)
 {
 	if( !strcmp(pluginName, this_plugin_name) ) {
-		FF2_OnAbility2(player, abilityName, calltype);
+		FF2_OnAbility2(FF2Player(boss), abilityName, calltype);
 	}
 }
-
 #else
 // void FF2_OnAbility2(int, const char[], const char[], int);
-public void FF2_OnAbility(const FF2Player player, const char[] pluginName, const char[] abilityName, FF2CallType_t calltype)
+public void FF2_OnAbility(int boss, const char[] pluginName, const char[] abilityName, FF2CallType_t calltype)
 {
 	if( !strcmp(pluginName, this_plugin_name) ) {
-		FF2_OnAbility2(player.index, pluginName, abilityName, view_as< int >(calltype));
+		FF2_OnAbility2(boss, pluginName, abilityName, view_as< int >(calltype));
 	}
 }
 #endif // FF2_USING_AUTO_PLUGIN

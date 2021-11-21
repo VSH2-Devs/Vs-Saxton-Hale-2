@@ -32,14 +32,16 @@ methodmap FF2GameMode < VSH2GameMode {
 	public static void LateLoadSubplugins() {
 		if( FF2GameMode.GetPropAny("iRoundState") == StateRunning ) {
 			FF2Player[] bosses = new FF2Player[MaxClients];
+
 			int count = VSH2GameMode.GetBosses(ToFF2Player(bosses), false);
+			int size_left = FF2_MAX_SUBPLUGINS - ff2.m_plugins.Length;
 
 			FF2Player player;
-			for( int i; i < count && !ff2.m_plugins.IsFull; i++ ) {
+			for( int i; i < count && size_left>0; i++ ) {
 				player = bosses[i];
 				FF2AbilityList list = player.HookedAbilities;
 				if( list ) {
-					ff2.m_plugins.LoadPlugins(list);
+					size_left -= ff2.m_plugins.LoadPluginsEx(list, size_left);
 				}
 			}
 		}

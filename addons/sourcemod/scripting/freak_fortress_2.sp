@@ -7,7 +7,7 @@
 #include <sdkhooks>
 
 #define PLYR           35
-#define PLUGIN_VERSION "1.0.67b"
+#define PLUGIN_VERSION "1.0.7"
 
 #include <cfgmap>
 #include "modules/stocks.inc"
@@ -37,8 +37,9 @@ enum {
 
 enum struct FF2ConVars {
 	ConVar m_version;
-	ConVar m_fljarate;
-	ConVar m_flairblast;
+	ConVar m_fljarate_rage;
+	ConVar m_flairblast_rage;
+	ConVar m_flscout_rage_gen;
 	ConVar m_flmusicvol;
 	ConVar m_companion_min;
 	ConVar m_nextmap;

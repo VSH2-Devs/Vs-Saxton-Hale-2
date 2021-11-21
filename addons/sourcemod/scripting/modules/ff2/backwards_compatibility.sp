@@ -300,7 +300,7 @@ FF2_RESOLVE_FUNC(WeaponSection)
 	pack.size = 0;
 	pack.tag = KeyValType_Null;
 
-	for(int j; j<sub_size; j++ ) {
+	for( int j; j<sub_size; j++ ) {
 		if( keys[j][0] ) {
 			to_move_from.SetArray(keys[j], pack, sizeof(pack));
 		}

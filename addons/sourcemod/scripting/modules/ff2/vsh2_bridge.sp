@@ -112,7 +112,7 @@ void OnBossMenuFF2(Menu& menu, const VSH2Player player)
 	FF2Identity cur_identity;
 	int num_rounds = VSH2GameMode.GetPropInt("iRoundCount");
 
-	for( int i = snap.Length - 1; i >= 0; i-- ) {
+	for( int i=snap.Length-1; i>=0; i-- ) {
 		snap.GetKey(i, boss_name, sizeof(boss_name));
 		if( ff2_cfgmgr.GetIdentity(boss_name, cur_identity) ) {
 			ConfigMap cfg = FF2Character(cur_identity.hCfg).InfoSection;
@@ -185,8 +185,9 @@ Action OnBossSelectedFF2(const VSH2Player player)
 		}		
 	}
 
-	ConfigMap info_sec = identity.hCfg.GetSection("character.info");
 	ff2.m_plugins.LoadPlugins(identity.abilityList);
+	ConfigMap info_sec = identity.hCfg.GetSection("character.info");
+	
 	char[] help = new char[512];
 	{
 		char language[25];
@@ -221,7 +222,8 @@ void OnBossThinkFF2(const VSH2Player vsh2player)
 	if( !ff2_cfgmgr.FindIdentity(ToFF2Player(player).iBossType, identity) )
 		return;
 
-	ConfigMap info_sec = identity.hCfg.GetSection("character.info");
+	ConfigMap cfg = identity.hCfg;
+	ConfigMap info_sec = cfg.GetSection("character.info");
 
 	///	Handle speed think
 	{
@@ -242,9 +244,8 @@ void OnBossThinkFF2(const VSH2Player vsh2player)
 	}
 
 	float flCharge = player.GetPropFloat("flCharge");
-	float flRage = player.GetPropFloat("flRAGE");
+	float flRage = player.flRAGE;
 	int client = player.index;
-	ConfigMap cfg = identity.hCfg;
 	static char buffer[PLATFORM_MAX_PATH];
 
 	///	Handle super jump
@@ -289,6 +290,17 @@ void OnBossThinkFF2(const VSH2Player vsh2player)
 				SetHudTextParams(-1.0, 0.85, 0.15, 255, 0, 0, 255);
 				ShowSyncHudText(client, ff2.m_hud[HUD_Weighdown], "Weighdown is not ready\nYou must wait %.1f sec", curCd);
 			}
+		}
+	}
+
+	/// Handle scout's auto rage regeneration
+	{
+		for( int i = 1; i<=MaxClients; i++ ) {
+			if( !IsClientInGame(i) || !IsPlayerAlive(i) || TF2_GetPlayerClass(i) != TFClass_Scout )
+				continue;
+			
+			player.flRAGE = (flRage += ff2.m_cvars.m_flscout_rage_gen.FloatValue);
+			break;
 		}
 	}
 
@@ -585,7 +597,7 @@ void OnPlayerAirblastedFF2(const VSH2Player airblaster, const VSH2Player airblas
 		return;
 
 	float rage = airblasted.GetPropFloat("flRAGE");
-	airblasted.SetPropFloat("flRAGE", rage + ff2.m_cvars.m_flairblast.FloatValue);
+	airblasted.SetPropFloat("flRAGE", rage + ff2.m_cvars.m_flairblast_rage.FloatValue);
 }
 
 Action OnBossTriggerRageFF2(const VSH2Player vsh2player)
@@ -614,7 +626,7 @@ Action OnBossJaratedFF2(const VSH2Player victim, const VSH2Player attacker)
 	FF2Player player = ToFF2Player(victim);
 	float rage = player.flRAGE;
 
-	rage -= ff2.m_cvars.m_fljarate.FloatValue;
+	rage -= ff2.m_cvars.m_fljarate_rage.FloatValue;
 	if( rage <= 0.0 )
 		rage = 0.0;
 

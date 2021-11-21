@@ -6,7 +6,7 @@
 #define REQUIRE_PLUGIN
 #include <sdkhooks>
 
-#define PLUGIN_VERSION "1.0.0b"
+#define PLUGIN_VERSION "1.0.1"
 
 #include <freak_fortress_2>
 #include <cfgmap>
@@ -22,6 +22,53 @@ public Plugin myinfo = {
 	url            = "https://github.com/VSH2-Devs/Vs-Saxton-Hale-2"
 };
 
+enum struct BossKVData_t
+{
+	int	VSH2ID;
+	KeyValues KV;
+}
+
+methodmap BossKVWrapper_t < ArrayList
+{
+	public BossKVWrapper_t() {
+		return view_as<BossKVWrapper_t>(new ArrayList(sizeof(BossKVData_t)));
+	}
+
+	public KeyValues FindOrCreate(FF2Player player) {
+		BossKVData_t data;
+		int boss_id = player.GetPropInt("iBossType");
+
+		for( int i=this.Length-1; i>=0; i-- ) {
+			this.GetArray(i, data);
+			if( data.VSH2ID==boss_id ) {
+				return data.KV;
+			}
+		}
+
+		char config_path[PLATFORM_MAX_PATH];
+		player.GetConfigName(config_path, sizeof(config_path));
+		BuildPath(Path_SM, config_path, sizeof(config_path), "configs/freak_fortress_2/%s.cfg", config_path);
+
+		data.VSH2ID = boss_id;
+		data.KV = new KeyValues("character");
+		data.KV.ImportFromFile(config_path);
+
+		this.PushArray(data);
+		return data.KV;
+	}
+
+	public void ClearKVs() {
+		BossKVData_t data;
+
+		for( int i=this.Length; i>=0; i-- ) {
+			this.GetArray(i, data);
+			delete data.KV;
+		}
+
+		this.Clear();
+	}
+}
+BossKVWrapper_t BossKVWrapper;
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
@@ -76,6 +123,20 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 }
 
 
+public void OnLibraryAdded(const char[] name)
+{
+	if( !strcmp(name, "VSH2") ) {
+		VSH2_Hook(OnRoundEndInfo, OnRoundEnd);
+	}
+}
+
+public void OnLibraryRemoved(const char[] name)
+{
+	if( !strcmp(name, "VSH2") ) {
+		VSH2_Unhook(OnRoundEndInfo, OnRoundEnd);
+	}
+}
+
 #if !defined FF2_USING_AUTO_PLUGIN__OLD
 
 enum {
@@ -106,6 +167,14 @@ enum {
 };
 
 #endif
+
+
+stock void OnRoundEnd(const VSH2Player player, bool bossBool, char message[MAXMESSAGE])
+{
+	if (BossKVWrapper.Length)
+		BossKVWrapper.ClearKVs();
+}
+
 
 any Native_IsEnabled(Handle plugin, int numParams)
 {
@@ -212,13 +281,15 @@ any Native_SetBossCharge(Handle plugin, int numParams)
 
 any Native_GetBossRageDamage(Handle plugin, int numParams)
 {
-	FF2Player boss = ToFF2Player(GetNativeCell(1));
+	int boss = GetNativeCell(1);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	return boss.GetPropFloat("flRageDamage");
 }
 
 any Native_SetBossRageDamage(Handle plugin, int numParams)
 {
-	FF2Player boss = ToFF2Player(GetNativeCell(1));
+	int boss = GetNativeCell(1);
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	boss.SetPropFloat("flRageDamage", GetNativeCell(2));
 }
 
@@ -234,8 +305,11 @@ any Native_GetRoundState(Handle plugin, int numParams)
 
 any Native_GetSpecialKV(Handle plugin, int numParams)
 {
-	FF2GameMode.ReportError(FF2Player(GetNativeCell(1)), "Boss is using a deprecated API 'FF2_GetSpecialKV', use FF2Player methodmaps");
-	return 0;
+	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
+	if( !player.bIsBoss || GetNativeCell(2) )
+		return 0;
+	else
+		return BossKVWrapper.FindOrCreate(player);
 }
 
 any Native_StartMusic(Handle plugin, int numParams)
@@ -440,4 +514,10 @@ any Native_ReportError(Handle plugin, int numParams)
 	if (error != SP_ERROR_NONE)
 		ThrowNativeError(error, "Failed to format.");
 	else FF2GameMode.ReportError(FF2Player(GetNativeCell(1)), buffer);
+}
+
+static FF2Player FF2_ZeroBossToFF2Player()
+{
+	FF2Player[] players = new FF2Player[MaxClients];
+	return VSH2GameMode.GetBosses(ToFF2Player(players), false) < 1 ? INVALID_FF2PLAYER : players[0];
 }

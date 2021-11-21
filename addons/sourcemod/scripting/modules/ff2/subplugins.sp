@@ -15,10 +15,6 @@ methodmap FF2PluginList < ArrayList {
 		return( view_as< FF2PluginList >(new ArrayList(sizeof(FF2SubPlugin))) );
 	}
 
-	property bool IsFull {
-		public get() { return( this.Length >= FF2_MAX_SUBPLUGINS ); }
-	}
-
 	public void GetInfo(int index, FF2SubPlugin infos) {
 		this.GetArray(index, infos, sizeof(FF2SubPlugin));
 	}
@@ -35,7 +31,9 @@ methodmap FF2PluginList < ArrayList {
 
 		FF2SubPlugin infos;
 		int i;
-		for( ; i < this.Length; i++ ) {
+		int size = this.Length;
+		// find plugin if it already exists
+		for( ; i < size; i++ ) {
 			this.GetInfo(i, infos);
 			if( strcmp(infos.name, name) )
 				continue;
@@ -59,7 +57,7 @@ methodmap FF2PluginList < ArrayList {
 			return true;
 		}
 
-		if( this.IsFull )
+		if( size>=FF2_MAX_SUBPLUGINS )
 			return false;
 
 		ServerCommand("sm plugins load \"freaks\\%s.smx\"", name);
@@ -72,20 +70,27 @@ methodmap FF2PluginList < ArrayList {
 		return true;
 	}
 
-	public void LoadPlugins(FF2AbilityList query_abilities) {
+	public int LoadPluginsEx(FF2AbilityList query_abilities, int remaining_size) {
 		char plugin_name[FF2_MAX_PLUGIN_NAME];
-		int size = query_abilities.Length;
+		int size_left = remaining_size - query_abilities.Length;
 
-		for( int i; i<size && !this.IsFull; i++ ) {
+		int num_of_plugins;
+		for( int i; i<size_left; i++ ) {
 			FF2Ability ability = query_abilities.Get(i);
 			ability.GetPlugin(plugin_name);
-			this.TryLoadSubPlugin(plugin_name);
+			if( this.TryLoadSubPlugin(plugin_name) )
+				num_of_plugins++;
 		}
+		return num_of_plugins;
+	}
+
+	public void LoadPlugins(FF2AbilityList query_abilities) {
+		this.LoadPluginsEx(query_abilities, FF2_MAX_SUBPLUGINS - ff2.m_plugins.Length);
 	}
 
 	public void FindAndErase(const char[] name) {
 		FF2SubPlugin infos;
-		for( int i; i < this.Length; i++ ) {
+		for( int i=this.Length-1; i>=0; i-- ) {
 			this.GetInfo(i, infos);
 			if( !strcmp(infos.name, name) ) {
 				this.Erase(i);
@@ -96,7 +101,7 @@ methodmap FF2PluginList < ArrayList {
 
 	public void UnloadAllSubPlugins() {
 		FF2SubPlugin info;
-		for( int i; i < this.Length; i++ ) {
+		for( int i=this.Length-1; i>=0; i-- ) {
 			this.GetInfo(i, info);
 			InsertServerCommand("sm plugins unload \"freaks\\%s.smx\"", info.name);
 		}

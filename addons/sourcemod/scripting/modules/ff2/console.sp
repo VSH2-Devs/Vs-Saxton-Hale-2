@@ -7,8 +7,9 @@ void InitConVars()
 	CreateConVar("ff2_solo_shame", "0", "Always insult the boss for solo raging", _, true, 0.0, true, 1.0);
 	
 	ff2.m_cvars.m_version 		= FindConVar("vsh2_version");
-	ff2.m_cvars.m_fljarate 		= FindConVar("vsh2_jarate_rage");
-	ff2.m_cvars.m_flairblast 	= FindConVar("vsh2_airblast_rage");
+	ff2.m_cvars.m_fljarate_rage 		= FindConVar("vsh2_jarate_rage");
+	ff2.m_cvars.m_flairblast_rage 	= FindConVar("vsh2_airblast_rage");
+	ff2.m_cvars.m_flscout_rage_gen = FindConVar("vsh2_scout_rage_gen");
 	ff2.m_cvars.m_flmusicvol 	= FindConVar("vsh2_music_volume");
 	ff2.m_cvars.m_nextmap 		= FindConVar("sm_nextmap");
 	
@@ -54,8 +55,7 @@ Action Timer_DisplayCharPack(Handle timer)
 	char pack[64], _item[4];
 	ArrayList list = new ArrayList(sizeof(pack));
 	
-	int i;
-	for( ; i < snap.Length; i++ ) {
+	for( int i=snap.Length-1; i>=0 ; i-- ) {
 		snap.GetKey(i, pack, sizeof(pack));
 		list.PushString(pack);
 	}
@@ -69,7 +69,8 @@ Action Timer_DisplayCharPack(Handle timer)
 	menu.SetTitle("Please vote for the boss pack for the next map.");
 	
 	int pack_limit = ff2.m_cvars.m_pack_limit.IntValue, list_limit = list.Length;
-	for( i = 0; i < list_limit && i < pack_limit; i++ ) {
+	int actual_limit = pack_limit < list_limit ? pack_limit : list_limit;
+	for( int i; i < actual_limit; i++ ) {
 		list.GetString(i, pack, sizeof(pack));
 		IntToString(i, _item, sizeof(_item));
 		menu.AddItem(_item, pack);
