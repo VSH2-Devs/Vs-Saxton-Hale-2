@@ -344,7 +344,7 @@ void OnBossThinkFF2(const VSH2Player vsh2player)
 		ShowSyncHudText(
 			client,
 			ff2.m_hud[HUD_Jump],
-				flRage > 100.0 ? 
+				flRage >= 100.0 ? 
 				"%s\nCall for medic to activate your \"RAGE\" ability" :
 				"%s\nRage is %.1f percent ready",
 			buffer,
