@@ -251,15 +251,15 @@ void OnBossThinkFF2(const VSH2Player vsh2player)
 	///	Handle super jump
 	{
 		if( !player.bNoSuperJump ) {
-			float min_charge;
+			float max_charge;
 			ConfigMap superjump_sec = info_sec.GetSection("Superjump");
-			if( !superjump_sec.GetFloat("min charge", min_charge) )
-				min_charge = 25.0;
+			if( !superjump_sec.GetFloat("max charge", max_charge) )
+				max_charge = 25.0;
 	
-			if( player.SuperJumpThink(2.5, min_charge) ) {
-				if( !superjump_sec.GetFloat("reset charge", min_charge) )
-					min_charge = -130.0;
-				player.SuperJump(flCharge, min_charge);
+			if( player.SuperJumpThink(2.5, max_charge) ) {
+				if( !superjump_sec.GetFloat("reset charge", max_charge) )
+					max_charge = -130.0;
+				player.SuperJump(flCharge, max_charge);
 			}
 		}
 	}
