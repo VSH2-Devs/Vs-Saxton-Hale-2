@@ -6,43 +6,35 @@ In some cases, you want your boss to have music in order to spice up the action 
 For the example codes, I will use the Christian Brutal Sniper's single theme song.
 
 ## Setting up the Music and Files
-In order to install music to play for our boss' round, we first need to (literally) define the song(s) that we want to play. CBS's theme song of The Millionaire's Holiday by Combustible Edison is defined through a macro.
+In order to install music to play for our boss' round, we first need to define the song(s) that we want to play. CBS's theme song of The Millionaire's Holiday by Combustible Edison is defined through a string macro.
 ```c++
-// cbs.sp
 #define CBSTheme    "saxton_hale/the_millionaires_holiday.mp3"
 ```
 
 After we've defined all the music we need, we then set the file to be downloaded by prepping the sound which will precache and add the file to the downloads table.
 ```c++
-public void AddCBSToDownloads()
-{
+public void DefaultBosses_OnDownloads() {
 	...
 	PrepareSound(CBSTheme);
 	...
 }
 ```
-## Activating the Music
-Alright, our files are in place and we've defined our song, how do we get it to play? In a file called `handler.sp`, there's a function called `ManageMusic` which plays periodically.
-`ManageMusic` gives us two useful variables: `char song[PLATFORM_MAX_PATH]` which let's us copy our song's file name so that the VSH plugin internals will play the song for us AND `float& time` which is a float reference that let's us set how long to play the song for!
 
-For example's sake, we want CBS's theme song to play for 140 seconds, which is longer than the actual song but the extra seconds are to leave some moment of silence. Setting up CBS's music looks exactly like this.
+## Activating the Music
+Alright, our files are in place and we've defined our song, how do we get it to play? we want CBS's theme song to play for 140 seconds, which is longer than the actual song but the extra seconds are to leave some moment of silence. Setting up CBS's music looks exactly like this.
 
 ```c++
-public void ManageMusic(char song[PLATFORM_MAX_PATH], float& time)
+VSH2_Hook(OnMusic, DefaultBosses_OnMusic);
+
+...
+
+public void DefaultBosses_OnMusic(char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player)
 {
-	/// UNFORTUNATELY, we have to get a random boss so we can set our music, tragic I know...
-	/// Remember that you can get a random boss filtered by type as well!
-	BaseBoss currBoss = gamemode.GetRandomBoss(true);
-	if( currBoss ) {
-		switch( currBoss.iBossType ) {
-			case -1: { song = ""; time = -1.0; }
-			case CBS: {
-				strcopy(song, sizeof(song), CBSTheme);
-				time = 140.0;
-			}
-			...
-		}
-	}
+	if( player.GetPropInt("iBossType") != g_CBSId )
+		return;
+	
+	strcopy(song, sizeof(song), CBSTheme);
+	time = 140.0;
 }
 ```
 
@@ -56,19 +48,18 @@ The easiest AND most MINIMAL effort to get multiple songs for a boss is through 
 
 ```c++
 // myboss.sp
-#define MyBossTheme1		"myboss_soundfolder/mybosstheme1.mp3"
-#define MyBossTheme2		"myboss_soundfolder/mybosstheme2.mp3"
-#define MyBossTheme3		"myboss_soundfolder/mybosstheme3.mp3"
 
 char MyBossThemes[][] = {
-	MyBossTheme1, MyBossTheme2, MyBossTheme3
+	"myboss_soundfolder/mybosstheme1.mp3",
+	"myboss_soundfolder/mybosstheme2.mp3",
+	"myboss_soundfolder/mybosstheme3.mp3"
 };
 
 float MyBossThemesTime[] = {
 	160.0, 190.0, 150.0
 };
 ```
-As you can see, we still define our song file strings through a define-macro but I've made it easier to use by making a multidimensional char array for all our songs and made a float array for all the playtime of the songs (make sure they're all in order). There are other ways to organize how you want your boss to have multiple theme songs but this example is just a minimal way of doing so.
+As you can see, we define our song files through a multidimensional char array for all our songs and made a float array for all the play times of the songs (make sure they're all in order). There are other ways to organize how you want your boss to have multiple theme songs but this example is just a minimal way of doing so.
 
 ## Activating Multiple Songs
 Activating multiple songs is also the same but since our example has an array available as to what song we can choose, I will use a simple form of song shuffling as an example.
@@ -79,10 +70,14 @@ VSH2_Hook(OnMusic, MyBoss_OnMusic);
 
 public void MyBoss_OnMusic(char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player)
 {
+	if( player.GetPropInt("iBossType") != g_MyBossId )
+		return;
+	
 	int picked_song = player.GetPropInt("iSongPick");
 	int pick = ( picked_song == -1 || picked_song > 2 )
 		? GetRandomInt(0, sizeof(MyBossThemes))
 		: picked_song;
+	
 	strcopy(song, sizeof(song), MyBossThemes[pick]);
 	time = MyBossThemesTime[pick];
 }
@@ -101,6 +96,12 @@ VSH2_Hook(OnMusic, MyBoss_OnMusic);
 
 public void MyBoss_OnMusic(char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player)
 {
+	if( player.GetPropInt("iBossType") != g_MyBossId )
+		return;
+	
+	strcopy(song, sizeof(song), CBSTheme);
+	time = 140.0;
+	
 	static int curr_index = -1;
 	int picked_song = player.GetPropInt("iSongPick");
 	int num_songs = sizeof(MyBossThemes) - 1;

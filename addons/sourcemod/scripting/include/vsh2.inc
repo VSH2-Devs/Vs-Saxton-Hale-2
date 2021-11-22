@@ -100,6 +100,16 @@ enum { /** VSH2 Resource Types */
 	MaxResourceTypes
 };
 
+/// WHY did the round end?
+enum { /** VSH2RoundResult */
+	RoundResInvalid,  /// round didn't even end yet.
+	RoundResBossWin,  /// boss successfully killed ALL players.
+	RoundResBossDied, /// last/only boss died.
+	RoundResBossDisc, /// last/only boss disconnected.
+	RoundResTimer,    /// timer ran out.
+	RoundResCap,      /// control point was captured.
+};
+
 
 methodmap VSH2Player {
 	/** [ C O N S T R U C T O R ]
@@ -146,15 +156,15 @@ methodmap VSH2Player {
 	 * @noreturn
 	 */
 	#pragma deprecated Use SetPropInt, SetPropFloat, or SetPropAny instead.
-	public native void  SetProperty(const char prop_name[64], any value);
+	public native void  SetProperty(const char prop_name[64],  any value);
 	
 	public native int   GetPropInt(const char prop_name[64]);
 	public native float GetPropFloat(const char prop_name[64]);
 	public native any   GetPropAny(const char prop_name[64]);
 	
-	public native bool  SetPropInt(const char prop_name[64], int value);
+	public native bool  SetPropInt(const char prop_name[64],   int value);
 	public native bool  SetPropFloat(const char prop_name[64], float value);
-	public native bool  SetPropAny(const char prop_name[64], any value);
+	public native bool  SetPropAny(const char prop_name[64],   any value);
 	
 	/** AVAILABLE PROPERTIES
 	 * int iQueue
@@ -226,6 +236,15 @@ methodmap VSH2Player {
 	public native void ConvertToMinion(const float spawntime);
 	public native int  SpawnWeapon(char[] name, const int index, const int level, const int qual, char[] att);
 	public native int  GetWeaponSlotIndex(const int slot);
+	public        int  GetSlotIdxFromWep(int wep) {
+		int client = this.index;
+		for( int i; i<5; i++ ) {
+			if( wep==GetPlayerWeaponSlot(client, i) ) {
+				return i;
+			}
+		}
+		return -1;
+	}
 	public native void SetWepInvis(const int alpha);
 	public native void SetOverlay(const char[] strOverlay);
 	public native bool TeleToSpawn(int team=0);
@@ -303,7 +322,7 @@ methodmap VSH2Player {
 	}
 	public native void ConvertToBoss();
 	public native void GiveRage(const int damage);
-	public native void MakeBossAndSwitch(const int type, const bool run_event);
+	public native void MakeBossAndSwitch(const int type, const bool run_event, const bool friendly=false);
 	public native void DoGenericStun(const float rageDist);
 	public native void StunPlayers(float rage_dist, float stun_time=5.0);
 	public native void StunBuildings(float rage_dist, float sentry_stun_time=8.0);
@@ -342,17 +361,42 @@ methodmap VSH2Player {
 		int sound_len = sect.GetIntKeySize(sound_idx);
 		char[] sound_str = new char[sound_len];
 		if( sect.GetIntKey(sound_idx, sound_str, sound_len) > 0 ) {
-			this.PlayVoiceClip(sound_str, VSH2_VOICE_INTRO);
+			this.PlayVoiceClip(sound_str, voice_flags);
 		}
+		idx = sound_idx;
+	}
+	
+	/// return true or false based on whether charge is good enough.
+	public bool ChargeThink(float charge_rate, const char charge_prop[64], float max_charge, int button, bool cond) {
+		int client   = this.index;
+		int buttons  = GetClientButtons(client);
+		float charge = this.GetPropFloat(charge_prop);
+		if( (buttons & button) && (charge >= 0.0) ) {
+			if( charge + charge_rate < max_charge ) {
+				this.SetPropFloat(charge_prop, charge + charge_rate);
+			} else {
+				this.SetPropFloat(charge_prop, max_charge);
+			}
+		} else if( charge < 0.0 ) {
+			this.SetPropFloat(charge_prop, charge + charge_rate);
+		} else {
+			if( charge > 1.0 && cond ) {
+				return true;
+			} else {
+				this.SetPropFloat(charge_prop, 0.0);
+			}
+		}
+		return false;
 	}
 };
 
 
-/** Common Boss Think Mechanics
+/**
+ * Common Boss Think Mechanics
  * Made these because of how common these boss mechanics are used within VSH and FF2.
  *
- * SpeedThink -> health-based speed where the less health the boss has, the faster they move.
- * GlowThink -> handles how long the boss will be visible through walls aka glowing.
+ * SpeedThink     -> health-based speed where the less health the boss has, the faster they move.
+ * GlowThink      -> handles how long the boss will be visible through walls aka glowing.
  * SuperJumpThink -> handles superjump charging
  * WeighDownThink -> handles weighdown charging
  */
@@ -373,8 +417,8 @@ stock void VSH2_GlowThink(VSH2Player boss, const float decrease) {
 }
 
 stock bool VSH2_SuperJumpThink(VSH2Player boss, const float charging, const float jumpcharge, int button=(IN_ATTACK2|IN_DUCK)) {
-	int player = boss.index;
-	int buttons = GetClientButtons(player);
+	int player   = boss.index;
+	int buttons  = GetClientButtons(player);
 	float charge = boss.GetPropFloat("flCharge");
 	if( (buttons & button) && (charge >= 0.0) ) {
 		if( charge + charging < jumpcharge ) {
@@ -404,6 +448,7 @@ stock void VSH2_WeighDownThink(VSH2Player boss, const float weighdown_time, cons
 	} else {
 		boss.SetPropFloat("flWeighDown", boss.GetPropFloat("flWeighDown") + incr);
 	}
+	
 	if( (buttons & button) && boss.GetPropFloat("flWeighDown") >= weighdown_time ) {
 		float ang[3]; GetClientEyeAngles(player, ang);
 		if( ang[0] > 60.0 ) {
@@ -417,10 +462,22 @@ stock void VSH2_WeighDownThink(VSH2Player boss, const float weighdown_time, cons
  * Registers a boss module/subplugin.
  * NOTE: The purpose of this native is to register boss modules/subplugins, you don't need to register add-on plugins to use forwards, simply hook what forward(s) you need.
  *
- * @param     plugin_name -> module name you want your calling plugin to be identified under
+ * @param     plugin_name -> module name you want your calling plugin to be identified under.
+ * @param     flags       -> flags that control the behavior associated with the boss module.
  * @return    integer of the plugin array index, -1 if error.
  */
-native int VSH2_RegisterPlugin(const char plugin_name[64]);
+enum /** Registration Flags */ {
+	VSH2PluginFlag_Nil,
+	VSH2PluginFlag_RedOnly = 1 << 0, /// boss is friendly ONLY.
+	VSH2PluginFlag_NonRand = 1 << 1, /// boss will not be chosen at random by the gamemode.
+	VSH2PluginFlag_NoMulti = 1 << 2, /// boss will not be chosen as a random multiboss.
+	VSH2PluginFlag_NoRed   = 1 << 3, /// boss cannot be used as a friendly boss.
+};
+native int VSH2_RegisterPlugin(const char plugin_name[64], int flags=VSH2PluginFlag_Nil);
+
+stock int VSH2_RegisterBoss(const char boss_name[64], int flags=VSH2PluginFlag_Nil) {
+	return VSH2_RegisterPlugin(boss_name, flags);
+}
 
 
 enum { /// VSH2HookType
@@ -627,9 +684,9 @@ typeset VSH2HookCB {
 	function Action (VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom);
 	
 	/**
-	 * PlayerKilled
-	 * PlayerAirblasted - player is the airblaster
-	 * PlayerHurt
+	 * OnPlayerKilled
+	 * OnPlayerAirblasted - player is the airblaster
+	 * OnPlayerHurt
 	 */
 	function Action (const VSH2Player player, const VSH2Player victim, Event event);
 	function void   (const VSH2Player player, const VSH2Player victim, Event event);
@@ -643,8 +700,8 @@ typeset VSH2HookCB {
 	function void   (const VSH2Player player, char message[MAXMESSAGE]);
 	
 	/**
-	 * BossHealthCheck - bossBool determines if command user was the boss
-	 * RoundEndInfo - bossBool determines if boss won the round
+	 * OnBossHealthCheck - bossBool determines if command user was the boss
+	 * OnRoundEndInfo    - bossBool determines if boss won the round
 	 */
 	function Action (const VSH2Player player, bool bossBool, char message[MAXMESSAGE]);
 	function void   (const VSH2Player player, bool bossBool, char message[MAXMESSAGE]);
@@ -758,7 +815,7 @@ native void VSH2_Unhook(const int callbacktype, VSH2HookCB callback);
 native bool VSH2_UnhookEx(const int callbacktype, VSH2HookCB callback);
 
 native int  VSH2_GetMaxBosses();
-native int  VSH2_GetRandomBossType(int[] boss_filter, int filter_size=0);
+native int  VSH2_GetRandomBossType(int[] boss_filter, int filter_size=0, bool multibosses=false, bool red_only=false);
 
 /**
  * Gets the ID and (short) names of all bosses.
@@ -858,6 +915,7 @@ native void VSH2GameMode_SetProperty(const char prop_name[64], any value);
  * int iRoundCount
  * int iHealthChecks
  * int iCaptures
+ * int iRoundResult
  * 
  * bool bSteam
  * bool bTF2Attribs
@@ -976,6 +1034,28 @@ methodmap VSH2GameMode {
 	public static VSH2Player GetBossByType(const bool is_alive, const int boss_type) {
 		return VSH2GameMode_GetBossByType(is_alive, boss_type);
 	}
+	public static VSH2Player GetRandomFighter(bool friendly_bosses=true, bool is_alive=true) {
+		VSH2Player[] players = new VSH2Player[MaxClients];
+		int count;
+		for( int i=MaxClients; i; --i ) {
+			if( !IsClientInGame(i)
+				|| GetClientTeam(i) != VSH2Team_Red
+				|| (is_alive && !IsPlayerAlive(i))
+			) {
+				continue;
+			}
+			VSH2Player p = VSH2Player(i);
+			if( !friendly_bosses && p.bIsBoss )
+				continue;
+			
+			players[count++] = p;
+		}
+		return( !count )? VSH2Player(0) : players[GetRandomInt(0, count-1)];
+	}
+	public static int GetRandomBossType(bool multibosses=false, bool red_only=false) {
+		int boss_filter[1];
+		return VSH2_GetRandomBossType(boss_filter, 1, multibosses, red_only);
+	}
 	
 	public static int CountMinions(const bool is_alive, VSH2Player ownerboss=view_as< VSH2Player >(0)) {
 		return VSH2GameMode_CountMinions(is_alive, ownerboss);
@@ -1011,14 +1091,25 @@ methodmap VSH2GameMode {
 	public static bool IsVSHMap() {
 		return VSH2GameMode_IsVSHMap();
 	}
+	
+	public static bool AreScoutsLeft() {
+		VSH2Player[] players = new VSH2Player[MaxClients];
+		int reds = VSH2GameMode.GetFighters(players);
+		/// make sure friendly bosses and minions are excluded.
+		for( int i; i < reds; i++ ) {
+			if( !players[i].bIsBoss && !players[i].GetPropInt("bIsMinion") && players[i].iTFClass != TFClass_Scout ) {
+				return false;
+			}
+		}
+		return true;
+	}
 };
 
 
 /**
  * VSH2 Misc. Useful stocks.
  */
-stock bool CheckDownload(const char[] file)
-{
+stock bool CheckDownload(const char[] file) {
 	if( FileExists(file, true) ) {
 		AddFileToDownloadsTable(file);
 		return true;
@@ -1026,38 +1117,33 @@ stock bool CheckDownload(const char[] file)
 	return false;
 }
 
-stock void PrepareSound(const char[] sound_path)
-{
+stock void PrepareSound(const char[] sound_path) {
 	PrecacheSound(sound_path, true);
 	char s[PLATFORM_MAX_PATH];
 	Format(s, sizeof(s), "sound/%s", sound_path);
 	CheckDownload(s);
 }
 
-stock void DownloadSoundList(const char[][] file_list, int size)
-{
+stock void DownloadSoundList(const char[][] file_list, int size) {
 	for( int i; i<size; i++ ) {
 		PrepareSound(file_list[i]);
 	}
 }
 
-stock void PrecacheSoundList(const char[][] file_list, int size)
-{
+stock void PrecacheSoundList(const char[][] file_list, int size) {
 	for( int i; i<size; i++ ) {
 		PrecacheSound(file_list[i], true);
 	}
 }
 
-stock void PrecacheScriptList(const char[][] file_list, int size)
-{
+stock void PrecacheScriptList(const char[][] file_list, int size) {
 	for( int i; i<size; i++ ) {
 		PrecacheScriptSound(file_list[i]);
 	}
 }
 
 /// For single custom materials, omit file extensions as it prepares VMT + VTF
-stock void PrepareMaterial(const char[] matpath)
-{
+stock void PrepareMaterial(const char[] matpath) {
 	char s[PLATFORM_MAX_PATH];
 	Format(s, sizeof(s), "%s%s", matpath, ".vtf");
 	CheckDownload(s);
@@ -1065,8 +1151,7 @@ stock void PrepareMaterial(const char[] matpath)
 	CheckDownload(s);
 }
 
-stock void DownloadMaterialList(const char[][] file_list, int size)
-{
+stock void DownloadMaterialList(const char[][] file_list, int size) {
 	char s[PLATFORM_MAX_PATH];
 	for( int i; i<size; i++ ) {
 		strcopy(s, sizeof(s), file_list[i]);
@@ -1075,8 +1160,7 @@ stock void DownloadMaterialList(const char[][] file_list, int size)
 }
 
 /// For custom models, do NOT omit .MDL extension
-stock int PrepareModel(const char[] model_path, bool model_only=false)
-{
+stock int PrepareModel(const char[] model_path, bool model_only=false) {
 	char extensions[][] = { ".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd", ".phy" };
 	char model_base[PLATFORM_MAX_PATH];
 	char path[PLATFORM_MAX_PATH];
@@ -1095,8 +1179,7 @@ stock int PrepareModel(const char[] model_path, bool model_only=false)
 }
 
 /// Contributed by ScaleFace
-stock bool IsStockSound(const char sample[PLATFORM_MAX_PATH])
-{
+stock bool IsStockSound(const char sample[PLATFORM_MAX_PATH]) {
 	char exclusions[][] = {
 		"_pain","_medic","_battlecry","_pain","_auto","_activatecharge","_jeers","_cheers","_help",
 		"_incoming","_goodjob","_head","_fight","_cloaked","_melee","_move","_positive","_negative","_need",
@@ -1167,8 +1250,7 @@ stock void MakePawnTimer(Function func, float thinktime=0.1, const any[] args=0,
 	CreateTimer(thinktime, RunPawnFunc, thinkpack, TIMER_DATA_HNDL_CLOSE);
 }
 
-public Action RunPawnFunc(Handle t, DataPack pack)
-{
+public Action RunPawnFunc(Handle t, DataPack pack) {
 	pack.Reset();
 	Function fn = pack.ReadFunction();
 	Call_StartFunction(null, fn);

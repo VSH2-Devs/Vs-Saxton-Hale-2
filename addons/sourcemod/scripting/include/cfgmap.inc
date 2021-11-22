@@ -45,6 +45,17 @@ enum struct PackVal {
 	DataPack   data;
 	int        size;
 	KeyValType tag;
+	
+	void Init() {
+		this.data = new DataPack();
+	}
+	
+	/// use the `size` member to pre-alloc buffer size.
+	/// this method assumes you've already checked if the tag is a section or not.
+	void GetString(char[] buf) {
+		this.data.Reset();
+		this.data.ReadString(buf, this.size);
+	}
 }
 
 enum { SEC_SCOPE_SIZE=512 };
@@ -64,6 +75,7 @@ enum struct KeyValState {
 	StringMap  top;
 	
 	char       curr_section[PLATFORM_MAX_PATH];
+	char       filename[PLATFORM_MAX_PATH];
 	
 	int        enumer_global; /// for keeping track of <ENUM> value.
 	int        enumer_local;  /// for keeping track of <enum> value.
@@ -74,23 +86,26 @@ enum struct KeyValState {
 static KeyValState g_kvstate;
 
 
+typedef ConfigMapSectionFilter = function bool(const char[] name, ConfigMap cursection);
+
 methodmap ConfigMap < StringMap {
 	public ConfigMap(const char[] filename) {
 		char path[PLATFORM_MAX_PATH];
 		BuildPath(Path_SM, path, sizeof(path), filename);
 		
-		g_kvstate.cfgstack = new ArrayStack();
-		g_kvstate.enum_stack = new ArrayStack();
-		g_kvstate.secstack = new ArrayStack(PLATFORM_MAX_PATH);
-		g_kvstate.top = new StringMap();
+		g_kvstate.filename      = path;
+		g_kvstate.cfgstack      = new ArrayStack();
+		g_kvstate.enum_stack    = new ArrayStack();
+		g_kvstate.secstack      = new ArrayStack(PLATFORM_MAX_PATH);
+		g_kvstate.top           = new StringMap();
 		g_kvstate.enumer_global = g_kvstate.iota_global = 0;
-		g_kvstate.enumer_local = g_kvstate.iota_local = 0;
+		g_kvstate.enumer_local  = g_kvstate.iota_local = 0;
 		
 		g_kvstate.parser = new SMCParser();
 		g_kvstate.parser.OnEnterSection = ConfigMap_OnNewSection;
-		g_kvstate.parser.OnKeyValue = ConfigMap_OnKeyValue;
+		g_kvstate.parser.OnKeyValue     = ConfigMap_OnKeyValue;
 		g_kvstate.parser.OnLeaveSection = ConfigMap_OnEndSection;
-		g_kvstate.parser.OnRawLine = ConfigMap_OnCurrentLine;
+		g_kvstate.parser.OnRawLine      = ConfigMap_OnCurrentLine;
 		
 		SMCError err = g_kvstate.parser.ParseFile(path);
 		//PrintCfg(view_as< ConfigMap >(g_kvstate.top));
@@ -120,9 +135,8 @@ methodmap ConfigMap < StringMap {
 	
 	public bool GetVal(const char[] key, PackVal valbuf)
 	{
-		if( this==null ) {
+		if( this==null )
 			return false;
-		}
 		
 		/// first check if we're getting a singular value OR we iterate through a sectional path.
 		int dot = FindCharInString(key, '.');
@@ -178,7 +192,16 @@ methodmap ConfigMap < StringMap {
 		return false;
 	}
 	
-	public bool SetVal(const char[] key, const char[] val_str = "", int val_size = 0) {
+	public bool GetIntKeyVal(int key, PackVal valbuf) {
+		if( key < 0 ) {
+			return false;
+		}
+		char key_str[12];
+		IntToString(key, key_str, sizeof(key_str));
+		return this.GetVal(key_str, valbuf);
+	}
+	
+	public bool SetVal(const char[] key, const char[] val_str="", int val_size=0) {
 		if( this==null ) {
 			return false;
 		}
@@ -266,6 +289,15 @@ methodmap ConfigMap < StringMap {
 		return false;
 	}
 	
+	public bool SetIntKeyVal(int key, const char[] val_str = "", int val_size = 0) {
+		if( key < 0 ) {
+			return false;
+		}
+		char key_str[12];
+		IntToString(key, key_str, sizeof(key_str));
+		return this.SetVal(key_str, val_str, val_size);
+	}
+	
 	/**
 	 *
 	 * name:      GetSize
@@ -280,7 +312,31 @@ methodmap ConfigMap < StringMap {
 		}
 		PackVal val;
 		bool result = this.GetVal(key_path, val);
-		return( result && val.tag==KeyValType_Value ) ? val.size : 0;
+		if( !result || val.tag != KeyValType_Value ) {
+			return 0;
+		}
+		return val.size;
+	}
+	
+	/**
+	 *
+	 * name:      GetSectionSize
+	 * @param     key_path : key path to the section.
+	 * @return    entries in the section.
+	 * @note      to directly access subsections, use a '.' like "root.section.key"
+	 *
+	 */
+	public int GetSectionSize(const char[] key_path) {
+		if( this==null ) {
+			return 0;
+		}
+		PackVal val;
+		bool result = this.GetVal(key_path, val);
+		if( !result || val.tag != KeyValType_Section ) {
+			return 0;
+		}
+		val.data.Reset();
+		return view_as< ConfigMap >(val.data.ReadCell()).Size;
 	}
 	
 	/**
@@ -593,7 +649,7 @@ methodmap ConfigMap < StringMap {
 		IntToString(key, key_str, sizeof(key_str));
 		return this.GetSection(key_str);
 	}
-
+	
 	public KeyValType GetIntKeyValType(int key) {
 		if( key < 0 ) {
 			return KeyValType_Null;
@@ -645,6 +701,204 @@ methodmap ConfigMap < StringMap {
 		IntToString(key, key_str, sizeof(key_str));
 		return this.GetBool(key_str, b, simple);
 	}
+	
+	/**
+	 * 
+	 * name:      GetFloats
+	 * @param     key_path : string key of the section we're reading from.
+	 * @param     buf      : array of floats to store values.
+	 * @param     buf_size : given size of the float buffer.
+	 * @return    true if successful, false otherwise.
+	 */
+	public bool GetFloats(const char[] key_path, float[] buf, int buf_size) {
+		if( this==null ) {
+			return false;
+		}
+		PackVal val;
+		bool result = this.GetVal(key_path, val);
+		if( result && val.tag==KeyValType_Section ) {
+			val.data.Reset();
+			ConfigMap section = val.data.ReadCell();
+			int sect_size = section.Size;
+			int len = ( sect_size > buf_size )? buf_size : sect_size;
+			for( int i; i < len; i++ ) {
+				section.GetIntKeyFloat(i, buf[i]);
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * 
+	 * name:      GetInts
+	 * @param     key_path : string key of the section we're reading from.
+	 * @param     buf      : array of ints to store values.
+	 * @param     buf_size : given size of the int buffer.
+	 * @return    true if successful, false otherwise.
+	 */
+	public bool GetInts(const char[] key_path, int[] buf, int buf_size, int base=10) {
+		if( this==null ) {
+			return false;
+		}
+		PackVal val;
+		bool result = this.GetVal(key_path, val);
+		if( result && val.tag==KeyValType_Section ) {
+			val.data.Reset();
+			ConfigMap section = val.data.ReadCell();
+			int sect_size = section.Size;
+			int len = ( sect_size > buf_size )? buf_size : sect_size;
+			for( int i; i < len; i++ ) {
+				section.GetIntKeyInt(i, buf[i], base);
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * 
+	 * name:      GetSections
+	 * @param     buffer    : array of ConfigMap's to store found sections to.
+	 * @param     pred_func : function used as a filter for each found section.
+	 * @return    amount of sections written to 'buffer'.
+	 */
+	public int GetSections(ConfigMap[] buffer, ConfigMapSectionFilter fn_filter=INVALID_FUNCTION) {
+		int count;
+		if( this==null )
+			return count;
+		
+		StringMapSnapshot snap = this.Snapshot();
+		if( snap==null )
+			return count;
+		
+		int entries = snap.Length;
+		for( int i; i < entries; i++ ) {
+			int strsize = snap.KeyBufferSize(i);
+			char[] key_buffer = new char[strsize];
+			snap.GetKey(i, key_buffer, strsize);
+			ConfigMap sect = this.GetSection(key_buffer);
+			if( sect==null )
+				continue;
+			
+			if( fn_filter != INVALID_FUNCTION ) {
+				Call_StartFunction(null, fn_filter);
+				Call_PushString(key_buffer);
+				Call_PushCell(sect);
+				bool res; Call_Finish(res);
+				if( !res )
+					continue;
+			}
+			buffer[count++] = sect;
+		}
+		delete snap;
+		return count;
+	}
+	
+	/**
+	 * 
+	 * name:      GetCombinedKeyValLens
+	 * @param     key_lens : int reference to store combined key lengths.
+	 * @param     val_lens : int reference to store combined value lengths.
+	 * @return    amount of key-values stored.
+	 */
+	public int GetCombinedKeyValLens(int& key_lens=0, int& val_lens=0) {
+		int count;
+		if( this==null )
+			return count;
+		
+		StringMapSnapshot snap = this.Snapshot();
+		if( snap==null )
+			return count;
+		
+		int entries = snap.Length;
+		for( int i; i < entries; i++ ) {
+			int strsize = snap.KeyBufferSize(i) + 1;
+			char[] key_buffer = new char[strsize];
+			snap.GetKey(i, key_buffer, strsize);
+			int valsize = this.GetSize(key_buffer);
+			if( valsize > 0 ) {
+				key_lens += strsize;
+				val_lens += valsize;
+				++count;
+			}
+		}
+		delete snap;
+		return count;
+	}
+	
+	/**
+	 * 
+	 * name:      GetKeys
+	 * @param     keybuf  : large string buffer to store all key strings.
+	 * @param     offsets : int array to store the offset of each key string.
+	 * @return    amount of keys written.
+	 * @note      use this method with `GetCombinedKeyValLens` to get a proper sized key buffer
+	 */
+	public int GetKeys(char[] keybuf, int[] offsets) {
+		int count;
+		if( this==null )
+			return count;
+		
+		StringMapSnapshot snap = this.Snapshot();
+		if( snap==null )
+			return count;
+		
+		int offs, entries = snap.Length;
+		for( int i; i < entries; i++ ) {
+			int strsize = snap.KeyBufferSize(i);
+			char[] key_buffer = new char[strsize];
+			snap.GetKey(i, key_buffer, strsize);
+			int valsize = this.GetSize(key_buffer);
+			if( valsize > 0 ) {
+				offsets[count] = offs;
+				offs += StrCat(keybuf[offs], strsize, key_buffer);
+				if( keybuf[offs]==0 ) {
+					offs++;
+				}
+				++count;
+			}
+		}
+		delete snap;
+		return count;
+	}
+	
+	/**
+	 * 
+	 * name:      GetVals
+	 * @param     valbuf  : large string buffer to store all value strings.
+	 * @param     offsets : int array to store the offset of each value string.
+	 * @return    amount of values written.
+	 * @note      use this method with `GetCombinedKeyValLens` to get a proper sized value buffer
+	 */
+	public int GetVals(char[] valbuf, int[] offsets) {
+		int count;
+		if( this==null )
+			return count;
+		
+		StringMapSnapshot snap = this.Snapshot();
+		if( snap==null )
+			return count;
+		
+		int offs, entries = snap.Length;
+		for( int i; i < entries; i++ ) {
+			int strsize = snap.KeyBufferSize(i);
+			char[] key_buffer = new char[strsize];
+			snap.GetKey(i, key_buffer, strsize);
+			int valsize = this.GetSize(key_buffer);
+			if( valsize > 0 ) {
+				char[] val_str = new char[valsize];
+				this.Get(key_buffer, val_str, valsize);
+				offsets[count++] = offs;
+				offs += StrCat(valbuf[offs], valsize, val_str);
+				if( valbuf[offs]==0 ) {
+					offs++;
+				}
+			}
+		}
+		delete snap;
+		return count;
+	}
 };
 
 public SMCResult ConfigMap_OnNewSection(SMCParser smc, const char[] name, bool opt_quotes)
@@ -666,27 +920,99 @@ public SMCResult ConfigMap_OnNewSection(SMCParser smc, const char[] name, bool o
 	return SMCParse_Continue;
 }
 
+
+static int ParseSubString(const char[] text, PackVal pv) {
+	int i;
+	while( text[i] != '\'' && text[i] != 0 ) {
+		i++;
+	}
+	
+	char[] buf = new char[i+1];
+	for( int n; text[n] != '\'' && text[n] != 0; n++ ) {
+		buf[n] = text[n];
+	}
+	pv.data.WriteString(buf);
+	pv.size = i+1;
+	return i+1;
+}
+
 public SMCResult ConfigMap_OnKeyValue(SMCParser smc, const char[] key, const char[] value, bool key_quotes, bool value_quotes)
 {
-	PackVal val;
-	val.data = new DataPack();
-	if( StrEqual(value, "<IOTA>") ) {
-		char iota_val_str[15];
-		int iota_val = g_kvstate.iota_global++;
-		IntToString(iota_val, iota_val_str, sizeof iota_val_str);
-		val.data.WriteString(iota_val_str);
-		val.size = strlen(iota_val_str) + 1;
-	} else if( StrEqual(value, "<iota>") ) {
-		char iota_val_str[15];
-		int iota_val = g_kvstate.iota_local++;
-		IntToString(iota_val, iota_val_str, sizeof iota_val_str);
-		val.data.WriteString(iota_val_str);
-		val.size = strlen(iota_val_str) + 1;
-	} else {
-		val.data.WriteString(value);
-		val.size = strlen(value) + 1;
+	if( StrEqual(key, "<INCLUDE>") ) {
+		KeyValState old_kvstate;
+		old_kvstate = g_kvstate;
+		ConfigMap outter_file = new ConfigMap(value);
+		g_kvstate = old_kvstate;
+		if( outter_file==null ) {
+			LogError("ConfigMap Warning (%s) :: **** failed to include '%s' ****", g_kvstate.filename, value);
+			return SMCParse_Continue;
+		}
+		
+		StringMapSnapshot snap = outter_file.Snapshot();
+		if( snap==null ) {
+			LogError("ConfigMap Warning (%s) :: **** failed to make snapshot of '%s' ****", g_kvstate.filename, value);
+			DeleteCfg(outter_file);
+			return SMCParse_Continue;
+		}
+		
+		int entries = snap.Length;
+		for( int i; i < entries; i++ ) {
+			int strsize = snap.KeyBufferSize(i);
+			char[] key_buffer = new char[strsize];
+			snap.GetKey(i, key_buffer, strsize);
+			
+			PackVal pv;
+			outter_file.GetArray(key_buffer, pv, sizeof(pv));
+			g_kvstate.top.SetArray(key_buffer, pv, sizeof(pv));
+		}
+		delete snap;
+		delete outter_file;
+		return SMCParse_Continue;
 	}
-	val.tag = KeyValType_Value;
+	
+	PackVal val; val.Init();
+	if( value[0]=='a' && value[1]=='[' ) {
+		PackVal sub;
+		sub.tag = KeyValType_Value;
+		int n, i=2;
+		StringMap array_sect = new StringMap();
+		while( value[i] != ']' && value[i] != 0 ) {
+			if( value[i]=='\'' ) {
+				sub.Init();
+				i++;
+				i += ParseSubString(value[i], sub);
+				char n_val_str[15]; IntToString(n, n_val_str, sizeof n_val_str);
+				array_sect.SetArray(n_val_str, sub, sizeof(sub));
+				n++;
+				continue;
+			}
+			i++;
+		}
+		val.data.WriteCell(array_sect);
+		val.size = sizeof(array_sect);
+		val.tag = KeyValType_Section;
+	} else {
+		if( StrEqual(value, "<IOTA>") ) {
+			char iota_val_str[15];
+			int iota_val = g_kvstate.iota_global++;
+			IntToString(iota_val, iota_val_str, sizeof iota_val_str);
+			val.data.WriteString(iota_val_str);
+			val.size = strlen(iota_val_str) + 1;
+		} else if( StrEqual(value, "<iota>") ) {
+			char iota_val_str[15];
+			int iota_val = g_kvstate.iota_local++;
+			IntToString(iota_val, iota_val_str, sizeof iota_val_str);
+			val.data.WriteString(iota_val_str);
+			val.size = strlen(iota_val_str) + 1;
+		} else if( StrEqual(value, "<FILE>") ) {
+			val.data.WriteString(g_kvstate.filename);
+			val.size = strlen(g_kvstate.filename) + 1;
+		} else {
+			val.data.WriteString(value);
+			val.size = strlen(value) + 1;
+		}
+		val.tag = KeyValType_Value;
+	}
 	
 	if( StrEqual(key, "<ENUM>") ) {
 		int enum_val = g_kvstate.enumer_global++;
@@ -711,8 +1037,7 @@ public SMCResult ConfigMap_OnEndSection(SMCParser smc)
 	if( !g_kvstate.cfgstack.Empty ) {
 		StringMap higher = g_kvstate.cfgstack.Pop();
 		
-		PackVal val;
-		val.data = new DataPack();
+		PackVal val; val.Init();
 		val.data.WriteCell(g_kvstate.top);
 		val.size = sizeof(g_kvstate.top);
 		val.tag = KeyValType_Section;
@@ -743,8 +1068,7 @@ public SMCResult ConfigMap_OnCurrentLine(SMCParser smc, const char[] line, int l
 }
 
 /// ported from my C library: Harbol Config Parser.
-stock bool ParseTargetPath(const char[] key, char[] buffer, int buffer_len)
-{
+stock bool ParseTargetPath(const char[] key, char[] buffer, int buffer_len) {
 	/// parse something like: "root.section1.section2.section3.\\..dotsection"
 	int i = strlen(key) - 1;
 	while( i > 0 ) {
@@ -773,21 +1097,19 @@ stock bool ParseTargetPath(const char[] key, char[] buffer, int buffer_len)
 }
 
 stock void DeleteCfg(ConfigMap& cfg, bool clear_only=false) {
-	if( cfg==null ) {
+	if( cfg==null )
 		return;
-	}
 	
 	StringMapSnapshot snap = cfg.Snapshot();
-	if( snap==null ) {
+	if( snap==null )
 		return;
-	}
+	
 	int entries = snap.Length;
-	for( int i; i<entries; i++ ) {
-		int strsize = snap.KeyBufferSize(i) + 1;
+	for( int i; i < entries; i++ ) {
+		int strsize = snap.KeyBufferSize(i);
 		char[] key_buffer = new char[strsize];
 		snap.GetKey(i, key_buffer, strsize);
-		PackVal val;
-		cfg.GetArray(key_buffer, val, sizeof(val));
+		PackVal val; cfg.GetArray(key_buffer, val, sizeof(val));
 		switch( val.tag ) {
 			case KeyValType_Value:
 				delete val.data;
@@ -809,21 +1131,19 @@ stock void DeleteCfg(ConfigMap& cfg, bool clear_only=false) {
 }
 
 stock void PrintCfg(ConfigMap cfg) {
-	if( cfg==null ) {
+	if( cfg==null )
 		return;
-	}
 	
 	StringMapSnapshot snap = cfg.Snapshot();
-	if( snap==null ) {
+	if( snap==null )
 		return;
-	}
+	
 	int entries = snap.Length;
-	for( int i; i<entries; i++ ) {
-		int strsize = snap.KeyBufferSize(i) + 1;
+	for( int i; i < entries; i++ ) {
+		int strsize = snap.KeyBufferSize(i);
 		char[] key_buffer = new char[strsize];
 		snap.GetKey(i, key_buffer, strsize);
-		PackVal val;
-		cfg.GetArray(key_buffer, val, sizeof(val));
+		PackVal val; cfg.GetArray(key_buffer, val, sizeof(val));
 		switch( val.tag ) {
 			case KeyValType_Value:
 				PrintToServer("ConfigMap :: key: '%s', val.size: '%i'", key_buffer, val.size);
@@ -845,7 +1165,7 @@ static stock void ReplaceEscapeSeq(char[] str, int size)
 		{ "\n", "\\n" },
 		{ "\r", "\\r" }
 	};
-	for( int i; i<sizeof(list); i++ ) {
+	for( int i; i < sizeof(list); i++ ) {
 		ReplaceString(str, size, list[i][0], list[i][1]);
 	}
 }
@@ -853,25 +1173,24 @@ static stock void ReplaceEscapeSeq(char[] str, int size)
 static stock bool ConfigMapToFile(const ConfigMap cfg, const char[] sec_name, const File file, int deep = 0)
 {
 	StringMapSnapshot snap = cfg.Snapshot();
-	if( snap==null ) {
+	if( snap==null )
 		return false;
-	}
 	
 	char[] tab = new char[deep];
-	for( int i; i<deep; i++ ) {
-		tab[i]='\t';
+	for( int i; i < deep; i++ ) {
+		tab[i] = '\t';
 	}
 	file.WriteLine("%s\"%s\" {", tab, sec_name);
 	
 	int size = snap.Length;
-	for( int i; i<size; i++ ) {
-		int strsize = snap.KeyBufferSize(i) + 1;
+	for( int i; i < size; i++ ) {
+		int strsize = snap.KeyBufferSize(i);
 		char[] key = new char[strsize];
 		snap.GetKey(i, key, strsize);
-		PackVal pack;
-		cfg.GetArray(key, pack, sizeof(pack));
+		PackVal pack; cfg.GetArray(key, pack, sizeof(pack));
 		if( pack.tag==KeyValType_Null )
 			continue;
+		
 		pack.data.Reset();
 		switch( pack.tag ) {
 			case KeyValType_Value: {
@@ -900,12 +1219,12 @@ static stock bool ConfigMapToFile(const ConfigMap cfg, const char[] sec_name, co
 static stock bool CloneConfigMap(const ConfigMap cfg, ConfigMap new_cfg, Handle new_owner_pl)
 {
 	StringMapSnapshot snap = cfg.Snapshot();
-	if( !snap ) {
+	if( snap==null )
 		return false;
-	}
+	
 	int size = snap.Length;
-	for( int i; i<size; i++ ) {
-		int strsize = snap.KeyBufferSize(i) + 1;
+	for( int i; i < size; i++ ) {
+		int strsize = snap.KeyBufferSize(i);
 		char[] key_buffer = new char[strsize];
 		snap.GetKey(i, key_buffer, strsize);
 		PackVal pack;

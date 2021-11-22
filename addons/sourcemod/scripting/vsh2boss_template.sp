@@ -33,19 +33,21 @@ TemplateBoss template_boss;
 
 public void OnLibraryAdded(const char[] name) {
 	if( StrEqual(name, "VSH2") ) {
-		template_boss.scout_rage_gen = FindConVar("vsh2_scout_rage_gen");
-		template_boss.airblast_rage  = FindConVar("vsh2_airblast_rage");
-		template_boss.jarate_rage    = FindConVar("vsh2_jarate_rage");
 		template_boss.cfg            = new ConfigMap("configs/saxton_hale/boss_cfgs/template_boss.cfg");
 		if( template_boss.cfg==null ) {
 			/// prevent template boss from registering if no config file was found.
 			LogError("[VSH 2] ERROR :: **** couldn't find 'configs/saxton_hale/boss_cfgs/template_boss.cfg'. Failed to register Template Boss module. ****");
 			return;
 		}
+		template_boss.scout_rage_gen = FindConVar("vsh2_scout_rage_gen");
+		template_boss.airblast_rage  = FindConVar("vsh2_airblast_rage");
+		template_boss.jarate_rage    = FindConVar("vsh2_jarate_rage");
+		
 		char plugin_name_str[MAX_BOSS_NAME_SIZE];
 		template_boss.cfg.Get("boss.plugin name", plugin_name_str, sizeof(plugin_name_str));
-		template_boss.id = VSH2_RegisterPlugin(plugin_name_str);
+		template_boss.id = VSH2_RegisterBoss(plugin_name_str);
 		LoadVSH2Hooks();
+		AutoExecConfig(true, "VSH2-TemplateBoss");
 	}
 }
 
@@ -132,16 +134,13 @@ public void Template_OnCallDownloads() {
 	
 	ConfigMap sounds_sect = template_boss.cfg.GetSection("boss.sounds");
 	if( sounds_sect != null ) {
-		PrepareAssetsFromCfgMap(sounds_sect.GetSection("intro"),      ResourceSound);
-		PrepareAssetsFromCfgMap(sounds_sect.GetSection("rage"),       ResourceSound);
-		PrepareAssetsFromCfgMap(sounds_sect.GetSection("jump"),       ResourceSound);
-		PrepareAssetsFromCfgMap(sounds_sect.GetSection("backstab"),   ResourceSound);
-		PrepareAssetsFromCfgMap(sounds_sect.GetSection("death"),      ResourceSound);
-		PrepareAssetsFromCfgMap(sounds_sect.GetSection("lastplayer"), ResourceSound);
-		PrepareAssetsFromCfgMap(sounds_sect.GetSection("kill"),       ResourceSound);
-		PrepareAssetsFromCfgMap(sounds_sect.GetSection("spree"),      ResourceSound);
-		PrepareAssetsFromCfgMap(sounds_sect.GetSection("win"),        ResourceSound);
-		PrepareAssetsFromCfgMap(sounds_sect.GetSection("music"),      ResourceSound);
+		int size = sounds_sect.Size;
+		ConfigMap[] sound_sects = new ConfigMap[size];
+		int sect_count = sounds_sect.GetSections(sound_sects);
+		/// minus 1 so we don't access the music time section.
+		for( int i; i < sect_count-1; i++ ) {
+			PrepareAssetsFromCfgMap(sound_sects[i], ResourceSound);
+		}
 	}
 }
 
@@ -197,7 +196,7 @@ public void Template_OnBossThink(const VSH2Player player) {
 		player.SuperJump(player.GetPropFloat("flCharge"), -100.0);
 	}
 	
-	if( OnlyScoutsLeft() ) {
+	if( VSH2GameMode.AreScoutsLeft() ) {
 		player.SetPropFloat("flRAGE", player.GetPropFloat("flRAGE") + template_boss.scout_rage_gen.FloatValue);
 	}
 	player.WeighDownThink(2.0, 0.1);
@@ -355,7 +354,7 @@ public void Template_Music(char song[PLATFORM_MAX_PATH], float &time, const VSH2
 	int size = (music_sect.Size > music_time_sect.Size)? music_time_sect.Size : music_sect.Size;
 	static int index;
 	index = ShuffleIndex(size, index);
-	sect.GetIntKey(index, song, sizeof(song));
+	music_sect.GetIntKey(index, song, sizeof(song));
 	music_time_sect.GetIntKeyFloat(index, time);
 }
 
@@ -400,25 +399,6 @@ stock bool IsValidClient(const int client, bool nobots=false) {
 	return IsClientInGame(client);
 }
 
-stock int GetSlotFromWeapon(const int client, const int wep) {
-	for( int i; i<5; i++ )
-		if( wep==GetPlayerWeaponSlot(client, i) )
-			return i;
-	
-	return -1;
-}
-
-stock bool OnlyScoutsLeft() {
-	VSH2Player[] players = new VSH2Player[MaxClients];
-	int len = VSH2GameMode.GetFighters(players);
-	for( int i; i<len; i++ ) {
-		if( players[i].iTFClass != TFClass_Scout ) {
-			return false;
-		}
-	}
-	return true;
-}
-
 stock void SetPawnTimerEx(Function func, float thinktime = 0.1, const any[] args, const int len) {
 	DataPack thinkpack = new DataPack();
 	thinkpack.WriteFunction(func);
@@ -443,12 +423,12 @@ public Action DoPawnTimer(Handle t, DataPack pack) {
 	return Plugin_Continue;
 }
 
-stock int SetWeaponClip(const int weapon, const int ammo) {
-	if( IsValidEntity(weapon) ) {
-		int iAmmoTable = FindSendPropInfo("CTFWeaponBase", "m_iClip1");
-		SetEntData(weapon, iAmmoTable, ammo, 4, true);
-	}
-	return 0;
+stock void SetWeaponClip(const int weapon, const int ammo) {
+	if( !IsValidEntity(weapon) )
+		return;
+	
+	int iAmmoTable = FindSendPropInfo("CTFWeaponBase", "m_iClip1");
+	SetEntData(weapon, iAmmoTable, ammo, 4, true);
 }
 
 

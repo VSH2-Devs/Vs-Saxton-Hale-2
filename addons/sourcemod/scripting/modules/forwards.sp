@@ -1,107 +1,110 @@
-void InitializeForwards()
-{
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		g_hForwards[i][OnCallDownloads] = new PrivateForward( ET_Event );
-		g_hForwards[i][OnBossSelected] = new PrivateForward( ET_Event, Param_Cell );
-		g_hForwards[i][OnTouchPlayer] = new PrivateForward( ET_Event, Param_Cell, Param_Cell );
-		g_hForwards[i][OnTouchBuilding] = new PrivateForward( ET_Event, Param_Cell, Param_Cell );
-		g_hForwards[i][OnBossThink] = new PrivateForward( ET_Event, Param_Cell );
-		g_hForwards[i][OnBossModelTimer] = new PrivateForward( ET_Event, Param_Cell );
-		g_hForwards[i][OnBossDeath] = new PrivateForward( ET_Event, Param_Cell );
-		g_hForwards[i][OnBossEquipped] = new PrivateForward( ET_Event, Param_Cell );
-		g_hForwards[i][OnBossInitialized] = new PrivateForward( ET_Event, Param_Cell );
-		g_hForwards[i][OnMinionInitialized] = new PrivateForward( ET_Event, Param_Cell, Param_Cell );
-		g_hForwards[i][OnBossPlayIntro] = new PrivateForward( ET_Event, Param_Cell );
-		g_hForwards[i][OnBossTakeDamage] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossDealDamage] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnPlayerKilled] = new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_Cell );
-		g_hForwards[i][OnPlayerAirblasted] = new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_Cell );
-		g_hForwards[i][OnTraceAttack] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Cell, Param_Cell );
-		g_hForwards[i][OnBossMedicCall] = new PrivateForward( ET_Event, Param_Cell );
-		g_hForwards[i][OnBossTaunt] = new PrivateForward( ET_Event, Param_Cell );
-		g_hForwards[i][OnBossKillBuilding] = new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_Cell );
-		g_hForwards[i][OnBossJarated] = new PrivateForward( ET_Event, Param_Cell, Param_Cell );
-		g_hForwards[i][OnMessageIntro] = new PrivateForward( ET_Event, Param_Cell, Param_String );
-		g_hForwards[i][OnBossPickUpItem] = new PrivateForward( ET_Event, Param_Cell, Param_String );
-		g_hForwards[i][OnVariablesReset] = new PrivateForward( ET_Event, Param_Cell );
-		g_hForwards[i][OnUberDeployed] = new PrivateForward( ET_Event, Param_Cell, Param_Cell );
-		g_hForwards[i][OnUberLoop] = new PrivateForward( ET_Event, Param_Cell, Param_Cell );
-		g_hForwards[i][OnMusic] = new PrivateForward( ET_Event, Param_String, Param_FloatByRef, Param_Cell, Param_FloatByRef );
-		g_hForwards[i][OnRoundEndInfo] = new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_String );
-		g_hForwards[i][OnLastPlayer] = new PrivateForward( ET_Event, Param_Cell );
-		g_hForwards[i][OnBossHealthCheck] = new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_String );
-		g_hForwards[i][OnControlPointCapped] = new PrivateForward( ET_Event, Param_String, Param_Cell, Param_Array, Param_Cell );
-		g_hForwards[i][OnPrepRedTeam] = new PrivateForward( ET_Event, Param_Cell );
-		g_hForwards[i][OnRedPlayerThink] = new PrivateForward( ET_Event, Param_Cell );
-		g_hForwards[i][OnPlayerHurt] = new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_Cell );
-		g_hForwards[i][OnBossMenu] = new PrivateForward( ET_Ignore, Param_CellByRef, Param_Cell );
-		g_hForwards[i][OnScoreTally] = new PrivateForward( ET_Event, Param_Cell, Param_CellByRef, Param_CellByRef );
-		g_hForwards[i][OnItemOverride] = new PrivateForward( ET_Hook, Param_Cell, Param_String, Param_Cell, Param_CellByRef );
-
-		/// OnBossDealDamage Specific Forwards.
-		g_hForwards[i][OnBossDealDamage_OnStomp] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossDealDamage_OnHitDefBuff] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossDealDamage_OnHitCritMmmph] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossDealDamage_OnHitMedic] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossDealDamage_OnHitDeadRinger] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossDealDamage_OnHitCloakedSpy] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossDealDamage_OnHitShield] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-
-		/// OnBossTakeDamage Specific Forwards
-		g_hForwards[i][OnBossTakeDamage_OnStabbed] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossTakeDamage_OnTelefragged] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossTakeDamage_OnSwordTaunt] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossTakeDamage_OnHeavyShotgun] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossTakeDamage_OnSniped] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossTakeDamage_OnThirdDegreed] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossTakeDamage_OnHitSword] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossTakeDamage_OnHitFanOWar] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossTakeDamage_OnHitCandyCane] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossTakeDamage_OnMarketGardened] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossTakeDamage_OnPowerJack] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossTakeDamage_OnKatana] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossTakeDamage_OnAmbassadorHeadshot] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossTakeDamage_OnDiamondbackManmelterCrit] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossTakeDamage_OnHolidayPunch] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-
-		g_hForwards[i][OnBossSuperJump] = new PrivateForward( ET_Event, Param_Cell );
-		g_hForwards[i][OnBossDoRageStun] = new PrivateForward( ET_Event, Param_Cell, Param_FloatByRef );
-		g_hForwards[i][OnBossWeighDown] = new PrivateForward( ET_Event, Param_Cell );
-
-		g_hForwards[i][OnRPSTaunt] = new PrivateForward( ET_Event, Param_Cell, Param_Cell );
-		g_hForwards[i][OnBossAirShotProj] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossTakeFallDamage] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossGiveRage] = new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_FloatByRef );
-		g_hForwards[i][OnBossCalcHealth] = new PrivateForward( ET_Single, Param_Cell, Param_CellByRef, Param_Cell, Param_Cell );
-
-		g_hForwards[i][OnBossTakeDamage_OnTriggerHurt] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossTakeDamage_OnMantreadsStomp] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-		g_hForwards[i][OnBossThinkPost] = new PrivateForward( ET_Hook, Param_Cell );
-		g_hForwards[i][OnBossEquippedPost] = new PrivateForward( ET_Hook, Param_Cell );
-		g_hForwards[i][OnPlayerTakeFallDamage] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-
-		g_hForwards[i][OnSoundHook] = new PrivateForward( ET_Event, Param_Cell, Param_String, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_CellByRef );
-		g_hForwards[i][OnRoundStart] = new PrivateForward( ET_Ignore, Param_Array, Param_Cell, Param_Array, Param_Cell );
-		g_hForwards[i][OnHelpMenu] = new PrivateForward( ET_Ignore, Param_Cell, Param_Cell );
-		g_hForwards[i][OnHelpMenuSelect] = new PrivateForward( ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
-		g_hForwards[i][OnDrawGameTimer] = new PrivateForward( ET_Hook, Param_CellByRef );
-		g_hForwards[i][OnPlayerClimb] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef, Param_FloatByRef, Param_CellByRef );
-		g_hForwards[i][OnBossConditionChange] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_Cell );
-		g_hForwards[i][OnBannerDeployed] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell );
-		g_hForwards[i][OnBannerEffect] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_Cell );
-		g_hForwards[i][OnUberLoopEnd] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef );
-		g_hForwards[i][OnRedPlayerThinkPost] = new PrivateForward( ET_Hook, Param_Cell );
-		g_hForwards[i][OnRedPlayerHUD] = new PrivateForward( ET_Hook, Param_Cell, Param_String );
-		g_hForwards[i][OnRedPlayerCrits] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef );
-		g_hForwards[i][OnShowStats] = new PrivateForward( ET_Hook, Param_Array );
+void InitializeForwards() {
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		/// No params, Event.
+		g_modsys.SetPrivFwd(i, OnCallDownloads, new PrivateForward( ET_Event ));
+		
+		/// 1 param, Event.
+		g_modsys.SetPrivFwd(i, OnBossSelected,        new PrivateForward( ET_Event, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossThink,           new PrivateForward( ET_Event, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossModelTimer,      new PrivateForward( ET_Event, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossDeath,           new PrivateForward( ET_Event, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossEquipped,        new PrivateForward( ET_Event, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossInitialized,     new PrivateForward( ET_Event, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossPlayIntro,       new PrivateForward( ET_Event, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossMedicCall,       new PrivateForward( ET_Event, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossTaunt,           new PrivateForward( ET_Event, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnVariablesReset,      new PrivateForward( ET_Event, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnLastPlayer,          new PrivateForward( ET_Event, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnPrepRedTeam,         new PrivateForward( ET_Event, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnRedPlayerThink,      new PrivateForward( ET_Event, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossSuperJump,       new PrivateForward( ET_Event, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossWeighDown,       new PrivateForward( ET_Event, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossThinkPost,       new PrivateForward( ET_Event, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossEquippedPost,    new PrivateForward( ET_Event, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnRedPlayerThinkPost,  new PrivateForward( ET_Event, Param_Cell ));
+		
+		/// 2 params, Event.
+		g_modsys.SetPrivFwd(i, OnTouchPlayer,         new PrivateForward( ET_Event, Param_Cell, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnTouchBuilding,       new PrivateForward( ET_Event, Param_Cell, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnMinionInitialized,   new PrivateForward( ET_Event, Param_Cell, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossJarated,         new PrivateForward( ET_Event, Param_Cell, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnUberDeployed,        new PrivateForward( ET_Event, Param_Cell, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnUberLoop,            new PrivateForward( ET_Event, Param_Cell, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnRPSTaunt,            new PrivateForward( ET_Event, Param_Cell, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBannerDeployed,      new PrivateForward( ET_Event, Param_Cell, Param_Cell ));
+		
+		/// 3 params, Event.
+		g_modsys.SetPrivFwd(i, OnPlayerKilled,        new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnPlayerAirblasted,    new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossKillBuilding,    new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnPlayerHurt,          new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossConditionChange, new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBannerEffect,        new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_Cell ));
+		
+		/// OnTakeDmg copies, Hook.
+		g_modsys.SetPrivFwd(i, OnBossTakeDamage,      new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossDealDamage,      new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossAirShotProj,     new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossTakeFallDamage,  new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossTakeDamage_OnTriggerHurt, new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnBossTakeDamage_OnMantreadsStomp, new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnPlayerTakeFallDamage, new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell ));
+		
+		for( int x=OnBossDealDamage_OnStomp; x<=OnBossTakeDamage_OnHolidayPunch; x++ ) {
+			g_modsys.SetPrivFwd(i, x, new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell ));
+		}
+		
+		/// OnTraceAtk, Hook.
+		g_modsys.SetPrivFwd(i, OnTraceAttack,    new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Cell, Param_Cell ));
+		
+		/// cell + string, Event.
+		g_modsys.SetPrivFwd(i, OnMessageIntro,   new PrivateForward( ET_Event, Param_Cell, Param_String ));
+		g_modsys.SetPrivFwd(i, OnBossPickUpItem, new PrivateForward( ET_Event, Param_Cell, Param_String ));
+		g_modsys.SetPrivFwd(i, OnRedPlayerHUD,   new PrivateForward( ET_Event, Param_Cell, Param_String ));
+		
+		/// music, Event.
+		g_modsys.SetPrivFwd(i, OnMusic, new PrivateForward( ET_Event, Param_String, Param_FloatByRef, Param_Cell, Param_FloatByRef ));
+		
+		/// 2 cells, one string, Event.
+		g_modsys.SetPrivFwd(i, OnRoundEndInfo,    new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_String ));
+		g_modsys.SetPrivFwd(i, OnBossHealthCheck, new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_String ));
+		
+		/// control point, Event.
+		g_modsys.SetPrivFwd(i, OnControlPointCapped, new PrivateForward( ET_Event, Param_String, Param_Cell, Param_Array, Param_Cell ));
+		
+		/// Boss menu, Ignore.
+		g_modsys.SetPrivFwd(i, OnBossMenu,       new PrivateForward( ET_Ignore, Param_CellByRef, Param_Cell ));
+		
+		/// Score tally, Event.
+		g_modsys.SetPrivFwd(i, OnScoreTally,     new PrivateForward( ET_Event, Param_Cell, Param_CellByRef, Param_CellByRef ));
+		
+		/// OnItemOverride, Hook.
+		g_modsys.SetPrivFwd(i, OnItemOverride,   new PrivateForward( ET_Hook, Param_Cell, Param_String, Param_Cell, Param_CellByRef ));
+		
+		g_modsys.SetPrivFwd(i, OnBossDoRageStun, new PrivateForward( ET_Event, Param_Cell, Param_FloatByRef ));
+		g_modsys.SetPrivFwd(i, OnBossGiveRage,   new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_FloatByRef ));
+		g_modsys.SetPrivFwd(i, OnUberLoopEnd,    new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_FloatByRef ));
+		g_modsys.SetPrivFwd(i, OnBossCalcHealth, new PrivateForward( ET_Single, Param_Cell, Param_CellByRef, Param_Cell, Param_Cell ));
+		
+		/// SoundHook
+		g_modsys.SetPrivFwd(i, OnSoundHook,      new PrivateForward( ET_Hook, Param_Cell, Param_String, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_CellByRef ));
+		
+		g_modsys.SetPrivFwd(i, OnRoundStart,     new PrivateForward( ET_Ignore, Param_Array, Param_Cell, Param_Array, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnHelpMenu,       new PrivateForward( ET_Ignore, Param_Cell, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnHelpMenuSelect, new PrivateForward( ET_Ignore, Param_Cell, Param_Cell, Param_Cell ));
+		g_modsys.SetPrivFwd(i, OnDrawGameTimer,  new PrivateForward( ET_Event, Param_CellByRef ));
+		g_modsys.SetPrivFwd(i, OnPlayerClimb,    new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_FloatByRef, Param_FloatByRef, Param_CellByRef ));
+		g_modsys.SetPrivFwd(i, OnRedPlayerCrits, new PrivateForward( ET_Event, Param_Cell, Param_CellByRef ));
+		g_modsys.SetPrivFwd(i, OnShowStats,      new PrivateForward( ET_Event, Param_Array ));
 	}
 }
 
-Action Call_OnCallDownloads()
-{
+/// Design Note: pass only enum-struct array, string buffer, and len to all forwards.
+Action Call_OnCallDownloads() {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnCallDownloads]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnCallDownloads);
+		Call_StartForward(p);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
 			return act[i];
@@ -109,11 +112,11 @@ Action Call_OnCallDownloads()
 	return act[0] > act[1] ? act[0] : act[1];
 }
 
-Action Call_OnBossSelected(const BaseBoss player)
-{
+Action Call_OnBossSelected(const BaseBoss player) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossSelected]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossSelected);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -121,11 +124,12 @@ Action Call_OnBossSelected(const BaseBoss player)
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
-Action Call_OnTouchPlayer(const BaseBoss boss, const BaseBoss otherguy)
-{
+
+Action Call_OnTouchPlayer(const BaseBoss boss, const BaseBoss otherguy) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnTouchPlayer]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnTouchPlayer);
+		Call_StartForward(p);
 		Call_PushCell(boss);
 		Call_PushCell(otherguy);
 		Call_Finish(act[i]);
@@ -138,8 +142,9 @@ Action Call_OnTouchPlayer(const BaseBoss boss, const BaseBoss otherguy)
 Action Call_OnTouchBuilding(const BaseBoss player, const int buildRef)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnTouchBuilding]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnTouchBuilding);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCell(buildRef);
 		Call_Finish(act[i]);
@@ -152,8 +157,9 @@ Action Call_OnTouchBuilding(const BaseBoss player, const int buildRef)
 Action Call_OnBossThink(const BaseBoss player)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossThink]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossThink);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -165,8 +171,9 @@ Action Call_OnBossThink(const BaseBoss player)
 Action Call_OnBossModelTimer(const BaseBoss player)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossModelTimer]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossModelTimer);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -178,8 +185,9 @@ Action Call_OnBossModelTimer(const BaseBoss player)
 Action Call_OnBossDeath(const BaseBoss player)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossDeath]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossDeath);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -190,8 +198,9 @@ Action Call_OnBossDeath(const BaseBoss player)
 Action Call_OnBossEquipped(const BaseBoss player)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossEquipped]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossEquipped);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -202,8 +211,9 @@ Action Call_OnBossEquipped(const BaseBoss player)
 Action Call_OnBossInitialized(const BaseBoss player)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossInitialized]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossInitialized);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -214,8 +224,9 @@ Action Call_OnBossInitialized(const BaseBoss player)
 Action Call_OnMinionInitialized(const BaseBoss player, const BaseBoss master)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnMinionInitialized]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnMinionInitialized);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCell(master);
 		Call_Finish(act[i]);
@@ -227,8 +238,9 @@ Action Call_OnMinionInitialized(const BaseBoss player, const BaseBoss master)
 Action Call_OnBossPlayIntro(const BaseBoss player)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossPlayIntro]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossPlayIntro);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -239,8 +251,9 @@ Action Call_OnBossPlayIntro(const BaseBoss player)
 Action Call_OnBossTakeDamage(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTakeDamage);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -259,8 +272,9 @@ Action Call_OnBossTakeDamage(const BaseBoss player, int& attacker, int& inflicto
 Action Call_OnBossDealDamage(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossDealDamage]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossDealDamage);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -279,8 +293,9 @@ Action Call_OnBossDealDamage(const BaseBoss player, int& attacker, int& inflicto
 Action Call_OnPlayerKilled(const BaseBoss player, const BaseBoss victim, Event event)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnPlayerKilled]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnPlayerKilled);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCell(victim);
 		Call_PushCell(event);
@@ -293,8 +308,9 @@ Action Call_OnPlayerKilled(const BaseBoss player, const BaseBoss victim, Event e
 Action Call_OnPlayerAirblasted(const BaseBoss player, const BaseBoss victim, Event event)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnPlayerAirblasted]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnPlayerAirblasted);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCell(victim);
 		Call_PushCell(event);
@@ -307,8 +323,9 @@ Action Call_OnPlayerAirblasted(const BaseBoss player, const BaseBoss victim, Eve
 Action Call_OnPlayerHurt(const BaseBoss player, const BaseBoss victim, Event event)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnPlayerHurt]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnPlayerHurt);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCell(victim);
 		Call_PushCell(event);
@@ -321,8 +338,9 @@ Action Call_OnPlayerHurt(const BaseBoss player, const BaseBoss victim, Event eve
 Action Call_OnTraceAttack(const BaseBoss player, const BaseBoss attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnTraceAttack]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnTraceAttack);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCell(attacker);
 		Call_PushCellRef(inflictor);
@@ -340,8 +358,9 @@ Action Call_OnTraceAttack(const BaseBoss player, const BaseBoss attacker, int& i
 Action Call_OnBossMedicCall(const BaseBoss player)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossMedicCall]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossMedicCall);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -352,8 +371,9 @@ Action Call_OnBossMedicCall(const BaseBoss player)
 Action Call_OnBossTaunt(const BaseBoss player)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTaunt]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTaunt);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -364,8 +384,9 @@ Action Call_OnBossTaunt(const BaseBoss player)
 Action Call_OnBossKillBuilding(const BaseBoss player, const int building, Event event)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossKillBuilding]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossKillBuilding);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCell(building);
 		Call_PushCell(event);
@@ -378,8 +399,9 @@ Action Call_OnBossKillBuilding(const BaseBoss player, const int building, Event 
 Action Call_OnBossJarated(const BaseBoss victim, const BaseBoss attacker)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossJarated]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossJarated);
+		Call_StartForward(p);
 		Call_PushCell(victim);
 		Call_PushCell(attacker);
 		Call_Finish(act[i]);
@@ -392,8 +414,9 @@ Action Call_OnBossJarated(const BaseBoss victim, const BaseBoss attacker)
 Action Call_OnMessageIntro(const BaseBoss player, char message[MAXMESSAGE])
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnMessageIntro]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnMessageIntro);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushStringEx(message, MAXMESSAGE, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		Call_Finish(act[i]);
@@ -405,8 +428,9 @@ Action Call_OnMessageIntro(const BaseBoss player, char message[MAXMESSAGE])
 Action Call_OnBossPickUpItem(const BaseBoss player, const char item[64])
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossPickUpItem]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossPickUpItem);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushString(item);
 		Call_Finish(act[i]);
@@ -418,8 +442,9 @@ Action Call_OnBossPickUpItem(const BaseBoss player, const char item[64])
 Action Call_OnVariablesReset(const BaseBoss player)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnVariablesReset]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnVariablesReset);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -430,8 +455,9 @@ Action Call_OnVariablesReset(const BaseBoss player)
 Action Call_OnUberDeployed(const BaseBoss medic, const BaseBoss target)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnUberDeployed]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnUberDeployed);
+		Call_StartForward(p);
 		Call_PushCell(medic);
 		Call_PushCell(target);
 		Call_Finish(act[i]);
@@ -443,8 +469,9 @@ Action Call_OnUberDeployed(const BaseBoss medic, const BaseBoss target)
 Action Call_OnUberLoop(const BaseBoss medic, const BaseBoss target)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnUberLoop]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnUberLoop);
+		Call_StartForward(p);
 		Call_PushCell(medic);
 		Call_PushCell(target);
 		Call_Finish(act[i]);
@@ -456,8 +483,9 @@ Action Call_OnUberLoop(const BaseBoss medic, const BaseBoss target)
 Action Call_OnMusic(char song[PLATFORM_MAX_PATH], float& time, const BaseBoss player, float& vol)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnMusic]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnMusic);
+		Call_StartForward(p);
 		Call_PushStringEx(song, PLATFORM_MAX_PATH, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		Call_PushFloatRef(time);
 		Call_PushCell(player);
@@ -471,8 +499,9 @@ Action Call_OnMusic(char song[PLATFORM_MAX_PATH], float& time, const BaseBoss pl
 Action Call_OnRoundEndInfo(const BaseBoss player, bool bosswin, char message[MAXMESSAGE])
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnRoundEndInfo]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnRoundEndInfo);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCell(bosswin);
 		Call_PushStringEx(message, MAXMESSAGE, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
@@ -485,8 +514,9 @@ Action Call_OnRoundEndInfo(const BaseBoss player, bool bosswin, char message[MAX
 Action Call_OnLastPlayer(const BaseBoss player)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnLastPlayer]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnLastPlayer);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -497,8 +527,9 @@ Action Call_OnLastPlayer(const BaseBoss player)
 Action Call_OnBossHealthCheck(const BaseBoss player, const bool isBoss, char message[MAXMESSAGE])
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossHealthCheck]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossHealthCheck);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCell(isBoss);
 		Call_PushStringEx(message, MAXMESSAGE, SM_PARAM_STRING_UTF8|SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
@@ -512,8 +543,9 @@ Action Call_OnBossHealthCheck(const BaseBoss player, const bool isBoss, char mes
 Action Call_OnControlPointCapped(char cappers[MAXPLAYERS+1], const int team, BaseBoss[] bcappers, const int capper_count)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnControlPointCapped]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnControlPointCapped);
+		Call_StartForward(p);
 		Call_PushString(cappers);
 		Call_PushCell(team);
 		Call_PushArrayEx(bcappers, capper_count, SM_PARAM_COPYBACK);
@@ -528,8 +560,9 @@ Action Call_OnControlPointCapped(char cappers[MAXPLAYERS+1], const int team, Bas
 Action Call_OnPrepRedTeam(const BaseBoss player)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnPrepRedTeam]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnPrepRedTeam);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -540,8 +573,9 @@ Action Call_OnPrepRedTeam(const BaseBoss player)
 Action Call_OnRedPlayerThink(const BaseBoss player)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnRedPlayerThink]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnRedPlayerThink);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -551,8 +585,9 @@ Action Call_OnRedPlayerThink(const BaseBoss player)
 }
 void Call_OnBossMenu(Menu& menu, const BaseBoss player)
 {
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossMenu]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossMenu);
+		Call_StartForward(p);
 		Call_PushCellRef(menu);
 		Call_PushCell(player);
 		Call_Finish();
@@ -561,8 +596,9 @@ void Call_OnBossMenu(Menu& menu, const BaseBoss player)
 Action Call_OnScoreTally(const BaseBoss player, int& points_earned, int& queue_earned)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnScoreTally]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnScoreTally);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(points_earned);
 		Call_PushCellRef(queue_earned);
@@ -575,8 +611,9 @@ Action Call_OnScoreTally(const BaseBoss player, int& points_earned, int& queue_e
 Action Call_OnItemOverride(const BaseBoss player, const char[] classname, int itemdef, Handle& item)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnItemOverride]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnItemOverride);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushString(classname);
 		Call_PushCell(itemdef);
@@ -590,8 +627,9 @@ Action Call_OnItemOverride(const BaseBoss player, const char[] classname, int it
 Action Call_OnBossDealDamage_OnStomp(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnStomp]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossDealDamage_OnStomp);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -610,8 +648,9 @@ Action Call_OnBossDealDamage_OnStomp(const BaseBoss player, int& attacker, int& 
 Action Call_OnBossDealDamage_OnHitDefBuff(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnHitDefBuff]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossDealDamage_OnHitDefBuff);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -630,8 +669,9 @@ Action Call_OnBossDealDamage_OnHitDefBuff(const BaseBoss player, int& attacker, 
 Action Call_OnBossDealDamage_OnHitCritMmmph(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnHitCritMmmph]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossDealDamage_OnHitCritMmmph);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -650,8 +690,9 @@ Action Call_OnBossDealDamage_OnHitCritMmmph(const BaseBoss player, int& attacker
 Action Call_OnBossDealDamage_OnHitMedic(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnHitMedic]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossDealDamage_OnHitMedic);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -670,8 +711,9 @@ Action Call_OnBossDealDamage_OnHitMedic(const BaseBoss player, int& attacker, in
 Action Call_OnBossDealDamage_OnHitDeadRinger(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnHitDeadRinger]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossDealDamage_OnHitDeadRinger);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -690,8 +732,9 @@ Action Call_OnBossDealDamage_OnHitDeadRinger(const BaseBoss player, int& attacke
 Action Call_OnBossDealDamage_OnHitCloakedSpy(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnHitCloakedSpy]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossDealDamage_OnHitCloakedSpy);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -710,8 +753,9 @@ Action Call_OnBossDealDamage_OnHitCloakedSpy(const BaseBoss player, int& attacke
 Action Call_OnBossDealDamage_OnHitShield(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnHitShield]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossDealDamage_OnHitShield);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -733,8 +777,9 @@ Action Call_OnBossDealDamage_OnHitShield(const BaseBoss player, int& attacker, i
 Action Call_OnBossTakeDamage_OnStabbed(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnStabbed]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTakeDamage_OnStabbed);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -753,8 +798,9 @@ Action Call_OnBossTakeDamage_OnStabbed(const BaseBoss player, int& attacker, int
 Action Call_OnBossTakeDamage_OnTelefragged(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnTelefragged]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTakeDamage_OnTelefragged);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -773,8 +819,9 @@ Action Call_OnBossTakeDamage_OnTelefragged(const BaseBoss player, int& attacker,
 Action Call_OnBossTakeDamage_OnSwordTaunt(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnSwordTaunt]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTakeDamage_OnSwordTaunt);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -793,8 +840,9 @@ Action Call_OnBossTakeDamage_OnSwordTaunt(const BaseBoss player, int& attacker, 
 Action Call_OnBossTakeDamage_OnHeavyShotgun(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnHeavyShotgun]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTakeDamage_OnHeavyShotgun);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -813,8 +861,9 @@ Action Call_OnBossTakeDamage_OnHeavyShotgun(const BaseBoss player, int& attacker
 Action Call_OnBossTakeDamage_OnSniped(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnSniped]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTakeDamage_OnSniped);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -833,8 +882,9 @@ Action Call_OnBossTakeDamage_OnSniped(const BaseBoss player, int& attacker, int&
 Action Call_OnBossTakeDamage_OnThirdDegreed(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnThirdDegreed]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTakeDamage_OnThirdDegreed);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -853,8 +903,9 @@ Action Call_OnBossTakeDamage_OnThirdDegreed(const BaseBoss player, int& attacker
 Action Call_OnBossTakeDamage_OnHitSword(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnHitSword]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTakeDamage_OnHitSword);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -873,8 +924,9 @@ Action Call_OnBossTakeDamage_OnHitSword(const BaseBoss player, int& attacker, in
 Action Call_OnBossTakeDamage_OnHitFanOWar(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnHitFanOWar]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTakeDamage_OnHitFanOWar);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -893,8 +945,9 @@ Action Call_OnBossTakeDamage_OnHitFanOWar(const BaseBoss player, int& attacker, 
 Action Call_OnBossTakeDamage_OnHitCandyCane(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnHitCandyCane]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTakeDamage_OnHitCandyCane);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -913,8 +966,9 @@ Action Call_OnBossTakeDamage_OnHitCandyCane(const BaseBoss player, int& attacker
 Action Call_OnBossTakeDamage_OnMarketGardened(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnMarketGardened]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTakeDamage_OnMarketGardened);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -933,8 +987,9 @@ Action Call_OnBossTakeDamage_OnMarketGardened(const BaseBoss player, int& attack
 Action Call_OnBossTakeDamage_OnPowerJack(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnPowerJack]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTakeDamage_OnPowerJack);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -953,8 +1008,9 @@ Action Call_OnBossTakeDamage_OnPowerJack(const BaseBoss player, int& attacker, i
 Action Call_OnBossTakeDamage_OnKatana(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnKatana]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTakeDamage_OnKatana);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -973,8 +1029,9 @@ Action Call_OnBossTakeDamage_OnKatana(const BaseBoss player, int& attacker, int&
 Action Call_OnBossTakeDamage_OnAmbassadorHeadshot(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnAmbassadorHeadshot]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTakeDamage_OnAmbassadorHeadshot);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -993,8 +1050,9 @@ Action Call_OnBossTakeDamage_OnAmbassadorHeadshot(const BaseBoss player, int& at
 Action Call_OnBossTakeDamage_OnDiamondbackManmelterCrit(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnDiamondbackManmelterCrit]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTakeDamage_OnDiamondbackManmelterCrit);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -1013,8 +1071,9 @@ Action Call_OnBossTakeDamage_OnDiamondbackManmelterCrit(const BaseBoss player, i
 Action Call_OnBossTakeDamage_OnHolidayPunch(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnHolidayPunch]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTakeDamage_OnHolidayPunch);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -1034,8 +1093,9 @@ Action Call_OnBossTakeDamage_OnHolidayPunch(const BaseBoss player, int& attacker
 Action Call_OnBossSuperJump(const BaseBoss player)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossSuperJump]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossSuperJump);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -1047,8 +1107,9 @@ Action Call_OnBossSuperJump(const BaseBoss player)
 Action Call_OnBossDoRageStun(const BaseBoss player, float& distance)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossDoRageStun]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossDoRageStun);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushFloatRef(distance);
 		Call_Finish(act[i]);
@@ -1061,8 +1122,9 @@ Action Call_OnBossDoRageStun(const BaseBoss player, float& distance)
 Action Call_OnBossWeighDown(const BaseBoss player)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossWeighDown]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossWeighDown);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -1074,8 +1136,9 @@ Action Call_OnBossWeighDown(const BaseBoss player)
 Action Call_OnRPSTaunt(const BaseBoss loser, const BaseBoss winner)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnRPSTaunt]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnRPSTaunt);
+		Call_StartForward(p);
 		Call_PushCell(loser);
 		Call_PushCell(winner);
 		Call_Finish(act[i]);
@@ -1088,8 +1151,9 @@ Action Call_OnRPSTaunt(const BaseBoss loser, const BaseBoss winner)
 Action Call_OnBossAirShotProj(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossAirShotProj]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossAirShotProj);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -1109,8 +1173,9 @@ Action Call_OnBossAirShotProj(const BaseBoss player, int& attacker, int& inflict
 Action Call_OnBossTakeFallDamage(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeFallDamage]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTakeFallDamage);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -1130,8 +1195,9 @@ Action Call_OnBossTakeFallDamage(const BaseBoss player, int& attacker, int& infl
 Action Call_OnBossGiveRage(const BaseBoss player, const int damage, float& calcd_rage)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossGiveRage]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossGiveRage);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCell(damage);
 		Call_PushFloatRef(calcd_rage);
@@ -1145,8 +1211,9 @@ Action Call_OnBossGiveRage(const BaseBoss player, const int damage, float& calcd
 Action Call_OnBossCalcHealth(const BaseBoss player, int& max_health, const int boss_count, const int red_players)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossCalcHealth]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossCalcHealth);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(max_health);
 		Call_PushCell(boss_count);
@@ -1161,8 +1228,9 @@ Action Call_OnBossCalcHealth(const BaseBoss player, int& max_health, const int b
 Action Call_OnBossTakeDamage_OnTriggerHurt(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnTriggerHurt]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTakeDamage_OnTriggerHurt);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -1182,8 +1250,9 @@ Action Call_OnBossTakeDamage_OnTriggerHurt(const BaseBoss player, int& attacker,
 Action Call_OnBossTakeDamage_OnMantreadsStomp(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnMantreadsStomp]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossTakeDamage_OnMantreadsStomp);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -1203,8 +1272,9 @@ Action Call_OnBossTakeDamage_OnMantreadsStomp(const BaseBoss player, int& attack
 Action Call_OnBossThinkPost(const BaseBoss player)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossThinkPost]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossThinkPost);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -1216,8 +1286,9 @@ Action Call_OnBossThinkPost(const BaseBoss player)
 Action Call_OnBossEquippedPost(const BaseBoss player)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossEquippedPost]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossEquippedPost);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -1229,8 +1300,9 @@ Action Call_OnBossEquippedPost(const BaseBoss player)
 Action Call_OnPlayerTakeFallDamage(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnPlayerTakeFallDamage]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnPlayerTakeFallDamage);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
@@ -1250,8 +1322,9 @@ Action Call_OnPlayerTakeFallDamage(const BaseBoss player, int& attacker, int& in
 Action Call_OnSoundHook(const BaseBoss player, char sample[PLATFORM_MAX_PATH], int& channel, float& volume, int& level, int& pitch, int& flags)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnSoundHook]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnSoundHook);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushStringEx(sample, PLATFORM_MAX_PATH, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		Call_PushCellRef(channel);
@@ -1268,8 +1341,9 @@ Action Call_OnSoundHook(const BaseBoss player, char sample[PLATFORM_MAX_PATH], i
 
 void Call_OnRoundStart(BaseBoss[] bosses, const int boss_count, BaseBoss[] reds, const int red_count)
 {
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnRoundStart]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnRoundStart);
+		Call_StartForward(p);
 		Call_PushArrayEx(bosses, boss_count, SM_PARAM_COPYBACK);
 		Call_PushCell(boss_count);
 
@@ -1281,8 +1355,9 @@ void Call_OnRoundStart(BaseBoss[] bosses, const int boss_count, BaseBoss[] reds,
 
 void Call_OnHelpMenu(const BaseBoss player, Menu menu)
 {
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnHelpMenu]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnHelpMenu);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCell(menu);
 		Call_Finish();
@@ -1291,8 +1366,9 @@ void Call_OnHelpMenu(const BaseBoss player, Menu menu)
 
 void Call_OnHelpMenuSelect(const BaseBoss player, Menu menu, const int selection)
 {
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnHelpMenuSelect]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnHelpMenuSelect);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCell(menu);
 		Call_PushCell(selection);
@@ -1303,8 +1379,9 @@ void Call_OnHelpMenuSelect(const BaseBoss player, Menu menu, const int selection
 Action Call_OnDrawGameTimer(int& time)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnDrawGameTimer]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnDrawGameTimer);
+		Call_StartForward(p);
 		Call_PushCellRef(time);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -1316,8 +1393,9 @@ Action Call_OnDrawGameTimer(int& time)
 Action Call_OnPlayerClimb(const BaseBoss player, const int weapon, float& upwardvel, float& health, bool& attackdelay)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnPlayerClimb]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnPlayerClimb);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCell(weapon);
 		Call_PushFloatRef(upwardvel);
@@ -1333,8 +1411,9 @@ Action Call_OnPlayerClimb(const BaseBoss player, const int weapon, float& upward
 Action Call_OnBossConditionChange(const BaseBoss player, const TFCond cond, const bool removing)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossConditionChange]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBossConditionChange);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCell(cond);
 		Call_PushCell(removing);
@@ -1347,9 +1426,10 @@ Action Call_OnBossConditionChange(const BaseBoss player, const TFCond cond, cons
 
 void Call_OnBannerDeployed(const BaseBoss owner, const int buff_type)
 {
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
 		Action act;
-		Call_StartForward(g_hForwards[i][OnBannerDeployed]);
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBannerDeployed);
+		Call_StartForward(p);
 		Call_PushCell(owner);
 		Call_PushCell(buff_type);
 		Call_Finish(act);
@@ -1360,9 +1440,10 @@ void Call_OnBannerDeployed(const BaseBoss owner, const int buff_type)
 
 void Call_OnBannerEffect(const BaseBoss player, const BaseBoss owner, const int buff_type)
 {
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
 		Action act;
-		Call_StartForward(g_hForwards[i][OnBannerEffect]);
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnBannerEffect);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCell(owner);
 		Call_PushCell(buff_type);
@@ -1374,9 +1455,10 @@ void Call_OnBannerEffect(const BaseBoss player, const BaseBoss owner, const int 
 
 void Call_OnUberLoopEnd(const BaseBoss medic, const BaseBoss target, float& reset_charge)
 {
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
 		Action act;
-		Call_StartForward(g_hForwards[i][OnUberLoopEnd]);
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnUberLoopEnd);
+		Call_StartForward(p);
 		Call_PushCell(medic);
 		Call_PushCell(target);
 		Call_PushFloatRef(reset_charge);
@@ -1389,8 +1471,9 @@ void Call_OnUberLoopEnd(const BaseBoss medic, const BaseBoss target, float& rese
 Action Call_OnRedPlayerThinkPost(const BaseBoss player)
 {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnRedPlayerThinkPost]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnRedPlayerThinkPost);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )
@@ -1401,8 +1484,9 @@ Action Call_OnRedPlayerThinkPost(const BaseBoss player)
 
 Action Call_OnRedPlayerHUD(const BaseBoss player, char playerhud[PLAYER_HUD_SIZE]) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnRedPlayerHUD]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnRedPlayerHUD);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushStringEx(playerhud, PLAYER_HUD_SIZE, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		Call_Finish(act[i]);
@@ -1414,8 +1498,9 @@ Action Call_OnRedPlayerHUD(const BaseBoss player, char playerhud[PLAYER_HUD_SIZE
 
 Action Call_OnRedPlayerCrits(const BaseBoss player, int &crit_flags) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnRedPlayerCrits]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnRedPlayerCrits);
+		Call_StartForward(p);
 		Call_PushCell(player);
 		Call_PushCellRef(crit_flags);
 		Call_Finish(act[i]);
@@ -1427,8 +1512,9 @@ Action Call_OnRedPlayerCrits(const BaseBoss player, int &crit_flags) {
 
 Action Call_OnShowStats(BaseBoss players[3]) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnShowStats]);
+	for( int i; i<sizeof(VSH2ModuleSys::m_hForwards); i++ ) {
+		PrivateForward p = g_modsys.GetPrivFwdE(i, OnShowStats);
+		Call_StartForward(p);
 		Call_PushArrayEx(players, 3, 0);
 		Call_Finish(act[i]);
 		if( act[i] > Plugin_Changed )

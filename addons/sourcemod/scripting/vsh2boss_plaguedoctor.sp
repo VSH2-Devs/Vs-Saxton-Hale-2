@@ -57,11 +57,12 @@ PlagueDoc plague_doc;
 
 public void OnLibraryAdded(const char[] name) {
 	if( StrEqual(name, "VSH2") ) {
-		plague_doc.scout_rage_gen = FindConVar("vsh2_scout_rage_gen");
-		plague_doc.airblast_rage  = FindConVar("vsh2_airblast_rage");
-		plague_doc.jarate_rage    = FindConVar("vsh2_jarate_rage");
 		plague_doc.cfg            = new ConfigMap("configs/saxton_hale/boss_cfgs/plague_doctor.cfg");
-		
+		/// If config is null, do not register boss.
+		if( plague_doc.cfg==null ) {
+			LogError("[VSH 2] ERROR :: **** couldn't find 'configs/saxton_hale/boss_cfgs/plague_doctor.cfg'. Failed to register Plague Doctor boss module. ****");
+			return;
+		}
 		plague_doc.run_speed = CreateConVar("vsh2_plaguedoc_speed", "340.0", "How fast, based on health, Plague Doctor can move.", FCVAR_NOTIFY, true, 1.0, true, 99999.0);
 		plague_doc.glow_iota = CreateConVar("vsh2_plaguedoc_glow_iota", "0.1", "How fast Plague Doctor's glow time decreases.", FCVAR_NOTIFY, true, 0.0, true, 99999.0);
 		plague_doc.charge_amnt = CreateConVar("vsh2_plaguedoc_jmp_charge", "2.5", "How much superjump charge should increase when holding jump buttons.", FCVAR_NOTIFY, true, 0.0, true, 99999.0);
@@ -74,15 +75,15 @@ public void OnLibraryAdded(const char[] name) {
 		plague_doc.rage_time = CreateConVar("vsh2_plaguedoc_rage_time", "10.0", "how long in seconds does the plague doctor rage boost (applies to minions as well) work for.", FCVAR_NOTIFY, true, 0.0, true, 99999.0);
 		plague_doc.minion_spawn = CreateConVar("vsh2_plaguedoc_minion_spawn_time", "1.5", "amount, multiplied by the minion count, for minions to spawn.", FCVAR_NOTIFY, true, 0.0, true, 99999.0);
 		
-		/// If config is null, do not register boss.
-		if( plague_doc.cfg==null ) {
-			LogError("[VSH 2] ERROR :: **** couldn't find 'configs/saxton_hale/boss_cfgs/plague_doctor.cfg'. Failed to register Plague Doctor boss module. ****");
-			return;
-		}
+		plague_doc.scout_rage_gen = FindConVar("vsh2_scout_rage_gen");
+		plague_doc.airblast_rage  = FindConVar("vsh2_airblast_rage");
+		plague_doc.jarate_rage    = FindConVar("vsh2_jarate_rage");
+		
 		char plugin_name_str[MAX_BOSS_NAME_SIZE];
 		plague_doc.cfg.Get("boss.plugin name", plugin_name_str, sizeof(plugin_name_str));
-		plague_doc.id = VSH2_RegisterPlugin(plugin_name_str);
+		plague_doc.id = VSH2_RegisterBoss(plugin_name_str);
 		LoadVSH2Hooks();
+		AutoExecConfig(true, "VSH2-PlagueDoc");
 	}
 }
 
@@ -165,9 +166,12 @@ public void PlagueDoc_OnCallDownloads() {
 	{
 		ConfigMap sounds_sect = plague_doc.cfg.GetSection("boss.sounds");
 		if( sounds_sect != null ) {
-			PrepareAssetsFromCfgMap(sounds_sect.GetSection("intro"),     ResourceSound);
-			PrepareAssetsFromCfgMap(sounds_sect.GetSection("rage"),      ResourceSound);
-			PrepareAssetsFromCfgMap(sounds_sect.GetSection("superjump"), ResourceSound);
+			int size = sounds_sect.Size;
+			ConfigMap[] sound_sects = new ConfigMap[size];
+			int sect_count = sounds_sect.GetSections(sound_sects);
+			for( int i; i < sect_count; i++ ) {
+				PrepareAssetsFromCfgMap(sound_sects[i], ResourceSound);
+			}
 		}
 	}
 }
@@ -193,6 +197,11 @@ public void PlagueDoc_OnBossSelected(const VSH2Player player) {
 	delete panel;
 }
 
+public int HintPanel(Menu menu, MenuAction action, int param1, int param2) {
+	return;
+}
+
+
 public void PlagueDoc_OnBossThink(const VSH2Player player)
 {
 	int client = player.index;
@@ -208,7 +217,7 @@ public void PlagueDoc_OnBossThink(const VSH2Player player)
 		player.PlayRandVoiceClipCfgMap(superjump_sect, VSH2_VOICE_ABILITY);
 	}
 	
-	if( OnlyScoutsLeft() ) {
+	if( VSH2GameMode.AreScoutsLeft() ) {
 		player.SetPropFloat("flRAGE", player.GetPropFloat("flRAGE") + plague_doc.scout_rage_gen.FloatValue);
 	}
 	player.WeighDownThink(plague_doc.wghdwn_time.FloatValue, plague_doc.wghdwn_iota.FloatValue);
@@ -431,12 +440,12 @@ public void PlagueDoc_OnBossMedicCall(const VSH2Player rager) {
 		} else {
 			char pdapower[32]; Format(pdapower, sizeof(pdapower), "%i ; %f", attribute, value);
 			int wep = minions[i].SpawnWeapon("tf_weapon_builder", 28, 5, 10, pdapower);
-			SetPawnTimer(RemoveWepFromSlot, rage_time, m, GetSlotFromWeapon(m, wep));
+			SetPawnTimer(RemoveWepFromSlot, rage_time, m, minions[i].GetSlotIdxFromWep(wep));
 		}
 	#else
 		char pdapower[32]; Format(pdapower, sizeof(pdapower), "%i ; %f", attribute, value);
 		int wep = minions[i].SpawnWeapon("tf_weapon_builder", 28, 5, 10, pdapower);
-		SetPawnTimer(RemoveWepFromSlot, rage_time, m, GetSlotFromWeapon(m, wep));
+		SetPawnTimer(RemoveWepFromSlot, rage_time, m, minions[i].GetSlotIdxFromWep(wep));
 	#endif
 	}
 	rager.SetPropFloat("flRAGE", 0.0);
@@ -484,26 +493,6 @@ stock bool IsValidClient(const int client, bool nobots=false) {
 	return IsClientInGame(client);
 }
 
-stock int GetSlotFromWeapon(const int iClient, const int iWeapon) {
-	for( int i; i<5; i++ ) {
-		if( iWeapon==GetPlayerWeaponSlot(iClient, i) ) {
-			return i;
-		}
-	}
-	return -1;
-}
-
-stock bool OnlyScoutsLeft() {
-	VSH2Player[] players = new VSH2Player[MaxClients];
-	int len = VSH2GameMode.GetFighters(players);
-	for( int i; i<len; i++ ) {
-		if( players[i].iTFClass != TFClass_Scout ) {
-			return false;
-		}
-	}
-	return true;
-}
-
 stock void SetPawnTimer(Function func, float thinktime = 0.1, any param1 = -999, any param2 = -999) {
 	DataPack thinkpack = new DataPack();
 	thinkpack.WriteFunction(func);
@@ -528,8 +517,4 @@ public Action DoThink(Handle hTimer, DataPack hndl) {
 	
 	Call_Finish();
 	return Plugin_Continue;
-}
-
-public int HintPanel(Menu menu, MenuAction action, int param1, int param2) {
-	return;
 }

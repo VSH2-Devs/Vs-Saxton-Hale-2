@@ -2,7 +2,7 @@
 
 #### Current STABLE Version: *2.0.5*
 [![Master Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=master)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
-#### Current DEVELOPMENT Version: *2.12.0*
+#### Current DEVELOPMENT Version: *2.13.0*
 [![Develop Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=develop)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
 
 **[VSH2 Addons Repository](https://github.com/VSH2-Devs/VSH2-Addons)**
@@ -23,14 +23,14 @@ If you do require help in setting up the bosses or at least need some info on th
 * VSH2 was created to facilitate easier boss additions to a VSH-esque gamemode while having extensive customisation capabilities, even more so than FF2.
 * VSH2 operates through a series of Event Handling functions across different Boss, non-Boss actions, and clear cut API which allows developers to control boss code at will and with ease.
 * VSH2's game state is controlled through a singleton instance of the VSHGameMode methodmap which allows for easier management of the entire gamemode's state.
-* VSH2 has a vast API to build bosses as wide reaching as your imagination and TF2's limitations!
+* VSH2 gives you the option to either hard code your new bosses directly into the plugin or use VSH2's vast API to build bosses as subplugins/modules!
 * 'ConfigMap' allows you to not only have the power of VSH2's API but have FF2-like configuration for a powerful combination of customization through code and config alike.
 
 ### How do I get set up?
 
 * VSH2 uses the same map configurations as FF2 and VSH1 and this is for compatibility reasons.
-* Dependencies: [TF2Items](https://builds.limetech.io/?project=tf2items), MoreColors, ConfigMap (MoreColors + ConfigMap are part of VSH2 repo).
-* Optional Dependencies: [TF2Attributes](https://github.com/FlaminSarge/tf2attributes), [SteamTools](https://forums.alliedmods.net/showthread.php?t=170630)
+* Dependencies: [TF2Items](https://builds.limetech.io/?project=tf2items), [SteamTools](https://forums.alliedmods.net/showthread.php?t=170630), MoreColors, ConfigMap (MoreColors + ConfigMap are part of VSH2 repo).
+* Optional Dependencies: [TF2Attributes](https://github.com/FlaminSarge/tf2attributes)
 * Compile the VSH2 script code with spcomp or upload the prebuild SMX binaries; which ever method you use, move the SMX binaries to your server's SourceMod 'plugins' directory (addons/sourcemod/plugins).
 * Read the [Wiki](https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki) to get started making your own boss!
 * If you're moving from FF2 to VSH2, we also have the VSH2-FF2 Compatibility Engine, [use this FF2 subplugin library, courtesy of 01Pollux](https://github.com/01Pollux/FF2-Library)
@@ -47,8 +47,9 @@ If you do require help in setting up the bosses or at least need some info on th
 * Statements that require parentheses (such as 'if' statements) should have each side of the parentheses spaced out with the beginning parens touching the construct keyword, e.g. `construct( code/expression )`.
 * Single line comments that convey a message must have 3 slashes: `///`.
 * Multi-line comments that convey a message should have an extra beginning star: `/**`.
-* Properties, functions, & methods smaller than 30 lines of code should have the beginning `{` brace in K&R C style, for example: `ret func() {`.
+* Properties, functions, & methods less than 50 lines of code should have the beginning `{` brace in K&R C style, for example: `ret func() {`.
 * Local variable names should be in snake_case.
-* Property names must have a single-letter prefix of their type.
+* Property names must have a single/double-letter prefix of their type.
 * Functions, methods, methodmaps, enums, enum values, must be named in PascalCase. Pascal_Case is also acceptable.
 * Enum values used as flags may be upper-case.
+* ALL testing should be done on latest STABLE builds of MetaMod:Source and SourceMod.

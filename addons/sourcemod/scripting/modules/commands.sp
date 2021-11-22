@@ -237,7 +237,7 @@ public void MusicTogglePanel(const int client)
 		return;
 	}
 	Panel panel = new Panel();
-	panel.SetTitle("Turn the VS Saxton Hale 2 Music...");
+	panel.SetTitle("Turn the VS Saxton Hale v2 Music...");
 	panel.DrawItem("On?");
 	panel.DrawItem("Off?");
 	panel.Send(client, MusicTogglePanelH, 9001);
@@ -249,7 +249,7 @@ public int MusicTogglePanelH(Menu menu, MenuAction action, int param1, int param
 	if( IsValidClient(param1) ) {
 		if( action == MenuAction_Select ) {
 			BaseBoss player = BaseBoss(param1);
-			if( param2 == 1 ) {
+			if( param2==1 ) {
 				player.bNoMusic = false;
 				CPrintToChat(param1, "{olive}[VSH 2]{default} You've turned On the VS Saxton Hale 2 Music.");
 			} else {
@@ -282,10 +282,10 @@ public Action ForceBossRealtime(int client, int args)
 	char strBossid[32];  GetCmdArg(2, strBossid, sizeof(strBossid));
 	
 	int bosstype = StringToInt(strBossid);
-	if( bosstype > MAXBOSS ) {
-		bosstype = MAXBOSS;
+	if( bosstype > g_vsh2.m_hGamemode.MAXBOSS ) {
+		bosstype = g_vsh2.m_hGamemode.MAXBOSS;
 	} else if( bosstype < 0 ) {
-		bosstype = GetRandomInt(VSH2Boss_Hale, MAXBOSS);
+		bosstype = GetRandomInt(0, g_vsh2.m_hGamemode.MAXBOSS);
 	}
 	
 	char target_name[MAX_TARGET_LENGTH];
@@ -428,9 +428,7 @@ public int HelpMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 				}
 			}
 			case 2: {
-				if( player.bIsBoss ) {
-					ManageBossHelp(player);
-				} else if( !player.bIsMinion && GetClientTeam(param1)==VSH2Team_Red ) {
+				if( !player.bIsBoss && !player.bIsMinion && GetClientTeam(param1)==VSH2Team_Red ) {
 					player.HelpPanelClass();
 				}
 			}
@@ -490,3 +488,39 @@ public int MenuHandler_ClassRush(Menu menu, MenuAction action, int client, int p
 		delete menu;
 	}
 }
+
+
+/** VSH2 Package Manager.
+ * Check for "package" updates.
+ * Handle Download server bzips.
+ * Setup two cvars, the server file path and download server file path.
+ * 
+ * Scag — Aug 30 at 5:33 PM
+		* u could also do a "disable" feature, so that a plugin is sent to the disabled folder and wont load the assets. like having boss packs during a map yaknow what i mean?
+		* map has boss pack 1, next map disables pack 1 and enables pack 2
+ * Boss Package Manager is only for downloading boss modules + assets for servers.
+ * There won't be a "deleting" method because that's too instrusive for servers.
+ * 
+ * NOTE: Watch out for shady SMXs and corrupted assets which could crash players.
+     * Disclaimer: having a boss approved for the repo means the boss is voluntarily open sourced.
+     * Need quality control of repo.
+     * Make sure no boss module SMX is given in PR.
+     * boss module source code must compile with no errors.
+     * all required includes must be with the boss module.
+ *
+ * Better idea, make the command hit up a list of folders that are in the repo to retrieve?
+ */
+/*
+enum struct BossPackageManager {
+	void Init() {
+		
+	}
+}
+
+!vsh2_get_bosspkg
+public Action CmdDownloadBossFromRepo(int client, int args)
+{
+	char repo_url[] = "";
+	char boss_folder_name[PLATFORM_MAX_PATH];
+}
+*/

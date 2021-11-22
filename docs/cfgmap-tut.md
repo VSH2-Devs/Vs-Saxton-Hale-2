@@ -188,10 +188,17 @@ int GetIntKeyBool(int key, bool& b, bool simple=true);
 
 ### Automatic Value Enumeration
 So, what if we actually wanted something similar to `<enum>` but for values instead of keys?
-For that, we have local and global iota! For local iota, `<iota>` and for global iota `<IOTA>`. They work exactly the same as `<enum>/<ENUM>` but their purpose is for use as values rather than keys.
+For that, we have local and global iota! For local iota, `<iota>` and for global iota `<IOTA>`. They work exactly the same as `<enum>`/`<ENUM>` but their purpose is for use as values rather than keys.
 
 * `<iota>` local to a (sub)section only.
 * `<IOTA>` preserves its number value across all sections.
+
+
+### File Inclusion
+A feature that ConfigMap didn't originally have while KeyValues did was the ability to include other config files from a config file. ConfigMap as of VSH2 2.13.0 now allows file inclusion.
+
+
+
 
 ## Usage within VSH2
 Within VSH2, `ConfigMap` is used (and useful) for a variety of different subsystems that make VSH2 do what it does best. A good example is managing the general download list inside `vsh2.cfg`:

@@ -9,44 +9,27 @@ public Action ReSpawn(Event event, const char[] name, bool dontBroadcast)
 		SetVariantString(""); AcceptEntityInput(player.index, "SetCustomModel");
 		player.SetOverlay("0");
 		
-		if( player.bIsBoss && (StateDisabled < roundstate < StateEnding) ) {
-			if( GetClientTeam(player.index) != VSH2Team_Boss ) {
-				player.ForceTeamChange(VSH2Team_Boss);
-			}
-			player.ConvertToBoss();    /// in base.sp
-			if( player.iHealth <= 0 ) {
-				player.iHealth = player.iMaxHealth;
-			}
+		if( g_vsh2.m_hGamemode.bTF2Attribs ) {
+#if defined _tf2attributes_included
+			TF2Attrib_RemoveAll(player.index);
+#endif
 		}
 		
-		if( !player.bIsBoss && (StateDisabled < roundstate < StateEnding) && !player.bIsMinion ) {
-			if( GetClientTeam(player.index)==VSH2Team_Boss ) {
-				player.ForceTeamChange(VSH2Team_Red);
-			}
-			SetPawnTimer(PrepPlayers, 0.2, player);
-			/*
-			/// If the late spawn delay is still in effect, recalculate boss max hp.
-			float delay_time = g_vsh2.m_hCvars.LateSpawnDelay.FloatValue;
-			float start_time = g_vsh2.m_hGamemode.flRoundStartTime;
-			if( (GetGameTime() - start_time) <= delay_time ) {
-				int red_players = GetLivingPlayers(VSH2Team_Red);
-				BaseBoss[] bosses = new BaseBoss[MaxClients];
-				int boss_count = VSHGameMode.GetBosses(bosses, false);
-				g_vsh2.m_hGamemode.iTotalMaxHealth = 0;
-				for( int i; i<boss_count; i++ ) {
-					int max_health = VSHGameMode.CalcBossMaxHP(red_players, boss_count);
-					Action act = Call_OnBossCalcHealth(bosses[i], max_health, boss_count, red_players);
-					if( act > Plugin_Changed ) {
-						continue;
-					}
-					int old_maxhp = bosses[i].iMaxHealth;
-					int old_hp    = bosses[i].iHealth;
-					bosses[i].iMaxHealth = max_health;
-					g_vsh2.m_hGamemode.iTotalMaxHealth += bosses[i].iMaxHealth;
-					bosses[i].iHealth = RoundFloat(float(max_health) / float(old_maxhp) * float(old_hp));
+		if( (StateDisabled < roundstate < StateEnding) ) {
+			if( player.bIsBoss ) {
+				if( GetClientTeam(player.index) != VSH2Team_Boss ) {
+					player.ForceTeamChange(VSH2Team_Boss);
 				}
+				player.ConvertToBoss();    /// in base.sp
+				if( player.iHealth <= 0 ) {
+					player.iHealth = player.iMaxHealth;
+				}
+			} else if( !player.bIsBoss && !player.bIsMinion ) {
+				if( GetClientTeam(player.index)==VSH2Team_Boss ) {
+					player.ForceTeamChange(VSH2Team_Red);
+				}
+				SetPawnTimer(PrepPlayers, 0.2, player);
 			}
-			*/
 		}
 	}
 	return Plugin_Continue;
@@ -77,7 +60,7 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2.m_hGamemode.iRoundState==StateDisabled )
 		return Plugin_Continue;
 	
-	BaseBoss victim  = BaseBoss( event.GetInt("userid"), true );
+	BaseBoss victim  = BaseBoss( event.GetInt("userid"),   true );
 	BaseBoss fighter = BaseBoss( event.GetInt("attacker"), true );
 	ManageBossKillPlayer(fighter, victim, event);
 	
@@ -90,12 +73,12 @@ public Action PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 	if( (g_vsh2.m_hGamemode.bMedieval || g_vsh2.m_hCvars.ForceLives.BoolValue)
 		&& !victim.bIsBoss && !victim.bIsMinion && victim.iLives
 		&& g_vsh2.m_hGamemode.iRoundState==StateRunning
-		&& !(death_flags & TF_DEATHFLAG_DEADRINGER) )
-	{
+		&& !(death_flags & TF_DEATHFLAG_DEADRINGER)
+	) {
 		SetPawnTimer(_RespawnPlayer, g_vsh2.m_hCvars.MedievalRespawnTime.FloatValue, victim.userid);
 		victim.iLives--;
 	}
-
+	
 	if( victim.iTFClass==TFClass_Engineer && !(death_flags & TF_DEATHFLAG_DEADRINGER) ) {
 		if( g_vsh2.m_hCvars.EngieBuildings.IntValue > 0 ) {
 			switch( g_vsh2.m_hCvars.EngieBuildings.IntValue ) {
@@ -166,24 +149,39 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 #endif
 		return Plugin_Continue;
 	}
+	
 	StopBackGroundMusic();
-	g_vsh2.m_hGamemode.bMedieval = (FindEntityByClassname(-1, "tf_logic_medieval") != -1 || FindConVar("tf_medieval").BoolValue);
+	g_vsh2.m_hGamemode.bMedieval    = (FindEntityByClassname(-1, "tf_logic_medieval") != -1 || FindConVar("tf_medieval").BoolValue);
 	VSHGameMode.CheckArena(g_vsh2.m_hCvars.PointType.BoolValue);
-	g_vsh2.m_hGamemode.bPointReady = false;
-	g_vsh2.m_hGamemode.iTimeLeft = 0;
-	g_vsh2.m_hGamemode.iCaptures = 0;
-	g_vsh2.m_hGamemode.iPrevSpecial = g_vsh2.m_hGamemode.iSpecial;
+	g_vsh2.m_hGamemode.bPointReady  = false;
+	g_vsh2.m_hGamemode.iTimeLeft    = 0;
+	g_vsh2.m_hGamemode.iCaptures    = 0;
 	g_vsh2.m_hGamemode.GetBossType();    /// in gamemode.sp
+	g_vsh2.m_hGamemode.iRoundResult = RoundResInvalid;
+	
+	if( !g_modsys.m_bRandBosses || g_vsh2.m_hGamemode.iSpecial == -1 ) {
+		int len = g_vsh2.m_hCfg.GetSize("messages.no rand bosses");
+		char[] no_rand_bosses = new char[len];
+		if( g_vsh2.m_hCfg.Get("messages.no rand bosses", no_rand_bosses, len) ) {
+			CPrintToChatAll("{olive}[VSH 2]{default} %s", no_rand_bosses);
+		} else {
+			CPrintToChatAll("{olive}[VSH 2]{default} No Bosses registered for the random pool.");
+		}
+		g_vsh2.m_hGamemode.iRoundState = StateDisabled;
+		return Plugin_Continue;
+	}
 	
 	int playing;
 	for( int iplay=MaxClients; iplay; --iplay ) {
-		if( !IsValidClient(iplay) || !IsClientInGame(iplay) )
+		if( !IsValidClient(iplay) )
 			continue;
 		
 		ManageResetVariables(BaseBoss(iplay));    /// in handler.sp
-		if( GetClientTeam(iplay) > VSH2Team_Spectator )
+		if( GetClientTeam(iplay) > VSH2Team_Spectator ) {
 			++playing;
+		}
 	}
+	
 	if( GetClientCount() <= 1 || playing < 2 ) {
 		int len = g_vsh2.m_hCfg.GetSize("messages.need more players");
 		char[] need_more_players = new char[len];
@@ -238,13 +236,14 @@ public Action RoundStart(Event event, const char[] name, bool dontBroadcast)
 	/// Setting this here so we can intercept Boss type and other info
 	ManageOnBossSelected(boss);
 	boss.ConvertToBoss();
+	g_vsh2.m_hGamemode.iPrevSpecial = g_vsh2.m_hGamemode.iSpecial;
 	g_vsh2.m_hGamemode.iSpecial = -1;
 	
 	float snddelay = 3.5; /// this is the default value for delay on the boss intro line
 	if( g_vsh2.m_hCvars.PreRoundSetBoss.BoolValue ) {
 		/// If player has used /setboss before round started, swap their boss to their new selection
 		SetPawnTimer(DelaySpawn, 8.5, boss);
-
+		
 		/// add 7 seconds to delay the sound until round has started
 		snddelay += 7.0;
 	}
@@ -381,6 +380,11 @@ public Action RoundEnd(Event event, const char[] name, bool dontBroadcast)
 			}
 		}
 	}
+	
+	int reds = GetLivingPlayers(VSH2Team_Red);
+	if( !reds && g_vsh2.m_hGamemode.iRoundResult==RoundResInvalid ) {
+		g_vsh2.m_hGamemode.iRoundResult = RoundResBossWin;
+	}
 	ManageRoundEndBossInfo(bosses, boss_len, (event.GetInt("team") == VSH2Team_Boss));
 	/*
 	int teamroundtimer = FindEntityByClassname(-1, "team_round_timer");
@@ -504,6 +508,7 @@ public Action PointCapture(Event event, const char[] name, bool dontBroadcast)
 	if( g_vsh2.m_hGamemode.iCaptures >= g_vsh2.m_hCvars.MultiCapAmount.IntValue ||
 		(GetLivingPlayers(VSH2Team_Red)==1 && iCapTeam==VSH2Team_Red) )
 	{
+		g_vsh2.m_hGamemode.iRoundResult = RoundResCap;
 		ForceTeamWin(iCapTeam);
 		return Plugin_Continue;
 	}

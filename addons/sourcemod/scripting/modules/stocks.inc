@@ -1,51 +1,49 @@
-stock int GetHealingTarget(const int client)
-{
+stock int GetHealingTarget(const int client) {
 	int medigun = GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 	if( !IsValidEntity(medigun) ) {
 		return -1;
 	} else if( HasEntProp(medigun, Prop_Send, "m_bHealing")
-			&& GetEntProp(medigun, Prop_Send, "m_bHealing") ) {
+			&& GetEntProp(medigun, Prop_Send, "m_bHealing")
+		) {
 		return GetEntPropEnt(medigun, Prop_Send, "m_hHealingTarget");
 	}
 	return -1;
 }
 
-stock int GetActiveWep(const int client)
-{
+stock int GetActiveWep(const int client) {
 	int weapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 	return( IsValidEntity(weapon) ) ? weapon : -1;
 }
 
-stock float GetMediCharge(const int medigun)
-{
+stock float GetMediCharge(const int medigun) {
 	return( IsValidEntity(medigun) ) ? GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel") : -1.0;
 }
 
-stock void SetMediCharge(const int medigun, const float val)
-{
-	if( IsValidEntity(medigun) )
+stock void SetMediCharge(const int medigun, const float val) {
+	if( IsValidEntity(medigun) ) {
 		SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel", val);
+	}
 }
 
-stock bool IsNearSpencer(const int client)
-{
-	int healers = GetEntProp(client, Prop_Send, "m_nNumHealers");
-	int medics;
+stock bool IsNearSpencer(const int client) {
+	int medics, healers = GetEntProp(client, Prop_Send, "m_nNumHealers");
 	if( healers > 0 ) {
 		for( int i=MaxClients; i; --i ) {
-			if( IsValidClient(i) && GetHealingTarget(i) == client )
+			if( IsValidClient(i) && GetHealingTarget(i)==client ) {
 				medics++;
+			}
 		}
 	}
 	return (healers > medics);
 }
 
-stock bool IsHealedByMedic(const int client)
-{
+stock bool IsHealedByMedic(const int client) {
 	int numhealers = GetEntProp(client, Prop_Send, "m_nNumHealers");
-	for( int i=0; i<numhealers; i++ )
-		if( 0 < GetHealerByIndex(client, i) <= MaxClients )
+	for( int i=0; i<numhealers; i++ ) {
+		if( 0 < GetHealerByIndex(client, i) <= MaxClients ) {
 			return true;
+		}
+	}
 	return false;
 }
 
@@ -59,28 +57,30 @@ stock bool IsNearDispencer(const int client) {
 	return false;
 }
 
-stock bool IsDispenserHeal(int client, int index)
-{
+stock bool IsDispenserHeal(int client, int index) {
 	static int m_aHealers;
 	if( !m_aHealers )
 		m_aHealers = FindSendPropInfo("CTFPlayer", "m_nNumHealers") + 12;
-
+	
 	Address m_Shared = GetEntityAddress(client) + view_as<Address>(m_aHealers);
 	Address aHealers = view_as<Address>(LoadFromAddress(m_Shared, NumberType_Int32));
-
 	return !!LoadFromAddress(aHealers + view_as<Address>(index * 0x24 + 20), NumberType_Int8);
+	/**
+	 * m_Shared := GetEntityAddress(client) + FindSendPropInfo("CTFPlayer", "m_nNumHealers") + 12
+	 * aHealers := ( *int32 )(*m_Shared)
+	 * return !! *( *int8 )(aHealers + (index * 0x24 + 20))
+	 */
 }
 
-public bool TraceRayDontHitSelf(int entity, int mask, any data)
-{
+public bool TraceRayDontHitSelf(int entity, int mask, any data) {
 	return( entity != data );
 }
-public bool TraceRayIgnoreEnts(int entity, int mask, any data)
-{
+
+public bool TraceRayIgnoreEnts(int entity, int mask, any data) {
 	return entity==0;
 }
-stock void ForceTeamWin(const int team)
-{
+
+stock void ForceTeamWin(const int team) {
 	int entity = FindEntityByClassname(-1, "team_control_point_master");
 	if( entity <= 0 ) {
 		entity = CreateEntityByName("team_control_point_master");
@@ -253,8 +253,7 @@ stock void SetClientOverlay(const int client, const char[] strOverlay)
 	ClientCommand(client, "r_screenoverlay \"%s\"", strOverlay);
 }
 
-stock bool IsClientValid(const int client)
-{
+stock bool IsClientValid(const int client) {
 	return( 0 < client <= MaxClients && IsClientInGame(client) );
 }
 
@@ -583,11 +582,13 @@ public void EnableCap(const bool open_doors)
 
 stock bool CanFitHere(float origin[3], const float mins[3], const float maxs[3])
 {
-	for( int i=0; i<60; ++i ) {
+	for( int i; i<60; ++i ) {
 		TR_TraceHull(origin, origin, mins, maxs, MASK_PLAYERSOLID);
-		if( TR_GetFraction() > 0.98 )
+		if( TR_GetFraction() > 0.98 ) {
 			return true;
-		else origin[2] += 1.0;
+		} else {
+			origin[2] += 1.0;
+		}
 	}
 	return false;
 }
@@ -749,7 +750,7 @@ stock int FindPlayerBack(int client, int[] indices, int len)
 {
 	if( len <= 0 )
 		return -1;
-
+	
 	int numwearables = TF2_GetNumWearables(client);
 	for( int i=numwearables-1; i>=0; --i ) {
 		int wearable = TF2_GetWearable(client, i);
@@ -983,11 +984,11 @@ stock float GetConditionDuration(const int client, const TFCond cond)
 {
 	if( !TF2_IsPlayerInCondition(client, cond) )
 		return 0.0;
-
+	
 	int m_Shared = FindSendPropInfo("CTFPlayer", "m_Shared");
 	Address aCondSource   = view_as< Address >(LoadFromAddress(GetEntityAddress(client) + view_as< Address >(m_Shared + 8), NumberType_Int32));
 	Address aCondDuration = view_as< Address >(view_as< int >(aCondSource) + (view_as< int >(cond) * 20) + (2 * 4));
-
+	
 	float flDuration = view_as< float >(LoadFromAddress(aCondDuration, NumberType_Int32));
 	return flDuration;
 }
@@ -996,7 +997,7 @@ stock void SetConditionDuration(const int client, const TFCond cond, const float
 {
 	if( !TF2_IsPlayerInCondition(client, cond) )
 		return;
-
+	
 	int m_Shared = FindSendPropInfo("CTFPlayer", "m_Shared");
 	Address aCondSource   = view_as< Address >(LoadFromAddress(GetEntityAddress(client) + view_as< Address >(m_Shared + 8), NumberType_Int32));
 	Address aCondDuration = view_as< Address >(view_as< int >(aCondSource) + (view_as< int >(cond) * 20) + (2 * 4));
@@ -1024,11 +1025,11 @@ stock void PrepareSoundDir(bool valve = false, char[] dir = "sound")
 	FileType type;
 	int len;
 	l.GetNext(buffer, sizeof(buffer));
-
+	
 	while( l.GetNext(buffer, sizeof(buffer), type) ) {
 		if( buffer[0] == '\0' || !strcmp(buffer, ".", false) || !strcmp(buffer, "..", false) )
 			continue;
-
+		
 		if( type==FileType_Directory ) {
 			Format(buffer, PLATFORM_MAX_PATH, "%s/%s", dir, buffer);
 			PrepareSoundDir(valve, buffer);
@@ -1036,14 +1037,14 @@ stock void PrepareSoundDir(bool valve = false, char[] dir = "sound")
 			/// .mp3, .wav, etc
 			if( (len = strlen(buffer)) < 5 )
 				continue;
-
+			
 			/// Don't think TF2 supports .ogg but w/e
 			if( StrContains(buffer[len-4], ".mp3") == -1 && StrContains(buffer[len-4], ".wav") == -1 && StrContains(buffer[len-4], ".ogg") == -1 )
 				continue;
-
+			
 			Format(buffer, sizeof(buffer), "%s/%s", dir, buffer);
 			AddFileToDownloadsTable(buffer);
-
+			
 			/// Offsets 'sound/'
 			if( !IsSoundPrecached(buffer[6]) )
 				PrecacheSound(buffer[6]);
@@ -1057,22 +1058,26 @@ stock void PrepareModelDir(bool valve = false, char[] dir = "models")
 	char buffer[PLATFORM_MAX_PATH];
 	FileType type;
 	l.GetNext(buffer, sizeof(buffer));
-
+	
 	while( l.GetNext(buffer, sizeof(buffer), type) ) {
 		if( buffer[0] == '\0' || !strcmp(buffer, ".", false) || !strcmp(buffer, "..", false) )
 			continue;
-
+		
 		if( type==FileType_Directory ) {
 			Format(buffer, PLATFORM_MAX_PATH, "%s/%s", dir, buffer);
 			PrepareModelDir(valve, buffer);
 		} else if( type==FileType_File ) {
 			if( strlen(buffer) < 5 )
 				continue;
-
-			if( StrContains(buffer, ".dx80.vtx") == -1 && StrContains(buffer, ".dx90.vtx") == -1 && StrContains(buffer, ".mdl") == -1
-			 && StrContains(buffer, ".phy") == -1 && StrContains(buffer, ".sw.vtx") == -1 && StrContains(buffer, ".vvd") == -1 )
+			
+			if( StrContains(buffer, ".dx80.vtx")    == -1
+				&& StrContains(buffer, ".dx90.vtx") == -1
+				&& StrContains(buffer, ".mdl")      == -1
+				&& StrContains(buffer, ".phy")      == -1
+				&& StrContains(buffer, ".sw.vtx")   == -1
+				&& StrContains(buffer, ".vvd")      == -1 )
 				continue;
-
+			
 			Format(buffer, sizeof(buffer), "%s/%s", dir, buffer);
 			AddFileToDownloadsTable(buffer);
 			if( StrContains(buffer, ".mdl", false) != -1 && !IsModelPrecached(buffer) )
@@ -1087,11 +1092,11 @@ stock void PrepareMaterialDir(bool valve = false, char[] dir = "materials")
 	char buffer[PLATFORM_MAX_PATH];
 	FileType type;
 	l.GetNext(buffer, sizeof(buffer));
-
+	
 	while( l.GetNext(buffer, sizeof(buffer), type) ) {
 		if( buffer[0] == '\0' || !strcmp(buffer, ".", false) || !strcmp(buffer, "..", false) )
 			continue;
-
+		
 		if( type==FileType_Directory ) {
 			Format(buffer, PLATFORM_MAX_PATH, "%s/%s", dir, buffer);
 			PrepareMaterialDir(valve, buffer);
@@ -1100,7 +1105,7 @@ stock void PrepareMaterialDir(bool valve = false, char[] dir = "materials")
 				continue;
 			else if( StrContains(buffer, ".vmt") == -1 && StrContains(buffer, ".vtf") == -1 )
 				continue;
-
+			
 			Format(buffer, sizeof(buffer), "%s/%s", dir, buffer);
 			AddFileToDownloadsTable(buffer);
 		}
@@ -1111,14 +1116,14 @@ stock char[] TF2_GetPlayerClassname(const int client, bool capitalize = false)
 {
 	char s[16];
 	switch( TF2_GetPlayerClass(client) ) {
-		case TFClass_Scout: s = "scout";
-		case TFClass_Soldier: s = "soldier";
-		case TFClass_Pyro: s = "pyro";
-		case TFClass_DemoMan: s = "demoman";
-		case TFClass_Medic: s = "medic";
-		case TFClass_Heavy: s = "heavy";
-		case TFClass_Pyro: s = "pyro";
-		case TFClass_Spy: s = "spy";
+		case TFClass_Scout:    s = "scout";
+		case TFClass_Soldier:  s = "soldier";
+		case TFClass_Pyro:     s = "pyro";
+		case TFClass_DemoMan:  s = "demoman";
+		case TFClass_Medic:    s = "medic";
+		case TFClass_Heavy:    s = "heavy";
+		case TFClass_Pyro:     s = "pyro";
+		case TFClass_Spy:      s = "spy";
 		case TFClass_Engineer: s = "engineer";
 	}
 
@@ -1138,12 +1143,12 @@ stock bool TF2_IsKillable(const int entity)
 {
 	bool res = true;
 	if( 0 < entity <= MaxClients ) {
-		if(TF2_IsPlayerInCondition(entity, TFCond_Ubercharged)
-		|| TF2_IsPlayerInCondition(entity, TFCond_UberchargedHidden)
-		|| TF2_IsPlayerInCondition(entity, TFCond_UberchargedCanteen)
-		|| TF2_IsPlayerInCondition(entity, TFCond_Bonked)
-		|| TF2_IsPlayerInCondition(entity, TFCond_PasstimeInterception))
-		{
+		if( TF2_IsPlayerInCondition(entity, TFCond_Ubercharged)
+			|| TF2_IsPlayerInCondition(entity, TFCond_UberchargedHidden)
+			|| TF2_IsPlayerInCondition(entity, TFCond_UberchargedCanteen)
+			|| TF2_IsPlayerInCondition(entity, TFCond_Bonked)
+			|| TF2_IsPlayerInCondition(entity, TFCond_PasstimeInterception)
+		) {
 			res = false;
 		}
 	}
@@ -1170,9 +1175,7 @@ stock int GetRandomClient(bool balive=true, int team=0)
 	int[] players = new int[MaxClients];
 	int count;
 	for( int i=MaxClients; i; --i ) {
-		if( !IsValidClient(i) )
-			continue;
-		else if( balive && !IsPlayerAlive(i) )
+		if( !IsValidClient(i) || (balive && !IsPlayerAlive(i)) )
 			continue;
 		else if( team && GetClientTeam(i) != team )
 			continue;
@@ -1191,7 +1194,7 @@ stock void HealPlayer(const int client, const int health, bool on_hud=false, boo
 {
 	int hp     = GetEntProp(client, Prop_Data, "m_iHealth");
 	int maxhp  = GetEntProp(client, Prop_Data, "m_iMaxHealth");
-	int diff = health;
+	int diff   = health;
 	
 	int max_overheal = RoundFloat(FindConVar("tf_max_health_boost").FloatValue * maxhp);
 	if( !overridehp && diff > max_overheal - hp ) {
@@ -1232,4 +1235,68 @@ stock int TF2_GetWearable(int client, int wearableidx)
 	int offset = FindSendPropInfo("CTFPlayer", "m_flMaxspeed") - 20;
 	Address m_hMyWearables = view_as< Address >(LoadFromAddress(GetEntityAddress(client) + view_as< Address >(offset), NumberType_Int32));
 	return LoadFromAddress(m_hMyWearables + view_as< Address >(4 * wearableidx), NumberType_Int32) & 0xFFF;
+}
+
+/// CTFPlayer::GetObjectCount()
+stock int TF2_GetObjectCount(int client)
+{
+	/// CUtlVector<CBaseObject*, CUtlMemory<CBaseObject*, int>>
+	return GetEntData(client, FindSendPropInfo("CTFPlayer", "m_flMvMLastDamageTime") + 48 + 12);
+}
+
+/// CTFPlayer::GetObject(int)
+stock int TF2_GetObject(int client, int objidx)
+{
+	/// 8568 linux
+	/// 8560 windows
+	int offset = FindSendPropInfo("CTFPlayer", "m_flMvMLastDamageTime") + 48;
+	Address m_aObjects = view_as< Address >(LoadFromAddress(GetEntityAddress(client) + view_as< Address >(offset), NumberType_Int32));
+	return LoadFromAddress(m_aObjects + view_as< Address >(4 * objidx), NumberType_Int32) & 0xFFF;
+}
+
+/// CTFPlayer::GetObjectOfType(int, int)
+stock int TF2_GetObjectOfType(int client, TFObjectType objtype, TFObjectMode objmode=TFObjectMode_None, bool incdisposables=false)
+{
+	int numobjs = TF2_GetObjectCount(client);
+	if( numobjs <= 0 )
+		return -1;
+	
+	int count;
+	do {
+		int obj = TF2_GetObject(client, count);
+		if( TF2_GetObjectType(obj)==objtype
+			&& TF2_GetObjectMode(obj)==objmode
+			&& !(GetEntProp(obj, Prop_Send, "m_bDisposableBuilding") && !incdisposables)
+		) {
+			return obj;
+		}
+	} while( ++count < numobjs );
+	return -1;
+}
+
+/// CTFPlayer::GetNumObjects(int, int)
+stock int TF2_GetNumObjects(int client, TFObjectMode objmode, TFObjectType objtype, bool incdisposables=false)
+{
+	int objects, count;
+	int objcount = TF2_GetObjectCount(client);
+	if( objtype==view_as< TFObjectType >(-1) ) {
+		while( count < objcount ) {
+			int obj = TF2_GetObject(client, count);
+			if( !(GetEntProp(obj, Prop_Send, "m_bDisposableBuilding") && !incdisposables) ) {
+				if( TF2_GetObjectMode(obj)==objmode )
+					++objects;
+			}
+			++count;
+		}
+	} else {
+		while( objcount > count ) {
+			int obj = TF2_GetObject(client, count);
+			if( !(GetEntProp(obj, Prop_Send, "m_bDisposableBuilding") && !incdisposables) ) {
+				if( TF2_GetObjectMode(obj) == objmode && TF2_GetObjectType(obj) == objtype )
+					++objects;
+			}
+			++count;
+		}
+	}
+	return objects;
 }

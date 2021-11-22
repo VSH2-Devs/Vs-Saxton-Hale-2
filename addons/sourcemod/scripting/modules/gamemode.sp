@@ -84,6 +84,21 @@ methodmap VSHGameMode < StringMap {
 			this.SetValue("iCaptures", val);
 		}
 	}
+	property int iRoundResult {
+		public get() {
+			int i; this.GetValue("iRoundResult", i);
+			return i;
+		}
+		public set(const int val) {
+			this.SetValue("iRoundResult", val);
+		}
+	}
+	
+	property int MAXBOSS {
+		public get() {
+			return g_modsys.m_hBossesRegistered.Length - 1;
+		}
+	}
 	
 	property bool bSteam {
 		public get() {
@@ -194,9 +209,6 @@ methodmap VSHGameMode < StringMap {
 		this.iRoundCount = 0;
 		this.iHealthChecks = 0;
 		this.iCaptures = 0;
-#if defined _steamtools_included
-		this.bSteam = false;
-#endif
 		this.bPointReady = false;
 		this.bMedieval = false;
 		this.bDoors = false;
@@ -390,32 +402,60 @@ methodmap VSHGameMode < StringMap {
 			this.iHealthBar.SetHealthPercent(totalHealth, this.iTotalMaxHealth);
 		}
 	}
-	public void GetBossType()
-	{
-		if( this.hNextBoss && this.hNextBoss.iPresetType > -1 ) {
-			this.iSpecial = this.hNextBoss.iPresetType;
-			if( this.iSpecial > MAXBOSS ) {
-				this.iSpecial = MAXBOSS;
+	
+	public static int FillRandomBossPool(int[] random_pool, bool is_multiboss=false, bool for_red=false) {
+		int randos;
+		int max = g_modsys.m_hBossesRegistered.Length;
+		for( int i; i < max; i++ ) {
+			int flags = g_modsys.GetModuleFlags(i);
+			if( flags & VSH2PluginFlag_NonRand ) {
+				continue;
+			} else if( is_multiboss && (flags & VSH2PluginFlag_NoMulti) ) {
+				continue;
+			} else if( !for_red && (flags & VSH2PluginFlag_RedOnly) ) {
+				continue;
+			} else if( for_red && (flags & VSH2PluginFlag_NoRed) ) {
+				continue;
 			}
-			return;
+			random_pool[randos++] = i;
+		}
+		return randos;
+	}
+	
+	public static int GetRandomBossType(bool is_multiboss=false, bool for_red=false) {
+		/// if there's no bosses we can select at random.
+		if( !g_modsys.m_bRandBosses )
+			return -1;
+		
+		/// no bosses registered?
+		int max = g_modsys.m_hBossesRegistered.Length;
+		if( max <= 0 )
+			return -1;
+		
+		int[] random_pool = new int[max];
+		int randos = VSHGameMode.FillRandomBossPool(random_pool, is_multiboss, for_red);
+		return ( !randos )? -1 : random_pool[GetRandomInt(0, randos-1)];
+	}
+	
+	public void GetBossType() {
+		int selection = -1;
+		if( this.iSpecial > -1 ) {
+			selection = this.iSpecial;
 		}
 		
-		BaseBoss boss = VSHGameMode.FindNextBoss();
-		if( boss.iPresetType > -1 && this.iSpecial == -1 ) {
-			this.iSpecial = boss.iPresetType;
-			if( this.iSpecial > MAXBOSS ) {
-				this.iSpecial = MAXBOSS;
-			}
-			return;
+		if( this.hNextBoss && this.hNextBoss.iPresetType > -1 ) {
+			selection = this.hNextBoss.iPresetType;
 		}
-		if( this.iSpecial > -1 ) {    /// Clamp the chosen special so we don't error out.
-			if( this.iSpecial > MAXBOSS ) {
-				this.iSpecial = MAXBOSS;
-			}
-		} else {
-			this.iSpecial = GetRandomInt(VSH2Boss_Hale, MAXBOSS);
+		
+		if( selection == -1 ) {
+			BaseBoss boss = VSHGameMode.FindNextBoss();
+			selection = ( boss && boss.iPresetType > -1 )? boss.iPresetType : VSHGameMode.GetRandomBossType();
 		}
+		
+		int max_boss = g_vsh2.m_hGamemode.MAXBOSS;
+		this.iSpecial = IntClamp(selection, max_boss, -1);
 	}
+	
 	/// just use arena maps as vsh/ff2 maps
 	public static bool IsVSHMap()
 	{

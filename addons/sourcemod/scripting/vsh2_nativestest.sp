@@ -31,7 +31,7 @@ public Plugin myinfo = {
 
 public void OnLibraryAdded(const char[] name) {
 	if( StrEqual(name, "VSH2") ) {
-		//VSH2_RegisterPlugin("test_plugin_boss");
+		//VSH2_RegisterBoss("test_plugin_boss");
 		RegConsoleCmd("sm_testvsh2natives", CommandInfo, "clever command explanation heer.");
 		LoadVSH2Hooks();
 	}

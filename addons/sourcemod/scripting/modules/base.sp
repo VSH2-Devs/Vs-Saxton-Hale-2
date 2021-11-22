@@ -1036,3 +1036,22 @@ public void TF2AttribsRemove(const int userid, const int attrib)
 	TF2Attrib_RemoveByDefIndex(GetClientOfUserId(userid), attrib);
 #endif
 }
+
+public void EnableSG(const int iid) {
+	int i = EntRefToEntIndex(iid);
+	if( IsValidEntity(i) && i > MaxClients ) {
+		char s[32]; GetEdictClassname(i, s, sizeof(s));
+		if( StrEqual(s, "obj_sentrygun") ) {
+			SetEntProp(i, Prop_Send, "m_bDisabled", 0);
+			int higher = MaxClients+1;
+			for( int ent=2048; ent > higher; --ent ) {
+				if( !IsValidEntity(ent) || ent <= 0 )
+					continue;
+				
+				char s2[32]; GetEdictClassname(ent, s2, sizeof(s2));
+				if( StrEqual(s2, "info_particle_system") && GetOwner(ent) == i )
+					AcceptEntityInput(ent, "Kill");
+			}
+		}
+	}
+}

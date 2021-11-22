@@ -333,9 +333,9 @@ Or even better, make your own if necessary.
 - generic health based calculated method to give rage to the boss, the formula works as `damage/sqrt(currentHealth)*1.76`. If necessary, you can make your own for your custom bosses
 
 ```c++
- void MakeBossAndSwitch(const int type, bool callEvent)
+ void MakeBossAndSwitch(const int type, bool callEvent, const bool friendly=false)
 ```
-- This function sets `bSetOnSpawn` to true, sets the boss type based on what `type` is, calls `ConvertToBoss()`, and forces the player to be team switched to BLU. Use this method over `ConvertToBoss()`. New in 1.3.0 Beta - `callEvent` let's you control if you want `MakeBossAndSwitch` to call the `OnBossSelected` event.
+- This function sets the boss type based on what `type` is, calls `ConvertToBoss()`, and forces the player to be team switched to BLU. Use this method over `ConvertToBoss()`. New in 1.3.0 Beta - `callEvent` let's you control if you want `MakeBossAndSwitch` to call the `OnBossSelected` event. `friendly` will spawn the boss on the red side as a friendly RED boss.
 
 ```c++
  void DoGenericStun(const float rageDist)
@@ -360,7 +360,7 @@ bool SetName(char name[MAX_BOSS_NAME_SIZE])
 ```c++
 void SuperJump(const float power, const float reset)
 ```
-- performs the generic super jump ability.
+- performs the generic jump ability.
 
 ```c++
 void WeighDown(const float reset)
@@ -409,7 +409,8 @@ int iSpecial
 
 ```c++
 int iPrevSpecial
-``` - get/set the previous `iSpecial` from the round before.
+```
+- get/set the previous `iSpecial` from the round before.
 
 ```c++
 VSHHealthBar iHealthBar
@@ -450,6 +451,16 @@ int iHealthChecks
 int iCaptures
 ```
 - get/set the amount of times the Arena control point has been captured.
+
+```c++
+int iRoundResult
+```
+- get/set the why the current VSH2 round has ended. Is set to 0/Invalid if round hasn't ended.
+
+```c++
+int MAXBOSS
+```
+- gets the max size of the registered bosses array.
 
 ```c++
 bool bSteam
@@ -551,6 +562,16 @@ void SearchForItemPacks()
 void UpdateBossHealth()
 ```
 - self explanatory, gets the total boss health and does a percentage calculation between 0 and 255 and sets the healthbar based on that.
+
+```c++
+static int FillRandomBossPool(int[] random_pool, bool is_multiboss=false, bool for_red=false);
+```
+- fills a pre-made array with all bosses that are allowed to be chosen randomly by the gamemode manager. Can filter via checking if the invocation is for multibosses or choosing a friendly red-team boss. Returns the length of the random pool.
+
+```c++
+static int GetRandomBossType(bool is_multiboss=false, bool for_red=false)
+```
+- Using `FillRandomBossPool`, returns a randomly chosen boss ID from a random boss pool.
 
 ```c++
 void GetBossType()

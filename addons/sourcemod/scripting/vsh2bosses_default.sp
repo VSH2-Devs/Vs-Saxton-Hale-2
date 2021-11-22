@@ -2,208 +2,277 @@
 #include <sdktools>
 #include <tf2_stocks>
 #include <vsh2>
-#include <cfgmap>
+#include <sdkhooks>
 
-char boss_names[][] = {
+
+public Plugin myinfo = {
+	name             = "VSH2 Default Bosses Module",
+	author           = "Nergal/Assyrian",
+	description      = "",
+	version          = "1.0",
+	url              = "https://github.com/VSH2-Devs/Vs-Saxton-Hale-2"
+};
+
+
+static const char boss_names[][] = {
 	"saxton_hale",
 	"vagineer",
-	"christian_brutal_sniper",
+	"cbs",
 	"hhh_jr",
 	"easter_bunny"
 };
 
-enum struct VSH2CVars {
-	ConVar scout_rage_gen;
-	ConVar airblast_rage;
-	ConVar jarate_rage;
-	ConVar hhh_max_climbs;
-	ConVar hhh_tele_cooldown;
-}
-
-enum struct BossData {
-	float move_speed;
-	float glow_time;
-	float jump_charge_rate;
-	float jump_max;
-	float jump_reset;
-	float weighdown_time;
-	float weighdown_incr;
-	
-	void Load(ConfigMap cfg) {
-		cfg.GetFloat("boss data.move speed",        this.move_speed);
-		cfg.GetFloat("boss data.glow time iota",    this.glow_time);
-		cfg.GetFloat("boss data.jump charge",       this.jump_charge_rate);
-		cfg.GetFloat("boss data.jump charge max",   this.jump_max);
-		cfg.GetFloat("boss data.jump charge reset", this.jump_reset);
-		cfg.GetFloat("boss data.weighdown time",    this.weighdown_time);
-		cfg.GetFloat("boss data.weighdown incr",    this.weighdown_incr);
-	}
-}
-
 enum struct DefVSH2Bosses {
-	int       m_iBossID[MaxDefaultVSH2Bosses];
-	ConfigMap m_hBossCfgs[MaxDefaultVSH2Bosses];
-}
-
-public Plugin myinfo = {
-	name=        "VSH2 Default Bosses Module",
-	author=      "Nergal/Assyrian",
-	description= "",
-	version=     "1.0",
-	url=         "sus"
-};
-
-VSH2CVars     g_vsh2_cvars;
-VSH2GameMode  g_vsh2_gm;
-DefVSH2Bosses g_defbosses;
-BossData      g_boss_data[MaxDefaultVSH2Bosses];
-
-
-stock int GetDefBoss(VSH2Player player) {
-	int boss_type = player.GetPropInt("iBossType");
-	for( int i; i<MaxDefaultVSH2Bosses; i++ ) {
-		if( boss_type==g_defbosses.m_iBossID[i] ) {
+	int          ids[MaxDefaultVSH2Bosses];
+	ConfigMap    cfgs[MaxDefaultVSH2Bosses];
+	VSH2GameMode gm;
+	
+	/// these are from VSH2.
+	ConVar       enabled;
+	ConVar       scout_rage_gen;
+	ConVar       airblast_rage;
+	ConVar       jarate_rage;
+	ConVar       hhh_max_climbs;
+	ConVar       hhh_tele_cooldown;
+	ConVar       hhh_climb_vel;
+	ConVar       vag_uber_time;
+	ConVar       vag_uber_airblast;
+	ConVar       cbs_max_arrows;
+	ConVar       bunny_max_eggs;
+	ConVar       no_random_crits;
+	
+	ConVar       move_speed[MaxDefaultVSH2Bosses];
+	ConVar       glow_time[MaxDefaultVSH2Bosses];
+	ConVar       jmp_rate[MaxDefaultVSH2Bosses];
+	ConVar       jmp_max[MaxDefaultVSH2Bosses];
+	ConVar       jmp_reset[MaxDefaultVSH2Bosses];
+	ConVar       wghdwn_time[MaxDefaultVSH2Bosses];
+	ConVar       wghdwn_iota[MaxDefaultVSH2Bosses];
+	ConVar       rage_dist[MaxDefaultVSH2Bosses];
+	ConVar       kspree_count[MaxDefaultVSH2Bosses];
+	ConVar       kspree_time[MaxDefaultVSH2Bosses];
+	ConVar       building_stun[MaxDefaultVSH2Bosses];
+	ConVar       player_stun[MaxDefaultVSH2Bosses];
+	ConVar       jmp_btns[MaxDefaultVSH2Bosses];
+	
+	char         egg_model[PLATFORM_MAX_PATH];
+	
+	int GetDefBoss(VSH2Player player) {
+		int boss_type = player.GetPropInt("iBossType");
+		for( int i; i<MaxDefaultVSH2Bosses; i++ ) {
+			if( this.cfgs[i]==null || boss_type != this.ids[i] )
+				continue;
+			
 			return i;
 		}
+		return -1;
 	}
-	return -1;
 }
 
+DefVSH2Bosses g_defbosses;
+
+
 stock bool IsDefBoss(int id) {
-	return id >= VSH2Boss_Hale && id < MaxDefaultVSH2Bosses;
+	return IsIntInBounds(id, VSH2Boss_Bunny, VSH2Boss_Hale);
 }
 
 public void OnLibraryAdded(const char[] name) {
 	if( StrEqual(name, "VSH2") ) {
-		g_vsh2_cvars.scout_rage_gen    = FindConVar("vsh2_scout_rage_gen");
-		g_vsh2_cvars.airblast_rage     = FindConVar("vsh2_airblast_rage");
-		g_vsh2_cvars.jarate_rage       = FindConVar("vsh2_jarate_rage");
-		g_vsh2_cvars.hhh_max_climbs    = FindConVar("vsh2_hhhjr_max_climbs");
-		g_vsh2_cvars.hhh_tele_cooldown = FindConVar("vsh2_hhh_tele_cooldown");
+		g_defbosses.enabled           = FindConVar("vsh2_enabled");
+		g_defbosses.scout_rage_gen    = FindConVar("vsh2_scout_rage_gen");
+		g_defbosses.airblast_rage     = FindConVar("vsh2_airblast_rage");
+		g_defbosses.jarate_rage       = FindConVar("vsh2_jarate_rage");
+		g_defbosses.hhh_max_climbs    = FindConVar("vsh2_hhhjr_max_climbs");
+		g_defbosses.hhh_tele_cooldown = FindConVar("vsh2_hhh_tele_cooldown");
+		g_defbosses.hhh_climb_vel     = FindConVar("vsh2_hhh_climb_velocity");
+		g_defbosses.vag_uber_time     = FindConVar("vsh2_vagineer_uber_time");
+		g_defbosses.vag_uber_airblast = FindConVar("vsh2_vagineer_uber_time_airblast");
+		g_defbosses.cbs_max_arrows    = CreateConVar("vsh2_cbs_max_arrows", "9", "the maximum amount of arrows Christian Brutal Sniper can get for his bow rage.", FCVAR_NOTIFY, true, 1.0, true, 999999.0);
+		g_defbosses.bunny_max_eggs    = CreateConVar("vsh2_bunny_max_eggs", "50", "amount of eggs Bunny's autogrenader spews.", FCVAR_NOTIFY, true, 1.0, true, 999999.0);
+		g_defbosses.no_random_crits   = CreateConVar("vsh2_default_bosses_no_random_crits", "1", "Blocks the default bosses from being able to randomly crit.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 		
+		bool got_one;
 		for( int i; i<MaxDefaultVSH2Bosses; i++ ) {
+			char cvar_name[1024];
+			Format(cvar_name, sizeof(cvar_name), "vsh2_%s_move_speed", boss_names[i]);
+			g_defbosses.move_speed[i] = CreateConVar(cvar_name, "340.0", "boss move speed.", FCVAR_NOTIFY, true, 1.0, true, 999999.0);
+			
+			Format(cvar_name, sizeof(cvar_name), "vsh2_%s_glow_iota", boss_names[i]);
+			g_defbosses.glow_time[i] = CreateConVar(cvar_name, "0.1", "how fast to drain the boss glow.", FCVAR_NOTIFY, true, 0.0, true, 9999.0);
+			
+			Format(cvar_name, sizeof(cvar_name), "vsh2_%s_jump_charge", boss_names[i]);
+			g_defbosses.jmp_rate[i] = CreateConVar(cvar_name, "2.5", "how fast to charge up the boss jump charge.", FCVAR_NOTIFY, true, 0.0, true, 9999.0);
+			
+			Format(cvar_name, sizeof(cvar_name), "vsh2_%s_jump_max", boss_names[i]);
+			char jump_max[] = "0000";
+			if( i==VSH2Boss_HHHjr ) {
+				jump_max = "50";
+			} else {
+				jump_max = "25";
+			}
+			g_defbosses.jmp_max[i] = CreateConVar(cvar_name, jump_max, "max jump charge a boss can have.", FCVAR_NOTIFY, true, 0.0, true, 9999.0);
+			
+			Format(cvar_name, sizeof(cvar_name), "vsh2_%s_jump_reset", boss_names[i]);
+			g_defbosses.jmp_reset[i] = CreateConVar(cvar_name, "-100.0", "jump charge reset value.", FCVAR_NOTIFY, true, -99999.0, true, 99999.0);
+			
+			Format(cvar_name, sizeof(cvar_name), "vsh2_%s_weighdown_time", boss_names[i]);
+			char weighdown_time_def_str[] = "0000";
+			switch( i ) {
+				case VSH2Boss_Hale, VSH2Boss_CBS, VSH2Boss_Vagineer, VSH2Boss_Bunny: {
+					weighdown_time_def_str = "3.0";
+				}
+				case VSH2Boss_HHHjr: weighdown_time_def_str = "1.0";
+			}
+			
+			g_defbosses.wghdwn_time[i] = CreateConVar(cvar_name, weighdown_time_def_str, "time in the air to allow a boss to use weighdown.", FCVAR_NOTIFY, true, 0.0, true, 9999.0);
+			
+			Format(cvar_name, sizeof(cvar_name), "vsh2_%s_weighdown_iota", boss_names[i]);
+			g_defbosses.wghdwn_iota[i] = CreateConVar(cvar_name, "0.2", "how much to charge weighdown when in the air and using activation button.", FCVAR_NOTIFY, true, 0.0, true, 9999.0);
+			
+			Format(cvar_name, sizeof(cvar_name), "vsh2_%s_rage_dist", boss_names[i]);
+			char rage_dist_def_str[] = "000000000";
+			switch( i ) {
+				case VSH2Boss_Hale, VSH2Boss_HHHjr:     rage_dist_def_str = "800.0";
+				case VSH2Boss_CBS:                      rage_dist_def_str = "320.0";
+				case VSH2Boss_Vagineer, VSH2Boss_Bunny: rage_dist_def_str = "533.333";
+			}
+			g_defbosses.rage_dist[i] = CreateConVar(cvar_name, rage_dist_def_str, "how far can boss' rage reach players.", FCVAR_NOTIFY, true, 0.0, true, 9999.9);
+			
+			Format(cvar_name, sizeof(cvar_name), "vsh2_%s_killing_spree_amount", boss_names[i]);
+			g_defbosses.kspree_count[i] = CreateConVar(cvar_name, "3", "how many kills a boss must get in a certain time to count as a killing spree.", FCVAR_NOTIFY, true, 0.0, true, 9999.9);
+			
+			Format(cvar_name, sizeof(cvar_name), "vsh2_%s_killing_spree_time", boss_names[i]);
+			g_defbosses.kspree_time[i] = CreateConVar(cvar_name, "5.0", "how much time a boss has to get kills to count as a killing spree.", FCVAR_NOTIFY, true, 0.0, true, 9999.9);
+			
+			Format(cvar_name, sizeof(cvar_name), "vsh2_%s_sentry_stun_time", boss_names[i]);
+			g_defbosses.building_stun[i] = CreateConVar(cvar_name, "8.0", "how much time a sentry is stunned for when a boss rages.", FCVAR_NOTIFY, true, 0.0, true, 9999.9);
+			
+			Format(cvar_name, sizeof(cvar_name), "vsh2_%s_player_stun_time", boss_names[i]);
+			g_defbosses.player_stun[i] = CreateConVar(cvar_name, "5.0", "how much time players are stunned for when a boss rages.", FCVAR_NOTIFY, true, 0.0, true, 9999.9);
+			
+			Format(cvar_name, sizeof(cvar_name), "vsh2_%s_jump_buttons", boss_names[i]);
+			g_defbosses.jmp_btns[i] = CreateConVar(cvar_name, "3", "what buttons players can use to activate superjump, 1-crouch, 2-right click, 3-both crouch & right click.", FCVAR_NOTIFY, true, 0.0, true, 9999.9);
+			
 			char cfg_path[PLATFORM_MAX_PATH];
-			Format(cfg_path, sizeof(cfg_path), "configs/saxton_hale/%s.cfg", boss_names[i]);
-			g_defbosses.m_hBossCfgs[i] = new ConfigMap(cfg_path);
-			if( g_defbosses.m_hBossCfgs[i]==null ) {
-				LogError("Error Adding Default VSH2 Bosses, missing cfg: 'configs/saxton_hale/boss_cfgs/%s.cfg'.", boss_names[i]);
+			Format(cfg_path, sizeof(cfg_path), "configs/saxton_hale/boss_cfgs/%s.cfg", boss_names[i]);
+			g_defbosses.cfgs[i] = new ConfigMap(cfg_path);
+			if( g_defbosses.cfgs[i]==null ) {
+				LogError("[VSH 2] ERROR :: **** couldn't find cfg 'configs/saxton_hale/boss_cfgs/%s.cfg'. Failed to register boss. ****", boss_names[i]);
 				continue;
 			}
-			g_defbosses.m_iBossID[i] = VSH2_RegisterPlugin(boss_names[i]);
+			
+			got_one = true;
+			int flags;
+			bool disable;
+			if( g_defbosses.cfgs[i].GetBool("boss.disabled", disable) && disable ) {
+				flags = VSH2PluginFlag_NonRand;
+			}
+			char boss[MAX_BOSS_NAME_SIZE]; strcopy(boss, MAX_BOSS_NAME_SIZE, boss_names[i]);
+			g_defbosses.ids[i] = VSH2_RegisterBoss(boss, flags);
 		}
-		LoadVSH2Hooks();
+		AutoExecConfig(true, "VSH2-DefaultBosses");
+		
+		/// if at least ONE default boss loaded fine, load up our hooks.
+		if( got_one ) {
+			LoadVSH2Hooks();
+		}
 	}
 }
 
 public void LoadVSH2Hooks() {
-	if( !VSH2_HookEx(OnCallDownloads, DefaultBosses_OnDownloads) ) {
-		LogError("Error loading OnCallDownloads forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnCallDownloads, DefaultBosses_OnDownloads) )
+		LogError("Error hooking OnCallDownloads forwards for Default Bosses subplugin.");
 	
-	if( !VSH2_HookEx(OnBossMenu, DefaultBosses_OnMenu) ) {
-		LogError("Error loading OnBossMenu forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnBossMenu, DefaultBosses_OnMenu) )
+		LogError("Error hooking OnBossMenu forwards for Default Bosses subplugin.");
 	
-	if( !VSH2_HookEx(OnBossSelected, DefaultBosses_OnSelected) ) {
-		LogError("Error loading OnBossSelected forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnBossSelected, DefaultBosses_OnSelected) )
+		LogError("Error hooking OnBossSelected forwards for Default Bosses subplugin.");
 	
-	if( !VSH2_HookEx(OnBossThink, DefaultBosses_OnThink) ) {
-		LogError("Error loading OnBossThink forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnBossThink, DefaultBosses_OnThink) )
+		LogError("Error hooking OnBossThink forwards for Default Bosses subplugin.");
 	
-	if( !VSH2_HookEx(OnBossModelTimer, DefaultBosses_OnModel) ) {
-		LogError("Error loading OnBossModelTimer forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnBossModelTimer, DefaultBosses_OnModel) )
+		LogError("Error hooking OnBossModelTimer forwards for Default Bosses subplugin.");
 	
-	if( !VSH2_HookEx(OnBossEquipped, DefaultBosses_OnEquip) ) {
-		LogError("Error loading OnBossEquipped forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnBossEquipped, DefaultBosses_OnEquip) )
+		LogError("Error hooking OnBossEquipped forwards for Default Bosses subplugin.");
 	
-	if( !VSH2_HookEx(OnBossInitialized, DefaultBosses_OnInit) ) {
-		LogError("Error loading OnBossInitialized forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnBossInitialized, DefaultBosses_OnInit) )
+		LogError("Error hooking OnBossInitialized forwards for Default Bosses subplugin.");
 	
-	if( !VSH2_HookEx(OnBossPlayIntro, DefaultBosses_OnIntro) ) {
-		LogError("Error loading OnBossPlayIntro forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnBossPlayIntro, DefaultBosses_OnIntro) )
+		LogError("Error hooking OnBossPlayIntro forwards for Default Bosses subplugin.");
 	
-	if( !VSH2_HookEx(OnPlayerKilled, DefaultBosses_OnKill) ) {
-		LogError("Error loading OnPlayerKilled forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnPlayerKilled, DefaultBosses_OnKill) )
+		LogError("Error hooking OnPlayerKilled forwards for Default Bosses subplugin.");
 	
-	if( !VSH2_HookEx(OnPlayerHurt, DefaultBosses_OnHurt) ) {
-		LogError("Error loading OnPlayerHurt forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnPlayerHurt, DefaultBosses_OnHurt) )
+		LogError("Error hooking OnPlayerHurt forwards for Default Bosses subplugin.");
 	
-	if( !VSH2_HookEx(OnPlayerAirblasted, DefaultBosses_OnAirblasted) ) {
-		LogError("Error loading OnPlayerAirblasted forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnPlayerAirblasted, DefaultBosses_OnAirblasted) )
+		LogError("Error hooking OnPlayerAirblasted forwards for Default Bosses subplugin.");
 	
-	if( !VSH2_HookEx(OnBossMedicCall, DefaultBosses_OnMedCall) ) {
-		LogError("Error loading OnBossMedicCall forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnBossMedicCall, DefaultBosses_OnMedCall) )
+		LogError("Error hooking OnBossMedicCall forwards for Default Bosses subplugin.");
 	
-	if( !VSH2_HookEx(OnBossTaunt, DefaultBosses_OnMedCall) ) {
-		LogError("Error loading OnBossTaunt forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnBossTaunt, DefaultBosses_OnMedCall) )
+		LogError("Error hooking OnBossTaunt forwards for Default Bosses subplugin.");
 	
-	if( !VSH2_HookEx(OnBossJarated, DefaultBosses_OnJarated) ) {
-		LogError("Error loading OnBossJarated forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnBossJarated, DefaultBosses_OnJarated) )
+		LogError("Error hooking OnBossJarated forwards for Default Bosses subplugin.");
 	
-	if( !VSH2_HookEx(OnRoundEndInfo, DefaultBosses_OnRoundEnd) ) {
-		LogError("Error loading OnRoundEndInfo forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnRoundEndInfo, DefaultBosses_OnRoundEnd) )
+		LogError("Error hooking OnRoundEndInfo forwards for Default Bosses subplugin.");
 	
-	if( !VSH2_HookEx(OnMusic, DefaultBosses_OnMusic) ) {
-		LogError("Error loading OnMusic forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnMusic, DefaultBosses_OnMusic) )
+		LogError("Error hooking OnMusic forwards for Default Bosses subplugin.");
 	
-	if( !VSH2_HookEx(OnBossDeath, DefaultBosses_OnDeath) ) {
-		LogError("Error loading OnBossDeath forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnBossDeath, DefaultBosses_OnDeath) )
+		LogError("Error hooking OnBossDeath forwards for Default Bosses subplugin.");
 	
-	if( !VSH2_HookEx(OnBossTakeDamage_OnStabbed, DefaultBosses_OnStabbed) ) {
-		LogError("Error loading OnBossTakeDamage_OnStabbed forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnBossTakeDamage_OnStabbed, DefaultBosses_OnStabbed) )
+		LogError("Error hooking OnBossTakeDamage_OnStabbed forwards for Default Bosses subplugin.");
 	
-	if( !VSH2_HookEx(OnLastPlayer, DefaultBosses_OnLastPlayer) ) {
-		LogError("Error loading OnLastPlayer forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnLastPlayer, DefaultBosses_OnLastPlayer) )
+		LogError("Error hooking OnLastPlayer forwards for Default Bosses subplugin.");
 	
-	if( !VSH2_HookEx(OnSoundHook, DefaultBosses_OnVoice) ) {
-		LogError("Error loading OnSoundHook forwards for Template subplugin.");
-	}
+	if( !VSH2_HookEx(OnSoundHook, DefaultBosses_OnVoice) )
+		LogError("Error hooking OnSoundHook forwards for Default Bosses subplugin.");
+	
+	if( !VSH2_HookEx(OnBossKillBuilding, DefaultBosses_OnKillBuilding) )
+		LogError("Error hooking OnBossKillBuilding forwards for Default Bosses subplugin.");
+		
+	if( !VSH2_HookEx(OnRoundEndInfo, DefaultBosses_OnRoundEnd) )
+		LogError("Error loading OnRoundEndInfo forwards for Default Bosses subplugin.");
 }
 
 public void DefaultBosses_OnMenu(Menu& menu) {
 	for( int i; i<MaxDefaultVSH2Bosses; i++ ) {
-		char cfg_path[PLATFORM_MAX_PATH];
-		char tostr[10];
-		IntToString(g_defbosses.m_iBossID[i], tostr, sizeof(tostr));
-		int name_len = g_defbosses.m_hBossCfgs[i].GetSize("boss data.menu name");
+		if( g_defbosses.cfgs[i]==null )
+			continue;
+		
+		char tostr[10]; IntToString(g_defbosses.ids[i], tostr, sizeof(tostr));
+		int name_len = g_defbosses.cfgs[i].GetSize("boss.menu name");
 		char[] name = new char[name_len];
-		g_defbosses.m_hBossCfgs[i].Get("boss data.menu name", name, name_len);
+		g_defbosses.cfgs[i].Get("boss.menu name", name, name_len);
 		menu.AddItem(tostr, name);
 	}
 }
 
 public void DefaultBosses_OnSelected(VSH2Player player) {
-	int id = GetDefBoss(player);
-	if( !IsDefBoss(id) )
+	int id = g_defbosses.GetDefBoss(player);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null )
 		return;
 	
 	Panel panel = new Panel();
-	int panel_len = g_defbosses.m_hBossCfgs[id].GetSize("boss data.panel msg");
-	char[] panel_info = new char[panel_len];
-	g_defbosses.m_hBossCfgs[id].Get("boss data.panel msg", panel_info, panel_len);
-	panel.SetTitle(panel_info);
+	int panel_len = g_defbosses.cfgs[id].GetSize("boss.help panel");
+	char[] panel_str = new char[panel_len];
+	g_defbosses.cfgs[id].Get("boss.help panel", panel_str, panel_len);
+	panel.SetTitle(panel_str);
 	panel.DrawItem("Exit");
 	panel.Send(player.index, _panel_hint, 999);
 	delete panel;
-	
-	g_boss_data[id].Load(g_defbosses.m_hBossCfgs[id]);
 }
 
 public int _panel_hint(Menu menu, MenuAction action, int param1, int param2) {
@@ -211,14 +280,14 @@ public int _panel_hint(Menu menu, MenuAction action, int param1, int param2) {
 }
 
 public void DefaultBosses_OnModel(VSH2Player player) {
-	int id = GetDefBoss(player);
-	if( !IsDefBoss(id) )
+	int id = g_defbosses.GetDefBoss(player);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null )
 		return;
 	
 	int client = player.index;
-	int model_len = g_defbosses.m_hBossCfgs[id].GetSize("boss data.models.body");
+	int model_len = g_defbosses.cfgs[id].GetSize("boss.model");
 	char[] model_str = new char[model_len];
-	g_defbosses.m_hBossCfgs[id].Get("boss data.models.body", model_str, model_len);
+	g_defbosses.cfgs[id].Get("boss.model", model_str, model_len);
 	SetVariantString(model_str);
 	AcceptEntityInput(client, "SetCustomModel");
 	SetEntProp(client, Prop_Send, "m_bUseClassAnimations", 1);
@@ -227,98 +296,120 @@ public void DefaultBosses_OnModel(VSH2Player player) {
 
 public void DefaultBosses_OnDownloads() {
 	for( int i; i<MaxDefaultVSH2Bosses; i++ ) {
-		ConfigMap models_sect = g_defbosses.m_hBossCfgs[i].GetSection("boss data.models");
-		if( models_sect != null ) {
-			StringMapSnapshot snap = models_sect.Snapshot();
-			int entries = snap.Length;
-			for( int n; n<entries; n++ ) {
-				int strsize = snap.KeyBufferSize(n) + 1;
-				char[] key_buffer = new char[strsize];
-				snap.GetKey(n, key_buffer, strsize);
-				
-				int file_len = models_sect.GetSize(key_buffer);
-				char[] filepath = new char[file_len];
-				if( models_sect.Get(key_buffer, filepath, file_len) > 0 ) {
-					PrepareModel(filepath);
-				}
-			}
-			delete snap;
+		if( g_defbosses.cfgs[i]==null )
+			continue;
+		
+		int boss_mdl_len = g_defbosses.cfgs[i].GetSize("boss.model");
+		char[] boss_mdl_str = new char[boss_mdl_len];
+		if( g_defbosses.cfgs[i].Get("boss.model", boss_mdl_str, boss_mdl_len) > 0 ) {
+			PrepareModel(boss_mdl_str);
 		}
 		
-		ConfigMap skins_sect = g_defbosses.m_hBossCfgs[i].GetSection("boss data.skins");
-		if( skins_sect != null ) {
-			int sect_size = skins_sect.Size;
-			for( int n; n<sect_size; n++ ) {
-				int file_len = skins_sect.GetIntKeySize(n);
-				char[] filepath = new char[file_len];
-				if( skins_sect.GetIntKey(n, filepath, file_len) > 0 ) {
-					PrepareMaterial(filepath);
-				}
-			}
-		}
+		PrepareAssetsFromCfgMap(g_defbosses.cfgs[i].GetSection("boss.skins"), ResourceMaterial);
 		
-		ConfigMap sounds_sect = g_defbosses.m_hBossCfgs[i].GetSection("boss data.sounds");
+		ConfigMap sounds_sect = g_defbosses.cfgs[i].GetSection("boss.sounds");
 		if( sounds_sect != null ) {
-			StringMapSnapshot snap = sounds_sect.Snapshot();
-			int entries = snap.Length;
-			for( int x; x<entries; x++ ) {
-				int strsize = snap.KeyBufferSize(x) + 1;
-				char[] key_buffer = new char[strsize];
-				snap.GetKey(x, key_buffer, strsize);
-				ConfigMap sound_sect = sounds_sect.GetSection(key_buffer);
-				if( sound_sect != null ) {
-					int sect_size = sound_sect.Size;
-					for( int n; n<sect_size; n++ ) {
-						int file_len = sound_sect.GetIntKeySize(n);
-						char[] filepath = new char[file_len];
-						if( sound_sect.GetIntKey(n, filepath, file_len) > 0 ) {
-							PrepareSound(filepath);
-						}
-					}
-				}
+			int size = sounds_sect.Size;
+			ConfigMap[] sound_sects = new ConfigMap[size];
+			int sect_count = sounds_sect.GetSections(sound_sects);
+			for( int n; n < sect_count; n++ ) {
+				PrepareAssetsFromCfgMap(sound_sects[n], ResourceSound);
 			}
-			delete snap;
+		}
+		
+		ConfigMap vo_sect = g_defbosses.cfgs[i].GetSection("boss.vo");
+		if( vo_sect != null ) {
+			int size = vo_sect.Size;
+			ConfigMap[] vo_sects = new ConfigMap[size];
+			int sect_count = vo_sect.GetSections(vo_sects);
+			for( int n; n < sect_count; n++ ) {
+				PrepareAssetsFromCfgMap(vo_sects[n], ResourceSound);
+			}
+		}
+		
+		ConfigMap killclass_sounds = g_defbosses.cfgs[i].GetSection("boss.sounds.kill class");
+		if( killclass_sounds != null ) {
+			char class_name[][] = {
+				"scout", "soldier", "pyro",
+				"demo",  "heavy",   "engie",
+				"medic", "sniper",  "spy"
+			};
+			for( int c; c < sizeof(class_name); c++ ) {
+				ConfigMap class_sounds = killclass_sounds.GetSection(class_name[c]);
+				PrepareAssetsFromCfgMap(class_sounds, ResourceSound);
+			}
+		}
+		{
+			ConfigMap music_sect = g_defbosses.cfgs[i].GetSection("boss.music");
+			if( music_sect==null )
+				continue;
+			
+			int    max_songs;
+			int    count        = music_sect.GetCombinedKeyValLens(max_songs);
+			
+			char[] songs        = new char[max_songs];
+			int[]  song_offsets = new int[count];
+			int    offcount1    = music_sect.GetKeys(songs, song_offsets);
+			for( int n; n < offcount1; n++ ) {
+				PrepareSound(songs[song_offsets[n]]);
+			}
+		}
+		
+		if( i==VSH2Boss_Bunny ) {
+			int egg_mdl_len = g_defbosses.cfgs[i].GetSize("boss.egg model");
+			if( g_defbosses.cfgs[i].Get("boss.egg model", g_defbosses.egg_model, egg_mdl_len) > 0 ) {
+				PrepareModel(g_defbosses.egg_model);
+			}
+			PrepareMaterial("materials/models/props_easteregg/c_easteregg");
+			CheckDownload("materials/models/props_easteregg/c_easteregg_gold.vmt");
 		}
 	}
+	PrecacheSound("misc/halloween/spell_teleport.wav", true);
 }
 
 
 public void DefaultBosses_OnThink(VSH2Player player) {
-	int id = GetDefBoss(player);
-	if( !IsDefBoss(id) )
+	int id = g_defbosses.GetDefBoss(player);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null )
 		return;
 	
 	int client = player.index
 	if( !IsPlayerAlive(client) )
 		return;
 	
-	player.SpeedThink(g_boss_data[id].move_speed);
-	player.GlowThink(g_boss_data[id].glow_time);
+	int flags = GetEntityFlags(client);
+	player.SpeedThink(g_defbosses.move_speed[id].FloatValue);
+	player.GlowThink(g_defbosses.glow_time[id].FloatValue);
+	
+	int jmp_button;
+	switch( g_defbosses.jmp_btns[id].IntValue ) {
+		case 1:  jmp_button = IN_DUCK;
+		case 2:  jmp_button = IN_ATTACK2;
+		default: jmp_button = (IN_ATTACK2|IN_DUCK);
+	}
+	
 	if( id != VSH2Boss_HHHjr ) {
-		/// Default Boss Super jump code.
-		if( player.SuperJumpThink(g_boss_data[id].jump_charge_rate, g_boss_data[id].jump_max) ) {
-			ConfigMap jmp_sect = g_defbosses.m_hBossCfgs[id].GetSection("boss data.sounds.super jump");
-			if( jmp_sect != null ) {
-				int jump_sound_count = jmp_sect.Size;
-				if( jump_sound_count > 0 ) {
-					int i = GetRandomInt(0, jump_sound_count-1);
-					int jmp_sound_len = jmp_sect.GetIntKeySize(i);
-					char[] jmp_sound = new char[jmp_sound_len];
-					if( jmp_sect.GetIntKey(i, jmp_sound, jmp_sound_len) > 0 )
-						player.PlayVoiceClip(jmp_sound, VSH2_VOICE_ABILITY);
-				}
-			}
-			player.SuperJump(player.GetPropFloat("flCharge"), g_boss_data[id].jump_reset);
+		if( player.SuperJumpThink(g_defbosses.jmp_rate[id].FloatValue, g_defbosses.jmp_max[id].FloatValue, jmp_button) ) {
+			ConfigMap jmp_sect = g_defbosses.cfgs[id].GetSection("boss.sounds.jump");
+			player.PlayRandVoiceClipCfgMap(jmp_sect, VSH2_VOICE_ABILITY);
+			player.SuperJump(player.GetPropFloat("flCharge"), g_defbosses.jmp_reset[id].FloatValue);
 		}
 	} else {
-		/// HHH Jr's Teleport code here.
+		float EyeAngles[3]; GetClientEyeAngles(player.index, EyeAngles);
+		float max_charge = g_defbosses.jmp_max[id].FloatValue;
+		float charge_rate = g_defbosses.jmp_rate[id].FloatValue;
+		float cur_charge = player.GetPropFloat("flCharge");
+		bool cond_to_tele = (cur_charge==max_charge || player.GetPropAny("bSuperCharge")) && EyeAngles[0] < -5.0;
+		if( player.ChargeThink(charge_rate, "flCharge", max_charge, jmp_button, cond_to_tele) ) {
+			TeleToRandomPlayer(player);
+		}
 	}
 	
-	if( OnlyScoutsLeft(VSH2Team_Red) ) {
-		player.SetPropFloat("flRAGE", player.GetPropFloat("flRAGE") + g_vsh2_cvars.scout_rage_gen.FloatValue);
+	if( VSH2GameMode.AreScoutsLeft() ) {
+		player.SetPropFloat("flRAGE", player.GetPropFloat("flRAGE") + g_defbosses.scout_rage_gen.FloatValue);
 	}
 	
-	player.WeighDownThink(g_boss_data[id].weighdown_time, g_boss_data[id].weighdown_incr);
+	player.WeighDownThink(g_defbosses.wghdwn_time[id].FloatValue, g_defbosses.wghdwn_iota[id].FloatValue);
 	
 	/// HUD code
 	SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
@@ -327,69 +418,83 @@ public void DefaultBosses_OnThink(VSH2Player player) {
 	if( player.GetPropInt("bSuperCharge") > 0 ) {
 		jmp *= 10.0;
 	}
-
+	
 	float rage = player.GetPropFloat("flRAGE");
 	char rage_text[] = " - Call Medic (default: E) to Activate"
 	if( rage < 100.0 ) {
 		Format(rage_text, sizeof(rage_text), "%0.1f", rage);
 	}
-
-	Handle hud = g_vsh2_gm.hHUD;
-	switch( id ) {
-		case VSH2Boss_Hale, VSH2Boss_Vagineer, VSH2Boss_CBS, VSH2Boss_Bunny: {
-			ShowSyncHudText(client, hud, "Super Jump: %i%% | Rage: %s", RoundFloat(jmp / g_boss_data[id].jump_max), rage_text);
-		}
-		case VSH2Boss_HHHjr: {
-			int max_climbs = g_vsh2_cvars.hhh_max_climbs.IntValue;
-			int climbs = player.GetPropInt("iClimbs");
-			ShowSyncHudText(client, hud, "Teleport: %i | Climbs: %i / %i | Rage: %s", RoundFloat(jmp / g_boss_data[id].jump_max), climbs, max_climbs, rage_text);
-		}
-	}
 	
-	if( id==VSH2Boss_Vagineer ) {
-		SetEntProp(client, Prop_Data, "m_takedamage", TF2_IsPlayerInCondition(client, TFCond_Ubercharged) ? 0 : 2);
+	Handle hud = g_defbosses.gm.hHUD;
+	switch( id ) {
+		case VSH2Boss_HHHjr: {
+			if( flags & FL_ONGROUND ) {
+				player.SetPropInt("iClimbs", 0);
+			}
+			int max_climbs = g_defbosses.hhh_max_climbs.IntValue;
+			int climbs     = player.GetPropInt("iClimbs");
+			ShowSyncHudText(client, hud, "Teleport: %i | Climbs: %i / %i | Rage: %s", RoundFloat(jmp) * 2, climbs, max_climbs, rage_text);
+		}
+		case VSH2Boss_Vagineer: {
+			SetEntProp(client, Prop_Data, "m_takedamage", TF2_IsPlayerInCondition(client, TFCond_Ubercharged) ? 0 : 2);
+			float dur_left;
+			float max_dur  = g_defbosses.vag_uber_time.FloatValue;
+			if( TF2_IsPlayerInCondition(client, TFCond_Ubercharged) ) {
+				float dur      = GetConditionDuration(client, TFCond_Ubercharged);
+				dur_left       = max_dur - dur;
+			}
+			ShowSyncHudText(client, hud, "Uber Time: %0.2f/%0.2f | Super Jump: %i%% | Rage: %s", dur_left, max_dur, RoundFloat(jmp) * 4, rage_text);
+		}
+		default: {
+			ShowSyncHudText(client, hud, "Super Jump: %i%% | Rage: %s", RoundFloat(jmp) * 4, rage_text);
+		}
 	}
 }
 
 public void DefaultBosses_OnEquip(VSH2Player player) {
-	int id = GetDefBoss(player);
-	if( !IsDefBoss(id) )
+	int id = g_defbosses.GetDefBoss(player);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null )
 		return;
 	
+	ConfigMap boss_cfg = g_defbosses.cfgs[id];
 	char name[MAX_BOSS_NAME_SIZE];
-	g_defbosses.m_hBossCfgs[id].Get("boss data.name", name, sizeof(name));
+	boss_cfg.Get("boss.name", name, sizeof(name));
 	player.SetName(name);
 	player.RemoveAllItems();
 	
-	int attribs_len = g_defbosses.m_hBossCfgs[id].GetSize("boss data.attribs") + 64;
-	char[] attribs = new char[attribs_len];
-	g_defbosses.m_hBossCfgs[id].Get("boss data.attribs", attribs, attribs_len);
+	ConfigMap melee_wep = boss_cfg.GetSection("boss.melee");
+	if( melee_wep==null )
+		return;
 	
-	int wep;
-	switch( id ) {
-		case VSH2Boss_Hale: {
-			Format(attribs, attribs_len, "%s; 214 ; %i", attribs, GetRandomInt(9999, 99999));
-			wep = player.SpawnWeapon("tf_weapon_shovel", 5, 100, 5, attribs);
-		}
-		case VSH2Boss_Vagineer:
-			wep = player.SpawnWeapon("tf_weapon_wrench", 169, 100, 5, attribs);
-		case VSH2Boss_CBS:
-			wep = player.SpawnWeapon("tf_weapon_club", 171, 100, 5, attribs);
-		case VSH2Boss_HHHjr: {
-			wep = player.SpawnWeapon("tf_weapon_sword", 266, 100, 5, attribs);
-			/// TODO: add config key-value for starting percentage?
-			player.SetPropFloat("flCharge", g_vsh2_cvars.hhh_tele_cooldown.FloatValue * 0.9091);
-		}
-		case VSH2Boss_Bunny:
-			wep = player.SpawnWeapon("tf_weapon_bottle", 609, 100, 5, attribs);
+	int attribs_len = melee_wep.GetSize("attribs") + 12;
+	char[] attribs_str = new char[attribs_len];
+	melee_wep.Get("attribs", attribs_str, attribs_len - 12);
+	
+	if( id==VSH2Boss_Hale ) {
+		/// Randomize Hale's kill count.
+		Format(attribs_str, attribs_len, "%s; 214 ; %i", attribs_str, GetRandomInt(9999, 99999));
 	}
-	if( wep != 0 )
-		SetEntPropEnt(player.index, Prop_Send, "m_hActiveWeapon", wep);
+	
+	int classname_len = melee_wep.GetSize("classname");
+	char[] classname_str = new char[classname_len];
+	melee_wep.Get("classname", classname_str, classname_len);
+	
+	int index, level, quality;
+	melee_wep.GetInt("index",   index);
+	melee_wep.GetInt("level",   level);
+	melee_wep.GetInt("quality", quality);
+	
+	int wep = player.SpawnWeapon(classname_str, index, level, quality, attribs_str);
+	SetEntPropEnt(player.index, Prop_Send, "m_hActiveWeapon", wep);
+	
+	if( id==VSH2Boss_HHHjr ) {
+		player.SetPropFloat("flCharge", g_defbosses.hhh_tele_cooldown.FloatValue * 0.9091);
+	}
 }
 
 public void DefaultBosses_OnInit(VSH2Player player) {
-	int id = GetDefBoss(player);
-	if( !IsDefBoss(id) )
+	int id = g_defbosses.GetDefBoss(player);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null )
 		return;
 	
 	int client = player.index;
@@ -406,27 +511,27 @@ public void DefaultBosses_OnInit(VSH2Player player) {
 }
 
 public void DefaultBosses_OnIntro(VSH2Player player) {
-	int id = GetDefBoss(player);
-	if( !IsDefBoss(id) )
+	int id = g_defbosses.GetDefBoss(player);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null )
 		return;
 	
-	ConfigMap intro_sounds = g_defbosses.m_hBossCfgs[id].GetSection("boss data.sounds.intros");
-	if( intro_sounds != null ) {
-		int intro_count = intro_sounds.Size;
-		if( intro_count > 0 ) {
-			int i = GetRandomInt(0, intro_count-1);
-			int intro_len = intro_sounds.GetIntKeySize(i);
-			char[] intro_sound = new char[intro_len];
-			if( intro_sounds.GetIntKey(i, intro_sound, intro_len) > 0 )
-				player.PlayVoiceClip(intro_sound, VSH2_VOICE_INTRO);
-		}
-	}
+	ConfigMap intro_sounds = g_defbosses.cfgs[id].GetSection("boss.sounds.intro");
+	player.PlayRandVoiceClipCfgMap(intro_sounds, VSH2_VOICE_INTRO);
 }
 
 public void DefaultBosses_OnKill(VSH2Player attacker, VSH2Player victim, Event event) {
-	int id = GetDefBoss(attacker);
-	if( !IsDefBoss(id) )
+	if( !attacker || victim==attacker )
 		return;
+	
+	int id = g_defbosses.GetDefBoss(attacker);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null )
+		return;
+	
+	if( id==VSH2Boss_Bunny ) {
+		if( g_defbosses.egg_model[0] != 0 ) {
+			SpawnManyAmmoPacks(victim.index, g_defbosses.egg_model, 1);
+		}
+	}
 	
 	float curtime = GetGameTime();
 	if( curtime <= attacker.GetPropFloat("flKillSpree") ) {
@@ -435,39 +540,57 @@ public void DefaultBosses_OnKill(VSH2Player attacker, VSH2Player victim, Event e
 		attacker.SetPropInt("iKills", 0);
 	}
 	
-	ConfigMap kill_sounds = g_defbosses.m_hBossCfgs[id].GetSection("boss data.sounds.kill");
-	if( kill_sounds != null ) {
-		int kill_snd_count = kill_sounds.Size;
-		if( kill_snd_count > 0 ) {
-			int i = GetRandomInt(0, kill_snd_count-1);
-			int kill_snd_len = kill_sounds.GetIntKeySize(i);
-			char[] kill_sound = new char[kill_snd_len];
-			if( kill_sounds.GetIntKey(i, kill_sound, kill_snd_len) > 0 )
-				attacker.PlayVoiceClip(kill_sound, VSH2_VOICE_SPREE);
-		}
+	if( id==VSH2Boss_Hale ) {
+		event.SetString("weapon", "fists");
 	}
 	
-	if( attacker.GetPropInt("iKills") == 3 && g_vsh2_gm.iLivingReds != 1 ) {
-		ConfigMap spree_sounds = g_defbosses.m_hBossCfgs[id].GetSection("boss data.sounds.spree");
-		if( spree_sounds != null ) {
-			int spree_snd_count = spree_sounds.Size;
-			if( spree_snd_count > 0 ) {
-				int i = GetRandomInt(0, spree_snd_count-1);
-				int spree_snd_len = spree_sounds.GetIntKeySize(i);
-				char[] spree_sound = new char[spree_snd_len];
-				if( spree_sounds.GetIntKey(i, spree_sound, spree_snd_len) > 0 )
-					attacker.PlayVoiceClip(spree_sound, VSH2_VOICE_SPREE);
-			}
+	ConfigMap killclass_sounds = g_defbosses.cfgs[id].GetSection("boss.sounds.kill class");
+	if( killclass_sounds != null && !GetRandomInt(0, 2) ) {
+		TFClassType playerclass = victim.iTFClass;
+		char class_name[32];
+		switch( playerclass ) {
+			case TFClass_Scout:    class_name = "scout" ;
+			case TFClass_Pyro:     class_name = "pyro"  ;
+			case TFClass_DemoMan:  class_name = "demo"  ;
+			case TFClass_Heavy:    class_name = "heavy" ;
+			case TFClass_Medic:    class_name = "medic" ;
+			case TFClass_Sniper:   class_name = "sniper";
+			case TFClass_Spy:      class_name = "spy"   ;
+			case TFClass_Engineer: class_name = "engie" ;
 		}
+		if( class_name[0] != 0 ) {
+			ConfigMap class_sounds = killclass_sounds.GetSection(class_name);
+			attacker.PlayRandVoiceClipCfgMap(class_sounds, VSH2_VOICE_SPREE);
+		}
+	} else {
+		ConfigMap kill_sounds = g_defbosses.cfgs[id].GetSection("boss.sounds.kill");
+		attacker.PlayRandVoiceClipCfgMap(kill_sounds, VSH2_VOICE_SPREE);
+	}
+	
+	if( attacker.GetPropInt("iKills") == g_defbosses.kspree_count[id].IntValue && g_defbosses.gm.iLivingReds != 1 ) {
+		ConfigMap spree_sounds = g_defbosses.cfgs[id].GetSection("boss.sounds.spree");
+		attacker.PlayRandVoiceClipCfgMap(spree_sounds, VSH2_VOICE_SPREE);
 		attacker.SetPropInt("iKills", 0);
 	} else {
-		attacker.SetPropFloat("flKillSpree", curtime + 5.0);
+		attacker.SetPropFloat("flKillSpree", curtime + g_defbosses.kspree_time[id].FloatValue);
 	}
 }
 
+public void DefaultBosses_OnKillBuilding(const VSH2Player attacker, const int building, Event event) {
+	int id = g_defbosses.GetDefBoss(attacker);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null )
+		return;
+
+	if( id==VSH2Boss_Hale )
+		event.SetString("weapon", "fists");
+	
+	ConfigMap kill_toy_sounds = g_defbosses.cfgs[id].GetSection("boss.sounds.kill building");
+	attacker.PlayRandVoiceClipCfgMap(kill_toy_sounds, VSH2_VOICE_SPREE);
+}
+
 public void DefaultBosses_OnHurt(VSH2Player attacker, VSH2Player victim, Event event) {
-	int id = GetDefBoss(victim);
-	if( !IsDefBoss(id) ) {
+	int id = g_defbosses.GetDefBoss(victim);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null ) {
 		return;
 	} else if( victim.bIsBoss ) {
 		int damage = event.GetInt("damageamount");
@@ -476,172 +599,198 @@ public void DefaultBosses_OnHurt(VSH2Player attacker, VSH2Player victim, Event e
 }
 
 public void DefaultBosses_OnAirblasted(VSH2Player airblaster, VSH2Player airblasted, Event event) {
-	int id = GetDefBoss(airblasted);
-	if( !IsDefBoss(id) )
+	int id = g_defbosses.GetDefBoss(airblasted);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null )
 		return;
 	
 	float rage = airblasted.GetPropFloat("flRAGE");
-	airblasted.SetPropFloat("flRAGE", rage + g_vsh2_cvars.airblast_rage.FloatValue);
+	if( id==VSH2Boss_Vagineer && TF2_IsPlayerInCondition(airblasted.index, TFCond_Ubercharged) ) {
+		float dur      = GetConditionDuration(airblasted.index, TFCond_Ubercharged);
+		float max_dur  = g_defbosses.vag_uber_time.FloatValue;
+		float increase = g_defbosses.vag_uber_airblast.FloatValue;
+		SetConditionDuration(airblasted.index, TFCond_Ubercharged, dur + increase < max_dur ? dur + increase : max_dur);
+		return;
+	}
+	airblasted.SetPropFloat("flRAGE", rage + g_defbosses.airblast_rage.FloatValue);
 }
 
 public void DefaultBosses_OnMedCall(VSH2Player player) {
-	int id = GetDefBoss(player);
-	if( !IsDefBoss(id) || player.GetPropFloat("flRAGE") < 100.0 )
+	int id = g_defbosses.GetDefBoss(player);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null || player.GetPropFloat("flRAGE") < 100.0 )
 		return;
 	
-	float rage_radius;
-	g_defbosses.m_hBossCfgs[id].GetFloat("boss data.rage dist", rage_radius);
-	player.DoGenericStun(rage_radius);
-	
+	int client = player.index;
+	float rage_radius      = g_defbosses.rage_dist[id].FloatValue;
+	float sentry_stun_time = g_defbosses.building_stun[id].FloatValue;
+	float player_stun_time = g_defbosses.player_stun[id].FloatValue;
+	TF2_AddCondition(client, view_as< TFCond >(42), 4.0);
+	player.StunPlayers(rage_radius, player_stun_time);
+	player.StunBuildings(rage_radius, sentry_stun_time);
 	switch( id ) {
-		//case VSH2Boss_Hale:
-			/// make hale have rage besides stunning?
-		//case VSH2Boss_HHHjr:
-			/// make hhhjr have rage besides stunning?
-		case VSH2Boss_Vagineer:
-			/// do uber here.
-		case VSH2Boss_CBS:
-			/// equip huntsmans here.
-			/// TODO: get arrow amount from cfg or cvar.
-		case VSH2Boss_Bunny:
-			/// spew eggz here.
-	}
-	
-	ConfigMap rage_sounds = g_defbosses.m_hBossCfgs[id].GetSection("boss data.sounds.rage");
-	if( rage_sounds != null ) {
-		int rage_snd_count = rage_sounds.Size;
-		if( rage_snd_count > 0 ) {
-			int i = GetRandomInt(0, rage_snd_count-1);
-			int rage_snd_len = rage_sounds.GetIntKeySize(i);
-			char[] rage_sound = new char[rage_snd_len];
-			if( rage_sounds.GetIntKey(i, rage_sound, rage_snd_len) > 0 )
-				player.PlayVoiceClip(rage_sound, VSH2_VOICE_RAGE);
+		case VSH2Boss_Vagineer: {
+			TF2_AddCondition(client, TFCond_Ubercharged, g_defbosses.vag_uber_time.FloatValue);
+		}
+		case VSH2Boss_CBS: {
+			ConfigMap rage_wep = g_defbosses.cfgs[id].GetSection("boss.rage weapon");
+			if( rage_wep==null )
+				return;
+			
+			int attribs_len = rage_wep.GetSize("attribs");
+			char[] attribs_str = new char[attribs_len];
+			rage_wep.Get("attribs", attribs_str, attribs_len);
+			
+			int classname_len = rage_wep.GetSize("classname");
+			char[] classname_str = new char[classname_len];
+			rage_wep.Get("classname", classname_str, classname_len);
+			
+			int index, level, quality;
+			rage_wep.GetInt("index",   index);
+			rage_wep.GetInt("level",   level);
+			rage_wep.GetInt("quality", quality);
+			
+			TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
+			int bow = player.SpawnWeapon(classname_str, index, level, quality, attribs_str);
+			SetEntPropEnt(player.index, Prop_Send, "m_hActiveWeapon", bow); /// 266; 1.0 - penetration
+			
+			int living = g_defbosses.gm.iLivingReds;
+			int max_arrows = g_defbosses.cbs_max_arrows.IntValue;
+			SetWeaponAmmo(bow, (living >= max_arrows)? max_arrows : living);
+		}
+		case VSH2Boss_Bunny: {
+			ConfigMap rage_wep = g_defbosses.cfgs[id].GetSection("boss.rage weapon");
+			if( rage_wep==null )
+				return;
+			
+			int attribs_len = rage_wep.GetSize("attribs");
+			char[] attribs_str = new char[attribs_len];
+			rage_wep.Get("attribs", attribs_str, attribs_len);
+			
+			int classname_len = rage_wep.GetSize("classname");
+			char[] classname_str = new char[classname_len];
+			rage_wep.Get("classname", classname_str, classname_len);
+			
+			int index, level, quality;
+			rage_wep.GetInt("index",   index);
+			rage_wep.GetInt("level",   level);
+			rage_wep.GetInt("quality", quality);
+			
+			TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
+			int weapon = player.SpawnWeapon(classname_str, index, level, quality, attribs_str);
+			SetEntPropEnt(player.index, Prop_Send, "m_hActiveWeapon", weapon);
+			int egg_amount = g_defbosses.bunny_max_eggs.IntValue;
+			SetEntProp(weapon, Prop_Send, "m_iClip1", egg_amount);
+			SetWeaponAmmo(weapon, 0);
 		}
 	}
+	
+	ConfigMap rage_sounds = g_defbosses.cfgs[id].GetSection("boss.sounds.rage");
+	player.PlayRandVoiceClipCfgMap(rage_sounds, VSH2_VOICE_RAGE);
 	player.SetPropFloat("flRAGE", 0.0);
 }
 
 public void DefaultBosses_OnJarated(VSH2Player victim, VSH2Player thrower) {
-	int id = GetDefBoss(victim);
-	if( !IsDefBoss(id) )
+	int id = g_defbosses.GetDefBoss(victim);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null )
 		return;
 	
 	float rage = victim.GetPropFloat("flRAGE");
-	victim.SetPropFloat("flRAGE", rage - g_vsh2_cvars.jarate_rage.FloatValue);
+	victim.SetPropFloat("flRAGE", rage - g_defbosses.jarate_rage.FloatValue);
 }
 
 public void DefaultBosses_OnRoundEnd(VSH2Player player, bool boss_win, char message[MAXMESSAGE]) {
-	int id = GetDefBoss(player);
-	if( !IsDefBoss(id) ) {
+	int id = g_defbosses.GetDefBoss(player);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null ) {
 		return;
 	} else if( boss_win ) {
-		ConfigMap win_sounds = g_defbosses.m_hBossCfgs[id].GetSection("boss data.sounds.win");
-		if( win_sounds != null ) {
-			int win_snd_count = win_sounds.Size;
-			if( win_snd_count > 0 ) {
-				int i = GetRandomInt(0, win_snd_count-1);
-				int win_snd_len = win_sounds.GetIntKeySize(i);
-				char[] win_sound = new char[win_snd_len];
-				if( win_sounds.GetIntKey(i, win_sound, win_snd_len) > 0 )
-					player.PlayVoiceClip(win_sound, VSH2_VOICE_WIN);
-			}
-		}
+		ConfigMap win_sounds = g_defbosses.cfgs[id].GetSection("boss.sounds.win");
+		player.PlayRandVoiceClipCfgMap(win_sounds, VSH2_VOICE_WIN);
 	}
 }
 
 public void DefaultBosses_OnMusic(char song[PLATFORM_MAX_PATH], float& time, VSH2Player player) {
-	int id = GetDefBoss(player);
-	if( !IsDefBoss(id) )
+	int id = g_defbosses.GetDefBoss(player);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null ) {
 		return;
-	
-	ConfigMap music_sect = g_defbosses.m_hBossCfgs[id].GetSection("boss data.sounds.music");
-	if( music_sect != null ) {
-		int music_count = music_sect.Size;
-		if( music_count > 0 ) {
-			int i = GetRandomInt(0, music_count-1);
-			ConfigMap music_times = g_defbosses.m_hBossCfgs[id].GetSection("boss data.music time");
-			if( music_times != null ) {
-				int music_len = music_sect.GetIntKeySize(i);
-				char[] music_path = new char[music_len];
-				if( music_sect.GetIntKey(i, music_path, music_len) > 0 ) {
-					Format(song, sizeof(song), "%s", music_path);
-					float music_time;
-					if( music_times.GetIntKeyFloat(i, music_time) )
-						time = music_time;
-				}
-			}
-		}
 	}
+	
+	ConfigMap music_sect = g_defbosses.cfgs[id].GetSection("boss.music");
+	if( music_sect==null ) {
+		LogToFile("vsh2bosses_default", "id: '%i' | music section is NULL", id);
+		return;
+	}
+	
+	int    max_songs, max_times;
+	int    count        = music_sect.GetCombinedKeyValLens(max_songs, max_times);
+	
+	char[] songs        = new char[max_songs];
+	int[]  song_offsets = new int[count];
+	int    offcount1    = music_sect.GetKeys(songs, song_offsets);
+	LogToFile("vsh2bosses_default", "count: '%i' | offcount1: '%i'", count, offcount1);
+	for( int i; i<offcount1; i++ ) {
+		LogToFile("vsh2bosses_default", "id: '%i' | song name: '%s'", id, songs[song_offsets[i]]);
+	}
+	
+	char[] times        = new char[max_times];
+	int[]  times_offset = new int[count];
+	music_sect.GetVals(times, times_offset);
+	for( int i; i<offcount1; i++ ) {
+		LogToFile("vsh2bosses_default", "id: '%i' | song time: '%s'", id, times[times_offset[i]]);
+	}
+	
+	static int index;
+	index = ShuffleIndex(offcount1, index);
+	strcopy(song, sizeof(song), songs[song_offsets[index]]);
+	time = StringToFloat(times[times_offset[index]]);
+	LogToFile("vsh2bosses_default", "index: '%i' | time: '%f'", index, time);
 }
 
 public void DefaultBosses_OnDeath(VSH2Player player) {
-	int id = GetDefBoss(player);
-	if( !IsDefBoss(id) )
+	int id = g_defbosses.GetDefBoss(player);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null )
 		return;
 	
-	ConfigMap lose_sounds = g_defbosses.m_hBossCfgs[id].GetSection("boss data.sounds.lose");
-	if( lose_sounds != null ) {
-		int lose_snd_count = lose_sounds.Size;
-		if( lose_snd_count > 0 ) {
-			int i = GetRandomInt(0, lose_snd_count-1);
-			int lose_snd_len = lose_sounds.GetIntKeySize(i);
-			char[] lose_sound = new char[lose_snd_len];
-			if( lose_sounds.GetIntKey(i, lose_sound, lose_snd_len) > 0 )
-				player.PlayVoiceClip(lose_sound, VSH2_VOICE_LOSE);
-		}
-	}
+	ConfigMap lose_sounds = g_defbosses.cfgs[id].GetSection("boss.sounds.death");
+	player.PlayRandVoiceClipCfgMap(lose_sounds, VSH2_VOICE_LOSE);
 }
 
 public Action DefaultBosses_OnStabbed(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
-	int id = GetDefBoss(victim);
-	if( !IsDefBoss(id) )
+	int id = g_defbosses.GetDefBoss(victim);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null )
 		return Plugin_Continue;
 	
-	ConfigMap stab_sounds = g_defbosses.m_hBossCfgs[id].GetSection("boss data.sounds.backstab");
-	if( stab_sounds != null ) {
-		int stab_snd_count = stab_sounds.Size;
-		if( stab_snd_count > 0 ) {
-			int i = GetRandomInt(0, stab_snd_count-1);
-			int stab_snd_len = stab_sounds.GetIntKeySize(i);
-			char[] stab_sound = new char[stab_snd_len];
-			if( stab_sounds.GetIntKey(i, stab_sound, stab_snd_len) > 0 )
-				victim.PlayVoiceClip(stab_sound, VSH2_VOICE_STABBED);
-		}
-	}
+	ConfigMap stab_sounds = g_defbosses.cfgs[id].GetSection("boss.sounds.backstab");
+	victim.PlayRandVoiceClipCfgMap(stab_sounds, VSH2_VOICE_STABBED);
 	return Plugin_Continue;
 }
 
 public void DefaultBosses_OnLastPlayer(VSH2Player player) {
-	int id = GetDefBoss(player);
-	if( !IsDefBoss(id) )
+	int id = g_defbosses.GetDefBoss(player);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null )
 		return;
 	
-	ConfigMap last_sounds = g_defbosses.m_hBossCfgs[id].GetSection("boss data.sounds.last guy");
-	if( last_sounds != null ) {
-		int last_snd_count = last_sounds.Size;
-		if( last_snd_count > 0 ) {
-			int i = GetRandomInt(0, last_snd_count-1);
-			int last_snd_len = last_sounds.GetIntKeySize(i);
-			char[] last_sound = new char[last_snd_len];
-			if( last_sounds.GetIntKey(i, last_sound, last_snd_len) > 0 )
-				player.PlayVoiceClip(last_sound, VSH2_VOICE_LASTGUY);
-		}
-	}
+	ConfigMap last_sounds = g_defbosses.cfgs[id].GetSection("boss.sounds.lastplayer");
+	player.PlayRandVoiceClipCfgMap(last_sounds, VSH2_VOICE_LASTGUY);
 }
 
 public Action DefaultBosses_OnVoice(const VSH2Player player, char sample[PLATFORM_MAX_PATH], int& channel, float& volume, int& level, int& pitch, int& flags) {
-	int id = GetDefBoss(player);
-	if( !IsDefBoss(id) )
+	int id = g_defbosses.GetDefBoss(player);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null )
 		return Plugin_Continue;
 	
 	switch( id ) {
 		case VSH2Boss_Hale: {
-			if( !strncmp(sample, "vo", 2, false) )
+			if( !strncmp(sample, "vo", 2, false) ) {
 				return Plugin_Handled;
+			}
 		}
 		case VSH2Boss_Vagineer: {
 			if( StrContains(sample, "vo/engineer_laughlong01", false) != -1 ) {
-				strcopy(sample, PLATFORM_MAX_PATH, VagineerKSpree);
+				ConfigMap taunt_sounds = g_defbosses.cfgs[id].GetSection("boss.vo.taunt");
+				int n = GetRandomInt(0, taunt_sounds.Size-1);
+				char taunt_str[PLATFORM_MAX_PATH];
+				if( taunt_sounds.GetIntKey(n, taunt_str, PLATFORM_MAX_PATH) > 0 ) {
+					strcopy(sample, PLATFORM_MAX_PATH, taunt_str);
+				}
 				return Plugin_Changed;
 			}
 			if( !strncmp(sample, "vo", 2, false) ) {
@@ -649,31 +798,46 @@ public Action DefaultBosses_OnVoice(const VSH2Player player, char sample[PLATFOR
 				if( StrContains(sample, "positivevocalization01", false) != -1 )
 					return Plugin_Continue;
 				
-				if( StrContains(sample, "engineer_moveup", false) != -1 )
-					Format(sample, PLATFORM_MAX_PATH, "%s%i.wav", VagineerJump, GetRandomInt(1, 2));
-				else if( StrContains(sample, "engineer_no", false) != -1 || GetRandomInt(0, 9) > 6 )
+				if( StrContains(sample, "engineer_moveup", false) != -1 ) {
+					ConfigMap moveup_sounds = g_defbosses.cfgs[id].GetSection("boss.vo.moveup");
+					int n = GetRandomInt(0, moveup_sounds.Size-1);
+					char taunt_str[PLATFORM_MAX_PATH];
+					if( moveup_sounds.GetIntKey(n, taunt_str, PLATFORM_MAX_PATH) > 0 ) {
+						strcopy(sample, PLATFORM_MAX_PATH, taunt_str);
+					}
+				} else if( StrContains(sample, "engineer_no", false) != -1 || GetRandomInt(0, 9) > 6 ) {
 					strcopy(sample, PLATFORM_MAX_PATH, "vo/engineer_no01.mp3");
-				else strcopy(sample, PLATFORM_MAX_PATH, "vo/engineer_jeers02.mp3");
+				} else {
+					strcopy(sample, PLATFORM_MAX_PATH, "vo/engineer_jeers02.mp3");
+				}
 				return Plugin_Changed;
 			}
-			else return Plugin_Continue;
+			return Plugin_Continue;
 		}
 		case VSH2Boss_HHHjr: {
 			if( !strncmp(sample, "vo", 2, false) ) {
 				if( GetRandomInt(0, 30) <= 10 ) {
-					Format(sample, PLATFORM_MAX_PATH, "%s0%i.mp3", HHHLaught, GetRandomInt(1, 4));
+					char HHH_laugh[] = "vo/halloween_boss/knight_laugh";
+					Format(sample, PLATFORM_MAX_PATH, "%s0%i.mp3", HHH_laugh, GetRandomInt(1, 4));
 					return Plugin_Changed;
 				}
-				if( StrContains(sample, "halloween_boss") == -1 )
+				if( StrContains(sample, "halloween_boss") == -1 ) {
 					return Plugin_Handled;
+				}
 			}
 		}
 		case VSH2Boss_Bunny: {
+			/// Do sound things
 			if( StrContains(sample, "gibberish", false) == -1
 				&& StrContains(sample, "burp", false) == -1
-				&& !GetRandomInt(0, 2) ) /// Do sound things
-			{
-				strcopy(sample, PLATFORM_MAX_PATH, BunnyRandomVoice[GetRandomInt(0, sizeof(BunnyRandomVoice)-1)]);
+				&& !GetRandomInt(0, 2)
+			) {
+				ConfigMap demoman_sounds = g_defbosses.cfgs[id].GetSection("boss.vo.gibberish");
+				int n = GetRandomInt(0, demoman_sounds.Size-1);
+				char taunt_str[PLATFORM_MAX_PATH];
+				if( demoman_sounds.GetIntKey(n, taunt_str, PLATFORM_MAX_PATH) > 0 ) {
+					strcopy(sample, PLATFORM_MAX_PATH, taunt_str);
+				}
 				return Plugin_Changed;
 			}
 		}
@@ -681,35 +845,317 @@ public Action DefaultBosses_OnVoice(const VSH2Player player, char sample[PLATFOR
 	return Plugin_Continue;
 }
 
-/// Stocks =============================================
-stock bool IsValidClient(int client) {
-	if( client <= 0 || client > MaxClients || !IsClientConnected(client) || IsFakeClient(client) )
-		return false;
-	return IsClientInGame(client);
+public void OnEntityCreated(int entity, const char[] classname) {
+	if( !strcmp(classname, "tf_projectile_pipe", false) && g_defbosses.cfgs[VSH2Boss_Bunny] != null ) {
+		SDKHook(entity, SDKHook_SpawnPost, OnEggBombSpawned);
+	}
 }
 
-stock int GetSlotFromWeapon(int client, int wep) {
-	for( int i; i<5; i++ )
-		if( wep==GetPlayerWeaponSlot(client, i) )
-			return i;
+public void OnEggBombSpawned(int entity) {
+	int owner = ( IsValidEntity(entity) )? GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") : -1;
+	if( IsClientValid(owner) ) {
+		VSH2Player boss = VSH2Player(owner);
+		if( boss.bIsBoss && g_defbosses.GetDefBoss(boss)==VSH2Boss_Bunny ) {
+			SetEntityModel(entity, g_defbosses.egg_model);
+			//int att = AttachProjectileModel(entity, g_defbosses.egg_model);
+			//SetEntProp(att, Prop_Send, "m_nSkin", 0);
+			//SetEntityRenderMode(entity, RENDER_TRANSCOLOR);
+			//SetEntityRenderColor(entity, 255, 255, 255, 0);
+		}
+	}
+}
+
+
+public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float vel[3], float angles[3], int& weapon, int& subtype, int& cmdnum, int& tickcount, int& seed, int mouse[2])
+{
+	if( !IsPlayerAlive(client) )
+		return Plugin_Continue;
 	
+	VSH2Player player = VSH2Player(client);
+	int id = g_defbosses.GetDefBoss(player);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null )
+		return Plugin_Continue;
+	
+	switch( id ) {
+		case VSH2Boss_Bunny: {
+			if( GetPlayerWeaponSlot(client, TFWeaponSlot_Primary)==GetActiveWep(client) ) {
+				buttons &= ~IN_ATTACK;
+				return Plugin_Changed;
+			}
+		}
+		case VSH2Boss_HHHjr: {
+			if( player.GetPropFloat("flCharge") >= 47.0 && (buttons & IN_ATTACK) ) {
+				buttons &= ~IN_ATTACK;
+				return Plugin_Changed;
+			}
+		}
+	}
+	return Plugin_Continue;
+}
+
+public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname, bool& result)
+{
+	if( !g_defbosses.enabled.BoolValue )
+		return Plugin_Continue;
+	
+	VSH2Player player = VSH2Player(client);
+	int id = g_defbosses.GetDefBoss(player);
+	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null )
+		return Plugin_Continue;
+	
+	if( id==VSH2Boss_HHHjr ) {
+		int climbs = player.GetPropInt("iClimbs");
+		if( climbs < g_defbosses.hhh_max_climbs.IntValue && player.ClimbWall(weapon, g_defbosses.hhh_climb_vel.FloatValue, 0.0, false) ) {
+			player.SetPropFloat("flWeighDown", 0.0);
+		}
+	}
+	
+	if( g_defbosses.no_random_crits.BoolValue ) {
+		result = false;
+		return Plugin_Changed;
+	}
+	return Plugin_Continue;
+}
+
+/*********************************************************************/
+/*********************************************************************/
+/*********************************************************************/
+/*********************************************************************/
+/*********************************************************************/
+/*********************************************************************/
+/*********************************************************************/
+
+stock void TeleToRandomPlayer(VSH2Player boss) {
+	int client = boss.index;
+	VSH2Player unlucky_fuck = VSH2GameMode.GetRandomFighter();
+	if( unlucky_fuck ) {
+		int target = unlucky_fuck.index;
+		/// Chdata's HHH teleport rework
+		TFClassType tfclass = unlucky_fuck.iTFClass;
+		if( tfclass != TFClass_Scout && tfclass != TFClass_Soldier ) {
+			/// Makes HHH clipping go away for player and some projectiles
+			SetEntProp(client, Prop_Send, "m_CollisionGroup", 2);
+			
+			any args[1]; args[0] = boss.userid;
+			MakePawnTimer(TeleCollisionReset, 2.0, args, sizeof(args), false);
+		}
+		
+		CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(AttachParticle(client, "ghost_appearation", _, false)));
+		float pos[3]; GetClientAbsOrigin(target, pos);
+		float currtime = GetGameTime();
+		SetEntPropFloat(client, Prop_Send, "m_flNextAttack", currtime+2);
+		if( GetEntProp(target, Prop_Send, "m_bDucked") ) {
+			float collisionvec[3] = {24.0, 24.0, 62.0};
+			SetEntPropVector(client, Prop_Send, "m_vecMaxs", collisionvec);
+			SetEntProp(client, Prop_Send, "m_bDucked", 1);
+			int flags = GetEntityFlags(client);
+			SetEntityFlags(client, flags|FL_DUCKING);
+			
+			any args[2];
+			args[0] = boss.userid;
+			args[1] = unlucky_fuck.userid;
+			MakePawnTimer(StunHHH, 0.2, args, sizeof(args), false);
+		} else {
+			TF2_StunPlayer(client, 2.0, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, target);
+		}
+		
+		TeleportEntity(client, pos, NULL_VECTOR, NULL_VECTOR);
+		SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
+		CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(AttachParticle(client, "ghost_appearation")));
+		CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(AttachParticle(client, "ghost_appearation", _, false)));
+		
+		/// Chdata's HHH teleport rework
+		float vPos[3]; GetEntPropVector(target, Prop_Send, "m_vecOrigin", vPos);
+		EmitSoundToClient(client, "misc/halloween/spell_teleport.wav");
+		EmitSoundToClient(target, "misc/halloween/spell_teleport.wav");
+		
+		int msg_len = g_defbosses.cfgs[VSH2Boss_HHHjr].GetSize("teleport msg");
+		char[] msg_str = new char[msg_len];
+		if( g_defbosses.cfgs[VSH2Boss_HHHjr].Get("teleport msg", msg_str, msg_len) > 0 ) {
+			PrintCenterText(target, msg_str);
+		} else {
+			PrintCenterText(target, "You've been teleported!");
+		}
+		boss.SetPropFloat("flCharge", g_defbosses.hhh_tele_cooldown.FloatValue);
+	}
+	
+	if( boss.GetPropAny("bSuperCharge") ) {
+		boss.SetPropAny("bSuperCharge", false);
+	}
+}
+
+public void TeleCollisionReset(const int userid) {
+	int client = GetClientOfUserId(userid);
+	if( !IsClientValid(client) )
+		return;
+	
+	/// Fix HHH's clipping.
+	SetEntProp(client, Prop_Send, "m_CollisionGroup", 5);
+}
+
+public void StunHHH(const int userid, const int targetid) {
+	int client = GetClientOfUserId(userid);
+	if( !IsClientValid(client) || !IsPlayerAlive(client) )
+		return;
+	
+	int target = GetClientOfUserId(targetid);
+	if( !IsClientValid(target) || !IsPlayerAlive(target) )
+		target = 0;
+	
+	TF2_StunPlayer(client, 2.0, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, target);
+}
+
+public Action RemoveEnt(Handle timer, any entid) {
+	int ent = EntRefToEntIndex(entid);
+	if( ent > 0 && IsValidEntity(ent) ) {
+		AcceptEntityInput(ent, "Kill");
+	}
+	return Plugin_Continue;
+}
+
+stock int AttachParticle(const int ent, const char[] particleType, float offset=0.0, bool battach=true) {
+	int particle = CreateEntityByName("info_particle_system");
+	char tName[32];
+	float pos[3]; GetEntPropVector(ent, Prop_Send, "m_vecOrigin", pos);
+	pos[2] += offset;
+	TeleportEntity(particle, pos, NULL_VECTOR, NULL_VECTOR);
+	Format(tName, sizeof(tName), "target%i", ent);
+	DispatchKeyValue(ent, "targetname", tName);
+	DispatchKeyValue(particle, "targetname", "tf2particle");
+	DispatchKeyValue(particle, "parentname", tName);
+	DispatchKeyValue(particle, "effect_name", particleType);
+	DispatchSpawn(particle);
+	SetVariantString(tName);
+	if( battach ) {
+		AcceptEntityInput(particle, "SetParent", particle, particle, 0);
+		SetEntPropEnt(particle, Prop_Send, "m_hOwnerEntity", ent);
+	}
+	ActivateEntity(particle);
+	AcceptEntityInput(particle, "start");
+	CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(particle));
+	return particle;
+}
+
+stock int AttachProjectileModel(const int entity, const char[] strModel, char[] strAnim = "") {
+	if( !IsValidEntity(entity) )
+		return -1;
+	
+	int model = CreateEntityByName("prop_dynamic");
+	if( IsValidEntity(model) ) {
+		float pos[3], ang[3];
+		GetEntPropVector(entity, Prop_Send, "m_vecOrigin", pos);
+		GetEntPropVector(entity, Prop_Send, "m_angRotation", ang);
+		TeleportEntity(model, pos, ang, NULL_VECTOR);
+		DispatchKeyValue(model, "model", strModel);
+		DispatchSpawn(model);
+		SetVariantString("!activator");
+		AcceptEntityInput(model, "SetParent", entity, model, 0);
+		if( strAnim[0] != '\0' ) {
+			SetVariantString(strAnim);
+			AcceptEntityInput(model, "SetDefaultAnimation");
+			SetVariantString(strAnim);
+			AcceptEntityInput(model, "SetAnimation");
+		}
+		SetEntPropEnt(model, Prop_Send, "m_hOwnerEntity", entity);
+		return model;
+	}
+	LogError("(AttachProjectileModel): Could not create prop_dynamic");
 	return -1;
 }
 
-stock bool OnlyScoutsLeft(int team) {
-	for( int i=MaxClients; i > 0; i-- ) {
-		if( !IsValidClient(i) || !IsPlayerAlive(i) ) {
-			continue;
-		} else if( GetClientTeam(i)==team && TF2_GetPlayerClass(i) != TFClass_Scout ) {
-			return false;
-		}
-	}
-	return true;
+stock bool IsClientValid(int client) {
+	return( 0 < client <= MaxClients && IsClientInGame(client) );
 }
 
-stock void SetWeaponClip(int weapon, int ammo) {
-	if( IsValidEntity(weapon) ) {
-		int iAmmoTable = FindSendPropInfo("CTFWeaponBase", "m_iClip1");
-		SetEntData(weapon, iAmmoTable, ammo, 4, true);
+stock float GetConditionDuration(const int client, const TFCond cond) {
+	if( !TF2_IsPlayerInCondition(client, cond) )
+		return 0.0;
+	
+	int m_Shared = FindSendPropInfo("CTFPlayer", "m_Shared");
+	Address aCondSource   = view_as< Address >(LoadFromAddress(GetEntityAddress(client) + view_as< Address >(m_Shared + 8), NumberType_Int32));
+	Address aCondDuration = view_as< Address >(view_as< int >(aCondSource) + (view_as< int >(cond) * 20) + (2 * 4));
+	
+	float flDuration = view_as< float >(LoadFromAddress(aCondDuration, NumberType_Int32));
+	/**
+	const size_t m_Shared    = FindSendPropInfo("CTFPlayer", "m_Shared");
+	uint8_t     *client_addr = ( uint8_t* )(GetEntityAddress(client));
+	uint8_t     *aCondSource = *( uint8_t** )(client_addr + (m_Shared + 8));
+	const float  flDuration  = *( float* )(aCondSource + (cond * 20) + (2 * 4));
+	return flDuration;
+	 */
+	return flDuration;
+}
+
+stock void SetConditionDuration(const int client, const TFCond cond, const float duration) {
+	if( !TF2_IsPlayerInCondition(client, cond) )
+		return;
+	
+	int m_Shared = FindSendPropInfo("CTFPlayer", "m_Shared");
+	Address aCondSource   = view_as< Address >(LoadFromAddress(GetEntityAddress(client) + view_as< Address >(m_Shared + 8), NumberType_Int32));
+	Address aCondDuration = view_as< Address >(view_as< int >(aCondSource) + (view_as< int >(cond) * 20) + (2 * 4));
+	StoreToAddress(aCondDuration, view_as< int >(duration), NumberType_Int32);
+}
+
+stock void SetWeaponAmmo(const int weapon, const int ammo) {
+	if( !IsValidEntity(weapon) )
+		return;
+	
+	int owner = GetEntPropEnt(weapon, Prop_Send, "m_hOwnerEntity");
+	if( !IsClientValid(owner) )
+		return;
+	
+	int iOffset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1) * 4;
+	int iAmmoTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
+	SetEntData(owner, iAmmoTable+iOffset, ammo, 4, true);
+}
+
+stock int GetWeaponAmmo(int weapon) {
+	if( !IsValidEntity(weapon) )
+		return 0;
+	
+	int owner = GetEntPropEnt(weapon, Prop_Send, "m_hOwnerEntity");
+	if( owner <= 0 )
+		return 0;
+	
+	int iOffset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
+	int iAmmoTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
+	return GetEntData(owner, iAmmoTable+iOffset, 4);
+}
+
+stock void SpawnManyAmmoPacks(const int client, const char[] model, int skin=0, int num=14, float offsz = 30.0) {
+	float pos[3], vel[3], ang[3];
+	ang[0] = 90.0; ang[1] = 0.0; ang[2] = 0.0;
+	GetClientAbsOrigin(client, pos);
+	pos[2] += offsz;
+	for( int i=0; i<num; i++ ) {
+		vel[0] = GetRandomFloat(-400.0, 400.0);
+		vel[1] = GetRandomFloat(-400.0, 400.0);
+		vel[2] = GetRandomFloat(300.0, 500.0);
+		pos[0] += GetRandomFloat(-5.0, 5.0);
+		pos[1] += GetRandomFloat(-5.0, 5.0);
+		int ent = CreateEntityByName("tf_ammo_pack");
+		if( !IsValidEntity(ent) )
+			continue;
+		
+		SetEntityModel(ent, model);
+		DispatchKeyValue(ent, "OnPlayerTouch", "!self,Kill,,0,-1"); /// for safety, but it shouldn't act like a normal ammopack
+		SetEntProp(ent, Prop_Send, "m_nSkin", skin);
+		SetEntProp(ent, Prop_Send, "m_nSolidType", 6);
+		SetEntProp(ent, Prop_Send, "m_usSolidFlags", 152);
+		SetEntProp(ent, Prop_Send, "m_triggerBloat", 24);
+		SetEntProp(ent, Prop_Send, "m_CollisionGroup", 1);
+		SetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity", client);
+		SetEntProp(ent, Prop_Send, "m_iTeamNum", VSH2Team_Red);
+		TeleportEntity(ent, pos, ang, vel);
+		DispatchSpawn(ent);
+		TeleportEntity(ent, pos, ang, vel);
+		SetEntProp(ent, Prop_Data, "m_iHealth", 900);
+		int offs = GetEntSendPropOffs(ent, "m_vecInitialVelocity", true);
+		SetEntData(ent, offs-4, 1, _, true);
 	}
+}
+
+stock int GetActiveWep(const int client) {
+	int weapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+	return( IsValidEntity(weapon) ) ? weapon : -1;
 }

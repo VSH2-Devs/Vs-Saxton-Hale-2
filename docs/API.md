@@ -87,6 +87,17 @@ ResourceMaterial,
 MaxResourceTypes
 ```
 
+### VSH2RoundResult (anonymous enum)
+```
+RoundResInvalid,  /// round didn't even end yet.
+RoundResBossWin,  /// boss successfully killed ALL players.
+RoundResBossDied, /// last/only boss died.
+RoundResBossDisc, /// last/only boss disconnected.
+RoundResTimer,    /// timer ran out.
+RoundResCap,      /// control point was captured.
+```
+
+
 ## VSH2Player (methodmap)
 ### Native Properties
 #### `userid`
@@ -128,6 +139,7 @@ For a list of available properties & more information on the methods, please see
 void ConvertToMinion(const float spawntime);
 int SpawnWeapon(char[] name, const int index, const int level, const int qual, char[] att);
 int GetWeaponSlotIndex(const int slot);
+int GetSlotIdxFromWep(int wep);
 void SetWepInvis(const int alpha);
 void SetOverlay(const char[] strOverlay);
 bool TeleToSpawn(int team=0);
@@ -163,7 +175,7 @@ void StopMusic();
 /// Boss oriented methods
 void ConvertToBoss();
 void GiveRage(const int damage);
-void MakeBossAndSwitch(const int type, const bool run_event);
+void MakeBossAndSwitch(const int type, const bool run_event, const bool friendly=false);
 void DoGenericStun(const float rageDist);
 void StunPlayers(float rage_dist, float stun_time=5.0);
 void StunBuildings(float rage_dist, float sentry_stun_time=8.0);
@@ -184,6 +196,7 @@ bool SuperJumpThink(const float charging, const float jumpcharge, int buttons = 
 void WeighDownThink(const float weighdown_time, const float incr, int buttons = IN_DUCK);
 
 void PlayRandVoiceClipCfgMap(ConfigMap sect, int voice_flags);
+bool ChargeThink(float charge_rate, const char charge_prop[64], float max_charge, int button, bool cond);
 ```
 
 
@@ -272,6 +285,8 @@ static void SetProp(const char prop_name[64], any value);
 
 static VSH2Player GetRandomBoss(const bool is_alive);
 static VSH2Player GetBossByType(const bool is_alive, const int boss_type);
+static VSH2Player GetRandomFighter(bool friendly_bosses=true, bool is_alive=true);
+static int GetRandomBossType(bool multibosses=false, bool red_only=false);
 
 static int CountMinions(const bool is_alive, VSH2Player ownerboss=0);
 static int CountBosses(const bool is_alive);
@@ -286,13 +301,14 @@ static void SearchForItemPacks();
 static void UpdateBossHealth();
 static void SelectBossType();
 static bool IsVSHMap();
+static bool AreScoutsLeft();
 ```
 
 
 
 ## General VSH2 Natives
 ```c
-int VSH2_RegisterPlugin(const char plugin_name[64]);
+int VSH2_RegisterBoss(const char boss_name[64], int flags=VSH2PluginFlag_Nil);
 ```
 - Registers a plugin as a boss module, you do not need to register your plugin to use VSH2's event hooks.
 Main focus of this native is to keep a head count of bosses and boss IDs.
@@ -303,7 +319,7 @@ int VSH2_GetMaxBosses();
 - returns the highest boss ID tracked by the VSH2 plugin, useful to see how many bosses are registered to the core VSH2 module.
 
 ```c
-int VSH2_GetRandomBossType(int[] boss_filter, int filter_size=0);
+int VSH2_GetRandomBossType(int[] boss_filter, int filter_size=0, bool multibosses=false, bool red_only=false);
 ```
 - returns a randomly picked boss ID. `boss_filter` is used to exclude any boss ID from the randomization. Useful for trying to get a select pick of boss IDs.
 
@@ -321,6 +337,11 @@ int VSH2_GetBossID(const char boss_name[MAX_BOSS_NAME_SIZE]);
 bool VSH2_GetBossNameByIndex(int index, char name_buffer[MAX_BOSS_NAME_SIZE]);
 ```
 - Gets the name of a boss by index.
+
+```c
+stock char[][] VSH2_GetBossNames(int &count);
+```
+- Gets every boss name (registered and builtin) and returns a 2D string-array.
 
 ```c
 void VSH2_StopMusic(bool reset_time=true);

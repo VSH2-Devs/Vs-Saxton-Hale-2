@@ -31,7 +31,7 @@ public void OnLibraryAdded(const char[] name) {
 		}
 		char plugin_name_str[MAX_BOSS_NAME_SIZE];
 		my_boss.cfg.Get("boss.plugin name", plugin_name_str, sizeof(plugin_name_str));
-		my_boss.id = VSH2_RegisterPlugin(plugin_name_str);
+		my_boss.id = VSH2_RegisterBoss(plugin_name_str);
 	}
 }
 ```
@@ -43,7 +43,7 @@ We also write the code so that we try to load in the custom boss config file and
 
 **Anything that goes wrong in your code SHOULD be logged for later investigation.**
 
-If we were able to load the custom boss config file without issues, next we must register our boss module using `VSH2_RegisterPlugin`; however we still need to setup our VSH2 Hooks for the addon which is coming up next. Note that the value of `my_boss.id` is because `VSH2_RegisterPlugin` returns the runtime ID that is assigned to the boss module.
+If we were able to load the custom boss config file without issues, next we must register our boss module using `VSH2_RegisterBoss`; however we still need to setup our VSH2 Hooks for the addon which is coming up next. Note that the value of `my_boss.id` is because `VSH2_RegisterBoss` returns the runtime ID that is assigned to the boss module.
 
 ## Hooking Functions to Addons
 The important step to making your boss module (or addon) work is you need to hook specific VSH2 events for use. This method is exactly the same as hooking SDKHooks functions. When it comes to a boss, you can use *any* VSH2 event hook to run specific actions whether it's for a passive mechanic, active mechanic, both, or more!
@@ -82,7 +82,7 @@ public void OnLibraryAdded(const char[] name) {
 		}
 		char plugin_name_str[MAX_BOSS_NAME_SIZE];
 		my_boss.cfg.Get("boss.plugin name", plugin_name_str, sizeof(plugin_name_str));
-		my_boss.id = VSH2_RegisterPlugin(plugin_name_str);
+		my_boss.id = VSH2_RegisterBoss(plugin_name_str);
 	}
 }
 
