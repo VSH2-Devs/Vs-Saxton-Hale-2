@@ -225,7 +225,7 @@ void OnBossThinkFF2(const VSH2Player vsh2player)
 	ConfigMap cfg = identity.hCfg;
 	ConfigMap info_sec = cfg.GetSection("character.info");
 
-	///	Handle speed think
+	///	Handle speed think and glow think
 	{
 		ConfigMap speed_sec = info_sec.GetSection("speed");
 		bool custom;
@@ -239,8 +239,8 @@ void OnBossThinkFF2(const VSH2Player vsh2player)
 				end_speed = 100.0;
 	
 			player.SpeedThink(start_speed, end_speed);
-			player.GlowThink(0.1);
 		}
+		player.GlowThink(0.1);
 	}
 
 	float flCharge = player.GetPropFloat("flCharge");
