@@ -870,6 +870,8 @@ static stock bool ConfigMapToFile(const ConfigMap cfg, const char[] sec_name, co
 		snap.GetKey(i, key, strsize);
 		PackVal pack;
 		cfg.GetArray(key, pack, sizeof(pack));
+		if( pack.tag==KeyValType_Null )
+			continue;
 		pack.data.Reset();
 		switch( pack.tag ) {
 			case KeyValType_Value: {

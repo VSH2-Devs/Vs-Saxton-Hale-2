@@ -9,6 +9,7 @@ void InitVSH2Bridge()
 	VSH2_Hook(OnBossMenu,							OnBossMenuFF2);
 	VSH2_Hook(OnBossCalcHealth,						OnBossCalcHealthFF2);
 	VSH2_Hook(OnBossSelected,						OnBossSelectedFF2);
+	VSH2_Hook(OnRedPlayerThink,						OnRedPlayerThinkFF2);
 	VSH2_Hook(OnBossThink,							OnBossThinkFF2);
 	VSH2_Hook(OnBossSuperJump,						OnBossSuperJumpFF2);
 	VSH2_Hook(OnBossWeighDown,						OnBossWeighDownFF2);
@@ -23,6 +24,7 @@ void InitVSH2Bridge()
 	VSH2_Hook(OnBossMedicCall,						OnBossTriggerRageFF2);
 	VSH2_Hook(OnBossTaunt,							OnBossTriggerRageFF2);
 	VSH2_Hook(OnBossJarated,						OnBossJaratedFF2);
+	VSH2_Hook(OnRoundStart,							OnRoundStartFF2);
 	VSH2_Hook(OnRoundEndInfo,						OnRoundEndInfoFF2);
 	VSH2_Hook(OnMusic,								OnMusicFF2);
 	VSH2_Hook(OnBossDeath,							OnBossDeathFF2);
@@ -41,6 +43,7 @@ void RemoveVSH2Bridge()
 	VSH2_Unhook(OnBossMenu,							OnBossMenuFF2);
 	VSH2_Unhook(OnBossCalcHealth,					OnBossCalcHealthFF2);
 	VSH2_Unhook(OnBossSelected,						OnBossSelectedFF2);
+	VSH2_Unhook(OnRedPlayerThink,					OnRedPlayerThinkFF2);
 	VSH2_Unhook(OnBossThink,						OnBossThinkFF2);
 	VSH2_Unhook(OnBossSuperJump,					OnBossSuperJumpFF2);
 	VSH2_Unhook(OnBossWeighDown,					OnBossWeighDownFF2);
@@ -55,6 +58,7 @@ void RemoveVSH2Bridge()
 	VSH2_Unhook(OnBossMedicCall,					OnBossTriggerRageFF2);
 	VSH2_Unhook(OnBossTaunt,						OnBossTriggerRageFF2);
 	VSH2_Unhook(OnBossJarated,						OnBossJaratedFF2);
+	VSH2_Unhook(OnRoundStart,						OnRoundStartFF2);
 	VSH2_Unhook(OnRoundEndInfo,						OnRoundEndInfoFF2);
 	VSH2_Unhook(OnMusic,							OnMusicFF2);
 	VSH2_Unhook(OnBossDeath,						OnBossDeathFF2);
@@ -103,35 +107,33 @@ Action OnCallDownloadsFF2()
 
 void OnBossMenuFF2(Menu& menu, const VSH2Player player)
 {
-	char id_menu[10];
-
 	StringMapSnapshot snap = ff2_cfgmgr.Snapshot();
-	char char_name[48];
-
+	char boss_name[FF2_MAX_BOSS_NAME_SIZE], id_menu[10];
+	FF2Identity cur_identity;
 	int num_rounds = VSH2GameMode.GetPropInt("iRoundCount");
-	ConfigMap cfg;
-	bool tmp;
-	int flag;
 
-	for( int i = snap.Length - 1; i >= 0; i-- ) {
-		snap.GetKey(i, char_name, sizeof(char_name));
-		FF2Identity curIdentity;
-		if( ff2_cfgmgr.GetIdentity(char_name, curIdentity) ) {
-			cfg = curIdentity.hCfg.GetSection("character");
-			if( !cfg.Get("name", char_name, sizeof(char_name)) || (cfg.GetBool("blocked", tmp) && tmp) )
+	for( int i=snap.Length-1; i>=0; i-- ) {
+		snap.GetKey(i, boss_name, sizeof(boss_name));
+		if( ff2_cfgmgr.GetIdentity(boss_name, cur_identity) ) {
+			ConfigMap cfg = FF2Character(cur_identity.hCfg).InfoSection;
+			bool tmp;
+			if( 
+				( !cfg.Get("name", boss_name, sizeof(boss_name)) ) ||
+				( cfg.GetBool("blocked", tmp, false) && tmp ) || 
+				( cfg.GetBool("nofirst", tmp, false) && tmp && !num_rounds )
+			  )
 				continue;
 
-			if( cfg.GetBool("nofirst", tmp) && tmp && !num_rounds )
-				continue;
-
+			int flag;
 			if( cfg.GetInt("permissions", flag, 2) && flag )
 				if( !CheckCommandAccess(player.index, "", flag) )
 					continue;
 
-			IntToString(curIdentity.VSH2ID, id_menu, sizeof(id_menu));
-			menu.AddItem(id_menu, char_name);
+			IntToString(cur_identity.VSH2ID, id_menu, sizeof(id_menu));
+			menu.AddItem(id_menu, boss_name);
 		}
 	}
+
 	delete snap;
 }
 
@@ -141,14 +143,21 @@ void OnBossCalcHealthFF2(const VSH2Player player, int& max_health, const int bos
 	if( !ff2_cfgmgr.FindIdentity(ToFF2Player(player).iBossType, identity) )
 		return;
 
-	ConfigMap cfg = ToFF2Player(player).iCfg;
+	ConfigMap cfg = FF2Character(identity.hCfg).InfoSection;
 	char formula[64];
-	if( cfg.Get("health_formula", formula, sizeof(formula)) ) {
+	if( cfg.Get("health", formula, sizeof(formula)) ) {
 		max_health = RoundToFloor(ParseFormula(formula, boss_count + red_players));
 	}
 
-	int lives;
+	int health_cfg;
+	if( cfg.GetInt("max health", health_cfg) && health_cfg > 0 && max_health > health_cfg )
+		max_health = health_cfg;
+
+	if( cfg.GetInt("min health", health_cfg) && health_cfg > 0 && health_cfg < max_health )
+		max_health = health_cfg;
+
 	///	Support for multilives: https://github.com/01Pollux/FF2-Library/blob/VSH2/addons/sourcemod/scripting/ff2_multilives.sp
+	int lives;
 	if( cfg.GetInt("lives", lives) && lives > 1 ) {
 		ToFF2Player(player).iLives = lives;
 		ToFF2Player(player).iMaxLives = lives;
@@ -166,7 +175,7 @@ Action OnBossSelectedFF2(const VSH2Player player)
 	
 	/// Handle callback
 	{
-		char name[MAX_BOSS_NAME_SIZE]; name = identity.szName;
+		char name[MAX_BOSS_NAME_SIZE]; name = identity.name;
 		Action res = Call_OnBossSelected(ToFF2Player(player), name, false);
 
 		if( res >= Plugin_Changed ) {
@@ -176,14 +185,16 @@ Action OnBossSelectedFF2(const VSH2Player player)
 		}		
 	}
 
-	ff2.m_plugins.LoadPlugins(identity.ablist);
+	ff2.m_plugins.LoadPlugins(identity.abilityList);
+	ConfigMap info_sec = identity.hCfg.GetSection("character.info");
+	
 	char[] help = new char[512];
 	{
 		char language[25];
 		GetLanguageInfo(GetClientLanguage(player.index), language, sizeof(language));
-		Format(language, sizeof(language), "character.description_%s", language);
-		if( !identity.hCfg.Get(language, help, 512) )
-			return Plugin_Changed;
+
+		Format(language, sizeof(language), "description.%s", language);
+		info_sec.Get(language, help, 512);
 	}
 
 	Panel panel = new Panel();
@@ -197,48 +208,58 @@ Action OnBossSelectedFF2(const VSH2Player player)
 	return Plugin_Changed;
 }
 
+void OnRedPlayerThinkFF2(const VSH2Player vsh2player)
+{
+	LiveSys_DisplayForClient(vsh2player.index);
+}
+
 void OnBossThinkFF2(const VSH2Player vsh2player)
 {
 	FF2Player player = ToFF2Player(vsh2player);
+	LiveSys_DisplayForClient(player.index);
 
 	static FF2Identity identity;
 	if( !ff2_cfgmgr.FindIdentity(ToFF2Player(player).iBossType, identity) )
 		return;
 
-	///	Handle speed think
+	ConfigMap cfg = identity.hCfg;
+	ConfigMap info_sec = cfg.GetSection("character.info");
+
+	///	Handle speed think and glow think
 	{
-		float flstart;
-		if( !player.iCfg.GetFloat("speed", flstart) && !player.iCfg.GetFloat("maxspeed", flstart) )
-			flstart = 350.0;
-
-		float flmin;
-		if( !player.iCfg.GetFloat("minspeed", flmin) )
-			flmin = 100.0;
-
-		player.SpeedThink(flstart, flmin);
+		ConfigMap speed_sec = info_sec.GetSection("speed");
+		bool custom;
+		if( !speed_sec.GetBool("managed", custom, false) || !custom ) {
+			float start_speed;
+			if( !speed_sec.GetFloat("min", start_speed) )
+				start_speed = 350.0;
+	
+			float end_speed;
+			if( !speed_sec.GetFloat("max", end_speed) )
+				end_speed = 100.0;
+	
+			player.SpeedThink(start_speed, end_speed);
+		}
 		player.GlowThink(0.1);
 	}
 
 	float flCharge = player.GetPropFloat("flCharge");
-	float flRage = player.GetPropFloat("flRAGE");
+	float flRage = player.flRAGE;
 	int client = player.index;
-	ConfigMap cfg = player.iCfg;
 	static char buffer[PLATFORM_MAX_PATH];
 
 	///	Handle super jump
-	if( !player.bNoSuperJump ) {
-		float flmin;
-		if( !cfg.GetFloat("min super jump", flmin) )
-			flmin = 25.0;
-
-		if( player.SuperJumpThink(2.5, flmin) ) {
-			if( !cfg.GetFloat("super jump reset", flmin) )
-				flmin = -130.0;
-			player.SuperJump(flCharge, flmin);
-
-			FF2SoundList snd_list = identity.sndHash.GetList("sound_ability");
-			if( RandomAbilitySound(snd_list, CT_CHARGE, buffer, sizeof(buffer)) ) {
-				player.PlayVoiceClip(buffer, VSH2_VOICE_ABILITY);
+	{
+		if( !player.bNoSuperJump ) {
+			float max_charge;
+			ConfigMap superjump_sec = info_sec.GetSection("Superjump");
+			if( !superjump_sec.GetFloat("max charge", max_charge) )
+				max_charge = 25.0;
+	
+			if( player.SuperJumpThink(2.5, max_charge) ) {
+				if( !superjump_sec.GetFloat("reset charge", max_charge) )
+					max_charge = -130.0;
+				player.SuperJump(flCharge, max_charge);
 			}
 		}
 	}
@@ -246,21 +267,22 @@ void OnBossThinkFF2(const VSH2Player vsh2player)
 	///	Handle weighdown
 	{
 		if( !player.bNoWeighdown ) {
-			float curCd = player.GetPropFloat("flWeighdownCd") - GetGameTime();
+			float cur_time = GetGameTime();
+			float curCd = player.GetPropFloat("flWeighdownCd") - cur_time;
 			if( curCd <= 0.0 ) {
 				int buttons = GetClientButtons(client);
 				int flags = GetEntityFlags(client);
 				if( flags & FL_ONGROUND )
 					player.SetPropFloat("flWeighDown", 0.0);
-				else player.SetPropFloat("flWeighDown", GetGameTime() + 0.07);
+				else player.SetPropFloat("flWeighDown", cur_time + 0.07);
 
 				if( (buttons & IN_DUCK) && player.GetPropFloat("flWeighDown") >= 0.1 ) {
 					float ang[3]; GetClientEyeAngles(client, ang);
 					if( ang[0] > 60.0 ) {
-						if( !cfg.GetFloat("weighdown cooldown", ang[0]) )
+						if( !cfg.GetFloat("Weightdown.cooldown", ang[0]) )
 							ang[0] = 5.0;
 
-						player.SetPropFloat("flWeighdownCd", GetGameTime() + ang[0]);
+						player.SetPropFloat("flWeighdownCd", cur_time + ang[0]);
 						player.WeighDown(0.0);
 					}
 				}
@@ -271,21 +293,66 @@ void OnBossThinkFF2(const VSH2Player vsh2player)
 		}
 	}
 
-	buffer[0] = '\0';
-
-	if( !player.bHideHUD )
-		Format(buffer, sizeof(buffer), "Super-Jump: %i%%\n", player.GetPropInt("bSuperCharge") ? 1000 : RoundFloat(flCharge) * 4);
-
-	SetHudTextParams(-1.0, 0.77, 0.15, 255, 255, 255, 255);
-
-	if( flRage >= 100.0 ) {
-		Format(buffer, sizeof(buffer), "%sCall for medic to activate your \"RAGE\" ability", buffer);
-	} else {
-		Format(buffer, sizeof(buffer), "%sRage is %.1f percent ready", buffer, flRage);
+	/// Handle scout's auto rage regeneration
+	{
+		for( int i = 1; i<=MaxClients; i++ ) {
+			if( !IsClientInGame(i) || !IsPlayerAlive(i) || TF2_GetPlayerClass(i) != TFClass_Scout )
+				continue;
+			
+			player.flRAGE = (flRage += ff2.m_cvars.m_flscout_rage_gen.FloatValue);
+			break;
+		}
 	}
 
-	ShowSyncHudText(client, ff2.m_hud[HUD_Jump], "%s", buffer);
+	///	Handle hud
+	{
+		ConfigMap hud_section = info_sec.GetSection("HUD");
+		buffer[0] = '\0';
+
+		any color_and_offset[6];///	{ r, g, b, a, x, y }
+		{
+			ConfigMap color_section = hud_section.GetSection("color");
+			ConfigMap offset_section = hud_section.GetSection("offset");
+			for( int i; i<4; i++ )
+				if( color_section.GetIntKeyInt(i, color_and_offset[i]) )
+					color_and_offset[i] = 255;
+
+			if( !offset_section.GetIntKeyFloat(0, color_and_offset[4]) )
+				color_and_offset[4] = -1.0;
+			if( !offset_section.GetIntKeyFloat(0, color_and_offset[5]) )
+				color_and_offset[5] = 0.15;
+		}
+
+		if( !player.bHideHUD ) {
+			if( hud_section.Get("text", buffer, sizeof(buffer)) ) {
+				FF2_ReplaceEscapeSeq(buffer, sizeof(buffer));
+			}
+			else buffer = "Super-Jump: %i%%";
+			FormatEx(buffer, sizeof(buffer), buffer, player.GetPropInt("bSuperCharge") ? 1000 : RoundFloat(flCharge) * 4);
+		}
+
+		SetHudTextParams(
+			color_and_offset[4],
+			color_and_offset[5],
+			0.15,
+			color_and_offset[0],
+			color_and_offset[1],
+			color_and_offset[2],
+			color_and_offset[3]
+		);
+
+		ShowSyncHudText(
+			client,
+			ff2.m_hud[HUD_Jump],
+				flRage >= 100.0 ? 
+				"%s\nCall for medic to activate your \"RAGE\" ability" :
+				"%s\nRage is %.1f percent ready",
+			buffer,
+			flRage
+		);
+	}
 }
+
 
 Action OnBossSuperJumpFF2(const VSH2Player vsh2player)
 {
@@ -295,6 +362,7 @@ Action OnBossSuperJumpFF2(const VSH2Player vsh2player)
 		return Plugin_Continue;
 
 	Call_FF2OnAbility(player, CT_CHARGE);
+	identity.soundMap.PlayAbilitySound(vsh2player, identity.hCfg.GetSection("info.Superjump"), CT_CHARGE);
 	return Plugin_Continue;
 }
 
@@ -305,6 +373,7 @@ void OnBossWeighDownFF2(const VSH2Player vsh2player)
 		return;
 	
 	Call_FF2OnAbility(ToFF2Player(vsh2player), CT_WEIGHDOWN);
+	identity.soundMap.PlayAbilitySound(vsh2player, identity.hCfg.GetSection("info.Weighdown"), CT_WEIGHDOWN);
 }
 
 void OnBossModelTimerFF2(const VSH2Player player)
@@ -315,7 +384,7 @@ void OnBossModelTimerFF2(const VSH2Player player)
 
 	int client = player.index;
 	char model[PLATFORM_MAX_PATH];
-	if( ToFF2Player(player).iCfg.Get("model", model, sizeof(model)) ) {
+	if( identity.hCfg.Get("character.info.model", model, sizeof(model)) ) {
 		SetVariantString(model);
 		AcceptEntityInput(client, "SetCustomModel");
 		SetEntProp(client, Prop_Send, "m_bUseClassAnimations", 1);
@@ -328,31 +397,31 @@ void OnBossEquippedFF2(const VSH2Player player)
 	if( !ff2_cfgmgr.FindIdentity(ToFF2Player(player).iBossType, identity) )
 		return;
 
-	ConfigMap cfg = ToFF2Player(player).iCfg;
-	char name[MAX_BOSS_NAME_SIZE]; cfg.Get("name", name, sizeof(name));
+	FF2Character boss_cfg = FF2Character(identity.hCfg);
+	char name[MAX_BOSS_NAME_SIZE]; boss_cfg.Config.Get("info.name", name, sizeof(name));
 
 	player.SetName(name);
 	player.RemoveAllItems();
 
-	ConfigMap wepcfg;
-
+	ConfigMap wepcfg = boss_cfg.WeaponSection;
+	
+	int wep_count = wepcfg.Size;
 	char attr[64]; int index; int lvl; int qual;
-	for( int i = 1; i < 4; i++ ) {
-		FormatEx(name, sizeof(name), "weapon%i", i);
-		wepcfg = cfg.GetSection(name);
-		if( !wepcfg )
+	for( int i; i<wep_count; i++ ) {
+		ConfigMap wep = wepcfg.GetIntSection(i);
+		if( !wep )
 			break;
 
-		if( !wepcfg.GetInt("index", index) )
+		if( !wep.GetInt("index", index) )
 			continue;
-		if( !wepcfg.Get("name", name, sizeof(name)) )
+		if( !wep.Get("name", name, sizeof(name)) )
 			continue;
-		if( !wepcfg.GetInt("level", lvl) )
+		if( !wep.GetInt("level", lvl) )
 			lvl = 39;
-		if( !wepcfg.GetInt("quality", qual) )
+		if( !wep.GetInt("quality", qual) )
 			qual = 5;
 
-		wepcfg.Get("attributes", attr, sizeof(attr));
+		wep.Get("attributes", attr, sizeof(attr));
 		int new_weapon = player.SpawnWeapon(name, index, lvl, qual, attr);
 		SetEntPropEnt(player.index, Prop_Send, "m_hActiveWeapon", new_weapon);
 	}
@@ -365,7 +434,7 @@ void OnBossInitializedFF2(const VSH2Player vsh2player)
 	if( !ff2_cfgmgr.FindIdentity(player.iBossType, identity) )
 		return;
 
-	ConfigMap cfg = player.iCfg;
+	ConfigMap cfg = FF2Character(identity.hCfg).InfoSection;
 	int cls;
 	if( !cfg.GetInt("class", cls) )
 		cls = GetRandomInt(1, 8);
@@ -373,29 +442,40 @@ void OnBossInitializedFF2(const VSH2Player vsh2player)
 	SetEntProp(player.index, Prop_Send, "m_iClass", cls);
 	{
 		bool tmp;
-		player.bNoSuperJump = cfg.GetBool("No Superjump", tmp) && tmp;
-		player.bNoWeighdown = cfg.GetBool("No Weighdown", tmp) && tmp;
-		player.bHideHUD 	= cfg.GetBool("No HUD", tmp) && tmp;
+		player.bNoSuperJump = cfg.GetBool("Superjump.custom", tmp, false) && tmp;
+		player.bNoWeighdown = cfg.GetBool("Weightdown.custom", tmp, false) && tmp;
+		player.bHideHUD 	= cfg.GetBool("HUD.custom", tmp, false) && tmp;
 	}
 
 	/// Process Set Companion
 	{
-		char companion[48];
-		if( !cfg.Get("companion", companion, sizeof(companion)) || !companion[0] ) {
-			return;
-		}
+		ConfigMap companions = cfg.GetSection("companion");
+		if( companions ) {
+			int size = companions.Size;
+			if( !size )
+				return;
 
-		if( !ff2_cfgmgr.FindIdentityByName(companion, identity) ) {
-			return;
-		}
+			char companion[FF2_MAX_BOSS_NAME_SIZE];
+			FF2Player[] next_players = new FF2Player[MaxClients];
+			int count = VSH2GameMode.GetQueue(view_as< VSH2Player >(next_players));
+			int cur_player = 1, max_companions = ff2.m_cvars.m_companion_min.IntValue;
 
-		FF2Player[] next_players = new FF2Player[MaxClients];
-		int count = VSH2GameMode.GetQueue(view_as< VSH2Player >(next_players));
-		int limit = ff2.m_cvars.m_companion_min.IntValue;
-		for( int i = 1; i < count && i <= limit; i++ ) {
-			if( !next_players[i].GetPropAny("bNoCompanion") ) {
-				next_players[i].MakeBossAndSwitch(identity.VSH2ID, true);
-				break;
+			for( int i; i<size; i++ ) {
+				if( cfg.GetIntKey(i, companion, sizeof(companion)) && companion[0] ) {
+					if( !ff2_cfgmgr.FindIdentityByName(companion, identity) ) {
+						continue;
+					}
+
+					for( ; cur_player < count && cur_player <= max_companions; cur_player++ ) {
+						if( !next_players[cur_player].GetPropAny("bNoCompanion") ) {
+							next_players[cur_player].MakeBossAndSwitch(identity.VSH2ID, true);
+							break;
+						}
+					}
+
+					if( cur_player>=count || cur_player>max_companions )
+						break;
+				}
 			}
 		}
 	}
@@ -407,10 +487,9 @@ void OnBossKillBuildingFF2(const VSH2Player player, const int building, Event ev
 	if( !ff2_cfgmgr.FindIdentity(ToFF2Player(player).iBossType, identity) )
 		return;
 
-	FF2SoundList list = identity.sndHash.GetList("sound_kill_buildable");
-	FF2SoundIdentity snd_id;
-	if( list && list.RandomSound(snd_id) )
-		player.PlayVoiceClip(snd_id.path, VSH2_VOICE_ALL);
+	FF2SoundSection sec = identity.soundMap.RandomEntry("kill_buildable");
+	if( sec )
+		sec.PlaySound(player.index, VSH2_VOICE_ALL);
 }
 
 Action OnBossPlayIntroFF2(const VSH2Player player)
@@ -419,11 +498,9 @@ Action OnBossPlayIntroFF2(const VSH2Player player)
 	if( !ff2_cfgmgr.FindIdentity(ToFF2Player(player).iBossType, identity) )
 		return Plugin_Continue;
 
-	FF2SoundList list = identity.sndHash.GetList("sound_begin");
-	FF2SoundIdentity snd_id;
-	
-	if( list && list.RandomSound(snd_id) )
-		player.PlayVoiceClip(snd_id.path, VSH2_VOICE_INTRO);
+	FF2SoundSection sec = identity.soundMap.RandomEntry("begin");
+	if( sec )
+		sec.PlaySound(player.index, VSH2_VOICE_INTRO);
 
 	return Plugin_Handled;
 }
@@ -453,34 +530,32 @@ void OnPlayerKilledFF2(const VSH2Player attacker, const VSH2Player victim, Event
 
 		///	First play sound_kspree
 		if( attacker.GetPropInt("iKills") == 3 && vsh2_gm.iLivingReds != 1 ) {
-			FF2SoundList list = identity[1].sndHash.GetList("sound_kspree");
-			FF2SoundIdentity snd_id;
-			if( list && list.RandomSound(snd_id) ) {
-				attacker.PlayVoiceClip(snd_id.path, VSH2_VOICE_SPREE);
+			FF2SoundSection sec = identity[1].soundMap.RandomEntry("kspree");
+			if( sec ) {
+				sec.PlaySound(attacker.index, VSH2_VOICE_SPREE);
 			}
 		} else {
 			/// play sounn_hit*
 			{
-				FF2SoundIdentity snd_id;
 				static const char tf_classes[] =  { "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer" };
 
 				int cls = view_as< int >(victim.iTFClass) - 1;
 				char _key[36];
-				FormatEx(_key, sizeof(_key), "sound_hit_%s", tf_classes[cls]);
+				FormatEx(_key, sizeof(_key), "hit_%s", tf_classes[cls]);
 
-				FF2SoundList list;
+				FF2SoundSection sec;
 
 				if( !GetRandomInt(0, 2) )
-					list = identity[1].sndHash.GetList(_key);
+					sec = identity[1].soundMap.RandomEntry(_key);
 
-				if( list && list.RandomSound(snd_id) ) {
-					attacker.PlayVoiceClip(snd_id.path, VSH2_VOICE_SPREE);
+				if( sec ) {
+					sec.PlaySound(attacker.index, VSH2_VOICE_SPREE);
 				}
 				else {
 					///	No matching sound_hit_* sound was found, default to sound_hit
-					list = identity[1].sndHash.GetList("sound_hit");
-					if( list && list.RandomSound(snd_id) ) {
-						attacker.PlayVoiceClip(snd_id.path, VSH2_VOICE_SPREE);
+					sec = identity[1].soundMap.RandomEntry("hit");
+					if( sec ) {
+						sec.PlaySound(attacker.index, VSH2_VOICE_SPREE);
 					}
 				}
 			}
@@ -522,7 +597,7 @@ void OnPlayerAirblastedFF2(const VSH2Player airblaster, const VSH2Player airblas
 		return;
 
 	float rage = airblasted.GetPropFloat("flRAGE");
-	airblasted.SetPropFloat("flRAGE", rage + ff2.m_cvars.m_flairblast.FloatValue);
+	airblasted.SetPropFloat("flRAGE", rage + ff2.m_cvars.m_flairblast_rage.FloatValue);
 }
 
 Action OnBossTriggerRageFF2(const VSH2Player vsh2player)
@@ -550,16 +625,18 @@ Action OnBossJaratedFF2(const VSH2Player victim, const VSH2Player attacker)
 
 	FF2Player player = ToFF2Player(victim);
 	float rage = player.flRAGE;
-	Action res = Call_OnBossJarated(ToFF2Player(victim), ToFF2Player(attacker), rage);
-	if( res==Plugin_Stop )
-		return Plugin_Changed;
 
-	rage -= ff2.m_cvars.m_fljarate.FloatValue;
+	rage -= ff2.m_cvars.m_fljarate_rage.FloatValue;
 	if( rage <= 0.0 )
 		rage = 0.0;
 
 	player.flRAGE = rage;
 	return Plugin_Changed;
+}
+
+void OnRoundStartFF2(const VSH2Player[] bosses, const int boss_count, const VSH2Player[] red_players, const int red_count)
+{
+	LiveSys_OnRoundStart(bosses, boss_count);
 }
 
 void OnRoundEndInfoFF2(const VSH2Player player, bool bossBool, char message[MAXMESSAGE])
@@ -568,16 +645,17 @@ void OnRoundEndInfoFF2(const VSH2Player player, bool bossBool, char message[MAXM
 	if( !ff2_cfgmgr.FindIdentity(ToFF2Player(player).iBossType, identity) )
 		return;
 
-	FF2SoundIdentity snd_id;
 	if( bossBool ) {
-		FF2SoundList list = identity.sndHash.GetList("sound_win");
-		if( list && list.RandomSound(snd_id) )
-			player.PlayVoiceClip(snd_id.path, VSH2_VOICE_WIN);
+		FF2SoundSection sec = identity.soundMap.RandomEntry("win");
+		if( sec )
+			sec.PlaySound(player.index, VSH2_VOICE_WIN);
 	} else {
-		FF2SoundList list = identity.sndHash.GetList("sound_stalemate");
-		if( list && list.RandomSound(snd_id) )
-			player.PlayVoiceClip(snd_id.path, VSH2_VOICE_WIN);
+		FF2SoundSection sec = identity.soundMap.RandomEntry("stalemate");
+		if( sec )
+			sec.PlaySound(player.index, VSH2_VOICE_WIN);
 	}
+
+	LiveSys_OnRoundEndInfo(player, message);
 }
 
 Action OnMusicFF2(char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player)
@@ -593,16 +671,15 @@ Action OnMusicFF2(char song[PLATFORM_MAX_PATH], float& time, const VSH2Player pl
 
 	/// hmm...
 	{
-		FF2SoundIdentity snd_id;
-		FF2SoundList list = identity.sndHash.GetList("sound_bgm");
-		if( list ) {
-			if( res == Plugin_Changed && list.Seek(song, snd_id) && snd_id.time > 0.0 ) {
-				strcopy(song, sizeof(song), snd_id.path);
-				time = snd_id.time;
-			} else if( list.RandomSound(snd_id) && snd_id.time > 0.0 ) {
-				strcopy(song, sizeof(song), snd_id.path);
-				time = snd_id.time;
-				snd_id.PrintToAll();
+		FF2SoundSection sec;
+		if( res>=Plugin_Changed && (sec=FindSoundByPath(identity.soundMap.GetSection("bgm"), song)) ) {
+			sec.GetTime(time);
+			sec.PrintToAll();
+		}
+		else {
+			if( (sec=identity.soundMap.RandomEntry("bgm")) ) {
+				sec.GetPathAndTime(song, sizeof(song), time);
+				sec.PrintToAll();
 			}
 		}
 	}
@@ -616,10 +693,9 @@ void OnBossDeathFF2(const VSH2Player player)
 	if( !ff2_cfgmgr.FindIdentity(ToFF2Player(player).iBossType, identity) )
 		return;
 
-	FF2SoundList list = identity.sndHash.GetList("sound_death");
-	FF2SoundIdentity snd_id;
-	if( list && list.RandomSound(snd_id) )
-		player.PlayVoiceClip(snd_id.path, VSH2_VOICE_LOSE);
+	FF2SoundSection sec = identity.soundMap.RandomEntry("death");
+	if( sec )
+		sec.PlaySound(player.index, VSH2_VOICE_LOSE);
 }
 
 Action OnMarketGardenedFF2( VSH2Player victim, int& attacker, int& inflictor,
@@ -648,10 +724,9 @@ Action OnStabbedFF2( VSH2Player victim, int& attacker, int& inflictor,
 	else if( res==Plugin_Handled )
 		damage = 0.0;
 
-	FF2SoundIdentity snd_id;
-	FF2SoundList list = identity.sndHash.GetList("sound_stabbed");
-	if( list && list.RandomSound(snd_id) ) {
-		victim.PlayVoiceClip(snd_id.path, VSH2_VOICE_LOSE);
+	FF2SoundSection sec = identity.soundMap.RandomEntry("stabbed");
+	if( sec ) {
+		sec.PlaySound(victim.index, VSH2_VOICE_LOSE);
 	}
 
 	Call_FF2OnAbility(ToFF2Player(victim), CT_BOSS_STABBED);
@@ -665,34 +740,34 @@ Action OnSoundHookFF2(const VSH2Player player, char sample[PLATFORM_MAX_PATH], i
 		return Plugin_Continue;
 
 	if( channel==SNDCHAN_VOICE || (channel==SNDCHAN_STATIC && !StrContains(sample, "vo")) ) {
-		FF2SoundList list = identity.sndHash.GetList("catch_phrase");
-		static FF2SoundIdentity snd_id;
+		FF2SoundSection sec = identity.soundMap.RandomEntry("phrase");
 
-		if( list && list.RandomSound(snd_id) )
-			strcopy(sample, sizeof(sample), snd_id.path);
-		else {
-			list = identity.sndHash.GetList("catch_replace");
-			if( list ) {
-				int max = list.Length;
-				int[] entries = new int[max];
-				int count;
+		if( sec ) {
+			sec.GetPath(sample, sizeof(sample));
+		}
+		else if( (sec=identity.soundMap.RandomEntry("replace")) ) {
+			int max = sec.Config.Size;
+			FF2SoundSection[] entries = new FF2SoundSection[max];
+			int count;
 
-				for( int i = 0; i < max; i++ ) {
-					if( list.At(i, snd_id) && !StrContains(snd_id.path, sample) )
-						entries[count++] = i;
-				}
+			char cur_path[PLATFORM_MAX_PATH];
+			for( int i = 0; i < max; i++ ) {
+				FF2SoundSection cur_entry = view_as<FF2SoundSection>(sec.Config.GetIntSection(i));
+				if( !cur_entry )
+					continue;
 
-				if( count ) {
-					int pos = GetRandomInt(0, count - 1);
-					if( list.At(entries[pos], snd_id) ) {
-						strcopy(sample, sizeof(sample), snd_id.path);
-					}
-				}
+				cur_entry.Config.Get("seek", cur_path, sizeof(cur_path));
+				if( !StrContains(cur_path, sample) )
+					entries[count++] = cur_entry;
+			}
+
+			if( count ) {
+				entries[GetRandomInt(0, count - 1)].GetPath(sample, sizeof(sample));
 			}
 		}
 
 		bool sound_block;
-		if( identity.hCfg.GetBool("character.sound_block_vo", sound_block) && sound_block ) {
+		if( identity.hCfg.GetBool("character.info.mute", sound_block, false) && sound_block ) {
 			return Plugin_Stop;
 		}
 	}
@@ -705,10 +780,9 @@ void OnLastPlayerFF2(const VSH2Player player)
 	if( !ff2_cfgmgr.FindIdentity(ToFF2Player(player).iBossType, identity) )
 		return;
 
-	FF2SoundList list = identity.sndHash.GetList("sound_lastman");
-	FF2SoundIdentity snd_id;
-	if( list && list.RandomSound(snd_id) ) {
-		player.PlayVoiceClip(snd_id.path, VSH2_VOICE_LASTGUY);
+	FF2SoundSection sec = identity.soundMap.RandomEntry("lastman");
+	if( sec ) {
+		sec.PlaySound(player.index, VSH2_VOICE_LASTGUY);
 	}
 }
 
@@ -725,7 +799,7 @@ void FinishQueueArray()
 {
 	VSH2GameMode.SetProp("bQueueChecking", false);
 
-	int[] points = new int[MaxClients];
+	int[] points = new int[MaxClients + 1];
 	for( int i=1; i<=MaxClients; i++ )
 		points[i] = ff2.m_queuePoints[i];
 
@@ -747,7 +821,7 @@ void FinishQueueArray()
 			player.SetPropInt("iQueue", player.GetPropInt("iQueue") - ff2.m_queuePoints[i]);
 		}
 	}
-	
+
 	ff2.m_plugins.UnloadAllSubPlugins();
 }
 
@@ -756,20 +830,26 @@ Action OnBossTriggerHurtFF2(VSH2Player victim, int& attacker, int& inflictor, fl
 	FF2Identity identity;
 	if( !ff2_cfgmgr.FindIdentity(ToFF2Player(victim).iBossType, identity) )
 		return Plugin_Continue;
-	return Call_OnTakeDamage_OnBossTriggerHurt(victim.userid, attacker, damage);
+	return Call_OnTakeDamage_OnBossTriggerHurt(victim.index, attacker, damage);
 }
 
 void OnVariablesResetFF2(const VSH2Player vsh2player)
 {
 	FF2Player player = ToFF2Player(vsh2player);
 	
-	player.SetPropAny("bNotifySMAC_CVars", false);
-	
 	player.iMaxLives = 0;
 	player.bNoSuperJump = false;
 	player.bNoWeighdown = false;
 	player.bHideHUD = false;
+
+	player.SetPropAny("bNotifySMAC_CVars", false);
 	player.SetPropAny("bSupressRAGE", false);
+	player.SetPropFloat("flWeighdownCd", 0.0);
+	player.SetPropInt("iFlags", 0);
+
+	/// https://github.com/01Pollux/FF2-Library/blob/VSH2/addons/sourcemod/scripting/ff2_nopacks.sp
+	player.SetPropAny("bNoHealthPacks", false);
+	player.SetPropAny("bNoAmmoPacks", false);
 }
 
 

@@ -7,7 +7,7 @@
 #include <sdkhooks>
 
 #define PLYR           35
-#define PLUGIN_VERSION "1.0.65b"
+#define PLUGIN_VERSION "1.0.7"
 
 #include <cfgmap>
 #include "modules/stocks.inc"
@@ -31,14 +31,15 @@ enum {
 	FF2OnPreAbility,
 	FF2OnAbility,
 	FF2OnQueuePoints,
-	FF2OnBossJarated,
+	FF2OnTriggerHurt,
 	MaxFF2Forwards
 };
 
 enum struct FF2ConVars {
 	ConVar m_version;
-	ConVar m_fljarate;
-	ConVar m_flairblast;
+	ConVar m_fljarate_rage;
+	ConVar m_flairblast_rage;
+	ConVar m_flscout_rage_gen;
 	ConVar m_flmusicvol;
 	ConVar m_companion_min;
 	ConVar m_nextmap;
@@ -74,10 +75,14 @@ VSH2GameMode    vsh2_gm;
 
 #include "modules/ff2/handler.sp"
 #include "modules/ff2/vsh2_bridge.sp"
+#include "modules/ff2/backwards_compatibility.sp"
 
 #include "modules/ff2/natives.sp"
 #include "modules/ff2/console.sp"
 #include "modules/ff2/formula_parser.sp"
+
+#include "modules/ff2/extras/nopack_pickup.sp"
+#include "modules/ff2/extras/multilives.sp"
 
 
 public void OnPluginEnd()
@@ -128,11 +133,20 @@ public void NextFrame_InitFF2Player(int client)
 {
 	if( ff2.m_vsh2 ) {
 		FF2Player player = FF2Player(client);
-		player.SetPropAny("bNotifySMAC_CVars", false);
+
 		player.iMaxLives = 0;
 		player.bNoSuperJump = false;
 		player.bNoWeighdown = false;
 		player.bHideHUD = false;
+
+		player.SetPropAny("bNotifySMAC_CVars", false);
+		player.SetPropAny("bNotifySMAC_CVars", false);
+		player.SetPropAny("bSupressRAGE", false);
+		player.SetPropFloat("flWeighdownCd", 0.0);
+		player.SetPropInt("iFlags", 0);
+
+		player.SetPropAny("bNoHealthPacks", false);
+		player.SetPropAny("bNoAmmoPacks", false);
 	}
 }
 
@@ -152,11 +166,21 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	ff2.m_forwards[FF2OnPreAbility] = new GlobalForward("FF2_PreAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell, Param_CellByRef);
 	ff2.m_forwards[FF2OnAbility] = new GlobalForward("FF2_OnAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell);
 	ff2.m_forwards[FF2OnQueuePoints] = new GlobalForward("FF2_OnAddQueuePoints", ET_Hook, Param_Array);
-	ff2.m_forwards[FF2OnBossJarated] = new GlobalForward("FF2_OnBossJarated", ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef);
+	ff2.m_forwards[FF2OnTriggerHurt] = new GlobalForward("FF2_OnTriggerHurt", ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef);
 
 	RegPluginLibrary("freak_fortress_2");
 
 	return APLRes_Success;
+}
+
+
+public void OnEntityCreated(int entity, const char[] clsname)
+{
+	if( !ff2.m_vsh2 )
+		return;
+	if( StrContains(clsname, "healthkit") != -1 || 
+	    StrContains(clsname, "ammo") != -1 )
+		NoPackPickup_OnItemSpawn(entity);
 }
 
 
