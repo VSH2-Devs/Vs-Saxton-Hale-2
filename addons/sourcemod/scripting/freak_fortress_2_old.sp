@@ -283,14 +283,14 @@ any Native_GetBossRageDamage(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
 	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
-	return boss.GetPropFloat("flRageDamage");
+	return player.GetPropFloat("flRageDamage");
 }
 
 any Native_SetBossRageDamage(Handle plugin, int numParams)
 {
 	int boss = GetNativeCell(1);
 	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
-	boss.SetPropFloat("flRageDamage", GetNativeCell(2));
+	player.SetPropFloat("flRageDamage", GetNativeCell(2));
 }
 
 any Native_GetDamage(Handle plugin, int numParams)
@@ -305,6 +305,7 @@ any Native_GetRoundState(Handle plugin, int numParams)
 
 any Native_GetSpecialKV(Handle plugin, int numParams)
 {
+	int boss = GetNativeCell(1);
 	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	if( !player.bIsBoss || GetNativeCell(2) )
 		return 0;
