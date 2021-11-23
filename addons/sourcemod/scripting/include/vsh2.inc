@@ -342,7 +342,7 @@ methodmap VSH2Player {
 		int sound_len = sect.GetIntKeySize(sound_idx);
 		char[] sound_str = new char[sound_len];
 		if( sect.GetIntKey(sound_idx, sound_str, sound_len) > 0 ) {
-			this.PlayVoiceClip(sound_str, VSH2_VOICE_INTRO);
+			this.PlayVoiceClip(sound_str, voice_flags);
 		}
 	}
 };
