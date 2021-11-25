@@ -1,0 +1,132 @@
+"Phrases"
+{
+  "late_spawn_blocked"
+  {
+    "en"     "{olive}[VSH 2]{default} Late Spawn Blocked"
+  }
+  "cant_suicide_as_boss"
+  {
+    "en"     "{olive}[VSH 2]{default} You cannot suicide yet as a boss. Please Use '!resetq' instead."
+  }
+  "vsh2_welcome"
+  {
+    "en"      "{olive}[VSH 2]{default} Welcome to VSH2, type /bosshelp for help!"
+  }
+  "cant_find_vsh2cfg"
+  {
+    "en"     "{olive}[VSH 2] ERROR{default} :: **** {axis}couldn't find 'configs/saxton_hale/vsh2.cfg'{default} ****"
+  }
+  "vsh2_config_reloaded"
+  {
+    "en"     "{olive}[VSH 2]{default} **** Reloaded VSH2 Config ****"
+  }
+  "top_3"
+  {
+    "en"     "Most damage dealt by:"
+  }
+  "damage_dealt"
+  {
+    "en"     "Damage Dealt: "
+  }
+  "gained_points"
+  {
+    "#format" "{1:i}"
+    "en"      "{olive}[VSH 2] Queue{default} You gained {1} queue points."
+  }
+  "scored_points"
+  {
+    "#format" "{1:i}"
+    "en"      "{olive}[VSH 2] Queue{default} You scored {1} queue points."
+  }
+  "total_boss_health"
+  {
+    "en"      "Total Boss Health: "
+  }
+  "surprise"
+  {
+    "en"      "{olive}[VSH 2]{green} Surprise! You're on NOW!"
+  }
+  "boss_disconnected"
+  {
+    "en"      "{olive}[VSH 2]{red} A Boss Just Disconnected!"
+  }
+  "player_backstab"
+  {
+    "#format" "{1:s}"
+    "en"      "You Tickled {1}!"
+  }
+  "boss_got_backstabbed"
+  {
+    "en"      "You Were Just Tickled!"
+  }
+  "player_market_garden"
+  {
+    "#format" "{1:s}"
+    "en"      "You Market Gardened {1}!"
+  }
+  "boss_got_market_gardened"
+  {
+    "en"      "You Were Just Market Gardened!"
+  }
+  "goomba_stomp"
+  {
+    "#format" "{1:N},{2:N}"
+    "en"      "{olive}>> {teamcolor}{1} {default}just goomba stomped {unique}{2}{default}!"
+  }
+  "become_boss"
+  {
+    "#format" "{1:N},{2:s},{3:i}"
+    "en"      "{1} has become {2} with {3} Health"
+  }
+  "health_left"
+  {
+    "#format" "{1:s},{2:N},{3:i},{4:i}"
+    "en"      "{1} ({2}) had {3} (of {4}) health left."
+  }
+  "end_of_round"
+  {
+    "#format" "{1:s}"
+    "en"      "{olive}[VSH 2] End of Round{default} {1}"
+  }
+  "show_current_hp"
+  {
+    "#format" "{1:s},{2:i},{3:i}"
+    "en"      "{1} showed his current HP: {2} of {3}"
+  }
+  "current_health"
+  {
+    "#format" "{1:s},{2:i},{3:i}"
+    "en"      "{1}'s current health is: {2} of {3}"
+  }
+  "boss_health_check"
+  {
+    "#format" "{1:s}"
+    "en"      "{olive}[VSH 2] {axis}Boss Health Check{default} %s"
+  }
+  "cannot_see_hp_now"
+  {
+    "#format" "{1:i},{2:i}"
+    "en"      "{olive}[VSH 2]{default} You cannot see the Boss HP now (wait {1} seconds). Last known total boss health was {2}."
+  }
+  "be_boss_soon"
+  {
+    "en"      "{olive}[VSH 2]{default} You are going to be a Boss soon! Type {olive}/halenext{default} to check/reset your queue points & !setboss to set your boss."
+  }
+  "dead_ringer_ready"
+  {
+    "en"      "Status: Feign-Death Ready"
+  }
+  "dead_ringer_active"
+  {
+    "en"      "Status: Dead-Ringered"
+  }
+  "dead_ringer_inactive"
+  {
+    "en"      "Status: Inactive"
+  }
+  "kunai_hud"
+  {
+    "#format" "{1:s},{2:s}"
+    "en"      "{1} | Kunai: {2}"
+  }
+}
