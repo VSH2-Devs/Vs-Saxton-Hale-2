@@ -1,6 +1,6 @@
 name: Continuous Integration
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the develop branch
   push:
@@ -17,47 +17,74 @@ jobs:
     name: (Linux) Compile SourcePawn ${{matrix.sm_version}}
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         # Set up Sourcemod versions to compile against
-        sm_version: ['1.10', '1.11']
+        # sm_version: ['1.10', '1.11'] # TODO: uncomment when SM 1.11 becomes stable
+        sm_version: ['1.10']
+        use_optional_dependencies: [false, true]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-        
+
+      # TODO: see if caching could be used to speed up repeated CI/CD
       # Sets up the SourcePawn compiler
       - name: Setup SourcePawn Compiler ${{ matrix.sm_version }}
-        uses: rumblefrog/setup-sp@master
-        with:
-          version: ${{ matrix.sm_version }}
-      
-      # creates output directory and sets up environment variables for easy path access
-      - name: Setup Environment
         run: |
-          mkdir output
-          SOURCEMOD_PATH=$GITHUB_WORKSPACE/addons/sourcemod
-          echo "SOURCEMOD_PATH=$SOURCEMOD_PATH" >> $GITHUB_ENV
-          echo "SCRIPTS_PATH=$SOURCEMOD_PATH/scripting" >> $GITHUB_ENV
-          
+          wget --input-file=http://sourcemod.net/smdrop/${{ matrix.sm_version }}/sourcemod-latest-linux
+          tar -xzf $(cat sourcemod-latest-linux)
+
       - name: Fetch plugin dependencies
         run: |
-          wget https://raw.githubusercontent.com/asherkin/TF2Items/master/pawn/tf2items.inc -P $includePath
-          
-      - name: Compile Plugins
+          wget https://raw.githubusercontent.com/asherkin/TF2Items/master/pawn/tf2items.inc -P addons/sourcemod/scripting/include
+
+
+      # TODO: look into how complete new declare rewrites are:
+      # https://raw.githubusercontent.com/JoinedSenses/SourceMod-IncludeLibrary/master/include/steamtools.inc
+      # https://raw.githubusercontent.com/JoinedSenses/SourceMod-IncludeLibrary/master/include/tf2attributes.inc
+      - name: Fetch optional dependencies
+        if: matrix.use_optional_dependencies
         run: |
-          spcomp $SCRIPTS_PATH/vsh2.sp -i$SCRIPTS_PATH/include -O2 -v2 -o=output/vsh2.smx
-          spcomp $SCRIPTS_PATH/saxtonhale.sp -i$SCRIPTS_PATH/include -O2 -v2 -o=output/saxtonhale.smx
-          spcomp $SCRIPTS_PATH/freak_fortress_2.sp -i$SCRIPTS_PATH/include -O2 -v2 -o=output/freak_fortress_2.smx
-        
-      # bundle the plugins into a single tar file to limit artifact file uploads
-      - name: Bundle Plugins
-        run: tar cvf vsh2_plugins.tar -C output/ .
-        
-      - name: 'Upload Compilation Artifact'
+          wget https://raw.githubusercontent.com/FlaminSarge/tf2attributes/master/tf2attributes.inc -P addons/sourcemod/scripting/include
+          wget https://raw.githubusercontent.com/asherkin/SteamTools/master/plugin/steamtools.inc -P addons/sourcemod/scripting/include
+          wget https://raw.githubusercontent.com/Flyflo/SM-Goomba-Stomp/master/addons/sourcemod/scripting/include/goomba.inc -P addons/sourcemod/scripting/include
+          wget https://raw.githubusercontent.com/JoinedSenses/SourceMod-IncludeLibrary/master/include/updater.inc -P addons/sourcemod/scripting/include
+
+      - name: Compile Plugins
+        run: bash $GITHUB_WORKSPACE/build.sh addons/sourcemod/scripting/spcomp 'addons/sourcemod/scripting/vsh2.sp' 'addons/sourcemod/scripting/freak_fortress_2.sp' 'addons/sourcemod/scripting/freak_fortress_2_old.sp' 'addons/sourcemod/scripting/saxtonhale.sp' -i='addons/sourcemod/scripting/include' -i='addons/sourcemod/scripting/'
+
+      # - name: 'Upload Compilation Artifact'
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: VSH2_Plugins (SM ${{ matrix.sm_version }})
+      #     path: |
+      #       addons/sourcemod/plugins/freak_fortress_2.smx
+      #       addons/sourcemod/plugins/saxtonhale.smx
+      #       addons/sourcemod/plugins/vsh2.smx
+
+  upload_source:
+    name: Upload Source
+    needs: build_linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Package source code
+        working-directory: ${{ env.GITHUB_WORKSPACE }}
+        run: |
+          zip -r 'Source code.zip' ./addons
+          tar cvf 'Source code.tar' addons
+
+
+      # this will upload a zip with a zip and a tar file, this is to avoid being rate liited by the github API
+      - name: Upload source code
         uses: actions/upload-artifact@v2
         with:
-          name: VSH2 (Linux SM ${{ matrix.sm_version }})
-          path: vsh2_plugins.tar
+          name: VSH Source
+          if-no-files-found: error
+          path: |
+            Source code.zip
+            Source code.tar
