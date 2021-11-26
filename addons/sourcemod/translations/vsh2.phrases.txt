@@ -220,7 +220,7 @@
   "bossmenu_pick_boss"
   {
     "#format" "{1:s}"
-    "en"      "Your boss is set to {olive}%s{default}!"
+    "en"      "Your boss is set to {olive}{1}{default}!"
   }
   "music_panel_title"
   {
