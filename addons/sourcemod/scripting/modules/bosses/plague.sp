@@ -164,7 +164,9 @@ methodmap CPlague < BaseBoss {
 		char helpstr[] = "Plague Doctor:Kill enemies and turn them into loyal Zombies!\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Powerup Minions): taunt when Rage is full to give powerups to your Zombies.";
 		Panel panel = new Panel();
 		panel.SetTitle(helpstr);
-		panel.DrawItem("%T", "Exit", this.index);
+		char ExitText[64];
+		Format(ExitText, 64, "%T", "Exit", this.index);
+		panel.DrawItem(ExitText);
 		panel.Send(this.index, HintPanel, 10);
 		delete panel;
 	}

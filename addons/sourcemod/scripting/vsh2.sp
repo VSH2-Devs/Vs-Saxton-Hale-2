@@ -1073,13 +1073,13 @@ public void ShowPlayerScores() {
 
 	SetHudTextParams(-1.0, 0.35, 10.0, 255, 255, 255, 255);
 	char damage_list[512];
-	Format(damage_list, sizeof(damage_list), "%T\n1)%i - %s\n2)%i - %s\n3)%i - %s", "top_3", i, damages[0], names[0], damages[1], names[1], damages[2], names[2]);
+	Format(damage_list, sizeof(damage_list), "%T\n1)%i - %s\n2)%i - %s\n3)%i - %s", "top_3", LANG_SERVER, damages[0], names[0], damages[1], names[1], damages[2], names[2]);
 	for( int i=MaxClients; i; --i ) {
 		if( !IsClientValid(i) || (GetClientButtons(i) & IN_SCORE) ) {
 			continue;
 		}
 		BaseBoss player = BaseBoss(i);
-		ShowHudText(i, -1, "%s\n\n%t%i", "damage_dealt", damage_list, player.iDamage);
+		ShowHudText(i, -1, "%s\n\n%t %i", damage_list, "damage_dealt", player.iDamage);
 	}
 }
 

@@ -142,7 +142,9 @@ methodmap CVagineer < BaseBoss {
 		char helpstr[] = "Vagineer:\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Uber): taunt when the Rage Meter is full to stun fairly close-by enemies.";
 		Panel panel = new Panel();
 		panel.SetTitle(helpstr);
-		panel.DrawItem("%T", "Exit", this.index);
+		char ExitText[64];
+		Format(ExitText, 64, "%T", "Exit", this.index);
+		panel.DrawItem(ExitText);
 		panel.Send(this.index, HintPanel, 10);
 		delete panel;
 	}

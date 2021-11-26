@@ -4,12 +4,13 @@ public void SkipBossPanelNotify(const int client/*, bool newchoice = true*/)
 		return;
 	}
 	Panel panel = new Panel();
-	char strNotify[64];
+	char temp[MAX_PANEL_MSG];
 
-	panel.SetTitle("[VSH 2] %T", "be_boss_soon_panel_title", client);
-	Format(strNotify, sizeof(strNotify), "%T", "be_boss_soon_panel_text", client);
+	Format(temp, sizeof(temp), "[VSH 2] %T", "be_boss_soon_panel_title", client);
+	panel.SetTitle(temp);
+	Format(temp, sizeof(temp), "%T", "be_boss_soon_panel_text", client);
 
-	panel.DrawItem(strNotify);
+	panel.DrawItem(temp);
 	panel.Send(client, SkipHalePanelH, 30); /// in commands.sp
 	delete panel;
 }
@@ -127,8 +128,11 @@ public Action SetNextSpecial(int client, int args)
 {
 	if( g_vsh2.m_hCvars.Enabled.BoolValue ) {
 		Menu bossmenu = new Menu(MenuHandler_PickBossSpecial);
-		bossmenu.SetTitle("%T", "bossmenu_title", client);
-		bossmenu.AddItem("-1", "%T", "bossmenu_none", client);
+		char temp[MAX_PANEL_MSG];
+		Format(temp, sizeof(temp), "%T", "bossmenu_title", client);
+		bossmenu.SetTitle(temp);
+		Format(temp, sizeof(temp), "%T", "bossmenu_none", client);
+		bossmenu.AddItem("-1", temp);
 		ManageMenu(bossmenu, client); /// in handler.sp
 		bossmenu.Display(client, MENU_TIME_FOREVER);
 	}
@@ -202,8 +206,11 @@ public Action SetBossMenu(int client, int args)
 		return Plugin_Continue;
 
 	Menu bossmenu = new Menu(MenuHandler_PickBosses);
-	bossmenu.SetTitle("%T", "set_boss_menu_title", client);
-	bossmenu.AddItem("-1", "%T", "bossmenu_none", client);
+	char temp[MAX_PANEL_MSG];
+	Format(temp, sizeof(temp), "%T", "set_boss_menu_title", client);
+	bossmenu.SetTitle(temp);
+	Format(temp, sizeof(temp), "%T", "set_boss_menu_title", client);
+	bossmenu.AddItem("-1", temp);
 	ManageMenu(bossmenu, client); /// in handler.sp
 	bossmenu.Display(client, MENU_TIME_FOREVER);
 	return Plugin_Handled;
@@ -237,9 +244,13 @@ public void MusicTogglePanel(const int client)
 		return;
 	}
 	Panel panel = new Panel();
-	panel.SetTitle("%T", "music_panel_title", client);
-	panel.DrawItem("%T?", "On", client);
-	panel.DrawItem("%T?", "Off", client);
+	char title[MAX_PANEL_MSG], option[16];
+	Format(title, sizeof(title), "%T", "music_panel_title", client);
+	panel.SetTitle(title);
+	Format(option, sizeof(option), "%T?", "On", client);
+	panel.DrawItem(option);
+	Format(option, sizeof(option), "%T?", "Off", client);
+	panel.DrawItem(option);
 	panel.Send(client, MusicTogglePanelH, 9001);
 	delete panel;
 }
@@ -403,13 +414,21 @@ public Action HelpPanelCmd(int client, int args)
 	//char strHelp[MAXMESSAGE];
 	//Format(strHelp, MAXMESSAGE, "Welcome to VS Saxton Hale Mode Version 2!\nOne or more players is selected each round to become a Boss.\nEveryone else must kill them!");
 	Menu help = new Menu(HelpMenuHandler);
-	help.SetTitle("%T", "helpmenu_title", client);
-	help.AddItem("-1", "%T", "helpmenu_halehp", client);
-	help.AddItem("-1", "%T", "helpmenu_showclass", client);
-	help.AddItem("-1", "%T", "helpmenu_halenext", client);
-	help.AddItem("-1", "%T", "helpmenu_resetq", client);
-	help.AddItem("-1", "%T", "helpmenu_setboss", client);
-	help.AddItem("-1", "%T", "helpmenu_halemusic", client);
+	char Text[MAX_PANEL_MSG];
+	Format(Text, sizeof(Text), "%T", "helpmenu_title", client);
+	help.SetTitle(Text);
+	Format(Text, sizeof(Text), "%T", "helpmenu_halehp", client);
+	help.AddItem("-1", Text);
+	Format(Text, sizeof(Text), "%T", "helpmenu_showclass", client);
+	help.AddItem("-1", Text);
+	Format(Text, sizeof(Text), "%T", "helpmenu_halenext", client);
+	help.AddItem("-1", Text);
+	Format(Text, sizeof(Text), "%T", "helpmenu_resetq", client);
+	help.AddItem("-1", Text);
+	Format(Text, sizeof(Text), "%T", "helpmenu_setboss", client);
+	help.AddItem("-1", Text);
+	Format(Text, sizeof(Text), "%T", "helpmenu_halemusic", client);
+	help.AddItem("-1", Text);
 	Call_OnHelpMenu(BaseBoss(client), help);
 	help.Display(client, MENU_TIME_FOREVER);
 	return Plugin_Handled;
@@ -455,16 +474,27 @@ public Action MenuDoClassRush(int client, int args)
 	}
 
 	Menu rush = new Menu(MenuHandler_ClassRush);
-	rush.SetTitle("%T", "classrushmenu_title", client);
-	rush.AddItem("1", "**** %T ****", "scout", client);
-	rush.AddItem("2", "**** %T ****", "sniper", client);
-	rush.AddItem("3", "**** %T ****", "soldier", client);
-	rush.AddItem("4", "**** %T ****", "demoman", client);
-	rush.AddItem("5", "**** %T ****", "medic", client);
-	rush.AddItem("6", "**** %T ****", "heavy", client);
-	rush.AddItem("7", "**** %T ****", "pyro", client);
-	rush.AddItem("8", "**** %T ****", "spy", client);
-	rush.AddItem("9", "**** %T ****", "engineer", client);
+	char Title[MAX_PANEL_MSG], Classname[64];
+	Format(Title, sizeof(Title), "%T", "classrushmenu_title", client);
+	rush.SetTitle(Title);
+	Format(Classname, sizeof(Classname), "%T", "scout", client);
+	rush.AddItem("1", Classname);
+	Format(Classname, sizeof(Classname), "%T", "sniper", client);
+	rush.AddItem("2", Classname);
+	Format(Classname, sizeof(Classname), "%T", "soldier", client);
+	rush.AddItem("3", Classname);
+	Format(Classname, sizeof(Classname), "%T", "demoman", client);
+	rush.AddItem("4", Classname);
+	Format(Classname, sizeof(Classname), "%T", "medic", client);
+	rush.AddItem("5", Classname);
+	Format(Classname, sizeof(Classname), "%T", "heavy", client);
+	rush.AddItem("6", Classname);
+	Format(Classname, sizeof(Classname), "%T", "pyro", client);
+	rush.AddItem("7", Classname);
+	Format(Classname, sizeof(Classname), "%T", "spy", client);
+	rush.AddItem("8", Classname);
+	Format(Classname, sizeof(Classname), "%T", "engineer", client);
+	rush.AddItem("9", Classname);
 	//rush.ExitBackButton = true;
 	rush.Display(client, MENU_TIME_FOREVER);
 	return Plugin_Handled;

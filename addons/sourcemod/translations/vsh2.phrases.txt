@@ -22,7 +22,7 @@
   }
   "top_3"
   {
-    "en"     "Most damage dealt by:"
+    "en"     "Most damage dealt by: "
   }
   "damage_dealt"
   {

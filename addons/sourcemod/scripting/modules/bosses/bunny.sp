@@ -223,7 +223,9 @@ methodmap CBunny < BaseBoss {
 		char helpstr[] = "The Easter Bunny:\nI think he wants to give out candy? Maybe?\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Happy Easter, Fools): taunt when Rage Meter is full.\nNearby enemies are stunned.";
 		Panel panel = new Panel();
 		panel.SetTitle(helpstr);
-		panel.DrawItem("%T", "Exit", this.index);
+		char ExitText[64];
+		Format(ExitText, 64, "%T", "Exit", this.index);
+		panel.DrawItem(ExitText);
 		panel.Send(this.index, HintPanel, 10);
 		delete panel;
 	}

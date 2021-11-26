@@ -192,7 +192,9 @@ methodmap CHHHJr < BaseBoss {
 		char helpstr[] = "Horseless Headless Horsemann Jr.:\nTeleporter: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (stun): taunt when Rage is full to stun nearby enemies.";
 		Panel panel = new Panel();
 		panel.SetTitle(helpstr);
-		panel.DrawItem("%T", "Exit", this.index);
+		char ExitText[64];
+		Format(ExitText, 64, "%T", "Exit", this.index);
+		panel.DrawItem(ExitText);
 		panel.Send(this.index, HintPanel, 10);
 		delete panel;
 	}
