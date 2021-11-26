@@ -12,33 +12,33 @@ methodmap CPlague < BaseBoss {
 	public CPlague(const int ind, bool uid=false) {
 		return view_as<CPlague>( BaseBoss(ind, uid) );
 	}
-	
+
 	public void PlaySpawnClip() {
 		char start_snd[PLATFORM_MAX_PATH];
 		strcopy(start_snd, PLATFORM_MAX_PATH, PlagueIntro);
 		this.PlayVoiceClip(start_snd, VSH2_VOICE_INTRO);
 	}
-	
+
 	public void Think() {
 		if( !IsPlayerAlive(this.index) )
 			return;
-		
+
 		int buttons = GetClientButtons(this.index);
 		//float currtime = GetGameTime();
 		int flags = GetEntityFlags(this.index);
-		
+
 		//int maxhp = GetEntProp(this.index, Prop_Data, "m_iMaxHealth");
 		int health = this.iHealth;
 		float speed = HALESPEED + 0.7 * (100-health*100/this.iMaxHealth);
 		SetEntPropFloat(this.index, Prop_Send, "m_flMaxspeed", speed);
-		
+
 		if( this.flGlowtime > 0.0 ) {
 			this.bGlow = 1;
 			this.flGlowtime -= 0.1;
 		}
 		else if( this.flGlowtime <= 0.0 )
 			this.bGlow = 0;
-		
+
 		if( ((buttons & IN_DUCK) || (buttons & IN_ATTACK2)) && (this.flCharge >= 0.0) ) {
 			if( this.flCharge+2.5 < HALE_JUMPCHARGE )
 				this.flCharge += 2.5;
@@ -56,11 +56,11 @@ methodmap CPlague < BaseBoss {
 		}
 		if( OnlyScoutsLeft(VSH2Team_Red) )
 			this.flRAGE += g_vsh2.m_hCvars.ScoutRageGen.FloatValue;
-		
+
 		if( flags & FL_ONGROUND )
 			this.flWeighDown = 0.0;
 		else this.flWeighDown += 0.1;
-		
+
 		if( (buttons & IN_DUCK) && this.flWeighDown >= HALE_WEIGHDOWN_TIME ) {
 			float ang[3]; GetClientEyeAngles(this.index, ang);
 			if( ang[0] > 60.0 ) {
@@ -81,12 +81,12 @@ methodmap CPlague < BaseBoss {
 		SetEntProp(this.index, Prop_Send, "m_bUseClassAnimations", 1);
 		//SetEntPropFloat(client, Prop_Send, "m_flModelScale", 1.25);
 	}
-	
+
 	public void Equip() {
 		this.SetName("The Plague Doctor");
 		this.RemoveAllItems();
 		char attribs[128];
-		
+
 		Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.5; 259; 1.0; 252; 0.75; 200; 1.0; 551; 1.0");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_shovel", 304, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
@@ -94,7 +94,7 @@ methodmap CPlague < BaseBoss {
 	public void RageAbility()
 	{
 		int attribute = 0;
-		float value = 0.0; 
+		float value = 0.0;
 		TF2_AddCondition(this.index, TFCond_MegaHeal, 10.0);
 		switch( GetRandomInt(0, 2) ) {
 			case 0: { attribute = 2; value = 2.0; }		/// Extra damage
@@ -164,7 +164,7 @@ methodmap CPlague < BaseBoss {
 		char helpstr[] = "Plague Doctor:Kill enemies and turn them into loyal Zombies!\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Powerup Minions): taunt when Rage is full to give powerups to your Zombies.";
 		Panel panel = new Panel();
 		panel.SetTitle(helpstr);
-		panel.DrawItem("Exit");
+		panel.DrawItem("%T", "Exit", this.index);
 		panel.Send(this.index, HintPanel, 10);
 		delete panel;
 	}
@@ -179,10 +179,10 @@ public void AddPlagueDocToDownloads()
 {
 	//char s[PLATFORM_MAX_PATH];
 	//int i;
-	
+
 	PrecacheModel(PlagueModel, true);
 	PrecacheModel(ZombieModel, true);
-	
+
 	PrecacheSound(PlagueIntro, true);
 	PrecacheSound(PlagueRage1, true);
 	PrecacheSound(PlagueRage2, true);

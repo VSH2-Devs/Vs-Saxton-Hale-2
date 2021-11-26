@@ -29,7 +29,7 @@ methodmap CVagineer < BaseBoss {
 	public CVagineer(const int ind, bool uid=false) {
 		return view_as< CVagineer >( BaseBoss(ind, uid) );
 	}
-	
+
 	public void PlaySpawnClip() {
 		char start_snd[PLATFORM_MAX_PATH];
 		if( !GetRandomInt(0, 1) )
@@ -37,57 +37,57 @@ methodmap CVagineer < BaseBoss {
 		else strcopy(start_snd, PLATFORM_MAX_PATH, VagineerRoundStart);
 		this.PlayVoiceClip(start_snd, VSH2_VOICE_INTRO);
 	}
-	
+
 	public void Think()
 	{
 		if( !IsPlayerAlive(this.index) )
 			return;
-		
+
 		this.SpeedThink(HALESPEED);
 		this.GlowThink(0.1);
-		
+
 		if( this.SuperJumpThink(2.5, HALE_JUMPCHARGE) ) {
 			this.SuperJump(this.flCharge, -100.0);
-			
+
 			char gottam_snd[PLATFORM_MAX_PATH];
 			Format(gottam_snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerJump, GetRandomInt(1, 2));
 			this.PlayVoiceClip(gottam_snd, VSH2_VOICE_ABILITY);
 		}
-		
+
 		if( OnlyScoutsLeft(VSH2Team_Red) )
 			this.flRAGE += g_vsh2.m_hCvars.ScoutRageGen.FloatValue;
-		
+
 		this.WeighDownThink(HALE_WEIGHDOWN_TIME);
-		
+
 		SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
 		float jmp = this.flCharge;
 		if( this.flRAGE >= 100.0 )
 			ShowSyncHudText(this.index, g_vsh2.m_hHUDs[PlayerHUD], "Jump: %i%% | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 4);
 		else ShowSyncHudText(this.index, g_vsh2.m_hHUDs[PlayerHUD], "Jump: %i%% | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 4, this.flRAGE);
-		
+
 		if( TF2_IsPlayerInCondition(this.index, TFCond_Ubercharged) )
 			SetEntProp(this.index, Prop_Data, "m_takedamage", 0);
 		else SetEntProp(this.index, Prop_Data, "m_takedamage", 2);
 	}
-	
+
 	public void SetModel() {
 		SetVariantString(VagineerModel);
 		AcceptEntityInput(this.index, "SetCustomModel");
 		SetEntProp(this.index, Prop_Send, "m_bUseClassAnimations", 1);
 		//SetEntPropFloat(client, Prop_Send, "m_flModelScale", 1.25);
 	}
-	
+
 	public void Death() {
 		char ded_snd[PLATFORM_MAX_PATH];
 		Format(ded_snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerFail, GetRandomInt(1, 2));
 		this.PlayVoiceClip(ded_snd, VSH2_VOICE_LOSE);
 	}
-	
+
 	public void Equip() {
 		this.SetName("The Vagineer");
 		this.RemoveAllItems();
 		char attribs[128];
-		
+
 		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.1; 259; 1.0; 436; 1.0");
 		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_wrench", 169, 100, 5, attribs);
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
@@ -108,17 +108,17 @@ methodmap CVagineer < BaseBoss {
 		else Format(rage_snd, PLATFORM_MAX_PATH, "%s%i.wav", VagineerRageSound2, GetRandomInt(1, 2));
 		this.PlayVoiceClip(rage_snd, VSH2_VOICE_RAGE);
 	}
-	
+
 	public void KilledPlayer(const BaseBoss victim, Event event) {
 		char wrench_hit_snd[PLATFORM_MAX_PATH];
 		strcopy(wrench_hit_snd, PLATFORM_MAX_PATH, VagineerHit);
 		this.PlayVoiceClip(wrench_hit_snd, VSH2_VOICE_SPREE);
-		
+
 		float curtime = GetGameTime();
 		if( curtime <= this.flKillSpree )
 			this.iKills++;
 		else this.iKills = 0;
-		
+
 		if( this.iKills == 3 && GetLivingPlayers(VSH2Team_Red) != 1 ) {
 			char spree_snd[PLATFORM_MAX_PATH];
 			switch( GetRandomInt(0, 4) ) {
@@ -131,18 +131,18 @@ methodmap CVagineer < BaseBoss {
 		}
 		else this.flKillSpree = curtime+5;
 	}
-	
+
 	public void Stabbed() {
 		this.PlayVoiceClip("vo/engineer_positivevocalization01.mp3", VSH2_VOICE_STABBED);
 	}
-	
+
 	public void Help() {
 		if( IsVoteInProgress() )
 			return;
 		char helpstr[] = "Vagineer:\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Uber): taunt when the Rage Meter is full to stun fairly close-by enemies.";
 		Panel panel = new Panel();
 		panel.SetTitle(helpstr);
-		panel.DrawItem("Exit");
+		panel.DrawItem("%T", "Exit", this.index);
 		panel.Send(this.index, HintPanel, 10);
 		delete panel;
 	}
@@ -167,9 +167,9 @@ public void AddVagToDownloads()
 {
 	char s[PLATFORM_MAX_PATH];
 	int i;
-	
+
 	PrepareModel(VagineerModel);
-	
+
 	PrepareSound(VagineerLastA);
 	PrepareSound(VagineerStart);
 	PrepareSound(VagineerRageSound);
@@ -177,22 +177,22 @@ public void AddVagToDownloads()
 	PrepareSound(VagineerKSpree2);
 	PrepareSound(VagineerHit);
 	PrepareSound(VagineerRoundStart);
-	
+
 	for( i=1; i <= 5; i++ ) {
 		if( i <= 2 ) {
 			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", VagineerJump, i);
 			PrepareSound(s);
-			
+
 			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", VagineerRageSound2, i);
 			PrepareSound(s);
-			
+
 			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", VagineerFail, i);
 			PrepareSound(s);
 		}
 		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", VagineerKSpreeNew, i);
 		PrepareSound(s);
 	}
-	
+
 	PrecacheSound("vo/engineer_positivevocalization01.mp3", true);
 }
 

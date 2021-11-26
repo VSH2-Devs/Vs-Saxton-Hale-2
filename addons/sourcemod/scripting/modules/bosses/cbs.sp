@@ -21,29 +21,29 @@ methodmap CChristian < BaseBoss {
 	public CChristian(const int ind, bool uid=false) {
 		return view_as< CChristian >( BaseBoss(ind, uid) );
 	}
-	
+
 	public void PlaySpawnClip() {
 		this.PlayVoiceClip(CBS0, VSH2_VOICE_INTRO);
 	}
-	
+
 	public void Think()
 	{
 		if( !IsPlayerAlive(this.index) )
 			return;
-		
+
 		this.SpeedThink(HALESPEED);
 		this.GlowThink(0.1);
-		
+
 		if( this.SuperJumpThink(2.5, HALE_JUMPCHARGE) ) {
 			this.SuperJump(this.flCharge, -100.0);
 			this.PlayVoiceClip(CBSJump1, VSH2_VOICE_ABILITY);
 		}
-		
+
 		if( OnlyScoutsLeft(VSH2Team_Red) )
 			this.flRAGE += g_vsh2.m_hCvars.ScoutRageGen.FloatValue;
-		
+
 		this.WeighDownThink(HALE_WEIGHDOWN_TIME);
-		
+
 		SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
 		float jmp = this.flCharge;
 		if( this.flRAGE >= 100.0 )
@@ -56,12 +56,12 @@ methodmap CChristian < BaseBoss {
 		SetEntProp(this.index, Prop_Send, "m_bUseClassAnimations", 1);
 		//SetEntPropFloat(client, Prop_Send, "m_flModelScale", 1.25);
 	}
-	
+
 	public void Death() {
 		// char ded_snd[PLATFORM_MAX_PATH];
 		//EmitSoundToAll(snd, this.index, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC);
 	}
-	
+
 	public void Equip() {
 		this.SetName("The Christian Brutal Sniper");
 		this.RemoveAllItems();
@@ -80,15 +80,15 @@ methodmap CChristian < BaseBoss {
 		}
 		this.DoGenericStun(CBSRAGEDIST);
 		this.PlayVoiceClip(GetRandomInt(0, 1) ? CBS1 : CBS3, VSH2_VOICE_RAGE);
-		
+
 		TF2_RemoveWeaponSlot(this.index, TFWeaponSlot_Primary);
 		int bow = this.SpawnWeapon("tf_weapon_compound_bow", 1005, 100, 5, "2; 2.1; 6; 0.5; 37; 0.0; 280; 19; 551; 1");
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", bow); /// 266; 1.0 - penetration
-		
+
 		int living = GetLivingPlayers(VSH2Team_Red);
 		SetWeaponAmmo(bow, ((living >= CBS_MAX_ARROWS) ? CBS_MAX_ARROWS : living));
 	}
-	
+
 	public void KilledPlayer(const BaseBoss victim, Event event)
 	{
 		int living = GetLivingPlayers(VSH2Team_Red);
@@ -120,7 +120,7 @@ methodmap CChristian < BaseBoss {
 		if( curtime <= this.flKillSpree )
 			this.iKills++;
 		else this.iKills = 0;
-		
+
 		if( this.iKills == 3 && living != 1 ) {
 			char spree_snd[PLATFORM_MAX_PATH];
 			if( !GetRandomInt(0, 3) )
@@ -139,7 +139,7 @@ methodmap CChristian < BaseBoss {
 		char helpstr[] = "Christian Brutal Sniper:\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Huntsman Bow): taunt when Rage is full (9 arrows).\nVery close-by enemies are stunned.";
 		Panel panel = new Panel();
 		panel.SetTitle(helpstr);
-		panel.DrawItem("Exit");
+		panel.DrawItem("%T", "Exit", this.index);
 		panel.Send(this.index, HintPanel, 10);
 		delete panel;
 	}
@@ -164,13 +164,13 @@ public void AddCBSToDownloads()
 	PrepareMaterial("materials/models/player/saxton_hale/sniper_lens");
 	PrepareMaterial("materials/models/player/saxton_hale/sniper_head");
 	PrepareMaterial("materials/models/player/saxton_hale/sniper_head_red");
-	
+
 	PrecacheSound(CBS0, true);
 	PrecacheSound(CBS1, true);
 	PrecacheSound(CBS3, true);
 	PrecacheSound(CBSJump1, true);
 	PrepareSound(CBSTheme);
-	
+
 	for( int i=1; i <= 25; i++ ) {
 		char s[PLATFORM_MAX_PATH];
 		if( i <= 9 ) {

@@ -20,7 +20,7 @@ static const char HaleMatsV2[][] = {
 	//"materials/models/player/saxton_test4/halegibs.vmt",
 	//"materials/models/player/saxton_test4/halegibs.vtf"
 	*/
-	
+
 	"materials/models/player/saxton_hale/hale_misc_normal.vtf",
 	"materials/models/player/saxton_hale/hale_body_normal.vtf",
 	"materials/models/player/saxton_hale/eyeball_l.vmt",
@@ -105,7 +105,7 @@ methodmap CHale < BaseBoss {
 	public CHale(const int ind, bool uid=false) {
 		return view_as< CHale >( BaseBoss(ind, uid) );
 	}
-	
+
 	public void PlaySpawnClip() {
 		char start_snd[PLATFORM_MAX_PATH];
 		if( !GetRandomInt(0, 1) )
@@ -113,27 +113,27 @@ methodmap CHale < BaseBoss {
 		else Format(start_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleStart132, GetRandomInt(1, 5));
 		this.PlayVoiceClip(start_snd, VSH2_VOICE_INTRO);
 	}
-	
+
 	public void Think()
 	{
 		if( !IsPlayerAlive(this.index) )
 			return;
-		
+
 		this.SpeedThink(HALESPEED);
 		this.GlowThink(0.1);
-		
+
 		if( this.SuperJumpThink(2.5, HALE_JUMPCHARGE) ) {
 			this.SuperJump(this.flCharge, -100.0);
 			char jump_snd[PLATFORM_MAX_PATH];
 			Format(jump_snd, PLATFORM_MAX_PATH, "%s%i.wav", GetRandomInt(0, 1) ? HaleJump : HaleJump132, GetRandomInt(1, 2));
 			this.PlayVoiceClip(jump_snd, VSH2_VOICE_ABILITY);
 		}
-		
+
 		if( OnlyScoutsLeft(VSH2Team_Red) )
 			this.flRAGE += g_vsh2.m_hCvars.ScoutRageGen.FloatValue;
-		
+
 		this.WeighDownThink(HALE_WEIGHDOWN_TIME);
-		
+
 		SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
 		float jmp = this.flCharge;
 		if( this.flRAGE >= 100.0 )
@@ -146,13 +146,13 @@ methodmap CHale < BaseBoss {
 		SetEntProp(this.index, Prop_Send, "m_bUseClassAnimations", 1);
 		//SetEntPropFloat(client, Prop_Send, "m_flModelScale", 1.25);
 	}
-	
+
 	public void Death() {
 		char ded_snd[PLATFORM_MAX_PATH];
 		Format(ded_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleFail, GetRandomInt(1, 3));
 		this.PlayVoiceClip(ded_snd, VSH2_VOICE_LOSE);
 	}
-	
+
 	public void Equip() {
 		this.SetName("Saxton Hale");
 		this.RemoveAllItems();
@@ -187,7 +187,7 @@ methodmap CHale < BaseBoss {
 				case TFClass_Heavy: strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillHeavy132);
 				case TFClass_Medic: strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillMedic);
 				case TFClass_Sniper: strcopy(kill_snd, PLATFORM_MAX_PATH, GetRandomInt(0, 1) ? HaleKillSniper1 : HaleKillSniper2);
-				
+
 				case TFClass_Spy: {
 					int see = GetRandomInt(0, 2);
 					if( see )
@@ -208,12 +208,12 @@ methodmap CHale < BaseBoss {
 			if( kill_snd[0] != '\0' )
 				this.PlayVoiceClip(kill_snd, VSH2_VOICE_SPREE);
 		}
-		
+
 		float curtime = GetGameTime();
 		if( curtime <= this.flKillSpree )
 			this.iKills++;
 		else this.iKills = 0;
-		
+
 		if( this.iKills == 3 && GetLivingPlayers(VSH2Team_Red) != 1 ) {
 			char spree_snd[PLATFORM_MAX_PATH];
 			int randsound = GetRandomInt(0, 7);
@@ -222,13 +222,13 @@ methodmap CHale < BaseBoss {
 			else if( randsound < 5 && randsound > 1 )
 				Format(spree_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKSpreeNew, GetRandomInt(1, 5));
 			else Format(spree_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillKSpree132, GetRandomInt(1, 2));
-			
+
 			this.PlayVoiceClip(spree_snd, VSH2_VOICE_SPREE);
 			this.iKills = 0;
 		}
 		else this.flKillSpree = curtime+5;
 	}
-	
+
 	public void Stabbed() {
 		char stab_snd[PLATFORM_MAX_PATH];
 		Format(stab_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleStubbed132, GetRandomInt(1, 4));
@@ -240,7 +240,7 @@ methodmap CHale < BaseBoss {
 		char helpstr[] = "Saxton Hale:\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (stun): taunt when the Rage is full to stun nearby enemies.";
 		Panel panel = new Panel();
 		panel.SetTitle(helpstr);
-		panel.DrawItem("Exit");
+		panel.DrawItem("%T", "Exit", this.index);
 		panel.Send(this.index, HintPanel, 10);
 		delete panel;
 	}
@@ -274,7 +274,7 @@ public void AddHaleToDownloads()
 {
 	char s[PLATFORM_MAX_PATH];
 	int i;
-	
+
 	PrepareModel(HaleModel);
 	DownloadMaterialList(HaleMatsV2, sizeof(HaleMatsV2));
 	PrepareSound(HaleComicArmsFallSound);
@@ -283,7 +283,7 @@ public void AddHaleToDownloads()
 		Format(s, PLATFORM_MAX_PATH, "%s0%i.wav", HaleLastB, i);
 		PrecacheSound(s, true);
 	}
-	
+
 	PrepareSound(HaleKillMedic);
 	PrepareSound(HaleKillSniper1);
 	PrepareSound(HaleKillSniper2);
@@ -303,21 +303,21 @@ public void AddHaleToDownloads()
 	PrepareSound(HaleKillDemo132);
 	PrepareSound(HaleSappinMahSentry132);
 	PrepareSound(HaleKillLast132);
-	
+
 	for( i=1; i <= 5; i++ ) {
 		if( i <= 2 ) {
 			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleJump, i);
 			PrepareSound(s);
-			
+
 			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleWin, i);
 			PrepareSound(s);
-			
+
 			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleJump132, i);
 			PrepareSound(s);
-			
+
 			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillEngie132, i);
 			PrepareSound(s);
-			
+
 			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillKSpree132, i);
 			PrepareSound(s);
 		}
@@ -325,24 +325,24 @@ public void AddHaleToDownloads()
 			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleFail, i);
 			PrepareSound(s);
 		}
-		
+
 		if( i <= 4 ) {
 			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleRageSound, i);
 			PrepareSound(s);
-			
+
 			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleStubbed132, i);
 			PrepareSound(s);
 		}
-		
+
 		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleRoundStart, i);
 		PrepareSound(s);
-		
+
 		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleKSpreeNew, i);
 		PrepareSound(s);
-		
+
 		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleLastMan, i);
 		PrepareSound(s);
-		
+
 		Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleStart132, i);
 		PrepareSound(s);
 	}
@@ -365,7 +365,7 @@ public void EnableSG(const int iid)
 			for( int ent=2048; ent>higher; --ent ) {
 				if( !IsValidEntity(ent) || ent <= 0 )
 					continue;
-			
+
 				char s2[32]; GetEdictClassname(ent, s2, sizeof(s2));
 				if( StrEqual(s2, "info_particle_system") && GetOwner(ent) == i )
 					AcceptEntityInput(ent, "Kill");

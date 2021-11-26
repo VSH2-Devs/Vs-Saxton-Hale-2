@@ -446,6 +446,10 @@ public void OnPluginStart()
 	g_vsh2.m_hPlayerFields[0]    = new StringMap();   /// This will be freed when plugin is unloaded again
 	g_modsys.m_hBossesRegistered = new ArrayList(sizeof(BossModule));
 	g_modsys.m_hBossMap          = new StringMap();
+
+	LoadTranslations("vsh2.phrases");
+	LoadTranslations("common.phrases");
+	LoadTranslations("core.phrases");
 }
 
 public bool HaleTargetFilter(const char[] pattern, ArrayList clients)
@@ -510,7 +514,7 @@ public Action CheckLateSpawn(int client, const char[] command, int argc)
 	) {
 		char str_tfclass[20]; GetCmdArg(1, str_tfclass, sizeof(str_tfclass));
 		TFClassType classtype = TF2_GetClass(str_tfclass);
-		CPrintToChat(client, "%t", "late_spawn_blocked");
+		CPrintToChat(client, "{olive}[VSH 2]{default} %t", "late_spawn_blocked");
 		SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", view_as< int >(classtype));
 		return Plugin_Handled;
 	}
@@ -525,7 +529,7 @@ public Action BlockSuicide(int client, const char[] command, int argc)
 			/// Allow bosses to suicide if their total health is under a certain percentage.
 			float flhp_percent = float(player.iHealth) / float(player.iMaxHealth);
 			if( flhp_percent > g_vsh2.m_hCvars.SuicidePercent.FloatValue ) {
-				CPrintToChat(client, "%t", "cant_suicide_as_boss");
+				CPrintToChat(client, "{olive}[VSH 2]{default} %t", "cant_suicide_as_boss");
 				return Plugin_Handled;
 			}
 		} else {
@@ -706,7 +710,7 @@ public void ConnectionMessage(const int userid)
 {
 	int client = GetClientOfUserId(userid);
 	if( IsValidClient(client) ) {
-		CPrintToChat(client, "%t", "vsh2_welcome");
+		CPrintToChat(client, "{olive}[VSH 2]{default} %t", "vsh2_welcome");
 		if( g_vsh2.m_hGamemode.iRoundState==StateRunning ) {
 			BaseBoss player = BaseBoss(userid, true);
 			if( g_vsh2.m_hCvars.PlayerMusic.BoolValue ) {
@@ -863,9 +867,9 @@ public Action CmdReloadCFG(int client, int args)
 
 	g_vsh2.m_hCfg = new ConfigMap("configs/saxton_hale/vsh2.cfg");
 	if( g_vsh2.m_hCfg==null ) {
-		CReplyToCommand(client, "%t", "cant_find_vsh2cfg");
+		CReplyToCommand(client, "{olive}[VSH 2] ERROR{default} :: %t", "cant_find_vsh2cfg");
 	} else {
-		CReplyToCommand(client, "%t", "vsh2_config_reloaded");
+		CReplyToCommand(client, "{olive}[VSH 2]{default} %t", "vsh2_config_reloaded");
 	}
 	return Plugin_Handled;
 }
@@ -1069,7 +1073,7 @@ public void ShowPlayerScores() {
 
 	SetHudTextParams(-1.0, 0.35, 10.0, 255, 255, 255, 255);
 	char damage_list[512];
-	Format(damage_list, sizeof(damage_list), "%t\n1)%i - %s\n2)%i - %s\n3)%i - %s", "top_3", damages[0], names[0], damages[1], names[1], damages[2], names[2]);
+	Format(damage_list, sizeof(damage_list), "%T\n1)%i - %s\n2)%i - %s\n3)%i - %s", "top_3", i, damages[0], names[0], damages[1], names[1], damages[2], names[2]);
 	for( int i=MaxClients; i; --i ) {
 		if( !IsClientValid(i) || (GetClientButtons(i) & IN_SCORE) ) {
 			continue;
@@ -1104,8 +1108,8 @@ public void CalcScores()
 			scoring.Fire();
 
 			player.iQueue += queue;
-			CPrintToChat(i, "%t", "gain_points", queue);
-			CPrintToChat(i, "{olive}[VSH 2] Queue{default} You scored %i points.", points);
+			CPrintToChat(i, "{olive}[VSH 2] Queue{default} %t", "gained_points", queue);
+			CPrintToChat(i, "{olive}[VSH 2] Queue{default} %t", "scored_points", points);
 		}
 	}
 }

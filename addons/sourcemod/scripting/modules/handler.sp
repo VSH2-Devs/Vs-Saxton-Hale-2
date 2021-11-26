@@ -122,7 +122,7 @@ public void ManageDisconnect(const int client)
 				if( g_vsh2.m_hCfg.Get("messages.boss replacer", boss_replacer, len) ) {
 					CPrintToChat(replace.index, "{olive}[VSH 2]{green} %s", "boss_replacer");
 				} else {
-					CPrintToChat(replace.index, "%t", "surprise");
+					CPrintToChat(replace.index, "{olive}[VSH 2]{green} %t", "start_boss_replacer");
 				}
 			}
 		}
@@ -131,7 +131,7 @@ public void ManageDisconnect(const int client)
 		if( g_vsh2.m_hCfg.Get("messages.quitter", quitter, len) ) {
 			CPrintToChatAll("{olive}[VSH 2]{red} %s", quitter);
 		} else {
-			CPrintToChatAll("%t", "boss_disconnected");
+			CPrintToChatAll("{olive}[VSH 2]{red} %t", "start_boss_disconnected");
 		}
 	} else {
 		RequestFrame(CheckAlivePlayers, 0);
@@ -1370,7 +1370,7 @@ public void ManageMessageIntro(BaseBoss[] bosses, const int len)
 		char name[MAX_BOSS_NAME_SIZE], boss_msg[MAXMESSAGE];
 		base.GetName(name);
 
-		Format(boss_msg, sizeof boss_msg, "%t", "become_boss", base.index, name, base.iHealth);
+		Format(boss_msg, sizeof boss_msg, "%T", "become_boss", i, base.index, name, base.iHealth);
 		Action act = Call_OnMessageIntro(base, boss_msg);
 		if( act > Plugin_Changed )
 			continue;
@@ -1547,7 +1547,7 @@ public void ManageRoundEndBossInfo(BaseBoss[] bosses, const int len, const bool 
 		char name[MAX_BOSS_NAME_SIZE], boss_msg[MAXMESSAGE];
 		base.GetName(name);
 
-		Format(boss_msg, sizeof boss_msg, "%t", "health_left", name, base.index, base.iHealth, base.iMaxHealth);
+		Format(boss_msg, sizeof boss_msg, "%T", "health_left", i, name, base.index, base.iHealth, base.iMaxHealth);
 
 		Action act = Call_OnRoundEndInfo(base, bossWon, boss_msg);
 		if( act > Plugin_Changed )
@@ -1567,7 +1567,7 @@ public void ManageRoundEndBossInfo(BaseBoss[] bosses, const int len, const bool 
 		base.iDifficulty = 0;
 	}
 	if( round_end_msg[0] != '\0' ) {
-		CPrintToChatAll("%t", "end_of_round", round_end_msg);
+		CPrintToChatAll("%T", "end_of_round", LANG_SERVER, round_end_msg);
 		SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
 		for( int i=MaxClients; i; --i ) {
 			if( IsValidClient(i) && !(GetClientButtons(i) & IN_SCORE) ) {
@@ -1625,7 +1625,7 @@ public void ManageBossCheckHealth(const BaseBoss base)
 
 			char name[MAX_BOSS_NAME_SIZE], boss_msg[MAXMESSAGE];
 			boss.GetName(name);
-			Format(boss_msg, sizeof boss_msg, "%t", "current_health", name, boss.iHealth, boss.iMaxHealth);
+			Format(boss_msg, sizeof boss_msg, "%T", "current_health", i, name, boss.iHealth, boss.iMaxHealth);
 
 			Action act = Call_OnBossHealthCheck(boss, false, boss_msg);
 			if( act > Plugin_Changed )
@@ -1636,11 +1636,11 @@ public void ManageBossCheckHealth(const BaseBoss base)
 			totalHealth += boss.iHealth;
 		}
 		PrintCenterTextAll(health_check);
-		CPrintToChatAll("%t", "boss_health_check", health_check);
+		CPrintToChatAll("{olive}[VSH 2] {axis}%T", "boss_health_check", LANG_SERVER, health_check);
 		LastBossTotalHealth = totalHealth;
 		g_vsh2.m_hGamemode.flHealthTime = currtime + ((g_vsh2.m_hGamemode.iHealthChecks < 3) ? 10.0 : 60.0);
 	} else {
-		CPrintToChat(base.index, "%t", "cannot_see_hp_now", RoundFloat(g_vsh2.m_hGamemode.flHealthTime-currtime), LastBossTotalHealth);
+		CPrintToChat(base.index, "{olive}[VSH 2]{default} %t", "cannot_see_hp_now", RoundFloat(g_vsh2.m_hGamemode.flHealthTime-currtime), LastBossTotalHealth);
 	}
 }
 
@@ -1715,7 +1715,7 @@ public void _SkipBossPanel()
 		if( !j ) {
 			SkipBossPanelNotify(player);
 		} else if( !IsFakeClient(player) ) {
-			CPrintToChat(player, "%t", "be_boss_soon");
+			CPrintToChat(player, "{olive}[VSH 2]{default} %t", "be_boss_soon");
 		}
 	}
 }
@@ -2149,15 +2149,15 @@ public void ManageFighterHUD(const BaseBoss fighter) {
 
 	/// HUD code
 	char HUDText[PLAYER_HUD_SIZE];
-	Format(HUDText, sizeof(HUDText), "Damage: %d", fighter.iDamage);
+	Format(HUDText, sizeof(HUDText), "%T", "hud_damage", i, fighter.iDamage);
 	if( !IsPlayerAlive(i) ) {
 		int obstarget = GetEntPropEnt(i, Prop_Send, "m_hObserverTarget");
 		if( IsValidClient(obstarget) && GetClientTeam(obstarget) != VSH2Team_Boss && obstarget != i ) {
 			BaseBoss observ = BaseBoss(obstarget);
-			Format(HUDText, sizeof(HUDText), "%s - %N's Damage: %d", HUDText, obstarget, observ.iDamage);
+			Format(HUDText, sizeof(HUDText), "%T", "hud_others_damage", i, HUDText, obstarget, observ.iDamage);
 		}
 	} else if( g_vsh2.m_hGamemode.bMedieval || g_vsh2.m_hCvars.ForceLives.BoolValue ) {
-		Format(HUDText, sizeof(HUDText), "%s | Lives: %d", HUDText, fighter.iLives);
+		Format(HUDText, sizeof(HUDText), "%T", "hud_lives", i,HUDText, fighter.iLives);
 	}
 
 	TFClassType tfclass = fighter.iTFClass;
@@ -2176,20 +2176,20 @@ public void ManageFighterHUD(const BaseBoss fighter) {
 				char status_str[32];
 				switch( drstatus ) {
 					case 1: {
-						Format(status_str, sizeof(status_str), "%t", "dead_ringer_ready");
+						Format(status_str, sizeof(status_str), "%T", "dead_ringer_ready", i);
 					}
 					case 2: {
-						Format(status_str, sizeof(status_str), "%t", "dead_ringer_active");
+						Format(status_str, sizeof(status_str), "%T", "dead_ringer_active", i);
 					}
 					default: {
-						Format(status_str, sizeof(status_str), "%t", "dead_ringer_inactive");
+						Format(status_str, sizeof(status_str), "%T", "dead_ringer_inactive", i);
 					}
 				}
 				Format(HUDText, sizeof(HUDText), "%s\n%s", HUDText, status_str);
 			}
 			int spy_secondary = GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary);
 			if( spy_secondary > MaxClients && IsValidEntity(spy_secondary) ) {
-				Format(HUDText, sizeof(HUDText), "%t", "kunai_hud", HUDText, GetWeaponAmmo(spy_secondary) ? "Ready" : "None");
+				Format(HUDText, sizeof(HUDText), "%T", GetWeaponAmmo(spy_secondary) ? "kunai_ready" : "kunai_none", i, HUDText);
 			}
 		}
 		case TFClass_Medic: {
@@ -2211,16 +2211,16 @@ public void ManageFighterHUD(const BaseBoss fighter) {
 		}
 		case TFClass_Soldier: {
 			if( GetIndexOfWeaponSlot(i, TFWeaponSlot_Primary)==1104 ) {
-				Format(HUDText, sizeof(HUDText), "%s\nAir Strike Damage: %i", HUDText, fighter.iAirDamage);
+				Format(HUDText, sizeof(HUDText), "%s\n%T", HUDText, "air_strike_damage", i, fighter.iAirDamage);
 			}
 		}
 		case TFClass_DemoMan: {
 			int shield = GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary);
 			if( shield <= 0 ) {
 				if( GetEntProp(i, Prop_Send, "m_bShieldEquipped") ) {
-					Format(HUDText, sizeof(HUDText), "%s\nShield: Active", HUDText);
+					Format(HUDText, sizeof(HUDText), "%s\n%T", "shield_active", i, HUDText);
 				} else {
-					Format(HUDText, sizeof(HUDText), "%s\nShield: Gone", HUDText);
+					Format(HUDText, sizeof(HUDText), "%s\n%T", "shield_gone", i, HUDText);
 				}
 			}
 		}
