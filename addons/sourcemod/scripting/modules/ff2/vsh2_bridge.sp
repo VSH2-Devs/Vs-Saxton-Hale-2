@@ -295,13 +295,18 @@ void OnBossThinkFF2(const VSH2Player vsh2player)
 
 	/// Handle scout's auto rage regeneration
 	{
+		bool only_scouts = true;
 		for( int i = 1; i<=MaxClients; i++ ) {
-			if( !IsClientInGame(i) || !IsPlayerAlive(i) || TF2_GetPlayerClass(i) != TFClass_Scout )
+			if( !IsClientInGame(i) || !IsPlayerAlive(i) || i == client )
 				continue;
 			
-			player.flRAGE = (flRage += ff2.m_cvars.m_flscout_rage_gen.FloatValue);
-			break;
+			if ( TF2_GetPlayerClass(i) != TFClass_Scout ) {
+				only_scouts = false;
+				break;
+			}
 		}
+		if ( only_scouts )
+			player.flRAGE = (flRage += ff2.m_cvars.m_flscout_rage_gen.FloatValue);
 	}
 
 	///	Handle hud
