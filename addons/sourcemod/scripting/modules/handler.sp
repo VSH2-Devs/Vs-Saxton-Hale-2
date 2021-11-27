@@ -414,7 +414,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					if( g_vsh2.m_hCfg.Get("messages.stabbed", stabbed, len) ) {
 						PrintCenterText(victim.index, "%s", stabbed);
 					} else {
-						PrintCenterText(victim.index, "%t", "boss_gotbackstabbed");
+						PrintCenterText(victim.index, "%t", "boss_got_backstabbed");
 					}
 				}
 

@@ -209,7 +209,7 @@ public Action SetBossMenu(int client, int args)
 	char temp[MAX_PANEL_MSG];
 	Format(temp, sizeof(temp), "%T", "set_boss_menu_title", client);
 	bossmenu.SetTitle(temp);
-	Format(temp, sizeof(temp), "%T", "set_boss_menu_title", client);
+	Format(temp, sizeof(temp), "%T", "bossmenu_none", client);
 	bossmenu.AddItem("-1", temp);
 	ManageMenu(bossmenu, client); /// in handler.sp
 	bossmenu.Display(client, MENU_TIME_FOREVER);
