@@ -80,6 +80,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("FF2_GetBossIndex",				Native_GetIndex);
 	CreateNative("FF2_GetBossTeam",					Native_GetTeam);
 	CreateNative("FF2_GetBossSpecial",				Native_GetSpecial);
+	CreateNative("FF2_GetBossName",					Native_GetBossName);
 	CreateNative("FF2_GetBossHealth",				Native_GetBossHealth);
 	CreateNative("FF2_SetBossHealth", 				Native_SetBossHealth);
 	CreateNative("FF2_GetBossMaxHealth", 			Native_GetBossMaxHealth);
@@ -122,6 +123,10 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	return APLRes_Success;
 }
 
+public void OnPluginStart()
+{
+	BossKVWrapper = new BossKVWrapper_t();
+}
 
 public void OnLibraryAdded(const char[] name)
 {
@@ -133,6 +138,8 @@ public void OnLibraryAdded(const char[] name)
 public void OnLibraryRemoved(const char[] name)
 {
 	if( !strcmp(name, "VSH2") ) {
+		if (BossKVWrapper.Length)
+			BossKVWrapper.ClearKVs();
 		VSH2_Unhook(OnRoundEndInfo, OnRoundEnd);
 	}
 }
@@ -222,11 +229,24 @@ any Native_GetSpecial(Handle plugin, int numParams)
 {
 	int buflen = GetNativeCell(3);
 	char[] buf = new char[buflen];
-	
-	bool ret = FF2_GetBossSpecial(GetNativeCell(1), buf, buflen, GetNativeCell(4));
-	SetNativeString(2, buf, buflen);
-	
-	return ret;
+
+	if( FF2_GetBossSpecial(GetNativeCell(1), buf, buflen, GetNativeCell(4)) ) {
+		SetNativeString(2, buf, buflen);
+		return true;
+	}
+	else return false;
+}
+
+any Native_GetBossName(Handle plugin, int numParams)
+{
+	int buflen = GetNativeCell(3);
+	char[] buf = new char[buflen];
+
+	if( FF2_GetBossSpecial(GetNativeCell(1), buf, buflen, GetNativeCell(4)) ) {
+		SetNativeString(2, buf, buflen);
+		return true;
+	}
+	else return false;
 }
 
 any Native_GetBossHealth(Handle plugin, int numParams)

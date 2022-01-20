@@ -39,7 +39,7 @@ methodmap FF2PluginList < ArrayList {
 				continue;
 
 			if( infos.loading )
-				return true;
+				return false;
 
 			Handle iter = GetPluginIterator();
 			for( Handle pl=ReadPlugin(iter); MorePlugins(iter); pl=ReadPlugin(iter) ) {
@@ -72,10 +72,13 @@ methodmap FF2PluginList < ArrayList {
 
 	public int LoadPluginsEx(FF2AbilityList query_abilities, int remaining_size) {
 		char plugin_name[FF2_MAX_PLUGIN_NAME];
-		int size_left = remaining_size - query_abilities.Length;
+		int required_size = query_abilities.Length;
+		int size_left = remaining_size - required_size;
+		if (size_left < required_size)
+			required_size = size_left;
 
 		int num_of_plugins;
-		for( int i; i<size_left; i++ ) {
+		for( int i; i<required_size; i++ ) {
 			FF2Ability ability = query_abilities.Get(i);
 			ability.GetPlugin(plugin_name);
 			if( this.TryLoadSubPlugin(plugin_name) )

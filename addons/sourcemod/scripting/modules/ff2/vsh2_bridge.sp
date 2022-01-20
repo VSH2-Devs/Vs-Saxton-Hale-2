@@ -287,7 +287,7 @@ void OnBossThinkFF2(const VSH2Player vsh2player)
 					}
 				}
 			} else {
-				SetHudTextParams(-1.0, 0.85, 0.15, 255, 0, 0, 255);
+				SetHudTextParams(-1.0, 0.71, 0.15, 255, 0, 0, 255);
 				ShowSyncHudText(client, ff2.m_hud[HUD_Weighdown], "Weighdown is not ready\nYou must wait %.1f sec", curCd);
 			}
 		}
@@ -314,18 +314,19 @@ void OnBossThinkFF2(const VSH2Player vsh2player)
 		ConfigMap hud_section = info_sec.GetSection("HUD");
 		buffer[0] = '\0';
 
-		any color_and_offset[6];///	{ r, g, b, a, x, y }
+		char text_color[4]; /// { r, g, b, a }
+		float text_offset[2]; // { x, y }
 		{
 			ConfigMap color_section = hud_section.GetSection("color");
 			ConfigMap offset_section = hud_section.GetSection("offset");
 			for( int i; i<4; i++ )
-				if( color_section.GetIntKeyInt(i, color_and_offset[i]) )
-					color_and_offset[i] = 255;
+				if( !color_section.GetIntKeyInt(i, view_as<int>(text_color[i])) )
+					text_color[i] = 255;
 
-			if( !offset_section.GetIntKeyFloat(0, color_and_offset[4]) )
-				color_and_offset[4] = -1.0;
-			if( !offset_section.GetIntKeyFloat(0, color_and_offset[5]) )
-				color_and_offset[5] = 0.15;
+			if( !offset_section.GetIntKeyFloat(0, text_offset[0]) )
+				text_offset[0] = -1.0;
+			if( !offset_section.GetIntKeyFloat(1, text_offset[1]) )
+				text_offset[1] = 0.78;
 		}
 
 		if( !player.bHideHUD ) {
@@ -337,13 +338,13 @@ void OnBossThinkFF2(const VSH2Player vsh2player)
 		}
 
 		SetHudTextParams(
-			color_and_offset[4],
-			color_and_offset[5],
+			text_offset[0],
+			text_offset[1],
 			0.15,
-			color_and_offset[0],
-			color_and_offset[1],
-			color_and_offset[2],
-			color_and_offset[3]
+			text_color[0],
+			text_color[1],
+			text_color[2],
+			text_color[3]
 		);
 
 		ShowSyncHudText(
