@@ -928,7 +928,7 @@ stock void FF2_GetArgNamedS(int boss, const char[] pluginName, const char[] abil
 stock bool FF2_RandomSound(const char[] keyvalue, char[] buffer, int bufferLength, int boss=0, int slot=0)
 {
 	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
-	if( player && player.bIsBoss ) {
+	if( !(player && player.bIsBoss) ) {
 		return false;
 	}
 	FF2SoundIdentity info;
