@@ -7,6 +7,7 @@
 
 **[VSH2 Addons Repository](https://github.com/VSH2-Devs/VSH2-Addons)**
 
+NOTICE: This readme will be updated soon. Thank you for your patience!
 
 VSH2 is a rewrite of VSH1. VSH1 and FF2 both had a very bad gamemode framework using shoddy, hacky coding. I could even go as far to say they probably had no framework at all nor any real structure to its code.
 
@@ -37,7 +38,8 @@ If you do require help in setting up the bosses or at least need some info on th
 
 ### Who do I talk to?
 
-* **Lead Developer:** *Nergal the Ashurian/Assyrian* - https://forums.alliedmods.net/member.php?u=176545
+* **Project Lead:** *mub* - https://steamcommunity.com/id/mubleniumActress/ 
+* **(Former) Lead Developer:** *Nergal the Ashurian/Assyrian* - https://forums.alliedmods.net/member.php?u=176545
 * **Repository Manager & Contributor:** *Starblaster 64* - https://forums.alliedmods.net/member.php?u=261662
 * **Contributors:** *Scags/RageNewb* , *BatFoxKid* , *01Pollux/WhiteFalcon* .
 
