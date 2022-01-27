@@ -147,20 +147,20 @@ public void OnLibraryRemoved(const char[] name)
 #if !defined FF2_USING_AUTO_PLUGIN__OLD
 
 enum {
-	FF2FLAG_UBERREADY            = (1<<1),  /// Used when medic says "I'm charged!"				
-	FF2FLAG_ISBUFFED             = (1<<2),  /// Used when soldier uses the Battalion's Backup	
-	FF2FLAG_CLASSTIMERDISABLED   = (1<<3),  /// Used to prevent clients' timer		
-	FF2FLAG_HUDDISABLED          = (1<<4),  /// Used to prevent custom hud from clients' timer	
+	FF2FLAG_UBERREADY            = (1<<1),  /// Used when medic says "I'm charged!"
+	FF2FLAG_ISBUFFED             = (1<<2),  /// Used when soldier uses the Battalion's Backup
+	FF2FLAG_CLASSTIMERDISABLED   = (1<<3),  /// Used to prevent clients' timer
+	FF2FLAG_HUDDISABLED          = (1<<4),  /// Used to prevent custom hud from clients' timer
 	FF2FLAG_BOTRAGE              = (1<<5),  /// Used by bots to use Boss's rage
 	FF2FLAG_TALKING              = (1<<6),  /// Used by Bosses with "sound_block_vo" to disable block for some lines
-	FF2FLAG_ALLOWSPAWNINBOSSTEAM = (1<<7),  /// Used to allow spawn players in Boss's team			
-	FF2FLAG_USEBOSSTIMER         = (1<<8),  /// Used to prevent Boss's timer		
-	FF2FLAG_USINGABILITY         = (1<<9),  /// Used to prevent Boss's hints about abilities buttons	
+	FF2FLAG_ALLOWSPAWNINBOSSTEAM = (1<<7),  /// Used to allow spawn players in Boss's team
+	FF2FLAG_USEBOSSTIMER         = (1<<8),  /// Used to prevent Boss's timer
+	FF2FLAG_USINGABILITY         = (1<<9),  /// Used to prevent Boss's hints about abilities buttons
 	FF2FLAG_CLASSHELPED          = (1<<10),
 	FF2FLAG_HASONGIVED           = (1<<11),
 	FF2FLAG_CHANGECVAR           = (1<<12), /// Used to prevent SMAC from kicking bosses who are using certain rages (NYI)
 	FF2FLAG_ALLOW_HEALTH_PICKUPS = (1<<13), /// Used to prevent bosses from picking up health
-	FF2FLAG_ALLOW_AMMO_PICKUPS   = (1<<14), /// Used to prevent bosses from picking up ammo		
+	FF2FLAG_ALLOW_AMMO_PICKUPS   = (1<<14), /// Used to prevent bosses from picking up ammo
 	FF2FLAG_ROCKET_JUMPING       = (1<<15), /// Used when a soldier is rocket jumping
 	FF2FLAG_ALLOW_BOSS_WEARABLES = (1<<16), /// Used to allow boss having wearables (only for Official FF2)
 	FF2FLAGS_SPAWN = ~FF2FLAG_UBERREADY
@@ -396,7 +396,7 @@ any Native_GetAbilityArgumentString(Handle plugin, int numParams)
 	char ab_name[FF2_MAX_ABILITY_NAME];
 	GetNativeString(2, pl_name, sizeof(pl_name));
 	GetNativeString(3, ab_name, sizeof(ab_name));
-	
+
 	int buflen = GetNativeCell(6);
 	char[] buf = new char[buflen];
 	FF2_GetAbilityArgumentString(GetNativeCell(1), pl_name, ab_name, GetNativeCell(4), buf, buflen);
@@ -409,7 +409,7 @@ any Native_GetArgNamedI(Handle plugin, int numParams)
 	char ab_name[FF2_MAX_ABILITY_NAME];
 	GetNativeString(2, pl_name, sizeof(pl_name));
 	GetNativeString(3, ab_name, sizeof(ab_name));
-	
+
 	int keylen;
 	GetNativeStringLength(1, keylen); ++keylen;
 	char[] key = new char[keylen];
@@ -423,7 +423,7 @@ any Native_GetArgNamedF(Handle plugin, int numParams)
 	char ab_name[FF2_MAX_ABILITY_NAME];
 	GetNativeString(2, pl_name, sizeof(pl_name));
 	GetNativeString(3, ab_name, sizeof(ab_name));
-	
+
 	int keylen;
 	GetNativeStringLength(1, keylen); ++keylen;
 	char[] key = new char[keylen];
@@ -437,12 +437,12 @@ any Native_GetArgNamedS(Handle plugin, int numParams)
 	char ab_name[FF2_MAX_ABILITY_NAME];
 	GetNativeString(2, pl_name, sizeof(pl_name));
 	GetNativeString(3, ab_name, sizeof(ab_name));
-	
+
 	int keylen;
 	GetNativeStringLength(1, keylen); ++keylen;
 	char[] key = new char[keylen];
 	GetNativeString(4, key, keylen);
-	
+
 	int buflen = GetNativeCell(6);
 	char[] buf = new char[buflen];
 	FF2_GetArgNamedS(GetNativeCell(1), pl_name, ab_name, key, buf, buflen);
@@ -455,12 +455,12 @@ any Native_RandomSound(Handle plugin, int numParams)
 	GetNativeStringLength(1, keylen); ++keylen;
 	char[] key = new char[keylen];
 	GetNativeString(1, key, keylen);
-	
+
 	int buflen = GetNativeCell(3);
 	char[] buf = new char[buflen];
 	bool ret = FF2_RandomSound(key, buf, buflen, GetNativeCell(4), GetNativeCell(5));
 	SetNativeString(2, buf, buflen);
-	
+
 	return ret;
 }
 
@@ -524,7 +524,7 @@ any Native_MakeBoss(Handle plugin, int numParams)
 	GetNativeStringLength(2, keylen); ++keylen;
 	char[] key = new char[keylen];
 	GetNativeString(2, key, keylen);
-	
+
 	return FF2_MakeBoss(GetNativeCell(1), key, GetNativeCell(3));
 }
 

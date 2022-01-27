@@ -111,9 +111,9 @@ methodmap FF2PluginList < ArrayList {
 		this.Clear();
 		ServerExecute();
 	}
-	
+
 	/// renames all subplugins ending in "ff2" with "smx" to comply with new plugin loading rule.
-	public static void FixSubPlugins() {		
+	public static void FixSubPlugins() {
 		char plugin_directory_path[PLATFORM_MAX_PATH];
 		BuildPath(Path_SM, plugin_directory_path, PLATFORM_MAX_PATH, "plugins/freaks");
 
@@ -151,15 +151,15 @@ methodmap FF2PluginList < ArrayList {
 			DeleteFile(renamed_plugin_buffer);
 			RenameFile(renamed_plugin_buffer, plugin_buffer);
 		}
-		
+
 		delete plugin_directory;
 	}
-	
+
 	/// unloads all plugins with extension '.smx' in 'freaks' folder
 	public static void ForceUnloadAllSubPlugins() {
 		char path[PLATFORM_MAX_PATH], filename[PLATFORM_MAX_PATH];
 		BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/freaks");
-		
+
 		FileType filetype;
 		DirectoryListing pl_directory = OpenDirectory(path);
 		while( pl_directory.GetNext(filename, sizeof(filename), filetype) ) {
@@ -167,7 +167,7 @@ methodmap FF2PluginList < ArrayList {
 				InsertServerCommand("sm plugins unload freaks/%s", filename);
 			}
 		}
-		
+
 		delete pl_directory;
 		ServerExecute();
 	}
@@ -191,11 +191,11 @@ static Action _ScheduleAddSubplugin(Handle timer, int pos)
 {
 	if( !ff2.m_vsh2 )
 		return Plugin_Continue;
-	
+
 	FF2SubPlugin info; ff2.m_plugins.GetInfo(pos, info);
 	info.hndl = _FindPlugin(info.name);
 	info.loading = false;
 	ff2.m_plugins.SetInfo(pos, info);
-	
+
 	return Plugin_Continue;
 }

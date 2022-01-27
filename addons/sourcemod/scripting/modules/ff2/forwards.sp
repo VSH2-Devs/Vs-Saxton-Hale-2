@@ -12,7 +12,7 @@ Action Call_OnBossSelected(FF2Player player, char name[MAX_BOSS_NAME_SIZE], bool
 Action Call_OnBossLoseLife(FF2Player player)
 {
 	Action res;
-	
+
 	Call_StartForward(ff2.m_forwards[FF2OnLoseLife]);
 	Call_PushCell(player.index);
 	int lives = player.iLives;
@@ -20,13 +20,13 @@ Action Call_OnBossLoseLife(FF2Player player)
 	int maxlives = player.iMaxLives;
 	Call_PushCell(maxlives);
 	Call_Finish(res);
-	
+
 	if( res==Plugin_Changed ) {
 		if( lives > player.iMaxLives )
 			player.iMaxLives = lives;
 		player.iLives = lives;
 	}
-	
+
 	return res;
 }
 
@@ -35,18 +35,18 @@ Action Call_OnMusic(FF2Player player, char song[PLATFORM_MAX_PATH], float& time)
 	Action res;
 	char song_copy[PLATFORM_MAX_PATH]; song_copy = song;
 	float time_copy = time;
-	
+
 	Call_StartForward(ff2.m_forwards[FF2OnMusic]);
 	Call_PushCell(player.index);
 	Call_PushStringEx(song_copy, sizeof(song_copy), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 	Call_PushFloatRef(time_copy);
 	Call_Finish(res);
-	
+
 	if( res != Plugin_Continue ) {
 		strcopy(song, sizeof(song), song_copy);
 		time = time_copy;
 	}
-	
+
 	return res;
 }
 

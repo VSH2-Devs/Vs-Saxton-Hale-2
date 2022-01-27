@@ -61,7 +61,7 @@ methodmap FF2AbilityList < ArrayList {
 	public FF2AbilityList() {
 		return( view_as< FF2AbilityList >(new ArrayList()));
 	}
-	
+
 	public void Insert(ConfigMap cfg) {
 		this.Push(cfg);
 	}
@@ -124,9 +124,9 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 		LogError("[VSH2/FF2] Failed to find \"%s\" character!", identity.name);
 		return false;
 	}
-	
+
 	FF2Character this_char = FF2Character(cfg);
-	
+
 	/// Check if our boss support the current map
 	{
 		ConfigMap exclude = this_char.MapExcludeSection;
@@ -149,14 +149,14 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 			return false;
 		}
 	}
-	
+
 	identity.hCfg = cfg;
 	identity.abilityList = new FF2AbilityList();
 
 	{
 		identity.isNewAPI = this_char.Config.GetSection("info") ? true : false;
 		if( !identity.isNewAPI )
-			FF2_ResolveBackwardCompatibility(this_char.Config);
+			FF2_ResolveBackwardCompatibility(this_char.Config); /// backwards_compatibility.sp
 
 		FF2Character_RegisterAbilities(this_char, identity.isNewAPI, identity.name, identity.abilityList);
 
@@ -186,7 +186,7 @@ methodmap FF2BossManager < StringMap {
 		char[] name = new char[PLATFORM_MAX_PATH];
 
 		/// Iterate through the Pack, copy and verify boss path
-		for( int i = cfg.Size - 1; i >= 0; i-- ) {
+		for( int i = cfg.Size - 1; i; i-- ) {
 			if( !cfg.GetIntKey(i, name, PLATFORM_MAX_PATH) )
 				continue;
 
@@ -223,13 +223,13 @@ methodmap FF2BossManager < StringMap {
 		delete snap;
 	}
 
-	public bool FindIdentity(const int ID, FF2Identity identity) {
+	public bool FindIdentity(const int vsh2id, FF2Identity identity) {
 		StringMapSnapshot snap = this.Snapshot();
 		char name[48];
 		bool res;
 		for( int i=snap.Length-1; i>=0; i-- ) {
 			snap.GetKey(i, name, sizeof(name));
-			if( this.GetIdentity(name, identity) && identity.VSH2ID == ID ) {
+			if( this.GetIdentity(name, identity) && identity.VSH2ID == vsh2id ) {
 				res = true;
 				break;
 			}
@@ -296,9 +296,9 @@ static void FF2Character_RegisterAbilities(FF2Character this_char, bool new_api,
 	 *
 	 *			"name"		"rage_stunsg"
 	 *			"plugin_name"	"default_abilities"
-	 *			
+	 *
 	 *			"something arg" "100.0"
-	 *		
+	 *
 	 *			// boss won't be registered without the required subplugins / abilities
 	 *			"requires" {
 	 *				"<enum>"	"MySubpluginName1"
@@ -335,6 +335,7 @@ static void FF2Character_RegisterAbilities(FF2Character this_char, bool new_api,
 	 *
 	 */
 
+	bool warn_once = false;
 	char path[PLATFORM_MAX_PATH], plugin_name[FF2_MAX_PLUGIN_NAME];
 	for( int i; i<iter_size && free_abilities>0; i++ ) {
 		ConfigMap cur_section;
@@ -350,9 +351,12 @@ static void FF2Character_RegisterAbilities(FF2Character this_char, bool new_api,
 
 		if( !cur_section || !cur_section.Get("plugin_name", plugin_name, sizeof(plugin_name)) )
 			continue;
-		
+
 		if( !strcmp(plugin_name, "ffbat_defaults") || !strcmp(plugin_name, "default_abilities") ) {
-			LogError("[VSH2/FF2] Character \"%s.cfg\" is using a non supported subplugin \"%s\"!, switching to \"ff2_vsh2defaults\".", boss_name, plugin_name);
+			if( !warn_once ) {
+				LogError("[VSH2/FF2] Character \"%s.cfg\" is using a non supported subplugin \"%s\"!, switching to \"ff2_vsh2defaults\".", boss_name, plugin_name);
+				warn_once = true;
+			}
 			plugin_name = "ff2_vsh2defaults";
 		}
 
@@ -364,7 +368,7 @@ static void FF2Character_RegisterAbilities(FF2Character this_char, bool new_api,
 		} else {
 			bool hide;
 			if( new_api && cur_section.GetBool("hidden slot", hide, false) && hide )
-				cur_section.SetInt("slot", view_as<int>(CT_INACTIVE));
+				cur_section.SetInt("slot", view_as<int>(CT_INACTIVE), "%b");
 
 			outablist.Insert(cur_section);
 			--free_abilities;
@@ -375,7 +379,20 @@ static void FF2Character_RegisterAbilities(FF2Character this_char, bool new_api,
 			int slot;
 			if( !cur_section.GetInt("arg0", slot) )
 				cur_section.GetInt("slot", slot);
-			cur_section.SetInt("slot", view_as<int>(FF2_OldNumToBitSlot(slot)));	///	defaulted to CT_RAGE in case of rage
+
+			///	defaulted to CT_RAGE in case of rage
+			int bit_slot = view_as<int>(FF2_OldNumToBitSlot(slot));
+			if( !cur_section.SetInt("slot", bit_slot, "%b") ) {
+				cur_section.DeleteSection("arg0");
+				cur_section.DeleteSection("slot");
+
+				/// section doesn't exists
+				char val_str[15];
+				int val_size = Format(val_str, sizeof(val_str), "%b", bit_slot) + 1;
+
+				ConfigMapAllocator alloc = ConfigMapAllocator(cur_section);
+				alloc.NewValue("slot", val_str, val_size);
+			}
 		}
 	}
 
@@ -390,7 +407,7 @@ static void FF2Character_ProcessDownloads(FF2Character this_char, bool new_api, 
 	int extra = new_api ? 0 : 1;
 
 	/**
-	 *	
+	 *
 	 * new api:
 	 *	"downloads"
 	 *	{
@@ -419,7 +436,7 @@ static void FF2Character_ProcessDownloads(FF2Character this_char, bool new_api, 
 	 *		"<enum>"		".."
 	 *	}
 	 */
-	
+
 	/// download any
 	{
 		if( (stacks = downloads_section.GetSection(new_api ? "any" : "download")) ) {

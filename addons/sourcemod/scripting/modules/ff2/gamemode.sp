@@ -15,9 +15,9 @@ methodmap FF2GameMode < VSH2GameMode {
 		if ( !ff2.m_hud[HUD_Weighdown] ) {
 			ff2.m_hud[HUD_Weighdown] = CreateHudSynchronizer();
 		}
-		
+
 		FF2GameMode.HookToVSH2();
-		
+
 		for( int i=MaxClients; i > 0; i-- ) {
 			if( IsClientInGame(i) ) {
 				OnClientPutInServer(i);

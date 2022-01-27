@@ -54,7 +54,7 @@ enum struct _ConVars {
 	ConVar ff2_base_jumper_stun;
 	ConVar ff2_strangewep;
 	ConVar ff2_solo_shame;
-	
+
 	void Init() {
 		this.sv_cheats				= FindConVar("sv_cheats");
 		this.host_timescale			= FindConVar("host_timescale");
@@ -67,12 +67,12 @@ enum struct _ConVars {
 _ConVars ConVars;
 
 
-#define EXPLOSIVE_DANCE_ABILITY	"rage_explosive_dance"	
+#define EXPLOSIVE_DANCE_ABILITY	"rage_explosive_dance"
 enum struct _ExplosiveDance_t {
 	int iNumExplosion;
 	float flDamage;
 	float flRange;
-	
+
 	void Init(FF2Player player)
 	{
 		if( player.HasAbility(this_plugin_name, EXPLOSIVE_DANCE_ABILITY) ) {
@@ -90,7 +90,7 @@ _ExplosiveDance_t ExplosiveDance[MAXCLIENTS];
 #define STUN_ABILITY			"rage_stun"
 
 #define STUN_BUILDING_ABILITY	"rage_stunsg"
-	
+
 #define UBER_ABILITY			"rage_uber"
 
 #define CBS_BOW_ABILITY			"rage_cbs_bowrage"
@@ -114,13 +114,13 @@ enum struct _InstantTele_t
 enum struct _MatrixAbility_t {
 	Handle timer;
 	int iOldTarget;
-	
+
 	void InValidate()
 	{
 		this.timer = null;
 		this.iOldTarget = 0;
 	}
-	
+
 	bool Validate(int iCurTarget)
 	{
 		if( iCurTarget != this.iOldTarget ) {
@@ -162,9 +162,11 @@ methodmap AbilityPool_t < StringMap
 	{
 		return view_as< AbilityPool_t >(new StringMap());
 	}
-	
+
 	public void FindAndStartCall(const char[] name, const FF2Player player)
 	{
+		if( !this )
+			return;
 		Function_t _fn;
 		if( this.GetArray(name, _fn, sizeof(Function_t)) ) {
 			Call_StartFunction(null, _fn.fn);
@@ -172,7 +174,7 @@ methodmap AbilityPool_t < StringMap
 			Call_Finish();
 		}
 	}
-	
+
 	public void Register(const char[] name, AbilityPoolFn fn)
 	{
 		Function_t _fn; _fn.fn = fn;
@@ -201,9 +203,9 @@ public void OnMapStart()
 void OnPluginStart2()
 {
 	ConVars.Init();
-	
+
 	AbilityPool = new AbilityPool_t();
-	
+
 	AbilityPool.Register(EXPLOSIVE_DANCE_ABILITY, 	Explosive_Dance);
 	AbilityPool.Register(NEW_WEAPON_ABILITY, 		Rage_New_Weapon);
 	AbilityPool.Register(STUN_ABILITY,		 		Rage_Stun);
@@ -215,34 +217,32 @@ void OnPluginStart2()
 	AbilityPool.Register(TRADE_SPAWN_ABILITY, 		Rage_Trade_Spam);
 	AbilityPool.Register(MATRIX_ABILITY,			Rage_Matrix);
 	AbilityPool.Register(OVERLAY_ABILITY,			Rage_Overlay);
-	
+
 	VSH2_Hook(OnPlayerKilled, 		_OnPlayerKilled);
 	VSH2_Hook(OnRoundStart,			_OnRoundStart);
 	VSH2_Hook(OnRoundEndInfo, 		_OnRoundEnd);
 	VSH2_Hook(OnMinionInitialized,  _OnMinionInitialized);
-	
+
 	if( ff2_gm.RoundState == StateRunning ) {
-		
+
 		FF2Player[] bosses = new FF2Player[MaxClients + 1];
 		FF2Player[] mercs = new FF2Player[MaxClients + 1];
 		int b_count = FF2GameMode.GetBosses(bosses, false);
 		int m_count = FF2GameMode.GetBosses(mercs, false);
-		
+
 		_OnRoundStart(bosses, b_count, mercs, m_count);
 	}
 }
 
 public void OnPluginEnd()
 {
-	delete AbilityPool;
-	
 	VSH2_Unhook(OnPlayerKilled, 	 _OnPlayerKilled);
 	VSH2_Unhook(OnRoundStart, 		 _OnRoundStart);
 	VSH2_Unhook(OnRoundEndInfo, 	 _OnRoundEnd);
 	VSH2_Unhook(OnMinionInitialized, _OnMinionInitialized);
 }
 
-public void FF2_OnAbility2(const FF2Player player, const char[] abilityName, FF2CallType_t calltype)
+stock void FF2_OnAbility2(const FF2Player player, const char[] abilityName, FF2CallType_t calltype)
 {
 	AbilityPool.FindAndStartCall(abilityName, player);
 }
@@ -259,7 +259,7 @@ void OnProjectileSpawned(int entity)
 	int launcher = GetEntPropEnt(entity, Prop_Send, "m_hLauncher");
 	if( launcher < 0 )
 		return;
-	
+
 	int client = GetEntPropEnt(launcher, Prop_Send, "m_hOwnerEntity");
 	if( client > 0 && IsClientInGame(client) ) {
 		FF2Player player = FF2Player(client);
@@ -268,7 +268,7 @@ void OnProjectileSpawned(int entity)
 			if( player.GetArgS(this_plugin_name, PROJECTILE_ABILITY, "projectile", projectile, sizeof(projectile)) &&
 				GetEntityClassname(entity, classname, sizeof(classname)) &&
 				StrContains(classname, projectile) != -1 ) {
-				
+
 				player.GetArgS(this_plugin_name, PROJECTILE_ABILITY, "model", classname, sizeof(classname));
 				if( !IsModelPrecached(classname) ) {
 					if( FileExists(classname, true) && classname[0] )
@@ -345,7 +345,7 @@ void _OnMinionInitialized(const VSH2Player minion, const VSH2Player vsh2_owner)
 		if( IsValidEntity(weapon) ) {
 			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 			SetEntProp(weapon, Prop_Send, "m_iWorldModelIndex", -1);
-			
+
 			if( StrEqual(classname, "tf_weapon_builder") && index != 735 ) {  /// PDA, normal sapper
 				for( int i = 0; i < 4; i++ )
 					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, .element = i);
@@ -369,11 +369,11 @@ void _OnMinionInitialized(const VSH2Player minion, const VSH2Player vsh2_owner)
 	{
 		float position[3], velocity[3];
 		GetEntPropVector(owner.index, Prop_Data, "m_vecOrigin", position);
-		
+
 		velocity[0] = GetRandomFloat(300.0, 500.0) * (GetRandomInt(0, 1) ? 1:-1);
 		velocity[1] = GetRandomFloat(300.0, 500.0) * (GetRandomInt(0, 1) ? 1:-1);
 		velocity[2] = GetRandomFloat(300.0, 500.0);
-		
+
 		TeleportEntity(client, position, NULL_VECTOR, velocity);
 		TF2_AddCondition(client, TFCond_Ubercharged, 2.0);
 	}
@@ -456,12 +456,12 @@ void Rage_New_Weapon(const FF2Player player)
 		return;
 
 	player.GetArgS(this_plugin_name, NEW_WEAPON_ABILITY, "attributes", attributes, sizeof(attributes));
-	
-	int weapon = player.SpawnWeapon( classname,	
+
+	int weapon = player.SpawnWeapon( classname,
 									 index,player.GetArgI(this_plugin_name, NEW_WEAPON_ABILITY, "level", 39),
 									 player.GetArgI(this_plugin_name, NEW_WEAPON_ABILITY, "quality", 5),
 									 attributes );
-							
+
 	if( StrEqual(classname, "tf_weapon_builder") && index != 735 ) { /// PDA, normal sapper
 		for( int i = 0; i < 4; i++ )
 			SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, .element = i);
@@ -516,7 +516,7 @@ Action Timer_Rage_Stun(Handle timer, FF2Player cur_boss)
 
  /// Slowdown
 	float slowdown = cur_boss.GetArgF(this_plugin_name, STUN_ABILITY, "slowdown");
-	
+
  /// Sound To Boss
 	bool sounds = cur_boss.GetArgB(this_plugin_name, STUN_ABILITY, "sound", true);
 
@@ -637,7 +637,7 @@ void Rage_Stun_Building(const FF2Player player)
  	{
  		if( player.GetArgS(this_plugin_name, STUN_BUILDING_ABILITY, "health", strBuffer, sizeof(strBuffer)) )
  			health = ParseFormula(strBuffer, ff2_gm.iLivingReds);
- 		
+ 
  		if( health <= 0 )
  			destroy = true;
  	}
@@ -813,7 +813,7 @@ Action Timer_Rage_Explosive_Dance(Handle timer, FF2Player player)
 
 			explosionPosition[0] = bossPosition[0] + GetRandomFloat(-ExplosiveDance[client].flRange, ExplosiveDance[client].flRange);
 			explosionPosition[1] = bossPosition[1] + GetRandomFloat(-ExplosiveDance[client].flRange, ExplosiveDance[client].flRange);
-			
+
 			if( !(GetEntityFlags(client) & FL_ONGROUND) ) {
 				range = ((ExplosiveDance[client].flRange * 3.0) / 7.0);
 				explosionPosition[2] = bossPosition[2] + GetRandomFloat(-range, range);
@@ -841,13 +841,13 @@ void Rage_Instant_Tele(const FF2Player player)
 {
 	float position[3];
 	char strflags[12], particleEffect[48];
-	
+
 	float flstuntime = player.GetArgF(this_plugin_name, INSTANT_TELE_ABILITY, "stun", 2.0);
 	//bool friendly = player.GetArgB(this_plugin_name, INSTANT_TELE_ABILITY, "friendly", true);
 	float flslowdown = player.GetArgF(this_plugin_name, INSTANT_TELE_ABILITY, "slowdown");
 	bool sounds = player.GetArgB(this_plugin_name, INSTANT_TELE_ABILITY, "sound", true);
 	player.GetArgS(this_plugin_name, INSTANT_TELE_ABILITY, "particle",particleEffect, sizeof(particleEffect));
-	
+
 	int flags;
 	if( !player.GetArgS(this_plugin_name, INSTANT_TELE_ABILITY, "flags", strflags, sizeof(strflags))
 		|| !(flags = StringToInt(strflags, 16)) )
@@ -875,7 +875,7 @@ void Rage_Instant_Tele(const FF2Player player)
 
 	GetEntPropVector(target, Prop_Send, "m_vecOrigin", position);
 	SetEntPropFloat(client, Prop_Send, "m_flNextAttack", GetGameTime() + 2.0);
-	
+
 	if( GetEntProp(target, Prop_Send, "m_bDucked") ) {
 		SetEntPropVector(client, Prop_Send, "m_vecMaxs", view_as< float >({ 24.0, 24.0, 62.0 }));
 		SetEntProp(client, Prop_Send, "m_bDucked", 1);
@@ -1008,9 +1008,10 @@ void Rage_CloneAttack(const FF2Player player)
 
 	/// TODO: replace with VSH2 natives that deal with this?
 	int entity, owner;
-	while( (entity = FindEntityByClassname(entity, "tf_wearable*")) != -1 )
+	while( (entity = FindEntityByClassname(entity, "tf_wearable*")) != -1 ) {
 		if( (owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")) <= MaxClients && owner > 0 && GetClientTeam(owner) == GetClientTeam(client) )
 			TF2_RemoveWearable(owner, entity);
+	}
 }
 
 
@@ -1038,10 +1039,12 @@ Action Trade_KeepSpamming(Handle timer, int count)
 
 		if( count ) {
 			EmitSoundToAll("ui/notification_alert.wav", .updatePos = false);
-			CreateTimer(count == 1 ? 1.0 : 0.5 / float(count),
-						 Trade_KeepSpamming,
-					 	 count + 1,
-						 TIMER_FLAG_NO_MAPCHANGE);  /// Give a longer delay between the first and second overlay for "smoothness"
+			CreateTimer(
+				count == 1 ? 1.0 : 0.5 / float(count),
+				Trade_KeepSpamming,
+				count + 1,
+				TIMER_FLAG_NO_MAPCHANGE
+			);  /// Give a longer delay between the first and second overlay for "smoothness"
 		}
 		else return Plugin_Stop; /// Stop the rage
 	}
@@ -1406,7 +1409,7 @@ void HandleAttackerKill(FF2Player victim, FF2Player player)
 			SetEntPropEnt(attacker, Prop_Data, "m_hActiveWeapon", weapon);
 		}
 	}
-	
+
 	if( player.HasAbility(this_plugin_name, DROP_PROP) ) {
 		char model[PLATFORM_MAX_PATH];
 		if( player.GetArgS(this_plugin_name, DROP_PROP, "model", model, PLATFORM_MAX_PATH) ) {

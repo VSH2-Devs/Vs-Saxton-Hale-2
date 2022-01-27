@@ -9,7 +9,7 @@ void InitNatives()
 	CREATE_NATIVE(ForkVersion);
 
 	CREATE_NATIVE(Cheats);
-	
+
 	CREATE_NATIVE(FindVSH2IDByName);
 
 	CREATE_NATIVE(LoadAbility);
@@ -122,7 +122,7 @@ any Native_FF2Player_HasAbility(Handle plugin, int numParams)
 any Native_FF2Player_DoAbility(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
-	
+
 	char plugin_name[64]; GetNativeString(2, plugin_name, sizeof(plugin_name));
 	char ability_name[64]; GetNativeString(3, ability_name, sizeof(ability_name));
 
@@ -148,8 +148,9 @@ any Native_FF2Player_RandomSound(Handle plugin, int numParams)
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 
 	FF2Identity identity;
-	if( !ff2_cfgmgr.FindIdentity(player.GetPropInt("iBossType"), identity) )
+	if( !ff2_cfgmgr.FindIdentity(player.GetPropInt("iBossType"), identity) ) {
 		return 0;
+	}
 
 	int key_size; GetNativeStringLength(2, key_size); ++key_size;
 
@@ -157,7 +158,7 @@ any Native_FF2Player_RandomSound(Handle plugin, int numParams)
 	GetNativeString(2, key, key_size);
 
 	FF2SoundSection sec;
-	
+
 	if( !StrContains(key, "ability") ) {
 		FF2CallType_t slot = GetNativeCell(4);
 		RandomAbilitySound(identity.soundMap.GetSection(key), slot, sec);
@@ -292,12 +293,12 @@ any Native_FF2Player_SoundMap_Get(Handle plugin, int numParams)
 		int len = snap.KeyBufferSize(i);
 		char[] key = new char[len];
 		snap.GetKey(i, key, len);
-		
+
 		ConfigMap section;
 		identity.soundMap.GetValue(key, section);
 		out_cfg.SetValue(key, section.Clone(plugin));
 	}
-	
+
 	delete snap;
 	return( out_cfg );
 }
@@ -323,7 +324,7 @@ int Native_FF2GameMode_PluginVersion(Handle plugin, int numParams)
 {
 	char version_str[10];
 	ff2.m_cvars.m_version.GetString(version_str, sizeof(version_str));
-	
+
 	char digit[3][10];
 	int version_ints[3];
 	if( ExplodeString(version_str, ".", digit, sizeof(digit[]), sizeof(digit[][])) == 3 ) {

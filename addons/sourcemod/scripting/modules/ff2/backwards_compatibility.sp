@@ -2,7 +2,7 @@
 #define PROFILE_SECTION \
 	Profiler pf = new Profiler(); \
 	pf.Start()
-	
+
 #define STOP_PROFILER \
 	pf.Stop(); \
 	float time = pf.Time; \
@@ -21,16 +21,16 @@ methodmap ConfigMapAllocator {
 	public ConfigMap NewSection(const char[] name) {
 		PackVal val;
 		StringMap sm = new StringMap();
-		
+
 		val.tag = KeyValType_Section;
 		val.data = new DataPack();
 		val.data.WriteCell(sm);
 		val.size = sizeof(StringMap);
-		
+
 		this.Config.SetArray(name, val, sizeof(val));
 		return view_as<ConfigMap>(sm);
 	}
-	
+
 	public void NewValue(const char[] name, const char[] value, int size) {
 		PackVal val;
 
@@ -38,7 +38,7 @@ methodmap ConfigMapAllocator {
 		val.data = new DataPack();
 		val.data.WriteString(value);
 		val.size = size;
-		
+
 		this.Config.SetArray(name, val, sizeof(val));
 	}
 
@@ -53,7 +53,7 @@ methodmap ConfigMapAllocator {
 		int i; /// used for `key`.
 		char final_section[PLATFORM_MAX_PATH];
 		ParseTargetPath(key, final_section, sizeof(final_section));
-			
+
 		bool skip_call = false;	///	don't care and skip StringMap::GetArray during the next iterations
 		ConfigMap itermap = this.Config;
 		while( itermap != null ) {
@@ -75,7 +75,7 @@ methodmap ConfigMapAllocator {
 					}
 				}
 			}
-	
+
 			PackVal val;
 			if( StrEqual(curr_section, final_section) ) {
 				/// this is a new section
@@ -139,7 +139,7 @@ methodmap ConfigMapAllocator {
 						}
 						default: { }
 						}
-						
+
 						itermap.SetArray(curr_section, pack, sizeof(pack));
 						itermap = view_as<ConfigMap>(retsm);
 					}
@@ -176,7 +176,7 @@ methodmap ConfigMapAllocator {
 			this.EnsureSectionExists(new_key, datapack, enumeration, KeyValType_Value);
 		}
 	}
-	
+
 	public void MoveToSection(const char[] cur_key, ConfigMap target, const char[] new_key) {
 		PackVal pack;
 		if( this.Config.GetArray(cur_key, pack, sizeof(pack)) ) {
@@ -199,23 +199,23 @@ static bool FF2Resolve_GenericInfo(ArrayList delete_list, const ConfigMapAllocat
 		///{ old section,		new section,		enumeration for <enum> }
 		{ "name", 				"info.name",		'0' },	///	0
 		{ "model", 				"info.model",		'0' },	///	1
-		
+
 		{ "class", 				"info.class",		'0' },	///	2
 		{ "lives",				"info.lives",		'0' },	///	3
-		
+
 		{ "health_formula",		"info.health",		'0' },	///	4
 		{ "ragedist",			"info.ragedist",	'0' },	///	4
-		
+
 		{ "nofirst",			"info.nofirst",		'0' },	///	5
 		{ "permission",			"info.permission",	'0' },	///	6
 		{ "blocked",			"info.blocked",		'0' },	///	7
-		
+
 		{ "speed",				"info.speed.min",	'0' },	///	8
 		{ "minspeed",			"info.speed.min",	'0' },	///	9
 		{ "maxspeed",			"info.speed.max",	'0' },	///	10
-		
+
 		{ "companion",			"info.companion",	'1' },	/// 11
-		
+
 		{ "sound_block_vo",		"info.mute",		'0' },	/// 12
 		{ "version",			"info.version",		'0' },	/// 13
 	};
@@ -229,12 +229,12 @@ static bool FF2Resolve_GenericInfo(ArrayList delete_list, const ConfigMapAllocat
 				continue;
 			if( strcmp(generic_info_keys[j][0], key) )
 				continue;
-	
+
 			delete_list.PushString(generic_info_keys[j][0]);
 			if( j==9||j==8 ) skip_imports[9] = skip_imports[8] = true;
 				else skip_imports[j] = true;
 			skips++;
-	
+
 			cfg.CloneToSection(
 				generic_info_keys[j][0],		///	old_key
 				generic_info_keys[j][1],		///	new_key
@@ -253,7 +253,7 @@ FF2_RESOLVE_FUNC(Description)
 	if( pos!=-1 ) {
 		delete_list.PushString(key);
 		char[] new_key = new char[len+5];	///	sizeof("info.") + len
-			
+
 		FormatEx(new_key, len, "%s", key);
 		new_key[pos] = '\0';
 		Format(new_key, len+5, "info.%s.%s", new_key, new_key[pos+1]);
@@ -349,10 +349,10 @@ FF2_RESOLVE_FUNC(SoundSection)
 	if( !sections_count ) {
 		return;
 	}
-	
+
 	char[] final_outkey = new char[len + 7];
 	FormatEx(final_outkey, len + 7, "sounds.%s", key[6]);
-	
+
 	ConfigMap final_section =
 		cfg.ReserveNewSection(
 			final_outkey, 
@@ -364,12 +364,12 @@ FF2_RESOLVE_FUNC(SoundSection)
 		char fkey[4];
 		IntToString(i, fkey, sizeof(fkey));
 		ConfigMap cur_final = final_section.GetSection(fkey);
-		
+
 		switch( section_type ) {
 		case SST_GENERIC: {
 			char rkey[4];
 			IntToString(i+1, rkey, sizeof(rkey));
-			
+
 			sound_section.MoveToSection(rkey, cur_final, "path");
 		}
 		case SST_BGM: {
@@ -404,7 +404,7 @@ FF2_RESOLVE_FUNC(SoundSection)
 						char tmp[32];
 						pack.data.Reset();
 						pack.data.ReadString(tmp, sizeof(tmp));
-						
+
 						pack.size = FormatEx(tmp, sizeof(tmp), "%b", FF2_OldNumToBitSlot(StringToInt(tmp))) + 1;
 
 						pack.data.Reset();
@@ -460,7 +460,7 @@ void FF2_ResolveBackwardCompatibility(ConfigMap charcfg)
 			int len = snap.KeyBufferSize(i);
 			char[] key = new char[len];
 			snap.GetKey(i, key, len);
-			
+
 			if( FF2Resolve_GenericInfo(delete_list, cfg, key, skip_imports, skips) )
 				continue;
 
@@ -492,13 +492,13 @@ void FF2_ResolveBackwardCompatibility(ConfigMap charcfg)
 			else if( !strncmp(key, "weapon", 5) ) {
 				FF2_RESOLVE_FUNC(WeaponSection);
 			}
-			
+
 			///
 			///	resolve sounds
 			else if( (!strncmp(key, "sound_", 6) && strcmp(key[6], "block_vo")) || !strncmp(key, "catch_", 6) ) {
 				FF2_RESOLVE_FUNC(SoundSection);
 			}
-			
+
 			/// ignoring 'downloads' section since it's a one time get
 		}
 

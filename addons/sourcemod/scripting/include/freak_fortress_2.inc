@@ -1007,6 +1007,7 @@ stock int FF2_GetFF2flags(int client)
 #if defined FF2_USING_AUTO_PLUGIN__OLD
 	#warning Using this function might have undesired behaviours, such as some flags might not be set. Use FF2Player.GetProp[Int, Float, Any] instead.
 #endif
+
 	FF2Player player = FF2Player(client);
 	if( !player.Valid ) {
 		return 0;
@@ -1015,23 +1016,33 @@ stock int FF2_GetFF2flags(int client)
 	
 	/// The most commonly used flags:
 	/// https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/blob/develop/addons/sourcemod/scripting/modules/ff2/vsh2_bridge.sp#L276
-	if (!(flags & (1<<4) /* FF2FLAG_HUDDISABLED */) && player.GetPropInt("bHideHUD"))
+	if (player.GetPropInt("bHideHUD"))
 		flags |= (1<<4) /* FF2FLAG_HUDDISABLED */;
+	else
+		flags &= ~(1<<4) /* FF2FLAG_HUDDISABLED */;
 	
 	/// https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki/VSH-2-Internal-API-Reference#general-boss-and-player-api-modulesbasesp
-	if (!(flags & (1<<7) /* FF2FLAG_ALLOWSPAWNINBOSSTEAM */) && player.GetPropInt("bIsMinion"))
+	if (player.GetPropInt("bIsMinion"))
 		flags |= (1<<7) /* FF2FLAG_ALLOWSPAWNINBOSSTEAM */;
+	else
+		flags &= ~(1<<7) /* FF2FLAG_ALLOWSPAWNINBOSSTEAM */;
 
 	/// https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/blob/develop/addons/sourcemod/scripting/freak_fortress_2.sp#L164
-	if (!(flags & (1<<12) /* FF2FLAG_CHANGECVAR */) && player.GetPropInt("bNotifySMAC_CVars"))
+	if (player.GetPropInt("bNotifySMAC_CVars"))
 		flags |= (1<<12) /* FF2FLAG_CHANGECVAR */;
+	else
+		flags &= ~(1<<12) /* FF2FLAG_CHANGECVAR */;
 	
 	/// requires https://github.com/01Pollux/FF2-Library/blob/VSH2/addons/sourcemod/scripting/ff2_nopacks.sp
-	if (!(flags & (1<<13) /* FF2FLAG_ALLOW_HEALTH_PICKUPS */) && player.GetPropInt("bNoHealthPacks"))
+	if (player.GetPropInt("bNoHealthPacks"))
+		flags &= ~(1<<13) /* FF2FLAG_ALLOW_HEALTH_PICKUPS */;
+	else
 		flags |= (1<<13) /* FF2FLAG_ALLOW_HEALTH_PICKUPS */;
 	
 	/// requires https://github.com/01Pollux/FF2-Library/blob/VSH2/addons/sourcemod/scripting/ff2_nopacks.sp
-	if (!(flags & (1<<14) /* FF2FLAG_ALLOW_AMMO_PICKUPS */) && player.GetPropInt("bNoAmmoPacks"))
+	if (player.GetPropInt("bNoAmmoPacks"))
+		flags &= ~(1<<14) /* FF2FLAG_ALLOW_AMMO_PICKUPS */;
+	else
 		flags |= (1<<14) /* FF2FLAG_ALLOW_AMMO_PICKUPS */;
 	
 	return flags;
@@ -1047,8 +1058,8 @@ stock void FF2_SetFF2flags(int client, int flags)
 {
 #if defined FF2_USING_AUTO_PLUGIN__OLD
 	#warning Using this function might have undesired behaviours, such as some flags might not be set. Use FF2Player.GetProp[Int, Float, Any] instead.
-
 #endif
+
 	FF2Player player = FF2Player(client);
 	if( !player.Valid ) {
 		return;
@@ -1065,10 +1076,10 @@ stock void FF2_SetFF2flags(int client, int flags)
 	player.SetPropInt("bNotifySMAC_CVars", (flags & (1<<12) /* FF2FLAG_CHANGECVAR */) ? 1 : 0);
 	
 	/// requires https://github.com/01Pollux/FF2-Library/blob/VSH2/addons/sourcemod/scripting/ff2_nopacks.sp
-	player.SetPropInt("bNoHealthPacks", (flags & (1<<13) /* FF2FLAG_ALLOW_HEALTH_PICKUPS */) ? 1 : 0);
+	player.SetPropInt("bNoHealthPacks", (flags & (1<<13) /* FF2FLAG_ALLOW_HEALTH_PICKUPS */) ? 0 : 1);
 
 	/// requires https://github.com/01Pollux/FF2-Library/blob/VSH2/addons/sourcemod/scripting/ff2_nopacks.sp
-	player.SetPropInt("bNoAmmoPacks", (flags & (1<<14) /* FF2FLAG_ALLOW_AMMO_PICKUPS */) ? 1 : 0);
+	player.SetPropInt("bNoAmmoPacks", (flags & (1<<14) /* FF2FLAG_ALLOW_AMMO_PICKUPS */) ? 0 : 1);
 	
 	player.SetPropInt("iFlags", flags);
 }

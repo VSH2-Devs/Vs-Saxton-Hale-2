@@ -3,7 +3,7 @@
  *	Since there will be so many bosses with so many (sound) sections,
  *	allocating a alot of huge buffers of string might not be the best idea.
  *	So instead, this enum struct will only points to the sound section
- *	
+ *
  *	//"catch_phrase"
  *	"sound_*" {
  * 		"<enum>" {
@@ -42,7 +42,7 @@ enum struct FF2SoundIdentity {
 	int level;						/// sound level, default to SNDLEVEL_TRAFFIC
 	float volume;					/// sound volume, default = SNDVOL_NORMAL
 	int pitch;						/// sound pitch, default to SNDPITCH_NORMAL
-	
+
 	bool IsSlotCompatible(FF2CallType_t slot) {
 		return (view_as<int>(slot) & this.bit_slot) ? true : false;
 	}
@@ -52,7 +52,7 @@ methodmap FF2SoundSection {
 	public FF2SoundSection(ConfigMap section) {
 		return view_as<FF2SoundSection>(section);
 	}
-	
+
 	property ConfigMap Config {
 		public get() { return view_as<ConfigMap>(this); }
 	}
@@ -68,7 +68,7 @@ methodmap FF2SoundSection {
 	public void GetTime(float& time) {
 		this.Config.GetFloat("time", time);
 	}
-	
+
 	///	 for fast lookup instead of initializing a whole FF2SoundIdentity
 	public void GetPathAndTime(char[] path, int path_size, float& time) {
 		this.GetPath(path, path_size);
@@ -77,7 +77,10 @@ methodmap FF2SoundSection {
 
 	public bool IsSlotCompatible(FF2CallType_t bit_slot) {
 		FF2CallType_t slot;
-		return( (bit_slot && this.Config.GetInt("slot", view_as<int>(slot), 2)) && (slot & bit_slot) ? true : false );
+		if( !this.Config.GetInt("slot", view_as<int>(slot), 2) )
+			slot = CT_RAGE;
+
+		return (slot & bit_slot) ? true : false;
 	}
 
 	public void FullInfo(FF2SoundIdentity info) {
@@ -87,8 +90,9 @@ methodmap FF2SoundSection {
 		cfg.GetFloat("time", info.time);
 		cfg.Get("name", info.name, sizeof(FF2SoundIdentity::name));
 		cfg.Get("artist", info.artist, sizeof(FF2SoundIdentity::artist));
-		cfg.GetInt("slot", info.bit_slot, 2);
-		
+		if( !cfg.GetInt("slot", info.bit_slot, 2) )
+			info.bit_slot = view_as<int>(CT_RAGE);
+
 		cfg = cfg.GetSection("internal");
 		if( cfg ) {
 			if( !cfg.GetInt("channel", info.channel) ) 	info.channel	= SNDCHAN_VOICE;
@@ -98,7 +102,7 @@ methodmap FF2SoundSection {
 			if( !cfg.GetInt("pitch", info.pitch) )	 	info.pitch		= SNDPITCH_NORMAL;
 		}
 	}
-	
+
 	public void PlaySoundSimple(VSH2Player player, int vsh2_flags) {
 		char path[PLATFORM_MAX_PATH];
 		this.GetPath(path, sizeof(path));
@@ -172,7 +176,7 @@ methodmap FF2SoundSection {
 /**
  * FF2SoundMap:
  *
- * Key: 	"sound_*"	// "catch_*"
+ * Key: 	"sound.*"	// "catch.*"
  * Value: 	ConfigMap of a sound section
  */
 methodmap FF2SoundMap < StringMap  {
@@ -190,21 +194,23 @@ methodmap FF2SoundMap < StringMap  {
 		return this.SetValue(name, sec, false);
 	}
 
+	/**
+	 * section: extra section for sounds, can be null
+	 */
 	public void PlayAbilitySound(VSH2Player player, ConfigMap section, FF2CallType_t type) {
-		bool play_any = false;
-		if( section && section.GetBool("custom", play_any) && play_any )
-			return;
-
+		bool play_custom = false;
 		char buffer[PLATFORM_MAX_PATH];
+		buffer = "ability";
 
-		if( !section.Get("sounds", buffer, sizeof(buffer)) )
-			buffer = "sound_ability";
+		if( section.GetBool("custom", play_custom, false) && play_custom ) {
+			section.Get("sounds", buffer, sizeof(buffer));
+		}
 
 		ConfigMap snd_list = this.GetSection(buffer);
 		FF2SoundSection sec;
 		if( snd_list && RandomAbilitySound(snd_list, type, sec) ) {
 			sec.GetPath(buffer, sizeof(buffer));
-			player.PlayVoiceClip(buffer, VSH2_VOICE_ABILITY);
+			sec.PlaySound(player.index, VSH2_VOICE_ABILITY);
 		}
 	}
 
@@ -237,11 +243,15 @@ bool RandomAbilitySound(ConfigMap sound_section, FF2CallType_t slot, FF2SoundSec
 	if( !sound_section )
 		return( false );
 
-	FF2SoundSection sounds[FF2_MAX_RANDOM_SOUNDS];
+	int size = sound_section.Size;
+	if( size > FF2_MAX_RANDOM_SOUNDS )
+		size = FF2_MAX_RANDOM_SOUNDS;
+
+	FF2SoundSection[] sounds = new FF2SoundSection[size];
 	int count;
 
 	///	first capture all valid sounds
-	for( int i=sound_section.Size-1; i>=0 && count < FF2_MAX_RANDOM_SOUNDS; i-- ) {
+	for( int i=size-1; i>=0; i-- ) {
 		FF2SoundSection cur_sound = FF2SoundSection(sound_section.GetIntSection(i));
 		if( !cur_sound || !cur_sound.IsSlotCompatible(slot) )
 			continue;

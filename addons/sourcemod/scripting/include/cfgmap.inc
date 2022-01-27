@@ -182,7 +182,7 @@ methodmap ConfigMap < StringMap {
 		if( this==null ) {
 			return false;
 		}
-		
+
 		/// if "do_erase" is set true, "SetVal" will behave as "RemoveVal", iterate and recursively delete the elements.
 		bool do_erase = val_size < 0;
 		/// first check if we're getting a singular value OR we iterate through a sectional path.
@@ -192,6 +192,7 @@ methodmap ConfigMap < StringMap {
 			PackVal val;
 			bool result = this.GetArray(key, val, sizeof(val));
 			KeyValType tag = val.tag;
+			
 			if( result && tag != KeyValType_Null ) {
 				if( do_erase ) {
 					if( val.tag==KeyValType_Section ) {
@@ -211,7 +212,7 @@ methodmap ConfigMap < StringMap {
 			}
 			return false;
 		}
-		
+
 		/// ok, not a singular value, iterate to the specific linkmap section then.
 		/// parse the target key first.
 		int i; /// used for `key`.
@@ -252,8 +253,12 @@ methodmap ConfigMap < StringMap {
 					if( val.tag==KeyValType_Section ) {
 						val.data.Reset();
 						ConfigMap cfg = val.data.ReadCell();
+						PrintToServer("RecErasing: %x/%x ", val.data, cfg);
 						DeleteCfg(cfg);
 					}
+					else 
+						PrintToServer("RecErasing: %x ", val.data);
+
 					delete val.data;
 					itermap.Remove(curr_section);
 				}
@@ -396,12 +401,12 @@ methodmap ConfigMap < StringMap {
 	 * @note      to directly access subsections, use a '.' like "root.section1.section2"
 	 *            for keys that have a dot in their name, use '\\.'
 	 */
-	public bool SetInt(const char[] key_path, int i) {
+	public bool SetInt(const char[] key_path, int i, const char[] fmt="%i") {
 		if( this==null ) {
 			return false;
 		}
 		char val_str[15];
-		int size = IntToString(i, val_str, sizeof(val_str)) + 1;
+		int size = Format(val_str, sizeof(val_str), fmt, i);
 		return this.SetVal(key_path, val_str, size);
 	}
 	
@@ -611,13 +616,13 @@ methodmap ConfigMap < StringMap {
 		IntToString(key, key_str, sizeof(key_str));
 		return this.GetInt(key_str, i, base);
 	}
-	public bool SetIntKeyInt(int key, int i) {
+	public bool SetIntKeyInt(int key, int i, const char[] fmt="%i") {
 		if( key < 0 ) {
 			return false;
 		}
 		char key_str[12];
 		IntToString(key, key_str, sizeof(key_str));
-		return this.SetInt(key_str, i);
+		return this.SetInt(key_str, i, fmt);
 	}
 	
 	public int GetIntKeyFloat(int key, float& f) {

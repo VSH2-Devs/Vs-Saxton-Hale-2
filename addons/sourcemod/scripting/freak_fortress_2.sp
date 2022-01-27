@@ -7,7 +7,7 @@
 #include <sdkhooks>
 
 #define PLYR           35
-#define PLUGIN_VERSION "1.0.8"
+#define PLUGIN_VERSION "1.1.0"
 
 #include <cfgmap>
 #include "modules/stocks.inc"
@@ -69,13 +69,14 @@ enum struct FF2CompatPlugin {
 FF2CompatPlugin ff2;
 VSH2GameMode    vsh2_gm;
 
+#include "modules/ff2/backwards_compatibility.sp"
+
 #include "modules/ff2/utils.sp"
 #include "modules/ff2/gamemode.sp"
 #include "modules/ff2/forwards.sp"
 
 #include "modules/ff2/handler.sp"
 #include "modules/ff2/vsh2_bridge.sp"
-#include "modules/ff2/backwards_compatibility.sp"
 
 #include "modules/ff2/natives.sp"
 #include "modules/ff2/console.sp"
@@ -120,9 +121,9 @@ public void OnLibraryRemoved(const char[] name)
 {
 	if( StrEqual(name, "VSH2") && ff2.m_vsh2 ) {
 		ff2.m_vsh2 = false;
-		
+
 		FF2GameMode.RemoveSubPlugins(true);
-		
+
 		FF2GameMode.UnhookFromVSH2();    /// ff2_cfgmgr will be deleted here
 		DeleteCfg(ff2.m_charcfg);
 	}
@@ -132,21 +133,11 @@ public void OnLibraryRemoved(const char[] name)
 public void NextFrame_InitFF2Player(int client)
 {
 	if( ff2.m_vsh2 ) {
-		FF2Player player = FF2Player(client);
-
-		player.iMaxLives = 0;
-		player.bNoSuperJump = false;
-		player.bNoWeighdown = false;
-		player.bHideHUD = false;
-
-		player.SetPropAny("bNotifySMAC_CVars", false);
-		player.SetPropAny("bNotifySMAC_CVars", false);
-		player.SetPropAny("bSupressRAGE", false);
-		player.SetPropFloat("flWeighdownCd", 0.0);
-		player.SetPropInt("iFlags", 0);
-
-		player.SetPropAny("bNoHealthPacks", false);
-		player.SetPropAny("bNoAmmoPacks", false);
+		/// vsh2_bridge.sp
+		VSH2Player player = VSH2Player(client);
+		// TODO
+		player.SetPropAny("bNoCompanion", false);
+		OnVariablesResetFF2(player);
 	}
 }
 
