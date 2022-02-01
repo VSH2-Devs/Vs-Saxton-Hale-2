@@ -33,7 +33,7 @@ methodmap FF2PluginList < ArrayList {
 		int i;
 		int size = this.Length;
 		// find plugin if it already exists
-		for( ; i < size; i++ ) {
+		for( ; i<size; i++ ) {
 			this.GetInfo(i, infos);
 			if( strcmp(infos.name, name) )
 				continue;
@@ -48,7 +48,6 @@ methodmap FF2PluginList < ArrayList {
 					return true;
 				}
 			}
-
 			delete iter;
 
 			infos.loading = true;
@@ -56,9 +55,6 @@ methodmap FF2PluginList < ArrayList {
 			CreateTimer(0.1, _ScheduleAddSubplugin, i, TIMER_FLAG_NO_MAPCHANGE);
 			return true;
 		}
-
-		if( size>=FF2_MAX_SUBPLUGINS )
-			return false;
 
 		ServerCommand("sm plugins load \"freaks\\%s.smx\"", name);
 
@@ -70,25 +66,15 @@ methodmap FF2PluginList < ArrayList {
 		return true;
 	}
 
-	public int LoadPluginsEx(FF2AbilityList query_abilities, int remaining_size) {
+	public void LoadPlugins(FF2AbilityList query_abilities) {
 		char plugin_name[FF2_MAX_PLUGIN_NAME];
-		int required_size = query_abilities.Length;
-		int size_left = remaining_size - required_size;
-		if (size_left < required_size)
-			required_size = size_left;
 
-		int num_of_plugins;
+		int required_size = query_abilities.Length;
 		for( int i; i<required_size; i++ ) {
 			FF2Ability ability = query_abilities.Get(i);
 			ability.GetPlugin(plugin_name);
-			if( this.TryLoadSubPlugin(plugin_name) )
-				num_of_plugins++;
+			this.TryLoadSubPlugin(plugin_name);
 		}
-		return num_of_plugins;
-	}
-
-	public void LoadPlugins(FF2AbilityList query_abilities) {
-		this.LoadPluginsEx(query_abilities, FF2_MAX_SUBPLUGINS - ff2.m_plugins.Length);
 	}
 
 	public void FindAndErase(const char[] name) {
@@ -180,7 +166,6 @@ static Handle _FindPlugin(const char[] name)
 	FormatEx(pl_name, sizeof(pl_name), "freaks\\%s.smx", name);
 	Handle pl = FindPluginByFile(pl_name);
 	if( !pl || GetPluginStatus(pl)!=Plugin_Running ) {
-		LogError("[VSH2/FF2] Failed to load plugin: %s", pl_name);
 		return null;
 	}
 

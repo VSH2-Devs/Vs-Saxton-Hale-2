@@ -31,8 +31,6 @@ enum FF2RageType_t {
 	RT_CHARGE
 };
 
-enum { FF2_MAX_SUBPLUGINS = 24 };
-
 enum {
 	FF2_MAX_PLUGIN_NAME  = 64,   /// sizeof plugin_name
 	FF2_MAX_ABILITY_NAME = 64,   /// sizeof ability_name

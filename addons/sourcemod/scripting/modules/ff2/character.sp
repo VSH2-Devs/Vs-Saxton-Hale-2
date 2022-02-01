@@ -283,7 +283,6 @@ static void FF2Character_RegisterAbilities(FF2Character this_char, bool new_api,
 	if( !new_api )
 		snap = abilities_section.Snapshot();
 	int iter_size 				= new_api ? abilities_section.Size : snap.Length;
-	int free_abilities 			= FF2_MAX_SUBPLUGINS - outablist.Length;
 
 	/**
 	 * new api:
@@ -337,7 +336,7 @@ static void FF2Character_RegisterAbilities(FF2Character this_char, bool new_api,
 
 	bool warn_once = false;
 	char path[PLATFORM_MAX_PATH], plugin_name[FF2_MAX_PLUGIN_NAME];
-	for( int i; i<iter_size && free_abilities>0; i++ ) {
+	for( int i; i<iter_size; i++ ) {
 		ConfigMap cur_section;
 		if( new_api ) {
 			cur_section = abilities_section.GetIntSection(i);
@@ -371,7 +370,6 @@ static void FF2Character_RegisterAbilities(FF2Character this_char, bool new_api,
 				cur_section.SetInt("slot", view_as<int>(CT_INACTIVE), "%b");
 
 			outablist.Insert(cur_section);
-			--free_abilities;
 		}
 
 		///	Resolve the 'arg0' and the old 'slot'

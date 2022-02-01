@@ -34,14 +34,12 @@ methodmap FF2GameMode < VSH2GameMode {
 			FF2Player[] bosses = new FF2Player[MaxClients];
 
 			int count = VSH2GameMode.GetBosses(ToFF2Player(bosses), false);
-			int size_left = FF2_MAX_SUBPLUGINS - ff2.m_plugins.Length;
-
 			FF2Player player;
-			for( int i; i < count && size_left>0; i++ ) {
+			for( int i; i < count; i++ ) {
 				player = bosses[i];
 				FF2AbilityList list = player.HookedAbilities;
 				if( list ) {
-					size_left -= ff2.m_plugins.LoadPluginsEx(list, size_left);
+					ff2.m_plugins.LoadPlugins(list);
 				}
 			}
 		}
