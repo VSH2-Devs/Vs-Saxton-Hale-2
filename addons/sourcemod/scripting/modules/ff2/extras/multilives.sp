@@ -121,11 +121,20 @@ static void DisplayLivesNum(int client)
 	static char name[MAX_BOSS_NAME_SIZE]; 
 
 	for( int i = 0; i < BossesWithLives; i++ ) {
-		FF2Player curBoss = LivesSys[i].boss;
-		if( !curBoss.index )
+		FF2Player cur_boss = LivesSys[i].boss;
+		if( cur_boss==INVALID_FF2PLAYER )
 			continue;
 
-		int curLives = curBoss.GetPropInt("iLives");
+		int boss_index = cur_boss.index;
+		if( !boss_index ) {
+			LivesSys[i].boss = INVALID_FF2PLAYER;
+			continue;
+		}
+
+		if( !IsPlayerAlive(boss_index) )
+			continue;
+
+		int curLives = cur_boss.GetPropInt("iLives");
 		if( curLives <= 1 )
 			continue;
 
@@ -142,14 +151,14 @@ static void DisplayLivesNum(int client)
 			LivesSys[i].color.a
 		);
 
-		curBoss.GetName(name);
+		cur_boss.GetName(name);
 		ShowHudText(
 			client,
 			-1,
 			"%s: (%i / %i) lives left",
 			name,
 			curLives,
-			curBoss.GetPropInt("iMaxLives")
+			cur_boss.GetPropInt("iMaxLives")
 		);
 
 		nest_y_pos += LivesSys[i].pad;

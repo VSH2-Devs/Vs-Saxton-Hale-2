@@ -3,17 +3,18 @@ void InitNatives()
 	/// Natives For FF2GameMode
 	#define CREATE_NATIVE(%0)    CreateNative("FF2GameMode."...#%0   , Native_FF2GameMode_%0)
 
-
 	CREATE_NATIVE(IsOn);
 	CREATE_NATIVE(PluginVersion);
 	CREATE_NATIVE(ForkVersion);
 
 	CREATE_NATIVE(Cheats);
 
-	CREATE_NATIVE(FindVSH2IDByName);
+	CREATE_NATIVE(QueryBoss);
 
 	CREATE_NATIVE(LoadAbility);
 	CREATE_NATIVE(SubPlugins);
+	CREATE_NATIVE(Validate);
+	CREATE_NATIVE(RegisterPlugin);
 
 	/// Natives For FF2Player
 	#undef CREATE_NATIVE
@@ -41,10 +42,7 @@ void InitNatives()
 	CREATE_NATIVE(RandomSound);
 	CREATE_NATIVE(RageDist);
 
-	CREATE_NATIVE_GET(SoundMap);
-	CREATE_NATIVE_GET(HookedAbilities);
 	CREATE_NATIVE(PlayBGM);
-
 
 	#undef CREATE_NATIVE
 	#undef CREATE_NATIVE_GET
@@ -263,46 +261,6 @@ any Native_FF2Player_GetSection(Handle plugin, int numParams)
 	return sec.Clone(plugin);
 }
 
-any Native_FF2Player_HookedAbilities_Get(Handle plugin, int numParams)
-{
-	FF2Player player = ToFF2Player(GetNativeCell(1));
-	ArrayList cur_list = player.HookedAbilities;
-	if( !cur_list ) {
-		return 0;
-	}
-
-	ArrayList out_list = new ArrayList();
-	for( int i=cur_list.Length-1; i>=0; i-- ) {
-		out_list.Push(view_as<ConfigMap>(cur_list.Get(i)).Clone(plugin));
-	}
-
-	return out_list;
-}
-
-any Native_FF2Player_SoundMap_Get(Handle plugin, int numParams)
-{
-	FF2Player player = GetNativeCell(1);
-	FF2Identity identity;
-	if( !ff2_cfgmgr.FindIdentity(player.iBossType, identity) )
-		return 0;
-
-	StringMap out_cfg = new StringMap();
-	StringMapSnapshot snap = identity.soundMap.Snapshot();
-
-	for( int i=snap.Length-1; i>=0; i-- ) {
-		int len = snap.KeyBufferSize(i);
-		char[] key = new char[len];
-		snap.GetKey(i, key, len);
-
-		ConfigMap section;
-		identity.soundMap.GetValue(key, section);
-		out_cfg.SetValue(key, section.Clone(plugin));
-	}
-
-	delete snap;
-	return( out_cfg );
-}
-
 any Native_FF2Player_PlayBGM(Handle plugin, int numParams)
 {
 	FF2Player player = ToFF2Player(GetNativeCell(1));
@@ -352,23 +310,88 @@ int Native_FF2GameMode_ForkVersion(Handle plugin, int numParams)
 
 any Native_FF2GameMode_Cheats(Handle plugin, int numParams)
 {
-	if( numParams ) {
-		ff2.m_cheats = GetNativeCell(1) != 0;
+	if( GetNativeCell(1) ) {
+		ff2.m_cheats = GetNativeCell(2) != 0;
 	}
 
 	return ff2.m_cheats;
 }
 
-any Native_FF2GameMode_FindVSH2IDByName(Handle plugin, int numParams)
+enum struct FF2Identity_Q {
+	int				VSH2ID;
+	ConfigMap		hCfg;
+	StringMap		soundMap;
+	ArrayList		abilityList;
+	char			name[FF2_MAX_BOSS_NAME_SIZE];
+
+	bool			isNewAPI;
+	bool			isFound;
+}
+
+enum FF2GameModeQ_t {
+	/// Fill the FF2Identity::hCfg struct
+	FF2GAMEMODEQ_CONFIGMAP 	= 1 << 0,
+	/// Fill the FF2Identity::soundMap
+	FF2GAMEMODEQ_SOUNDMAP 	= 1 << 1,
+	/// Fill the FF2Identity::abilityList
+	FF2GAMEMODEQ_ABILITIES 	= 1 << 2,
+	
+	/// if it was set, and 'FF2GAMEMODEQ_BY_NAME' was set, fill the FF2Identity::VSH2ID else vise-versa
+	FF2GAMEMODEQ_COPY_OTHER	= 1 << 3,
+	/// if it was set, search the boss by FF2Identity::name, else search by FF2Identity::VSH2ID
+	FF2GAMEMODEQ_BY_NAME	= 1 << 4,
+}
+
+any Native_FF2GameMode_QueryBoss(Handle plugin, int numParams)
 {
-	FF2Player player = FF2Player(GetNativeCell(1));
-	if( !player.Valid )
-		return INVALID_FF2_BOSS_ID;
+	FF2Identity_Q out;
+	FF2Identity tmp;
+	GetNativeArray(1, out, sizeof(FF2Identity_Q));
+	FF2GameModeQ_t flags = GetNativeCell(2);
 
-	char boss_name[48]; GetNativeString(2, boss_name, sizeof(boss_name));
-	FF2Identity id;
+	if( flags & FF2GAMEMODEQ_BY_NAME ) {
+		if( !(out.isFound = ff2_cfgmgr.FindIdentityByName(out.name, tmp)) ) {
+			return 0;
+		}
+		if( flags & FF2GAMEMODEQ_COPY_OTHER )
+			out.VSH2ID = tmp.VSH2ID;
+	}
+	else {
+		if( !(out.isFound = ff2_cfgmgr.FindIdentity(out.VSH2ID, tmp)) ) {
+			return 0;
+		}
 
-	return ff2_cfgmgr.FindIdentityByName(boss_name, id) ? id.VSH2ID : INVALID_FF2_BOSS_ID;
+		if( flags & FF2GAMEMODEQ_COPY_OTHER )
+			strcopy(out.name, sizeof(FF2Identity_Q::name), tmp.name);
+	}
+
+	if( flags & FF2GAMEMODEQ_CONFIGMAP ) {
+		out.hCfg = tmp.hCfg.Clone(plugin);
+	}
+	if( flags & FF2GAMEMODEQ_CONFIGMAP ) {
+		out.abilityList = new ArrayList();
+		for( int i=tmp.abilityList.Length-1; i>=0; i-- ) {
+			out.abilityList.Push(view_as<ConfigMap>(tmp.abilityList.Get(i)).Clone(plugin));
+		}
+	}
+	if( flags & FF2GAMEMODEQ_SOUNDMAP ) {
+		out.soundMap = new StringMap();
+		StringMapSnapshot snap = tmp.soundMap.Snapshot();
+		
+		for( int i=snap.Length-1; i>=0; i-- ) {
+			int len = snap.KeyBufferSize(i);
+			char[] key = new char[len];
+			snap.GetKey(i, key, len);
+
+			ConfigMap section;
+			tmp.soundMap.GetValue(key, section);
+			out.soundMap.SetValue(key, section.Clone(plugin));
+		}
+		delete snap;
+	}
+
+	SetNativeArray(1, out, sizeof(FF2Identity_Q));
+	return 0;
 }
 
 any Native_FF2GameMode_LoadAbility(Handle plugins, int numParams)
@@ -394,6 +417,26 @@ any Native_FF2GameMode_SubPlugins(Handle plugins, int numParams)
 
 	return map;
 }
+
+any Native_FF2GameMode_Validate(Handle plugins, int numParams)
+{
+	FF2Identity id;
+	return ff2_cfgmgr.FindIdentity(ToFF2Player(GetNativeCell(1)).iBossType, id);
+}
+
+any Native_FF2GameMode_RegisterPlugin(Handle plugins, int numParams)
+{
+	char cfg_name[PLATFORM_MAX_PATH];
+	GetNativeString(1, cfg_name, sizeof(cfg_name));
+	FF2Identity id;
+	strcopy(id.name, sizeof(FF2Identity::name), cfg_name);
+	if( FF2_LoadCharacter(id, cfg_name) ) {
+		ff2_cfgmgr.SetArray(cfg_name, id, sizeof(FF2Identity));
+		return id.VSH2ID;
+	}
+	else return INVALID_FF2_BOSS_ID;
+}
+
 /** End of FF2GameMode methodmaps */
 
 

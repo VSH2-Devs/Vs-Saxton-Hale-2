@@ -9,22 +9,23 @@ Action Call_OnBossSelected(FF2Player player, char name[MAX_BOSS_NAME_SIZE], bool
 	return res;
 }
 
-Action Call_OnBossLoseLife(FF2Player player)
+Action Call_OnBossLoseLife(FF2Player player, int& new_lives)
 {
 	Action res;
 
 	Call_StartForward(ff2.m_forwards[FF2OnLoseLife]);
 	Call_PushCell(player.index);
 	int lives = player.iLives;
+	new_lives = lives;
 	Call_PushCellRef(lives);
-	int maxlives = player.iMaxLives;
-	Call_PushCell(maxlives);
+	Call_PushCell(player.iMaxLives);
 	Call_Finish(res);
 
 	if( res==Plugin_Changed ) {
 		if( lives > player.iMaxLives )
 			player.iMaxLives = lives;
 		player.iLives = lives;
+		new_lives = lives;
 	}
 
 	return res;

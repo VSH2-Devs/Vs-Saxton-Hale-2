@@ -7,7 +7,7 @@
 #include <sdkhooks>
 
 #define PLYR           35
-#define PLUGIN_VERSION "1.1.0"
+#define PLUGIN_VERSION "1.1.3"
 
 #include <cfgmap>
 #include "modules/stocks.inc"
@@ -130,7 +130,7 @@ public void OnLibraryRemoved(const char[] name)
 }
 
 
-public void NextFrame_InitFF2Player(int client)
+void NextFrame_InitFF2Player(int client)
 {
 	if( ff2.m_vsh2 ) {
 		/// vsh2_bridge.sp

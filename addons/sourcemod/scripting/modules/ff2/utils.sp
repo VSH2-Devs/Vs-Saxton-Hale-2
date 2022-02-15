@@ -149,20 +149,12 @@ stock int FF2_FindNonHiddenBoss(FF2Identity identity, int client)
 {
 	StringMapSnapshot boss_map = ff2_cfgmgr.Snapshot();
 	int boss_map_size = boss_map.Length;
-	/// Reserve an array of boss ids, and scramble it
-	ArrayList boss_list = new ArrayList(1, boss_map_size);
-	for( int i; i<boss_map_size; i++ ) {
-		boss_list.Set(i, i);
-	}
 
-	boss_list.Sort(Sort_Random, Sort_Integer);
+	int[] boss_list = new int[boss_map_size];
+	int boss_list_size;
 	char cfg_name[sizeof(FF2Identity::name)];
-
-	/// keep iterating until we find a valid random boss
-	int boss_id = -1;
-	for( int i=0; i<boss_map_size; i++ ) {
-		int idx = boss_list.Get(i);
-		boss_map.GetKey(idx, cfg_name, sizeof(cfg_name));
+	for( int i; i<boss_map_size; i++ ) {
+		boss_map.GetKey(i, cfg_name, sizeof(cfg_name));
 		ff2_cfgmgr.GetIdentity(cfg_name, identity);
 
 		ConfigMap info_sec = FF2Character(identity.hCfg).InfoSection;
@@ -176,12 +168,17 @@ stock int FF2_FindNonHiddenBoss(FF2Identity identity, int client)
 			if( !CheckCommandAccess(client, "", flag) )
 				continue;
 		}
-
-		boss_id = identity.VSH2ID;
-		break;
+		boss_list[boss_list_size++] = i;
 	}
 
-	delete boss_list;
+	int boss_id = -1;
+	if( boss_list_size ) {
+		boss_id = boss_list[GetRandomInt(0, boss_list_size - 1)];
+		boss_map.GetKey(boss_id, cfg_name, sizeof(cfg_name));
+		ff2_cfgmgr.GetIdentity(cfg_name, identity);
+		boss_id = identity.VSH2ID;
+	}
+	
 	delete boss_map;
 	return boss_id;
 }

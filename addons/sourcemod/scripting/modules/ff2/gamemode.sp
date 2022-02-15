@@ -36,7 +36,7 @@ methodmap FF2GameMode < VSH2GameMode {
 			int count = VSH2GameMode.GetBosses(ToFF2Player(bosses), false);
 			FF2Player player;
 			for( int i; i < count; i++ ) {
-				player = bosses[i];
+				player = bosses[i];	
 				FF2AbilityList list = player.HookedAbilities;
 				if( list ) {
 					ff2.m_plugins.LoadPlugins(list);

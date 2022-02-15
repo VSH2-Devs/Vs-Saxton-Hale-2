@@ -108,7 +108,7 @@ enum struct FF2Identity {
 	}
 }
 
-static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
+bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 {
 	char key_name[PLATFORM_MAX_PATH];
 
@@ -145,6 +145,7 @@ static bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 	{
 		identity.VSH2ID = FF2_RegisterFakeBoss(identity.name);
 		if( identity.VSH2ID == INVALID_FF2_BOSS_ID ) {
+			LogError("[VSH2/FF2] Failed to register boss of config \"%s\".", identity.name);
 			DeleteCfg(cfg);
 			return false;
 		}
@@ -186,7 +187,7 @@ methodmap FF2BossManager < StringMap {
 		char[] name = new char[PLATFORM_MAX_PATH];
 
 		/// Iterate through the Pack, copy and verify boss path
-		for( int i = cfg.Size - 1; i; i-- ) {
+		for( int i = cfg.Size - 1; i>=0; i-- ) {
 			if( !cfg.GetIntKey(i, name, PLATFORM_MAX_PATH) )
 				continue;
 
@@ -230,21 +231,6 @@ methodmap FF2BossManager < StringMap {
 		for( int i=snap.Length-1; i>=0; i-- ) {
 			snap.GetKey(i, name, sizeof(name));
 			if( this.GetIdentity(name, identity) && identity.VSH2ID == vsh2id ) {
-				res = true;
-				break;
-			}
-		}
-		delete snap;
-		return res;
-	}
-
-	public bool FindIdentityByCfg(const ConfigMap cfg, FF2Identity identity) {
-		StringMapSnapshot snap = this.Snapshot();
-		char name[48];
-		bool res;
-		for( int i=snap.Length-1; i>=0; i-- ) {
-			snap.GetKey(i, name, sizeof(name));
-			if( this.GetIdentity(name, identity) && identity.hCfg == cfg ) {
 				res = true;
 				break;
 			}

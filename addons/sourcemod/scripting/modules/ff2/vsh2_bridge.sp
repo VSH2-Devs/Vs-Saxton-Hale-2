@@ -1,3 +1,5 @@
+static bool _RoundEndInfo_OverrideMessage = false;
+
 void InitVSH2Bridge()
 {
 	char pack[48];
@@ -19,7 +21,6 @@ void InitVSH2Bridge()
 	VSH2_Hook(OnBossKillBuilding,					OnBossKillBuildingFF2);
 	VSH2_Hook(OnBossPlayIntro,						OnBossPlayIntroFF2);
 	VSH2_Hook(OnPlayerKilled,						OnPlayerKilledFF2);
-	VSH2_Hook(OnPlayerHurt,							OnPlayerHurtFF2);
 	VSH2_Hook(OnPlayerAirblasted,					OnPlayerAirblastedFF2);
 	VSH2_Hook(OnBossMedicCall,						OnBossTriggerRageFF2);
 	VSH2_Hook(OnBossTaunt,							OnBossTriggerRageFF2);
@@ -28,6 +29,7 @@ void InitVSH2Bridge()
 	VSH2_Hook(OnRoundEndInfo,						OnRoundEndInfoFF2);
 	VSH2_Hook(OnMusic,								OnMusicFF2);
 	VSH2_Hook(OnBossDeath,							OnBossDeathFF2);
+	HookEvent("player_hurt", 						OnPlayerHurtFF2);
 	VSH2_Hook(OnBossTakeDamage_OnTriggerHurt,		OnBossTriggerHurtFF2);
 	VSH2_Hook(OnBossTakeDamage_OnMarketGardened, 	OnMarketGardenedFF2);
 	VSH2_Hook(OnBossTakeDamage_OnStabbed,			OnStabbedFF2);
@@ -53,7 +55,6 @@ void RemoveVSH2Bridge()
 	VSH2_Unhook(OnBossKillBuilding,					OnBossKillBuildingFF2);
 	VSH2_Unhook(OnBossPlayIntro,					OnBossPlayIntroFF2);
 	VSH2_Unhook(OnPlayerKilled,						OnPlayerKilledFF2);
-	VSH2_Unhook(OnPlayerHurt,						OnPlayerHurtFF2);
 	VSH2_Unhook(OnPlayerAirblasted,					OnPlayerAirblastedFF2);
 	VSH2_Unhook(OnBossMedicCall,					OnBossTriggerRageFF2);
 	VSH2_Unhook(OnBossTaunt,						OnBossTriggerRageFF2);
@@ -62,6 +63,7 @@ void RemoveVSH2Bridge()
 	VSH2_Unhook(OnRoundEndInfo,						OnRoundEndInfoFF2);
 	VSH2_Unhook(OnMusic,							OnMusicFF2);
 	VSH2_Unhook(OnBossDeath,						OnBossDeathFF2);
+	UnhookEvent("player_hurt",						OnPlayerHurtFF2);
 	VSH2_Unhook(OnBossTakeDamage_OnTriggerHurt,		OnBossTriggerHurtFF2);
 	VSH2_Unhook(OnBossTakeDamage_OnMarketGardened, 	OnMarketGardenedFF2);
 	VSH2_Unhook(OnBossTakeDamage_OnStabbed,			OnStabbedFF2);
@@ -159,10 +161,10 @@ void OnBossCalcHealthFF2(const VSH2Player player, int& max_health, const int bos
 
 	///	Support for multilives: https://github.com/01Pollux/FF2-Library/blob/VSH2/addons/sourcemod/scripting/ff2_multilives.sp
 	int lives;
-	if( cfg.GetInt("lives", lives) && lives > 1 ) {
-		ToFF2Player(player).iLives = lives;
-		ToFF2Player(player).iMaxLives = lives;
-	}
+	if( !cfg.GetInt("lives", lives) || lives <= 0 )
+		lives = 1;
+	ToFF2Player(player).iLives = lives;
+	ToFF2Player(player).iMaxLives = lives;
 }
 
 Action OnBossSelectedFF2(const VSH2Player player)
@@ -175,12 +177,15 @@ Action OnBossSelectedFF2(const VSH2Player player)
 	int client = player.index;
 
 	if( player.GetPropInt("iPresetType")==-1 && !player.GetPropAny("bOverridePreset") ) {
-		FF2Identity copy_identity;
-		int boss_id = FF2_FindNonHiddenBoss(copy_identity, client);
-		if( boss_id!=-1 ) {
-			identity = copy_identity;
-			player.SetPropInt("iSpecial", copy_identity.VSH2ID);
-			player.SetPropInt("iBossType", copy_identity.VSH2ID);
+		bool is_blocked;
+		if( (identity.hCfg.GetBool("character.info.blocked", is_blocked, false) || identity.hCfg.GetBool("character.info.blocked", is_blocked)) && is_blocked ) {
+			FF2Identity copy_identity;
+			int boss_id = FF2_FindNonHiddenBoss(copy_identity, client);
+			if( boss_id!=-1 ) {
+				identity = copy_identity;
+				player.SetPropInt("iSpecial", copy_identity.VSH2ID);
+				player.SetPropInt("iBossType", copy_identity.VSH2ID);
+			}
 		}
 	}
 	player.SetPropAny("bOverridePreset", false);
@@ -198,6 +203,40 @@ Action OnBossSelectedFF2(const VSH2Player player)
 	}
 
 	ff2.m_plugins.LoadPlugins(identity.abilityList);
+
+	/// Process Set Companion
+	{
+		ConfigMap companions = identity.hCfg.GetSection("character.info.companion");
+		if( companions ) {
+			int size = companions.Size;
+			if( size ) {
+				char companion[FF2_MAX_BOSS_NAME_SIZE];
+				FF2Player[] next_players = new FF2Player[MaxClients];
+				int count = VSH2GameMode.GetQueue(view_as< VSH2Player >(next_players));
+				int allow_count = count - ff2.m_cvars.m_companion_min.IntValue;
+				if( allow_count > 0 ) {
+					int cur_player = 0;
+					for( int i; i<size && cur_player<count && allow_count>0; i++ ) {
+						if( companions.GetIntKey(i, companion, sizeof(companion)) && companion[0] ) {
+							if( !ff2_cfgmgr.FindIdentityByName(companion, identity) ) {
+								continue;
+							}
+
+							for( ; cur_player < count && allow_count > 0; ++cur_player ) {
+								if( !next_players[cur_player].GetPropAny("bNoCompanion") ) {
+									next_players[cur_player].SetPropAny("bOverridePreset", true);
+									next_players[cur_player].MakeBossAndSwitch(identity.VSH2ID, true);
+									--allow_count;
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	if( IsVoteInProgress() )
 		return Plugin_Continue;
 
@@ -473,40 +512,6 @@ void OnBossInitializedFF2(const VSH2Player vsh2player)
 			val = 1.0;
 		player.flRageRatio = val;
 	}
-
-	/// Process Set Companion
-	{
-		ConfigMap companions = cfg.GetSection("companion");
-		if( companions ) {
-			int size = companions.Size;
-			if( !size )
-				return;
-
-			char companion[FF2_MAX_BOSS_NAME_SIZE];
-			FF2Player[] next_players = new FF2Player[MaxClients];
-			int count = VSH2GameMode.GetQueue(view_as< VSH2Player >(next_players));
-			int allow_count = count - ff2.m_cvars.m_companion_min.IntValue;
-			if( allow_count > 0 ) {
-				int cur_player = 0;
-				for( int i; i<size && cur_player<count && allow_count>0; i++ ) {
-					if( companions.GetIntKey(i, companion, sizeof(companion)) && companion[0] ) {
-						if( !ff2_cfgmgr.FindIdentityByName(companion, identity) ) {
-							continue;
-						}
-
-						for( ; cur_player < count && allow_count > 0; ++cur_player ) {
-							if( !next_players[cur_player].GetPropAny("bNoCompanion") ) {
-								next_players[cur_player].SetPropAny("bOverridePreset", true);
-								next_players[cur_player].MakeBossAndSwitch(identity.VSH2ID, true);
-								--allow_count;
-								break;
-							}
-						}
-					}
-				}
-			}
-		}
-	}
 }
 
 void OnBossKillBuildingFF2(const VSH2Player player, const int building, Event event)
@@ -594,31 +599,6 @@ void OnPlayerKilledFF2(const VSH2Player attacker, const VSH2Player victim, Event
 	}
 }
 
-void OnPlayerHurtFF2(const VSH2Player attacker, const VSH2Player victim, Event event)
-{
-	FF2Identity identity;
-	if( !ff2_cfgmgr.FindIdentity(ToFF2Player(victim).iBossType, identity) )
-		return;
-
-	FF2Player player = ToFF2Player(victim);
-
-	int damage = event.GetInt("damageamount");
-	victim.GiveRage(RoundToCeil(damage * player.flRageRatio));
-
-	int curHealth = player.iHealth;
-	if( player.iLives <= 1 || damage < curHealth )
-		return;
-
-	Action res = Call_OnBossLoseLife(player);
-	if( res <= Plugin_Changed ) {
-		if( player.iLives > 1 ) {
-			player.iHealth = player.GetPropInt("iMaxHealth") + curHealth - damage;
-			Call_FF2OnAbility(player, CT_LIFE_LOSS);
-			player.iLives--;
-		}
-	}
-}
-
 void OnPlayerAirblastedFF2(const VSH2Player airblaster, const VSH2Player airblasted, Event event)
 {
 	FF2Identity identity;
@@ -667,11 +647,17 @@ Action OnBossJaratedFF2(const VSH2Player victim, const VSH2Player attacker)
 
 void OnRoundStartFF2(const VSH2Player[] bosses, const int boss_count, const VSH2Player[] red_players, const int red_count)
 {
+	_RoundEndInfo_OverrideMessage = false;
 	LiveSys_OnRoundStart(bosses, boss_count);
 }
 
 Action OnRoundEndInfoFF2(const VSH2Player player, bool bossBool, char message[MAXMESSAGE])
 {
+	if( _RoundEndInfo_OverrideMessage ) {
+		message[0] = '\0';
+		return Plugin_Continue;
+	}
+
 	FF2Identity identity;
 	if( !ff2_cfgmgr.FindIdentity(ToFF2Player(player).iBossType, identity) )
 		return Plugin_Continue;
@@ -717,6 +703,7 @@ Action OnRoundEndInfoFF2(const VSH2Player player, bool bossBool, char message[MA
 				cur_boss.GetPropInt("iMaxHealth")
 			);
 		}
+		_RoundEndInfo_OverrideMessage = true;
 
 		SetHudTextParams(-1.0, hud_y_pos, 10.0, 255, 255, 255, 255);
 		for( int j=MaxClients; j; --j ) {
@@ -730,7 +717,7 @@ Action OnRoundEndInfoFF2(const VSH2Player player, bool bossBool, char message[MA
 	}
 
 	message[0] = 0;
-	return Plugin_Stop;
+	return Plugin_Continue;
 }
 
 Action OnMusicFF2(char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player)
@@ -902,11 +889,75 @@ void FinishQueueArray()
 	ff2.m_plugins.UnloadAllSubPlugins();
 }
 
+Action OnPlayerHurtFF2(Event event, const char[] name, bool dontBroadcast)
+{
+	FF2Identity identity;
+	FF2Player player = ToFF2Player(event.GetInt("userid"));
+	if( !ff2_cfgmgr.FindIdentity(player.iBossType, identity) ) {
+		return Plugin_Continue;
+	}
+
+	int damage = event.GetInt("damageamount");
+	int cur_lives = player.iLives;
+	int cur_health = player.iHealth;
+	if( cur_lives > 1 && cur_health <= 0 ) {
+		int max_health = player.GetPropInt("iMaxHealth");
+		int true_max_health = max_health * cur_lives;
+		int delta_health = true_max_health - damage;
+		if( delta_health > 0 ) {
+			int new_lives = delta_health / max_health;
+			if( cur_lives != new_lives ) {
+				Action res = Call_OnBossLoseLife(player, cur_lives);
+				switch( res ) {
+					case Plugin_Continue: {}
+					case Plugin_Changed: {
+						new_lives = cur_lives;
+					}
+					default: return res;
+				}
+				player.iLives = new_lives;
+				
+				int new_health = (delta_health % max_health);
+				if( !new_health )
+					new_health = max_health;
+				else new_health += damage;
+				player.iHealth = new_health;
+
+				Call_FF2OnAbility(player, CT_LIFE_LOSS);
+				switch( new_lives ) {
+					case 0: {}
+					case 1: {
+						char boss_name[MAX_BOSS_NAME_SIZE];
+						player.GetName(boss_name);
+						PrintToChatAll("%s lost a life! There is 1 more!", boss_name);
+						FF2SoundSection sec = identity.soundMap.RandomEntry("last_life");
+						if( sec )
+							sec.PlaySound(player.index, VSH2_VOICE_LOSE);
+					}
+					default: {
+						char boss_name[MAX_BOSS_NAME_SIZE];
+						player.GetName(boss_name);
+						PrintToChatAll("%s lost a life! There are %i more!", boss_name, new_lives);
+					}
+				}
+			}
+		}
+	}
+
+	float rage = damage * player.flRageRatio;
+	if( rage > 850.0 )
+		rage = 850.0;
+
+	player.GiveRage(RoundToCeil(rage));
+	return Plugin_Continue;
+}
+
 Action OnBossTriggerHurtFF2(VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	FF2Identity identity;
 	if( !ff2_cfgmgr.FindIdentity(ToFF2Player(victim).iBossType, identity) )
 		return Plugin_Continue;
+
 	return Call_OnTakeDamage_OnBossTriggerHurt(victim.index, attacker, damage);
 }
 
@@ -914,12 +965,13 @@ void OnVariablesResetFF2(const VSH2Player vsh2player)
 {
 	FF2Player player = ToFF2Player(vsh2player);
 
+	player.iLives = 0;
 	player.iMaxLives = 0;
 	player.bNoSuperJump = false;
 	player.bNoWeighdown = false;
 	player.bHideHUD = false;
 	player.flRageRatio = 1.0;
-
+	
 	player.SetPropAny("bNotifySMAC_CVars", false);
 	player.SetPropAny("bSupressRAGE", false);
 	player.SetPropFloat("flWeighdownCd", 0.0);

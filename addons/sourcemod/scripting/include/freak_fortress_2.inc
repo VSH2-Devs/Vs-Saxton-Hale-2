@@ -57,20 +57,20 @@ enum {
 };
 
 enum {
-	FF2FLAG_UBERREADY            = (1<<1),  /// Used when medic says "I'm charged!"				
-	FF2FLAG_ISBUFFED             = (1<<2),  /// Used when soldier uses the Battalion's Backup	
-	FF2FLAG_CLASSTIMERDISABLED   = (1<<3),  /// Used to prevent clients' timer		
-	FF2FLAG_HUDDISABLED          = (1<<4),  /// Used to prevent custom hud from clients' timer	
+	FF2FLAG_UBERREADY            = (1<<1),  /// Used when medic says "I'm charged!"
+	FF2FLAG_ISBUFFED             = (1<<2),  /// Used when soldier uses the Battalion's Backup
+	FF2FLAG_CLASSTIMERDISABLED   = (1<<3),  /// Used to prevent clients' timer
+	FF2FLAG_HUDDISABLED          = (1<<4),  /// Used to prevent custom hud from clients' timer
 	FF2FLAG_BOTRAGE              = (1<<5),  /// Used by bots to use Boss's rage
 	FF2FLAG_TALKING              = (1<<6),  /// Used by Bosses with "sound_block_vo" to disable block for some lines
-	FF2FLAG_ALLOWSPAWNINBOSSTEAM = (1<<7),  /// Used to allow spawn players in Boss's team			
-	FF2FLAG_USEBOSSTIMER         = (1<<8),  /// Used to prevent Boss's timer		
-	FF2FLAG_USINGABILITY         = (1<<9),  /// Used to prevent Boss's hints about abilities buttons	
+	FF2FLAG_ALLOWSPAWNINBOSSTEAM = (1<<7),  /// Used to allow spawn players in Boss's team
+	FF2FLAG_USEBOSSTIMER         = (1<<8),  /// Used to prevent Boss's timer
+	FF2FLAG_USINGABILITY         = (1<<9),  /// Used to prevent Boss's hints about abilities buttons
 	FF2FLAG_CLASSHELPED          = (1<<10),
 	FF2FLAG_HASONGIVED           = (1<<11),
 	FF2FLAG_CHANGECVAR           = (1<<12), /// Used to prevent SMAC from kicking bosses who are using certain rages (NYI)
 	FF2FLAG_ALLOW_HEALTH_PICKUPS = (1<<13), /// Used to prevent bosses from picking up health
-	FF2FLAG_ALLOW_AMMO_PICKUPS   = (1<<14), /// Used to prevent bosses from picking up ammo		
+	FF2FLAG_ALLOW_AMMO_PICKUPS   = (1<<14), /// Used to prevent bosses from picking up ammo
 	FF2FLAG_ROCKET_JUMPING       = (1<<15), /// Used when a soldier is rocket jumping
 	FF2FLAG_ALLOW_BOSS_WEARABLES = (1<<16), /// Used to allow boss having wearables (only for Official FF2)
 	FF2FLAGS_SPAWN = ~FF2FLAG_UBERREADY
@@ -113,11 +113,66 @@ enum struct FF2SoundIdentity {
 	int level;						/// sound level, default to SNDLEVEL_TRAFFIC
 	float volume;					/// sound volume, default = SNDVOL_NORMAL
 	int pitch;						/// sound pitch, default to SNDPITCH_NORMAL
-	
+
 	bool IsSlotCompatible(FF2CallType_t slot) {
 		return view_as<int>(slot) & this.bit_slot ? true : false;
 	}
 }
+
+/**
+ * Boss identity struct
+ *
+ * VSH2ID = iBossType
+ * soundMap = map of precached sounds to use instead of iterating through ConfigMap.Snapshot()
+ * abilityList = list of 'ConfigMap' that points to the ability section
+ * name = boss config name in character.cfg
+ */
+enum struct FF2Identity {
+	int				VSH2ID;
+	ConfigMap		hCfg;
+	StringMap		soundMap;
+	ArrayList		abilityList;
+	char			name[MAX_BOSS_NAME_SIZE];
+
+	bool			isNewAPI;
+	bool			isFound;
+
+	void Release() {
+		this.ReleaseSoundMap();
+		this.ReleaseAbilityList();
+		DeleteCfg(this.hCfg);
+	}
+
+	void ReleaseSoundMap() {
+		if( !this.soundMap )
+			return;
+		StringMapSnapshot snap = this.soundMap.Snapshot();
+
+		for( int i=this.soundMap.Size-1; i>=0; i-- ) {
+			int len = snap.KeyBufferSize(i);
+			char[] key = new char[len];
+			snap.GetKey(i, key, len);
+
+			ConfigMap cfg;
+			this.soundMap.GetValue(key, cfg);
+			DeleteCfg(cfg);
+		}
+
+		delete snap;
+		delete this.soundMap;
+	}
+
+	void ReleaseAbilityList() {
+		if( !this.abilityList )
+			return;
+		for( int i=this.abilityList.Length-1; i>=0; i-- ) {
+			any cfg = this.abilityList.Get(i);
+			DeleteCfg(view_as<ConfigMap>(cfg));
+		}
+		delete this.abilityList;
+	}
+}
+
 
 /**
  * Some new properties:
@@ -144,33 +199,19 @@ methodmap FF2Player < VSH2Player {
 	 * @return				a player instance of the FF2Player methodmap
 	 */
 	public native FF2Player(const int index, const bool userid = false);
-	
-	/**
-	 * @return		list of ConfigMap, each containing a valid ability
-	 */
-	property ArrayList HookedAbilities {
-		public native get();
-	}
-	
-	/**
-	 * @return		list of ConfigMap, each containing a valid sound entry
-	 */
-	property StringMap SoundMap {
-		public native get();
-	}
-	
+
 	property bool Valid {
 		public get() {
 			return this != INVALID_FF2PLAYER && this.index > 0;
 		}
 	}
-	
+
 	property bool bIsBoss {
 		public get() {
 			return this.GetPropAny("bIsBoss");
 		}
 	}
-	
+
 	/**
 	 * Retrieve an integer from boss config
 	 *
@@ -179,7 +220,7 @@ methodmap FF2Player < VSH2Player {
 	 * @return				true if key exists, false otherwise
 	 */
 	public native bool GetInt(const char[] key_name, int& res);
-	
+
 	/**
 	 * Retrieve a float value from boss config
 	 *
@@ -188,7 +229,7 @@ methodmap FF2Player < VSH2Player {
 	 * @return				true if key exists, false otherwise
 	 */
 	public native bool GetFloat(const char[] key_name, float& res);
-	
+
 	/**
 	 * Retrieve a string from boss config
 	 *
@@ -278,7 +319,7 @@ methodmap FF2Player < VSH2Player {
 	 * @return				the value stored in ability
 	 */
 	public native int GetArgI(const char[] pl_name, const char[] ab_name, const char[] key_name, int defVal = 0);
-	
+
 	/**
 	 * Retrieve a float value from boss ability
 	 *
@@ -290,7 +331,7 @@ methodmap FF2Player < VSH2Player {
 	 * @return				the value stored in ability
 	 */
 	public native float GetArgF(const char[] pl_name, const char[] ab_name, const char[] key_name, float defVal = 0.0);
-	
+
 	/**
 	 * Retrieve a string from boss ability
 	 *
@@ -303,7 +344,7 @@ methodmap FF2Player < VSH2Player {
 	 * @return				number of bytes written
 	 */
 	public native int GetArgS(const char[] pl_name, const char[] ab_name, const char[] key_name, char[] buffer, int maxlen);
-	
+
 	/**
 	 * Checks if a boss has this ability
 	 *
@@ -313,7 +354,7 @@ methodmap FF2Player < VSH2Player {
 	 * @return				true on success, false otherwise
 	 */
 	public native bool HasAbility(const char[] pl_name, const char[] ab_name);
-	
+
 	/**
 	 * Gets an ability's rage distance
 	 *
@@ -323,14 +364,14 @@ methodmap FF2Player < VSH2Player {
 	 * @return		Ability's rage distance
 	 */
 	public native float RageDist(const char[] pl_name = "", const char[] ab_name = "");
-	
+
 	/**
 	 * Starts the Boss's music for the specified client
 	 *
 	 * @param path	path for music to play
 	 */
 	public native void PlayBGM(const char path[PLATFORM_MAX_PATH]);
-	
+
 	/**
 	 * Forces boss to use an ability
 	 *
@@ -341,7 +382,7 @@ methodmap FF2Player < VSH2Player {
 	 * @note				this will NOT remove/reduce boss charge
 	 */
 	public native void DoAbility(const char[] pl_name, const char[] ab_name, FF2CallType_t slot);
-	
+
 	/**
 	 * Forces boss to use every ability with
 	 *
@@ -361,35 +402,21 @@ methodmap FF2Player < VSH2Player {
 	 * @return		True if sound has been found, false otherwise
 	 */
 	public native bool RandomSound(const char[] key_name, any[] snd_info, FF2CallType_t slot=view_as< FF2CallType_t >(2));
+}
 
-	public static void ReleaseHookedAbilities(ArrayList& hab) {
-		if( !hab )
-			return;
-		for( int i=hab.Length-1; i>=0; i-- ) {
-			any cfg = hab.Get(i);
-			DeleteCfg(view_as<ConfigMap>(cfg));
-		}
-		delete hab;
-	}
 
-	public static void ReleaseSoundMap(StringMap& smap) {
-		if( !smap )
-			return;
-		StringMapSnapshot snap = smap.Snapshot();
+enum FF2GameModeQ_t {
+	/// Fill the FF2Identity::hCfg struct
+	FF2GAMEMODEQ_CONFIGMAP 	= 1 << 0,
+	/// Fill the FF2Identity::soundMap
+	FF2GAMEMODEQ_SOUNDMAP 	= 1 << 1,
+	/// Fill the FF2Identity::abilityList
+	FF2GAMEMODEQ_ABILITIES 	= 1 << 2,
 
-		for( int i=smap.Size-1; i>=0; i-- ) {
-			int len = snap.KeyBufferSize(i);
-			char[] key = new char[len];
-			snap.GetKey(i, key, len);
-
-			ConfigMap cfg;
-			smap.GetValue(key, cfg);
-			DeleteCfg(cfg);
-		}
-
-		delete snap;
-		delete smap;
-	}
+	/// if it was set, and 'FF2GAMEMODEQ_BY_NAME' was set, fill the FF2Identity::VSH2ID else vise-versa
+	FF2GAMEMODEQ_COPY_OTHER	= 1 << 3,
+	/// if it was set, search the boss by FF2Identity::name, else search by FF2Identity::VSH2ID
+	FF2GAMEMODEQ_BY_NAME	= 1 << 4,
 }
 
 
@@ -403,9 +430,9 @@ methodmap FF2GameMode < VSH2GameMode
 	public static native bool IsOn();
 
 	public static native void PluginVersion(int ver[3]);
-	
+
 	public static native void ForkVersion(int fver[3]);
-	
+
 	public static void LogError(const char[] message, any ...) {
 		char buffer[MAX_BUFFER_LENGTH];
 		VFormat(buffer, sizeof(buffer), message, 2);
@@ -426,9 +453,13 @@ methodmap FF2GameMode < VSH2GameMode
 		LogError("[VSH2/FF2] %s", buffer);
 	}
 
-	public static native bool Cheats(bool stat=false);
+	public static native bool Cheats(bool change = false, bool stat = false);
 
-	public static native int FindVSH2IDByName(const char[] boss_name);
+	/**
+	* Get boss information by 'FF2GameModeQ_t'
+	* identity is enum struct of type 'FF2Identity'
+	*/
+	public static native void QueryBoss(any[] identity, FF2GameModeQ_t qinfo);
 
 	public static native bool LoadAbility(const char[] plugin_name);
 
@@ -442,9 +473,19 @@ methodmap FF2GameMode < VSH2GameMode
 		public get() { return VSH2GameMode.GetPropInt("iRoundState"); }
 	}
 
-	public static bool Validate(const VSH2Player player) {
-		return ToFF2Player(player).HookedAbilities != null;
-	}
+	/**
+	 * Check if player is a FF2 boss
+	 */
+	public static native bool Validate(const VSH2Player player);
+
+	/**
+	 * Register a boss as an FF2's boss instead of VSH2
+	 *
+	 * An external FF2 boss is required to have a freak_fortress_2 config file, but it can also use it's own config similar to how vsh2 does it
+	 * To obtain an freak_fortress_2 config, use FF2GameMode.QueryBoss() function
+	 * Registering will allow automatically manage boss' hooks
+	 */
+	public static native int RegisterPlugin(const VSH2Player player);
 }
 
 
@@ -559,7 +600,7 @@ stock bool FF2_GetBossSpecial(int boss=0, char[] buffer, int bufferLength, int b
 	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	if( !player.Valid || !player.bIsBoss )
 		return false;
-	
+
 	if( bossMeaning ) {
 		player.GetConfigName(buffer, bufferLength);
 	}
@@ -1013,14 +1054,14 @@ stock int FF2_GetFF2flags(int client)
 		return 0;
 	}
 	int flags = player.GetPropInt("iFlags");
-	
+
 	/// The most commonly used flags:
 	/// https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/blob/develop/addons/sourcemod/scripting/modules/ff2/vsh2_bridge.sp#L276
 	if (player.GetPropInt("bHideHUD"))
 		flags |= (1<<4) /* FF2FLAG_HUDDISABLED */;
 	else
 		flags &= ~(1<<4) /* FF2FLAG_HUDDISABLED */;
-	
+
 	/// https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki/VSH-2-Internal-API-Reference#general-boss-and-player-api-modulesbasesp
 	if (player.GetPropInt("bIsMinion"))
 		flags |= (1<<7) /* FF2FLAG_ALLOWSPAWNINBOSSTEAM */;
@@ -1032,19 +1073,19 @@ stock int FF2_GetFF2flags(int client)
 		flags |= (1<<12) /* FF2FLAG_CHANGECVAR */;
 	else
 		flags &= ~(1<<12) /* FF2FLAG_CHANGECVAR */;
-	
+
 	/// requires https://github.com/01Pollux/FF2-Library/blob/VSH2/addons/sourcemod/scripting/ff2_nopacks.sp
 	if (player.GetPropInt("bNoHealthPacks"))
 		flags &= ~(1<<13) /* FF2FLAG_ALLOW_HEALTH_PICKUPS */;
 	else
 		flags |= (1<<13) /* FF2FLAG_ALLOW_HEALTH_PICKUPS */;
-	
+
 	/// requires https://github.com/01Pollux/FF2-Library/blob/VSH2/addons/sourcemod/scripting/ff2_nopacks.sp
 	if (player.GetPropInt("bNoAmmoPacks"))
 		flags &= ~(1<<14) /* FF2FLAG_ALLOW_AMMO_PICKUPS */;
 	else
 		flags |= (1<<14) /* FF2FLAG_ALLOW_AMMO_PICKUPS */;
-	
+
 	return flags;
 }
 
@@ -1064,23 +1105,23 @@ stock void FF2_SetFF2flags(int client, int flags)
 	if( !player.Valid ) {
 		return;
 	}
-	
+
 	/// The most commonly used flags:
 	/// https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/blob/develop/addons/sourcemod/scripting/modules/ff2/vsh2_bridge.sp#L276
 	player.SetPropInt("bHideHUD", (flags & (1<<4) /* FF2FLAG_HUDDISABLED */) ? 1 : 0);
-	
+
 	/// https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki/VSH-2-Internal-API-Reference#general-boss-and-player-api-modulesbasesp
 	player.SetPropInt("bIsMinion", (flags & (1<<7) /* FF2FLAG_ALLOWSPAWNINBOSSTEAM */) ? 1 : 0);
-	
+
 	/// https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/blob/develop/addons/sourcemod/scripting/freak_fortress_2.sp#L164
 	player.SetPropInt("bNotifySMAC_CVars", (flags & (1<<12) /* FF2FLAG_CHANGECVAR */) ? 1 : 0);
-	
+
 	/// requires https://github.com/01Pollux/FF2-Library/blob/VSH2/addons/sourcemod/scripting/ff2_nopacks.sp
 	player.SetPropInt("bNoHealthPacks", (flags & (1<<13) /* FF2FLAG_ALLOW_HEALTH_PICKUPS */) ? 0 : 1);
 
 	/// requires https://github.com/01Pollux/FF2-Library/blob/VSH2/addons/sourcemod/scripting/ff2_nopacks.sp
 	player.SetPropInt("bNoAmmoPacks", (flags & (1<<14) /* FF2FLAG_ALLOW_AMMO_PICKUPS */) ? 0 : 1);
-	
+
 	player.SetPropInt("iFlags", flags);
 }
 
@@ -1127,10 +1168,10 @@ stock float FF2_GetClientGlow(int client)
 	FF2Player player = FF2Player(client);
 	if( !player.Valid )
 		return -1.0;
-	
+
 	if( !GetEntProp(player.index, Prop_Send, "m_bGlowEnabled") )
 		return -1.0;
-	
+
 	return (player.GetPropFloat("flGlowtime"));
 }
 
@@ -1146,7 +1187,7 @@ stock void FF2_SetClientGlow(int client, float time1, float time2=-1.0)
 	FF2Player player = FF2Player(client);
 	if( !player.Valid )
 		return;
-	
+
 	if( time2 > 0.0 )
 		player.SetPropFloat("flGlowtime", time2);
 	else {
@@ -1228,15 +1269,18 @@ stock bool FF2_GetCheats()
  */
 stock bool FF2_MakeBoss(int client, const char[] boss_name, bool call_event = true)
 {
-	int vsh2_id = FF2GameMode.FindVSH2IDByName(boss_name);
-	if( vsh2_id==INVALID_FF2_BOSS_ID )
-		return false;
-
 	FF2Player player = FF2Player(client);
 	if( !player.Valid ) {
 		return false;
 	}
-	player.MakeBossAndSwitch(vsh2_id, call_event);
+
+	FF2Identity id;
+	strcopy(id.name, sizeof(FF2Identity::name), boss_name);
+	FF2GameMode.QueryBoss(id, FF2GAMEMODEQ_COPY_OTHER | FF2GAMEMODEQ_BY_NAME);
+	if( id.VSH2ID==INVALID_FF2_BOSS_ID )
+		return false;
+
+	player.MakeBossAndSwitch(id.VSH2ID, call_event);
 	return true;
 }
 
@@ -1396,7 +1440,7 @@ stock void FF2Dbg(const char[] buffer, any ...)
 		char message[192];
 		VFormat(message, sizeof(message), buffer, 2);
 		CPrintToChatAll("{olive}[FF2 {darkorange}DEBUG{olive}]{default} %s", message);
-		PrintToServer("[FF2 DEBUG] %s", message);
+		PrintToServer("[VSH2/FF2 DEBUG] %s", message);
 	}
 }
 
@@ -1428,11 +1472,11 @@ stock void FReplyToCommand(int client, const char[] message, any ...)
 	VFormat(buffer, sizeof(buffer), message, 3);
 	if( !client ) {
 		CRemoveTags(buffer, sizeof(buffer));
-		PrintToServer("[FF2] %s", buffer);
+		PrintToServer("[VSH2/FF2] %s", buffer);
 	}
 	else if( GetCmdReplySource() == SM_REPLY_TO_CONSOLE ) {
 		CRemoveTags(buffer, sizeof(buffer));
-		PrintToConsole(client, "[FF2] %s", buffer);
+		PrintToConsole(client, "[VSH2/FF2] %s", buffer);
 	}
 	else {
 		CPrintToChat(client, FF2_PREFIX ... "%s", buffer);
@@ -1536,33 +1580,28 @@ public void __pl_FF2_SetNTVOptional()
 	MARK_OPTIONAL(RageDist);
 	MARK_OPTIONAL(GetConfigName);
 
-	MARK_OPTIONAL_GET(HookedAbilities);
 	MARK_OPTIONAL(PlayBGM);
-
 
 	#undef MARK_OPTIONAL
 	#undef MARK_OPTIONAL_GET
 
-	
-	
 	#define MARK_OPTIONAL(%0) 		MarkNativeAsOptional("FF2GameMode."...#%0)
 
 
 	CREATE_NATIVE(IsOn);
 	CREATE_NATIVE(PluginVersion);
 	CREATE_NATIVE(ForkVersion);
-	
+
 	CREATE_NATIVE(Cheats);
-	
-	CREATE_NATIVE(FindVSH2IDByName);
+	CREATE_NATIVE(QueryBoss);
 
 	CREATE_NATIVE(LoadAbility);
 	CREATE_NATIVE(SubPlugins);
-	
+	CREATE_NATIVE(Validate);
+
 
 	#undef MARK_OPTIONAL
 	#undef MARK_OPTIONAL_GET
-
 }
 #endif
 
@@ -1575,7 +1614,7 @@ static void GetThisPluginName()
 {
 	char pluginName[80];
 	GetPluginFilename(INVALID_HANDLE, pluginName, sizeof(pluginName));
-	
+
 	/// make sure the file ends with ".smx"
 	int extension_index = FindCharInString(pluginName, '.', true);
 	if( extension_index == -1 ||
@@ -1588,11 +1627,11 @@ static void GetThisPluginName()
 	}
 
 	pluginName[extension_index] = 0;
-	
+
 	int forwardSlash = -1;
 	int backwardSlash = -1;
 	int finalPluginName = -1;
-	
+
 	for ( ;; ) {
 		forwardSlash = StrContains(pluginName[finalPluginName+1], "/");
 		backwardSlash = StrContains(pluginName[finalPluginName+1], "\\");
@@ -1609,7 +1648,7 @@ static void GetThisPluginName()
 			finalPluginName = forwardSlash;
 		}
 	}
-	
+
 	strcopy(this_plugin_name, sizeof(this_plugin_name), pluginName[finalPluginName+1]);
 }
 
