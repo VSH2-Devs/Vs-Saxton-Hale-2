@@ -368,7 +368,7 @@ any Native_FF2GameMode_QueryBoss(Handle plugin, int numParams)
 	if( flags & FF2GAMEMODEQ_CONFIGMAP ) {
 		out.hCfg = tmp.hCfg.Clone(plugin);
 	}
-	if( flags & FF2GAMEMODEQ_CONFIGMAP ) {
+	if( flags & FF2GAMEMODEQ_ABILITIES ) {
 		out.abilityList = new ArrayList();
 		for( int i=tmp.abilityList.Length-1; i>=0; i-- ) {
 			out.abilityList.Push(view_as<ConfigMap>(tmp.abilityList.Get(i)).Clone(plugin));
@@ -389,6 +389,7 @@ any Native_FF2GameMode_QueryBoss(Handle plugin, int numParams)
 		}
 		delete snap;
 	}
+	out.isNewAPI = tmp.isNewAPI;
 
 	SetNativeArray(1, out, sizeof(FF2Identity_Q));
 	return 0;

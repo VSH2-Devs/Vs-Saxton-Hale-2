@@ -485,7 +485,7 @@ methodmap FF2GameMode < VSH2GameMode
 	 * To obtain an freak_fortress_2 config, use FF2GameMode.QueryBoss() function
 	 * Registering will allow automatically manage boss' hooks
 	 */
-	public static native int RegisterPlugin(const VSH2Player player);
+	public static native int RegisterPlugin(const char cfg_name[MAX_BOSS_NAME_SIZE]);
 }
 
 
