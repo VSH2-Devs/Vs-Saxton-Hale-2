@@ -888,6 +888,7 @@ void Rage_Instant_Tele(const FF2Player player)
 		pack.WriteFloat(flstuntime);
 		pack.WriteFloat(flslowdown);
 		pack.WriteCell(flags);
+		pack.Reset();
 	} else {
 		if( sounds )
 			TF2_StunPlayer(client, flstuntime, flslowdown, flags, target);
