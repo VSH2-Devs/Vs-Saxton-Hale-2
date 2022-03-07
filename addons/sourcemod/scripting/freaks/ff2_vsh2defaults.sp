@@ -432,9 +432,9 @@ void _RunDemoChargeThink(const VSH2Player vsh2_player)
 
 void _OnPlayerKilled(const VSH2Player vsh2_attacker, const VSH2Player victim, Event event)
 {
-	if( FF2GameMode.Validate(vsh2_attacker) ) {	///	attacker is the boss
+	if( vsh2_attacker && FF2GameMode.Validate(vsh2_attacker) ) {	///	attacker is the boss
 		HandleAttackerKill(ToFF2Player(victim), ToFF2Player(vsh2_attacker));
-	} else if( FF2GameMode.Validate(victim) ) {	///	victim is the boss
+	} else if( victim && FF2GameMode.Validate(victim) ) {	///	victim is the boss
 		HandleVictimKill(ToFF2Player(victim), event.GetInt("death_flags"));
 	}
 }
@@ -633,11 +633,11 @@ void Rage_Stun_Building(const FF2Player player)
 	char strBuffer[48];
 	float health;
  	bool destroy;
- 
+
  	{
  		if( player.GetArgS(this_plugin_name, STUN_BUILDING_ABILITY, "health", strBuffer, sizeof(strBuffer)) )
  			health = ParseFormula(strBuffer, ff2_gm.iLivingReds);
- 
+
  		if( health <= 0 )
  			destroy = true;
  	}

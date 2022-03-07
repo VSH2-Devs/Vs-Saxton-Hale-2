@@ -119,9 +119,9 @@ void OnBossMenuFF2(Menu& menu, const VSH2Player player)
 		if( ff2_cfgmgr.GetIdentity(boss_name, cur_identity) ) {
 			ConfigMap cfg = FF2Character(cur_identity.hCfg).InfoSection;
 			bool tmp;
-			if( 
+			if(
 				( !cfg.Get("name", boss_name, sizeof(boss_name)) ) ||
-				( cfg.GetBool("blocked", tmp, false) && tmp ) || 
+				( cfg.GetBool("blocked", tmp, false) && tmp ) ||
 				( cfg.GetBool("nofirst", tmp, false) && tmp && !num_rounds )
 			  )
 				continue;
@@ -404,7 +404,7 @@ void OnBossThinkFF2(const VSH2Player vsh2player)
 		ShowSyncHudText(
 			client,
 			ff2.m_hud[HUD_Jump],
-				flRage >= 100.0 ? 
+				flRage >= 100.0 ?
 				"%sCall for medic to activate your \"RAGE\" ability" :
 				"%sRage is %.1f percent ready",
 			buffer,
@@ -544,8 +544,8 @@ void OnPlayerKilledFF2(const VSH2Player attacker, const VSH2Player victim, Event
 		return;
 
 	FF2Identity identity[2]; bool states[2];
-	states[0] = ff2_cfgmgr.FindIdentity(ToFF2Player(attacker).iBossType, identity[0]);
-	states[1] = ff2_cfgmgr.FindIdentity(ToFF2Player(victim).iBossType, identity[1]);
+	states[0] = attacker && ff2_cfgmgr.FindIdentity(ToFF2Player(attacker).iBossType, identity[0]);
+	states[1] = victim && ff2_cfgmgr.FindIdentity(ToFF2Player(victim).iBossType, identity[1]);
 	if( !states[0] && !states[1] )
 		return;
 
@@ -694,12 +694,12 @@ Action OnRoundEndInfoFF2(const VSH2Player player, bool bossBool, char message[MA
 			cur_boss.GetName(boss_name);
 
 			FormatEx(
-				message, 
+				message,
 				sizeof(message),
 				"%s (%N) had %i (of %i) health left.",
-				boss_name, 
-				cur_boss.index, 
-				cur_boss.GetPropInt("iHealth"), 
+				boss_name,
+				cur_boss.index,
+				cur_boss.GetPropInt("iHealth"),
 				cur_boss.GetPropInt("iMaxHealth")
 			);
 		}
@@ -916,7 +916,7 @@ Action OnPlayerHurtFF2(Event event, const char[] name, bool dontBroadcast)
 					default: return res;
 				}
 				player.iLives = new_lives;
-				
+
 				int new_health = (delta_health % max_health);
 				if( !new_health )
 					new_health = max_health;
@@ -971,7 +971,7 @@ void OnVariablesResetFF2(const VSH2Player vsh2player)
 	player.bNoWeighdown = false;
 	player.bHideHUD = false;
 	player.flRageRatio = 1.0;
-	
+
 	player.SetPropAny("bNotifySMAC_CVars", false);
 	player.SetPropAny("bSupressRAGE", false);
 	player.SetPropFloat("flWeighdownCd", 0.0);
