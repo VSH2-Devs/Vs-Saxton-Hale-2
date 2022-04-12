@@ -42,9 +42,10 @@ If you do require help in setting up the bosses or at least need some info on th
 ### Who do I talk to?
 
 * **Project Lead:** *mub* - https://steamcommunity.com/profiles/76561197961943948/
-* **(Former) Lead Developer:** *Nergal the Ashurian/Assyrian* - https://forums.alliedmods.net/member.php?u=176545
+* **Former Lead Developer:** *Nergal the Ashurian/Assyrian* - https://forums.alliedmods.net/member.php?u=176545
 * **Repository Manager & Contributor:** *Starblaster 64* - https://forums.alliedmods.net/member.php?u=261662
 * **Contributors:** *Scags/RageNewb* , *BatFoxKid* , *01Pollux/WhiteFalcon* .
+* **Special thanks to** the communities and servers who used or currently use this mod!
 
 ### Contribution Rules
 #### Code Format:
