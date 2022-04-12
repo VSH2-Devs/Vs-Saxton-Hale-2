@@ -39,7 +39,7 @@ If you do require help in setting up the bosses or at least need some info on th
 * Read the [Wiki](https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki) to get started making your own boss!
 * If you're moving from FF2 to VSH2, we also have the VSH2-FF2 Compatibility Engine, [use this FF2 subplugin library, courtesy of 01Pollux](https://github.com/01Pollux/FF2-Library)
 
-### Who do I talk to?
+### Credits
 
 * **Project Lead:** *mub* - https://steamcommunity.com/profiles/76561197961943948/
 * **Former Lead Developer:** *Nergal the Ashurian/Assyrian* - https://forums.alliedmods.net/member.php?u=176545
