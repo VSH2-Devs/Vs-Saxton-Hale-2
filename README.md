@@ -6,7 +6,7 @@
 [![Develop Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=develop)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
 
 #### Current DEVELOPMENT STATUS updated 4/12/22
-Transitioning devs, documenting and testing 2.13 for final fixes for release. Please use 2.12.0 at this time.
+Transitioning devs, documenting and testing 2.13 for final fixes for release.
 
 **[VSH2 Addons Repository](https://github.com/VSH2-Devs/VSH2-Addons)**
 
