@@ -161,7 +161,7 @@ bool FF2_LoadCharacter(FF2Identity identity, char[] path)
 
 		FF2Character_RegisterAbilities(this_char, identity.isNewAPI, identity.name, identity.abilityList);
 
-		FF2Character_ProcessDownloads(this_char, identity.isNewAPI, identity.name);
+		//FF2Character_ProcessDownloads(this_char, identity.isNewAPI, identity.name);
 
 		FF2Character_ProcessToSoundMap(this_char, identity.name, identity.soundMap);
 	}
@@ -383,7 +383,7 @@ static void FF2Character_RegisterAbilities(FF2Character this_char, bool new_api,
 	delete snap;
 }
 
-static void FF2Character_ProcessDownloads(FF2Character this_char, bool new_api, char[] boss_name)
+public void FF2Character_ProcessDownloads(FF2Character this_char, bool new_api, char[] boss_name)
 {
 	char path[PLATFORM_MAX_PATH], key_name[PLATFORM_MAX_PATH];
 	ConfigMap stacks;
@@ -455,6 +455,7 @@ static void FF2Character_ProcessDownloads(FF2Character this_char, bool new_api, 
 					FormatEx(key_name, sizeof(key_name), "%s%s", path, model_ext[j]);
 					if( FileExists(key_name, true) ) {
 						AddFileToDownloadsTable(key_name);
+						PrintToServer("AddModelDownload: %s", key_name);
 					} else if( StrContains(key_name, ".phy") == -1 ) {
 						LogError("[VSH2/FF2] Character \"%s.cfg\" is missing file \"%s\"!", boss_name, key_name);
 					}
