@@ -73,10 +73,10 @@ methodmap FF2AbilityList < ArrayList {
 			FF2Ability cur = this.Get(i);
 
 			cur.GetPlugin(buffer);
-			// Using !StrContains instead of !strcmp to allow old subplugins that were compiled as '.ff2' and have an extension-less 'this_plugin_name' 
+			// Using !StrContains instead of !strcmp to allow old subplugins that were compiled as '.ff2' and have an extension-less 'this_plugin_name'
 			if( !StrContains(plugin_name, buffer) ) {
 				cur.GetAbility(buffer);
-				if( !strcmp(buffer, ability_name) ) 
+				if( !strcmp(buffer, ability_name) )
 					return cur;
 			}
 		}
@@ -309,7 +309,7 @@ static void FF2Character_RegisterAbilities(FF2Character this_char, bool new_api,
 	 *	///	"ability1" spammed across every ability
 	 *	"ability1" {
 	 *		"name"		"rage_stunsg"
-	 *		"plugin_name"	"default_abilities" 
+	 *		"plugin_name"	"default_abilities"
 	 *
 	 *		"slot"		"0"	///	Batfoxkid's api
 	 *		/// "arg0"	"0"	///	default
@@ -455,7 +455,6 @@ public void FF2Character_ProcessDownloads(FF2Character this_char, bool new_api, 
 					FormatEx(key_name, sizeof(key_name), "%s%s", path, model_ext[j]);
 					if( FileExists(key_name, true) ) {
 						AddFileToDownloadsTable(key_name);
-						PrintToServer("AddModelDownload: %s", key_name);
 					} else if( StrContains(key_name, ".phy") == -1 ) {
 						LogError("[VSH2/FF2] Character \"%s.cfg\" is missing file \"%s\"!", boss_name, key_name);
 					}
