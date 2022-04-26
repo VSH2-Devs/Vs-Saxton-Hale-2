@@ -383,7 +383,7 @@ static void FF2Character_RegisterAbilities(FF2Character this_char, bool new_api,
 	delete snap;
 }
 
-public void FF2Character_ProcessDownloads(FF2Character this_char, bool new_api, char[] boss_name)
+void FF2Character_ProcessDownloads(FF2Character this_char, bool new_api, char[] boss_name)
 {
 	char path[PLATFORM_MAX_PATH], key_name[PLATFORM_MAX_PATH];
 	ConfigMap stacks;
