@@ -48,6 +48,9 @@ void ProcessOnCallDownload()
 					}
 				}
 			}
+
+			///Retry Downloads.
+			FF2Character_ProcessDownloads(cfg, new_api, identity.name);
 		}
 		delete snap;
 	}
