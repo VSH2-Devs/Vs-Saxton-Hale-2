@@ -408,6 +408,25 @@ void _OnRoundEnd(const VSH2Player vsh2_player, bool bossBool, char message[MAXME
 		VSH2_Unhook(OnBossThinkPost, _RunDemoChargeThink);
 		democharge.bThinkHooked = false;
 	}
+
+	if ( ToFF2Player(vsh2_player).HasAbility(this_plugin_name, MATRIX_ABILITY) && ConVars.host_timescale.FloatValue != 1.0 )	{
+		int client = vsh2_player.index;
+
+		ma_data.InValidate();
+
+		float timescale = ConVars.host_timescale.FloatValue;
+		ConVars.host_timescale.FloatValue = 1.0;
+
+		UpdateCheatValue("0");
+
+		if( timescale != 1.0 )
+			EmitSoundToAll(SOUND_SLOW_MO_END, .updatePos = false);
+
+		if( client ) {
+			vsh2_player.SetPropInt("bNotifySMAC_CVars", 0);
+			SDKUnhook(client, SDKHook_PostThinkPost, Post_ClientSlowMoThink);
+		}
+	}
 }
 
 void _RunDemoChargeThink(const VSH2Player vsh2_player)
