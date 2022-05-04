@@ -404,9 +404,15 @@ void _OnRoundEnd(const VSH2Player vsh2_player, bool bossBool, char message[MAXME
 		TriggerTimer(ma_data.timer);
 	}
 
-	if( ToFF2Player(vsh2_player).HasAbility(this_plugin_name, DEMOCHARGE_ABILITY) && democharge.bThinkHooked ) {
+	FF2Player ff2_player = ToFF2Player(vsh2_player);
+
+	if( ff2_player.HasAbility(this_plugin_name, DEMOCHARGE_ABILITY) && democharge.bThinkHooked ) {
 		VSH2_Unhook(OnBossThinkPost, _RunDemoChargeThink);
 		democharge.bThinkHooked = false;
+	}
+
+	if ( ff2_player.HasAbility(this_plugin_name, MATRIX_ABILITY) && ConVars.host_timescale.FloatValue != 1.0 )	{
+		Timer_StopSlowMo(null, ff2_player);
 	}
 }
 
