@@ -253,11 +253,8 @@ methodmap ConfigMap < StringMap {
 					if( val.tag==KeyValType_Section ) {
 						val.data.Reset();
 						ConfigMap cfg = val.data.ReadCell();
-						PrintToServer("RecErasing: %x/%x ", val.data, cfg);
 						DeleteCfg(cfg);
 					}
-					else 
-						PrintToServer("RecErasing: %x ", val.data);
 
 					delete val.data;
 					itermap.Remove(curr_section);
