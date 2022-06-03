@@ -383,10 +383,9 @@ void OnBossThinkFF2(const VSH2Player vsh2player)
 		}
 
 		if( !player.bHideHUD ) {
-			if( hud_section.Get("text", buffer, sizeof(buffer)) ) {
-				FF2_ReplaceEscapeSeq(buffer, sizeof(buffer));
+			if( !hud_section.Get("text", buffer, sizeof(buffer)) ) {
+				buffer = "Super-Jump: %i%%\n";
 			}
-			else buffer = "Super-Jump: %i%%\n";
 			Format(buffer, sizeof(buffer), buffer, player.GetPropInt("bSuperCharge") ? 1000 : RoundFloat(flCharge) * 4);
 		}
 		else buffer[0] = 0;
