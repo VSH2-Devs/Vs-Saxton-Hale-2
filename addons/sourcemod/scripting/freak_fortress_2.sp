@@ -69,8 +69,6 @@ enum struct FF2CompatPlugin {
 FF2CompatPlugin ff2;
 VSH2GameMode    vsh2_gm;
 
-#include "modules/ff2/backwards_compatibility.sp"
-
 #include "modules/ff2/utils.sp"
 #include "modules/ff2/gamemode.sp"
 #include "modules/ff2/forwards.sp"

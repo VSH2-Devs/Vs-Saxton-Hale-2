@@ -317,17 +317,6 @@ any Native_FF2GameMode_Cheats(Handle plugin, int numParams)
 	return ff2.m_cheats;
 }
 
-enum struct FF2Identity_Q {
-	int				VSH2ID;
-	ConfigMap		hCfg;
-	StringMap		soundMap;
-	ArrayList		abilityList;
-	char			name[FF2_MAX_BOSS_NAME_SIZE];
-
-	bool			isNewAPI;
-	bool			isFound;
-}
-
 enum FF2GameModeQ_t {
 	/// Fill the FF2Identity::hCfg struct
 	FF2GAMEMODEQ_CONFIGMAP 	= 1 << 0,
@@ -344,39 +333,44 @@ enum FF2GameModeQ_t {
 
 any Native_FF2GameMode_QueryBoss(Handle plugin, int numParams)
 {
-	FF2Identity_Q out;
 	FF2Identity tmp;
-	GetNativeArray(1, out, sizeof(FF2Identity_Q));
-	FF2GameModeQ_t flags = GetNativeCell(2);
+	FF2GameModeQ_t flags = GetNativeCell(1);
 
 	if( flags & FF2GAMEMODEQ_BY_NAME ) {
-		if( !(out.isFound = ff2_cfgmgr.FindIdentityByName(out.name, tmp)) ) {
+		char name[MAX_BOSS_NAME_SIZE];
+		GetNativeString(3, name, sizeof(name));
+		if( !ff2_cfgmgr.FindIdentityByName(name, tmp) )
 			return 0;
-		}
+
 		if( flags & FF2GAMEMODEQ_COPY_OTHER )
-			out.VSH2ID = tmp.VSH2ID;
+			SetNativeCellRef(2, tmp.VSH2ID);
 	}
 	else {
-		if( !(out.isFound = ff2_cfgmgr.FindIdentity(out.VSH2ID, tmp)) ) {
+		int vsh2_id = GetNativeCellRef(2);
+		if( !ff2_cfgmgr.FindIdentity(vsh2_id, tmp) ) {
 			return 0;
 		}
 
 		if( flags & FF2GAMEMODEQ_COPY_OTHER )
-			strcopy(out.name, sizeof(FF2Identity_Q::name), tmp.name);
+			SetNativeString(3, tmp.name, sizeof(FF2Identity::name));
 	}
 
 	if( flags & FF2GAMEMODEQ_CONFIGMAP ) {
-		out.hCfg = tmp.hCfg.Clone(plugin);
+		SetNativeCellRef(4, tmp.hCfg.Clone(plugin));
 	}
+
 	if( flags & FF2GAMEMODEQ_ABILITIES ) {
-		out.abilityList = new ArrayList();
-		for( int i=tmp.abilityList.Length-1; i>=0; i-- ) {
-			out.abilityList.Push(view_as<ConfigMap>(tmp.abilityList.Get(i)).Clone(plugin));
+		int size = tmp.abilityList.Length;
+		ArrayList abilities = new ArrayList(1, size);
+		for( int i=0; i<size; i++ ) {
+			abilities.Set(i, view_as<ConfigMap>(tmp.abilityList.Get(i)).Clone(plugin));
 		}
+		SetNativeCellRef(6, abilities);
 	}
+
 	if( flags & FF2GAMEMODEQ_SOUNDMAP ) {
-		out.soundMap = new StringMap();
-		StringMapSnapshot snap = tmp.soundMap.Snapshot();
+		StringMap sound_map = new StringMap();
+		StringMapSnapshot snap = sound_map.Snapshot();
 		
 		for( int i=snap.Length-1; i>=0; i-- ) {
 			int len = snap.KeyBufferSize(i);
@@ -385,14 +379,14 @@ any Native_FF2GameMode_QueryBoss(Handle plugin, int numParams)
 
 			ConfigMap section;
 			tmp.soundMap.GetValue(key, section);
-			out.soundMap.SetValue(key, section.Clone(plugin));
+			sound_map.SetValue(key, section.Clone(plugin));
 		}
 		delete snap;
+		SetNativeCellRef(5, sound_map);
 	}
-	out.isNewAPI = tmp.isNewAPI;
 
-	SetNativeArray(1, out, sizeof(FF2Identity_Q));
-	return 0;
+	SetNativeCellRef(7, tmp.isNewAPI);
+	return 1;
 }
 
 any Native_FF2GameMode_LoadAbility(Handle plugins, int numParams)

@@ -133,9 +133,7 @@ enum struct FF2Identity {
 	StringMap		soundMap;
 	ArrayList		abilityList;
 	char			name[MAX_BOSS_NAME_SIZE];
-
 	bool			isNewAPI;
-	bool			isFound;
 
 	void Release() {
 		this.ReleaseSoundMap();
@@ -459,7 +457,17 @@ methodmap FF2GameMode < VSH2GameMode
 	* Get boss information by 'FF2GameModeQ_t'
 	* identity is enum struct of type 'FF2Identity'
 	*/
-	public static native void QueryBoss(any[] identity, FF2GameModeQ_t qinfo);
+	public static native bool QueryBoss(
+		FF2GameModeQ_t qinfo,
+		int& vsh2_id = 0,
+		char name[MAX_BOSS_NAME_SIZE] = "",
+
+		ConfigMap& boss_config = null,
+		StringMap& sound_map = null,
+		ArrayList& ability_list = null,
+
+		bool& is_new_api = false
+	);
 
 	public static native bool LoadAbility(const char[] plugin_name);
 

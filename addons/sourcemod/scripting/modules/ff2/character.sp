@@ -1,3 +1,5 @@
+#include "modules/ff2/backwards_compatibility.sp"
+
 methodmap FF2Character {
 	public FF2Character(ConfigMap cfg) {
 		return view_as<FF2Character>(cfg.GetSection(FF2_CHARACTER_KEY));
