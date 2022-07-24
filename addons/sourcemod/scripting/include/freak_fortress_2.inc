@@ -1282,10 +1282,10 @@ stock bool FF2_MakeBoss(int client, const char[] boss_name, bool call_event = tr
 		return false;
 	}
 
-	FF2Identity id;
-	strcopy(id.name, sizeof(FF2Identity::name), boss_name);
-	FF2GameMode.QueryBoss(id, FF2GAMEMODEQ_COPY_OTHER | FF2GAMEMODEQ_BY_NAME);
-	if( id.VSH2ID==INVALID_FF2_BOSS_ID )
+	char name[MAX_BOSS_NAME_SIZE];
+	strcopy(name, sizeof(name), boss_name);
+	int vsh2_id;
+	if( !FF2GameMode.QueryBoss(FF2GAMEMODEQ_COPY_OTHER | FF2GAMEMODEQ_BY_NAME, vsh2_id, name) )
 		return false;
 
 	player.MakeBossAndSwitch(id.VSH2ID, call_event);
