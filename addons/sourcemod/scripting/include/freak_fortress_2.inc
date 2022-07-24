@@ -1288,7 +1288,7 @@ stock bool FF2_MakeBoss(int client, const char[] boss_name, bool call_event = tr
 	if( !FF2GameMode.QueryBoss(FF2GAMEMODEQ_COPY_OTHER | FF2GAMEMODEQ_BY_NAME, vsh2_id, name) )
 		return false;
 
-	player.MakeBossAndSwitch(id.VSH2ID, call_event);
+	player.MakeBossAndSwitch(vsh2_id, call_event);
 	return true;
 }
 
