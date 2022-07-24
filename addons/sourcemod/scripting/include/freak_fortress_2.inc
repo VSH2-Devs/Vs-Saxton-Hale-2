@@ -133,9 +133,7 @@ enum struct FF2Identity {
 	StringMap		soundMap;
 	ArrayList		abilityList;
 	char			name[MAX_BOSS_NAME_SIZE];
-
 	bool			isNewAPI;
-	bool			isFound;
 
 	void Release() {
 		this.ReleaseSoundMap();
@@ -459,7 +457,17 @@ methodmap FF2GameMode < VSH2GameMode
 	* Get boss information by 'FF2GameModeQ_t'
 	* identity is enum struct of type 'FF2Identity'
 	*/
-	public static native void QueryBoss(any[] identity, FF2GameModeQ_t qinfo);
+	public static native bool QueryBoss(
+		FF2GameModeQ_t qinfo,
+		int& vsh2_id = 0,
+		char name[MAX_BOSS_NAME_SIZE] = "",
+
+		ConfigMap& boss_config = null,
+		StringMap& sound_map = null,
+		ArrayList& ability_list = null,
+
+		bool& is_new_api = false
+	);
 
 	public static native bool LoadAbility(const char[] plugin_name);
 
@@ -1274,13 +1282,13 @@ stock bool FF2_MakeBoss(int client, const char[] boss_name, bool call_event = tr
 		return false;
 	}
 
-	FF2Identity id;
-	strcopy(id.name, sizeof(FF2Identity::name), boss_name);
-	FF2GameMode.QueryBoss(id, FF2GAMEMODEQ_COPY_OTHER | FF2GAMEMODEQ_BY_NAME);
-	if( id.VSH2ID==INVALID_FF2_BOSS_ID )
+	char name[MAX_BOSS_NAME_SIZE];
+	strcopy(name, sizeof(name), boss_name);
+	int vsh2_id;
+	if( !FF2GameMode.QueryBoss(FF2GAMEMODEQ_COPY_OTHER | FF2GAMEMODEQ_BY_NAME, vsh2_id, name) )
 		return false;
 
-	player.MakeBossAndSwitch(id.VSH2ID, call_event);
+	player.MakeBossAndSwitch(vsh2_id, call_event);
 	return true;
 }
 
