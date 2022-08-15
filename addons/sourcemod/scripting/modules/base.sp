@@ -422,7 +422,7 @@ methodmap BaseFighter {
 			if( !CanFitHere(pos, mins, maxs) )
 				continue;
 
-			if (spawn_len >= MaxClients+1)
+			if ( spawn_len >= MaxClients+1 )
 				break;
 
 			/// if the client is a boss, allow them to use ANY valid spawn!
