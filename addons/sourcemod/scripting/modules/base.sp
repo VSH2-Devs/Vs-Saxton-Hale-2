@@ -411,6 +411,9 @@ methodmap BaseFighter {
 		int spawn_len;
 		int[] spawns = new int[MaxClients+1];
 		while( (spawn = FindEntityByClassname(spawn, "info_player_teamspawn")) != -1 ) {
+			if( spawn_len >= MaxClients+1 )
+				break;
+			
 			/// skip disabled spawns.
 			if( GetEntProp(spawn, Prop_Data, "m_bDisabled") )
 				continue;
@@ -421,9 +424,6 @@ methodmap BaseFighter {
 			GetClientMins(this.index, mins);
 			if( !CanFitHere(pos, mins, maxs) )
 				continue;
-
-			if ( spawn_len >= MaxClients+1 )
-				break;
 
 			/// if the client is a boss, allow them to use ANY valid spawn!
 			int is_boss; g_vsh2.m_hPlayerFields[this.index].GetValue("iBossType", is_boss);
