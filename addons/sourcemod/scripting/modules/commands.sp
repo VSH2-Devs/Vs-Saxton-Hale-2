@@ -5,10 +5,10 @@ public void SkipBossPanelNotify(const int client/*, bool newchoice = true*/)
 	}
 	Panel panel = new Panel();
 	char strNotify[64];
-	
+
 	panel.SetTitle("[VSH 2] You're The Next Boss!");
 	Format(strNotify, sizeof(strNotify), "You are going to be a Boss soon! Type /halenext to check/reset your queue points.\nAlternatively, use !resetq.\nDon't forget to use !setboss to set your boss.");
-	
+
 	panel.DrawItem(strNotify);
 	panel.Send(client, SkipHalePanelH, 30); /// in commands.sp
 	delete panel;
@@ -46,7 +46,7 @@ public void QueuePanel(const int client)
 	char strBossList[MAXMESSAGE];
 	Format(strBossList, MAXMESSAGE, "VSH2 Boss Queue:");
 	panel.SetTitle(strBossList);
-	
+
 	BaseBoss boss = VSHGameMode.GetRandomBoss(false);
 	if( boss ) {
 		Format(strBossList, sizeof(strBossList), "%N - %i", boss.index, boss.iQueue);
@@ -54,7 +54,7 @@ public void QueuePanel(const int client)
 	} else {
 		panel.DrawItem("None");
 	}
-	
+
 	BaseBoss[] b = new BaseBoss[MaxClients];
 	VSHGameMode.GetQueue(b);
 	for( int i; i<8; i++ ) {
@@ -65,7 +65,7 @@ public void QueuePanel(const int client)
 			panel.DrawItem("-");
 		}
 	}
-	
+
 	Format(strBossList, 64, "Your queue points: %i (select to set to 0)", BaseBoss(client).iQueue );
 	panel.DrawItem(strBossList);
 	panel.Send(client, QueuePanelH, 9001);
@@ -101,7 +101,7 @@ public int TurnToZeroPanelH(Menu menu, MenuAction action, int param1, int param2
 		BaseBoss player = BaseBoss(param1);
 		if( player.iQueue ) {
 			player.iQueue = 0;
-			
+
 			CPrintToChat(param1, "{olive}[VSH 2]{default} You have reset your queue points to {olive}0{default}");
 			BaseBoss next = VSHGameMode.FindNextBoss();
 			if( next ) {
@@ -109,6 +109,8 @@ public int TurnToZeroPanelH(Menu menu, MenuAction action, int param1, int param2
 			}
 		}
 	}
+
+	return 0;
 }
 
 /** FINALLY THE PANEL TRAIN HAS ENDED! */
@@ -121,6 +123,8 @@ public int SkipHalePanelH(Menu menu, MenuAction action, int client, int param2)
 		CommandSetSkill(client, -1);
 	}
 	*/
+
+	return 0;
 }
 
 public Action SetNextSpecial(int client, int args)
@@ -140,11 +144,13 @@ public int MenuHandler_PickBossSpecial(Menu menu, MenuAction action, int client,
 	char bossname[MAX_BOSS_NAME_SIZE];
 	char info1[16]; menu.GetItem(select, info1, sizeof(info1), _, bossname, sizeof(bossname));
 	if( action == MenuAction_Select ) {
-		g_vsh2.m_hGamemode.iSpecial = StringToInt(info1);
+		g_vsh2gm.iSpecial = StringToInt(info1);
 		CPrintToChat(client, "{olive}[VSH 2]{default} Next Boss will be {olive}%s{default}!", bossname);
 	} else if( action == MenuAction_End ) {
 		delete menu;
 	}
+
+	return 0;
 }
 
 
@@ -153,8 +159,8 @@ public Action ChangeHealthBarColor(int client, int args)
 	if( g_vsh2.m_hCvars.Enabled.BoolValue ) {
 		char number[4]; GetCmdArg( 1, number, sizeof(number) );
 		int type = StringToInt(number);
-		g_vsh2.m_hGamemode.iHealthBar.iState = type;
-		PrintToChat(client, "iHealthBar.iState = %i", g_vsh2.m_hGamemode.iHealthBar.iState);
+		g_vsh2gm.iHealthBar.iState = type;
+		PrintToChat(client, "iHealthBar.iState = %i", g_vsh2gm.iHealthBar.iState);
 	}
 	return Plugin_Handled;
 }
@@ -163,7 +169,7 @@ public Action Command_GetHPCmd(int client, int args)
 {
 	if( !g_vsh2.m_hCvars.Enabled.BoolValue ) {
 		return Plugin_Continue;
-	} else if( g_vsh2.m_hGamemode.iRoundState != StateRunning ) {
+	} else if( g_vsh2gm.iRoundState != StateRunning ) {
 		return Plugin_Handled;
 	}
 	BaseBoss player = BaseBoss(client);
@@ -179,18 +185,18 @@ public Action CommandBossSelect(int client, int args)
 		CReplyToCommand(client, "{olive}[VSH 2]{default} Usage: boss_select <target>");
 		return Plugin_Handled;
 	}
-	
+
 	char targetname[32]; GetCmdArg(1, targetname, sizeof(targetname));
 	if( !strcmp(targetname, "@me", false) && IsValidClient(client) ) {
-		g_vsh2.m_hGamemode.hNextBoss = BaseBoss(client);
+		g_vsh2gm.hNextBoss = BaseBoss(client);
 		CReplyToCommand(client, "{olive}[VSH 2]{default} You've set yourself as the next Boss!");
 	} else {
 		int target = FindTarget(client, targetname);
 		if( IsValidClient(target) ) {
-			g_vsh2.m_hGamemode.hNextBoss = BaseBoss(target);
-			CReplyToCommand(client, "{olive}[VSH 2]{default} %N is set as next Boss!", g_vsh2.m_hGamemode.hNextBoss.index);
+			g_vsh2gm.hNextBoss = BaseBoss(target);
+			CReplyToCommand(client, "{olive}[VSH 2]{default} %N is set as next Boss!", g_vsh2gm.hNextBoss.index);
 		} else {
-			g_vsh2.m_hGamemode.hNextBoss = view_as< BaseBoss >(0);
+			g_vsh2gm.hNextBoss = view_as< BaseBoss >(0);
 		}
 	}
 	return Plugin_Handled;
@@ -200,7 +206,7 @@ public Action SetBossMenu(int client, int args)
 {
 	if( !g_vsh2.m_hCvars.Enabled.BoolValue )
 		return Plugin_Continue;
-	
+
 	Menu bossmenu = new Menu(MenuHandler_PickBosses);
 	bossmenu.SetTitle("Set Boss Menu: ");
 	bossmenu.AddItem("-1", "None (Random Boss)");
@@ -220,6 +226,8 @@ public int MenuHandler_PickBosses(Menu menu, MenuAction action, int client, int 
 	} else if( action == MenuAction_End ) {
 		delete menu;
 	}
+
+	return 0;
 }
 
 public Action MusicTogglePanelCmd(int client, int args)
@@ -259,6 +267,8 @@ public int MusicTogglePanelH(Menu menu, MenuAction action, int param1, int param
 			}
 		}
 	}
+
+	return 0;
 }
 
 public Action ForceBossRealtime(int client, int args)
@@ -266,28 +276,28 @@ public Action ForceBossRealtime(int client, int args)
 	if( !g_vsh2.m_hCvars.Enabled.BoolValue ) {
 		return Plugin_Continue;
 	}
-	
+
 	if( !client ) {
 		CReplyToCommand(client, "{olive}[VSH 2]{default} You can only use this command ingame.");
 		return Plugin_Handled;
 	} else if( args < 2 ) {
 		CReplyToCommand(client, "{olive}[VSH 2]{default} Usage: boss_force <target> <boss id>");
 		return Plugin_Handled;
-	} else if( g_vsh2.m_hGamemode.iRoundState > StateStarting ) {
+	} else if( g_vsh2gm.iRoundState > StateStarting ) {
 		CReplyToCommand(client, "{olive}[VSH 2]{default} You can't force a boss after a round started...");
 		return Plugin_Handled;
 	}
-	
+
 	char targetname[32]; GetCmdArg(1, targetname, sizeof(targetname));
 	char strBossid[32];  GetCmdArg(2, strBossid, sizeof(strBossid));
-	
+
 	int bosstype = StringToInt(strBossid);
 	if( bosstype > MAXBOSS ) {
 		bosstype = MAXBOSS;
 	} else if( bosstype < 0 ) {
 		bosstype = GetRandomInt(VSH2Boss_Hale, MAXBOSS);
 	}
-	
+
 	char target_name[MAX_TARGET_LENGTH];
 	int target_list[MAXPLAYERS], target_count;
 	bool tn_is_ml;
@@ -321,14 +331,14 @@ public Action CommandAddPoints(int client, int args)
 	if( !g_vsh2.m_hCvars.Enabled.BoolValue ) {
 		return Plugin_Continue;
 	}
-	
+
 	if( args < 2 ) {
 		CReplyToCommand(client, "{olive}[VSH 2]{default} Usage: hale_addpoints <target> <points>");
 		return Plugin_Handled;
 	}
 	char targetname[32]; GetCmdArg(1, targetname, sizeof(targetname));
 	char s2[32];         GetCmdArg(2, s2, sizeof(s2));
-	
+
 	int points = StringToInt(s2);
 	char target_name[MAX_TARGET_LENGTH];
 	int target_list[MAXPLAYERS], target_count;
@@ -363,7 +373,7 @@ public Action CommandSetPoints(int client, int args)
 	if( !g_vsh2.m_hCvars.Enabled.BoolValue ) {
 		return Plugin_Continue;
 	}
-	
+
 	if( args < 2 ) {
 		CReplyToCommand(client, "{olive}[VSH 2]{default} Usage: hale_setpoints <target> <points>");
 		return Plugin_Handled;
@@ -374,12 +384,12 @@ public Action CommandSetPoints(int client, int args)
 	char target_name[MAX_TARGET_LENGTH];
 	int target_list[MAXPLAYERS], target_count;
 	bool tn_is_ml;
-	
+
 	if( (target_count = ProcessTargetString( targetname, client, target_list, MAXPLAYERS, 0, target_name, sizeof(target_name), tn_is_ml)) <= 0 ) {
 		ReplyToTargetError(client, target_count);
 		return Plugin_Handled;
 	}
-	
+
 	BaseBoss player;
 	for( int i=0; i<target_count; i++ ) {
 		if( IsClientInGame(target_list[i]) ) {
@@ -421,7 +431,7 @@ public int HelpMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 		BaseBoss player = BaseBoss(param1);
 		switch( param2+1 ) {
 			case 1: {
-				if( g_vsh2.m_hGamemode.iRoundState==StateRunning ) {
+				if( g_vsh2gm.iRoundState==StateRunning ) {
 					ManageBossCheckHealth(player);
 				} else {
 					CPrintToChat(param1, "{olive}[VSH 2]{default} There are no active bosses...");
@@ -443,6 +453,8 @@ public int HelpMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 	} else if( action==MenuAction_End ) {
 		delete menu;
 	}
+
+	return 0;
 }
 
 public Action MenuDoClassRush(int client, int args)
@@ -453,7 +465,7 @@ public Action MenuDoClassRush(int client, int args)
 		CReplyToCommand(client, "{olive}[VSH 2]{default} You can only use this command ingame.");
 		return Plugin_Handled;
 	}
-	
+
 	Menu rush = new Menu(MenuHandler_ClassRush);
 	rush.SetTitle("VSH2 Class Rush Menu");
 	rush.AddItem("1", "**** Scout ****");
@@ -489,4 +501,6 @@ public int MenuHandler_ClassRush(Menu menu, MenuAction action, int client, int p
 	} else if( action == MenuAction_End ) {
 		delete menu;
 	}
+
+	return 0;
 }

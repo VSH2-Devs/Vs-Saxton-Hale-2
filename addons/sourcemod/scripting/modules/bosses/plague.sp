@@ -108,7 +108,7 @@ methodmap CPlague < BaseBoss {
 			minion = BaseBoss(i);
 			if( minion.bIsMinion ) {
 #if defined _tf2attributes_included
-				if( g_vsh2.m_hGamemode.bTF2Attribs ) {
+				if( g_vsh2gm.bTF2Attribs ) {
 					TF2Attrib_SetByDefIndex(i, attribute, value);
 					SetPawnTimer(TF2AttribsRemove, 10.0, i);
 				}
@@ -144,7 +144,7 @@ methodmap CPlague < BaseBoss {
 		TF2_SetPlayerClass(base.index, TFClass_Scout, _, false);
 		TF2_RemoveAllWeapons(base.index);
 #if defined _tf2attributes_included
-		if( g_vsh2.m_hGamemode.bTF2Attribs )
+		if( g_vsh2gm.bTF2Attribs )
 			TF2Attrib_RemoveAll(base.index);
 #endif
 		int weapon = base.SpawnWeapon("tf_weapon_bat", 572, 100, 5, "6; 0.5; 57; 15.0; 26; 75.0; 49; 1.0; 68; -2.0");

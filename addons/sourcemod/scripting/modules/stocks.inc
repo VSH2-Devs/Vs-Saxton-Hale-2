@@ -1045,8 +1045,7 @@ stock void PrepareSoundDir(bool valve = false, char[] dir = "sound")
 			AddFileToDownloadsTable(buffer);
 
 			/// Offsets 'sound/'
-			if( !IsSoundPrecached(buffer[6]) )
-				PrecacheSound(buffer[6]);
+			PrecacheSound(buffer[6]);
 		}
 	}
 	delete l;
@@ -1117,7 +1116,6 @@ stock char[] TF2_GetPlayerClassname(const int client, bool capitalize = false)
 		case TFClass_DemoMan: s = "demoman";
 		case TFClass_Medic: s = "medic";
 		case TFClass_Heavy: s = "heavy";
-		case TFClass_Pyro: s = "pyro";
 		case TFClass_Spy: s = "spy";
 		case TFClass_Engineer: s = "engineer";
 	}
@@ -1129,8 +1127,8 @@ stock char[] TF2_GetPlayerClassname(const int client, bool capitalize = false)
 stock int FindMatchingTeleporter(const int tele)
 {
 	if( !HasEntProp(tele, Prop_Send, "m_bMatchBuilding") )
-		return;
-	
+		return 0;
+
 	int offset = FindSendPropInfo("CObjectTeleporter", "m_bMatchBuilding")+4;
 	return GetEntDataEnt2(tele, offset);
 }
@@ -1149,11 +1147,11 @@ stock bool TF2_IsKillable(const int entity)
 	}
 	if( GetEntProp(entity, Prop_Data, "m_takedamage") != 2 )
 		res = false;
-	
+
 	return res;
 }
 
-stock int SetMetal(const int client, const int amount)
+stock void SetMetal(const int client, const int amount)
 {
 	int iMetalTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
 	SetEntData(client, iMetalTable + (4*3), amount, 4, true);
@@ -1176,7 +1174,7 @@ stock int GetRandomClient(bool balive=true, int team=0)
 			continue;
 		else if( team && GetClientTeam(i) != team )
 			continue;
-		
+
 		players[count++] = i;
 	}
 	return !count ? -1 : players[GetRandomInt(0, count-1)];
@@ -1192,7 +1190,7 @@ stock void HealPlayer(const int client, const int health, bool on_hud=false, boo
 	int hp     = GetEntProp(client, Prop_Data, "m_iHealth");
 	int maxhp  = GetEntProp(client, Prop_Data, "m_iMaxHealth");
 	int diff = health;
-	
+
 	int max_overheal = RoundFloat(FindConVar("tf_max_health_boost").FloatValue * maxhp);
 	if( !overridehp && diff > max_overheal - hp ) {
 		diff = max_overheal - hp;
@@ -1202,7 +1200,7 @@ stock void HealPlayer(const int client, const int health, bool on_hud=false, boo
 			diff = overheal_limit - hp;
 		}
 	}
-	
+
 	if( diff > 0 ) {
 		SetEntityHealth(client, hp + diff);
 		if( on_hud ) {
