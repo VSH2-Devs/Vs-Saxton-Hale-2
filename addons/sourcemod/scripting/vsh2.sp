@@ -594,7 +594,7 @@ public Action Updater_OnPluginDownloading() {
 	return Plugin_Continue;
 }
 
-public int Updater_OnPluginUpdated()  {
+public void Updater_OnPluginUpdated()  {
 	char filename[64]; GetPluginFilename(null, filename, sizeof(filename));
 	ServerCommand("sm plugins unload %s", filename);
 	ServerCommand("sm plugins load %s", filename);
