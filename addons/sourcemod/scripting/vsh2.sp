@@ -167,11 +167,13 @@ enum struct VSH2ModuleSys {
 	}
 }
 
+#define MAXBOSS    (MaxDefaultVSH2Bosses + (g_modsys.m_hBossesRegistered.Length - 1))
+
 enum struct VSH2Globals {
 	Handle m_hHUDs[MaxVSH2HUDs];
 	Cookie m_hCookies[MaxVSH2Cookies];
 	VSH2Cvars m_hCvars;
-	//VSHGameMode m_hGamemode;
+	VSHGameMode m_hGamemode;
 	char m_strCurrSong[PLATFORM_MAX_PATH];
 
 	ConfigMap m_hCfg;
@@ -184,10 +186,13 @@ VSH2Globals   g_vsh2;
 VSH2ModuleSys g_modsys;
 
 #define MAXBOSS    (MaxDefaultVSH2Bosses + (g_modsys.m_hBossesRegistered.Length - 1))
+//VSHGameMode g_vsh2.m_hGamemode;
 
+#include "modules/base.sp"
+#include "modules/forwards.sp"
 #include "modules/gamemode.sp"
 
-VSHGameMode g_vsh2gm;
+
 
 #include "modules/stocks.inc" /// include stocks first.
 #include "modules/handler.sp" /// Contains the game mode logic as well
@@ -196,10 +201,11 @@ VSHGameMode g_vsh2gm;
 
 
 
+
 public void OnPluginStart()
 {
-	g_vsh2gm = new VSHGameMode();
-	g_vsh2gm.Init();
+	g_vsh2.m_hGamemode = new VSHGameMode();
+	g_vsh2.m_hGamemode.Init();
 
 	/// in forwards.sp
 	InitializeForwards();
@@ -397,8 +403,8 @@ public void OnPluginStart()
 	g_vsh2.m_hCvars.BootStompLogic = CreateConVar("vsh2_mantreads_stomp_logic", "3", "controller for how the mantreads stomp damage ('vsh2_mantreads_stomp_dmg') will work. 0-value is dmg | 1-mult with dmg | 2-add with dmg", FCVAR_NONE, true, 0.0, true, 2.0);
 	g_vsh2.m_hCvars.BootStompDamage = CreateConVar("vsh2_mantreads_stomp_dmg", "1024.0", "damage done from mantreads-style stomp, value given will work depending on the value of 'vsh2_mantreads_stomp_logic'.", FCVAR_NONE, true, 0.0, true, 999999.0);
 
-	g_vsh2gm.bSteam      = LibraryExists("SteamTools");
-	g_vsh2gm.bTF2Attribs = LibraryExists("tf2attributes");
+	g_vsh2.m_hGamemode.bSteam      = LibraryExists("SteamTools");
+	g_vsh2.m_hGamemode.bTF2Attribs = LibraryExists("tf2attributes");
 
 	AutoExecConfig(true, "VSHv2");
 	HookEvent("player_death",               PlayerDeath, EventHookMode_Pre);
@@ -507,14 +513,14 @@ public bool NextHaleTargetFilter(const char[] pattern, ArrayList clients)
 
 public Action CheckLateSpawn(int client, const char[] command, int argc)
 {
-	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2gm.iRoundState != StateRunning )
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2.m_hGamemode.iRoundState != StateRunning )
 		return Plugin_Continue;
 
 	/// deal with late spawners, force them to spectator.
 	if( !g_vsh2.m_hCvars.AllowLateSpawn.BoolValue
 		&& GetClientTeam(client) > VSH2Team_Spectator
 		&& TF2_GetPlayerClass(client)==TFClass_Unknown
-		&& (GetGameTime() - g_vsh2gm.flRoundStartTime) > g_vsh2.m_hCvars.LateSpawnDelay.FloatValue
+		&& (GetGameTime() - g_vsh2.m_hGamemode.flRoundStartTime) > g_vsh2.m_hCvars.LateSpawnDelay.FloatValue
 	) {
 		char str_tfclass[20]; GetCmdArg(1, str_tfclass, sizeof(str_tfclass));
 		TFClassType classtype = TF2_GetClass(str_tfclass);
@@ -527,7 +533,7 @@ public Action CheckLateSpawn(int client, const char[] command, int argc)
 
 public Action BlockSuicide(int client, const char[] command, int argc)
 {
-	if( g_vsh2.m_hCvars.Enabled.BoolValue && g_vsh2gm.iRoundState == StateRunning ) {
+	if( g_vsh2.m_hCvars.Enabled.BoolValue && g_vsh2.m_hGamemode.iRoundState == StateRunning ) {
 		BaseBoss player = BaseBoss(client);
 		if( player.bIsBoss ) {
 			/// Allow bosses to suicide if their total health is under a certain percentage.
@@ -551,10 +557,10 @@ public Action BlockSuicide(int client, const char[] command, int argc)
 public void OnLibraryAdded(const char[] name)
 {
 	if( !strcmp(name, "SteamTools", false) )
-		g_vsh2gm.bSteam = true;
+		g_vsh2.m_hGamemode.bSteam = true;
 
 	if( !strcmp(name, "tf2attributes", false) )
-		g_vsh2gm.bTF2Attribs = true;
+		g_vsh2.m_hGamemode.bTF2Attribs = true;
 
 #if defined _updater_included
 	if( !strcmp(name, "updater") )
@@ -565,10 +571,10 @@ public void OnLibraryAdded(const char[] name)
 public void OnLibraryRemoved(const char[] name)
 {
 	if( !strcmp(name, "SteamTools", false) )
-		g_vsh2gm.bSteam = false;
+		g_vsh2.m_hGamemode.bSteam = false;
 
 	if( !strcmp(name, "tf2attributes", false) )
-		g_vsh2gm.bTF2Attribs = false;
+		g_vsh2.m_hGamemode.bTF2Attribs = false;
 }
 
 /// UPDATER Stuff
@@ -588,7 +594,7 @@ public Action Updater_OnPluginDownloading() {
 	return Plugin_Continue;
 }
 
-public void Updater_OnPluginUpdated()  {
+public int Updater_OnPluginUpdated()  {
 	char filename[64]; GetPluginFilename(null, filename, sizeof(filename));
 	ServerCommand("sm plugins unload %s", filename);
 	ServerCommand("sm plugins load %s", filename);
@@ -637,10 +643,10 @@ public void OnConfigsExecuted()
 		cvar_mp_forcecamera.IntValue           = 0;
 		cvar_tf_scout_hype_pep_max.FloatValue  = 100.0;
 
-		g_vsh2gm.CheckDoors();
-		g_vsh2gm.CheckTeleToSpawn();
+		g_vsh2.m_hGamemode.CheckDoors();
+		g_vsh2.m_hGamemode.CheckTeleToSpawn();
 #if defined _steamtools_included
-		if( g_vsh2gm.bSteam ) {
+		if( g_vsh2.m_hGamemode.bSteam ) {
 			char gameDesc[64];
 			Format(gameDesc, sizeof(gameDesc), "%s (v%s)", PLUGIN_DESCRIPT, PLUGIN_VERSION);
 			Steam_SetGameDescription(gameDesc);
@@ -715,7 +721,7 @@ public void ConnectionMessage(const int userid)
 	int client = GetClientOfUserId(userid);
 	if( IsValidClient(client) ) {
 		CPrintToChat(client, "{olive}[VSH 2]{default} Welcome to VSH2, type /bosshelp for help!");
-		if( g_vsh2gm.iRoundState==StateRunning ) {
+		if( g_vsh2.m_hGamemode.iRoundState==StateRunning ) {
 			BaseBoss player = BaseBoss(userid, true);
 			if( g_vsh2.m_hCvars.PlayerMusic.BoolValue ) {
 				player.SetMusic(g_vsh2.m_strCurrSong);
@@ -753,10 +759,10 @@ public void OnMapStart()
 	CreateTimer(0.1, Timer_PlayerThink, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(1.0, MakeModelTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
-	g_vsh2gm.iHealthBar = VSHHealthBar();
-	g_vsh2gm.iRoundCount = 0;
-	g_vsh2gm.iRoundState = StateDisabled;
-	g_vsh2gm.hNextBoss = view_as< BaseBoss >(0);
+	g_vsh2.m_hGamemode.iHealthBar = VSHHealthBar();
+	g_vsh2.m_hGamemode.iRoundCount = 0;
+	g_vsh2.m_hGamemode.iRoundState = StateDisabled;
+	g_vsh2.m_hGamemode.hNextBoss = view_as< BaseBoss >(0);
 
 	if( g_vsh2.m_hCfg != null ) {
 		DeleteCfg(g_vsh2.m_hCfg);
@@ -824,12 +830,12 @@ public Action MakeModelTimer(Handle hTimer)
 /// the main 'mechanics' of bosses
 public Action Timer_PlayerThink(Handle hTimer)
 {
-	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2gm.iRoundState != StateRunning ) {
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2.m_hGamemode.iRoundState != StateRunning ) {
 		return Plugin_Continue;
 	}
 
-	g_vsh2gm.UpdateBossHealth();
-	if( g_vsh2gm.flMusicTime <= GetGameTime() ) {
+	g_vsh2.m_hGamemode.UpdateBossHealth();
+	if( g_vsh2.m_hGamemode.flMusicTime <= GetGameTime() ) {
 		_MusicPlay();
 	}
 
@@ -906,7 +912,7 @@ public Action OnTakeDamage(int victim, int& attacker, int& inflictor, float& dam
 {
 	if( !g_vsh2.m_hCvars.Enabled.BoolValue || !IsClientValid(victim) ) {
 		return Plugin_Continue;
-	} else if( g_vsh2gm.iRoundState==StateStarting ) {
+	} else if( g_vsh2.m_hGamemode.iRoundState==StateStarting ) {
 		damage = 0.0;
 		return Plugin_Changed;
 	}
@@ -1120,20 +1126,20 @@ public void CalcScores()
 
 public Action Timer_DrawGame(Handle timer)
 {
-	if( g_vsh2gm.iHealthBar.iPercent < g_vsh2.m_hCvars.HealthPercentForLastGuy.IntValue
-		|| g_vsh2gm.iRoundState != StateRunning
-		|| g_vsh2gm.iTimeLeft < 0 ) {
+	if( g_vsh2.m_hGamemode.iHealthBar.iPercent < g_vsh2.m_hCvars.HealthPercentForLastGuy.IntValue
+		|| g_vsh2.m_hGamemode.iRoundState != StateRunning
+		|| g_vsh2.m_hGamemode.iTimeLeft < 0 ) {
 		return Plugin_Stop;
 	}
 
-	int time = g_vsh2gm.iTimeLeft;
+	int time = g_vsh2.m_hGamemode.iTimeLeft;
 	Action act = Call_OnDrawGameTimer(time);
 	if( act > Plugin_Changed ) {
 		return act;
 	} else if( act==Plugin_Changed ) {
-		g_vsh2gm.iTimeLeft = time;
+		g_vsh2.m_hGamemode.iTimeLeft = time;
 	} else {
-		g_vsh2gm.iTimeLeft--;
+		g_vsh2.m_hGamemode.iTimeLeft--;
 	}
 
 	char strTime[10];
@@ -1185,7 +1191,7 @@ public void _ResetMediCharge(const int entid, const float val) {
 public Action Timer_UberLoop(Handle timer, any medigunid)
 {
 	int medigun = EntRefToEntIndex(medigunid);
-	if( medigun && IsValidEntity(medigun) && g_vsh2gm.iRoundState == StateRunning ) {
+	if( medigun && IsValidEntity(medigun) && g_vsh2.m_hGamemode.iRoundState == StateRunning ) {
 		int medic = GetOwner(medigun);
 		float charge = GetMediCharge(medigun);
 		if( charge > 0.05 ) {
@@ -1217,12 +1223,12 @@ public Action Timer_UberLoop(Handle timer, any medigunid)
 
 public void _MusicPlay()
 {
-	if( !g_vsh2.m_hCvars.Enabled.BoolValue || !g_vsh2.m_hCvars.EnableMusic.BoolValue || g_vsh2gm.iRoundState != StateRunning )
+	if( !g_vsh2.m_hCvars.Enabled.BoolValue || !g_vsh2.m_hCvars.EnableMusic.BoolValue || g_vsh2.m_hGamemode.iRoundState != StateRunning )
 		return;
 
 	float currtime = GetGameTime();
 	bool use_player_music = g_vsh2.m_hCvars.PlayerMusic.BoolValue;
-	if( !use_player_music && g_vsh2gm.flMusicTime > currtime )
+	if( !use_player_music && g_vsh2.m_hGamemode.flMusicTime > currtime )
 		return;
 
 	float vol = g_vsh2.m_hCvars.MusicVolume.FloatValue;
@@ -1257,7 +1263,7 @@ public void _MusicPlay()
 			}
 		}
 		if( time != -1.0 ) {
-			g_vsh2gm.flMusicTime = currtime + time;
+			g_vsh2.m_hGamemode.flMusicTime = currtime + time;
 		}
 	}
 }
@@ -1694,7 +1700,7 @@ public int Native_StopMusic(Handle plugin, int numParams)
 				player.flMusicTime = -1.0;
 			}
 		} else {
-			g_vsh2gm.flMusicTime = -1.0;
+			g_vsh2.m_hGamemode.flMusicTime = -1.0;
 		}
 	}
 	return 0;
@@ -2020,7 +2026,7 @@ public int Native_VSH2GameMode_GetProperty(Handle plugin, int numParams)
 {
 	char prop_name[64]; GetNativeString(1, prop_name, sizeof(prop_name));
 	any item;
-	if( g_vsh2gm.GetValue(prop_name, item) ) {
+	if( g_vsh2.m_hGamemode.GetValue(prop_name, item) ) {
 		return item;
 	}
 	return 0;
@@ -2029,7 +2035,7 @@ public int Native_VSH2GameMode_SetProperty(Handle plugin, int numParams)
 {
 	char prop_name[64]; GetNativeString(1, prop_name, sizeof(prop_name));
 	any item = GetNativeCell(2);
-	g_vsh2gm.SetValue(prop_name, item);
+	g_vsh2.m_hGamemode.SetValue(prop_name, item);
 	return 0;
 }
 public any Native_VSH2GameMode_GetRandomBoss(Handle plugin, int numParams)
@@ -2069,12 +2075,12 @@ public int Native_VSH2GameMode_SearchForItemPacks(Handle plugin, int numParams)
 }
 public int Native_VSH2GameMode_UpdateBossHealth(Handle plugin, int numParams)
 {
-	g_vsh2gm.UpdateBossHealth();
+	g_vsh2.m_hGamemode.UpdateBossHealth();
 	return 0;
 }
 public int Native_VSH2GameMode_GetBossType(Handle plugin, int numParams)
 {
-	g_vsh2gm.GetBossType();
+	g_vsh2.m_hGamemode.GetBossType();
 	return 0;
 }
 

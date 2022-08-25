@@ -3,8 +3,8 @@
  * After that, we add in the *forwards* for the core plugin to call.
  * After base player classes, we can include the gamemode class.
  */
-#include "modules/base.sp"
-#include "modules/forwards.sp"
+//#include "modules/base.sp"
+//#include "modules/forwards.sp"
 //#include "modules/gamemode.sp"
 
 /** --- DO NOT DELETE/MODIFY ANYTHING BEFORE THIS LINE --- */
