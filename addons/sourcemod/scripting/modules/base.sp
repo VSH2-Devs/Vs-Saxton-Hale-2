@@ -567,7 +567,9 @@ methodmap BaseFighter {
 		char[] helpstr = new char[len];
 		g_vsh2.m_hCfg.Get(class_help[tfclass], helpstr, len);
 		panel.SetTitle(helpstr);
-		panel.DrawItem("Exit");
+		char ExitText[64];
+		Format(ExitText, 64, "%T", "Exit", this.index);
+		panel.DrawItem(ExitText);
 		panel.Send(this.index, HintPanel, 20);
 		delete panel;
 	}

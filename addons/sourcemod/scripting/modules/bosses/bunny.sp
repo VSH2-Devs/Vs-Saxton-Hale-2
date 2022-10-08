@@ -114,33 +114,33 @@ methodmap CBunny < BaseBoss {
 	public CBunny(const int ind, bool uid=false) {
 		return view_as< CBunny >( BaseBoss(ind, uid) );
 	}
-	
+
 	public void PlaySpawnClip() {
 		char spawn_snd[PLATFORM_MAX_PATH];
 		strcopy(spawn_snd, PLATFORM_MAX_PATH, BunnyStart[GetRandomInt(0, sizeof(BunnyStart)-1)]);
 		this.PlayVoiceClip(spawn_snd, VSH2_VOICE_INTRO);
 	}
-	
+
 	public void Think()
 	{
 		if( !IsPlayerAlive(this.index) )
 			return;
-		
+
 		this.SpeedThink(HALESPEED);
 		this.GlowThink(0.1);
-		
+
 		if( this.SuperJumpThink(2.5, HALE_JUMPCHARGE) ) {
 			this.SuperJump(this.flCharge, -100.0);
 			char jump_snd[PLATFORM_MAX_PATH];
 			strcopy(jump_snd, PLATFORM_MAX_PATH, BunnyJump[GetRandomInt(0, sizeof(BunnyJump)-1)]);
 			this.PlayVoiceClip(jump_snd, VSH2_VOICE_ABILITY);
 		}
-		
+
 		if( OnlyScoutsLeft(VSH2Team_Red) )
 			this.flRAGE += g_vsh2.m_hCvars.ScoutRageGen.FloatValue;
-		
+
 		this.WeighDownThink(HALE_WEIGHDOWN_TIME);
-		
+
 		SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
 		float jmp = this.flCharge;
 		if( this.flRAGE >= 100.0 )
@@ -153,14 +153,14 @@ methodmap CBunny < BaseBoss {
 		SetEntProp(this.index, Prop_Send, "m_bUseClassAnimations", 1);
 		//SetEntPropFloat(client, Prop_Send, "m_flModelScale", 1.25);
 	}
-	
+
 	public void Death() {
 		char death_snd[PLATFORM_MAX_PATH];
 		strcopy(death_snd, PLATFORM_MAX_PATH, BunnyFail[GetRandomInt(0, sizeof(BunnyFail)-1)]);
 		this.PlayVoiceClip(death_snd, VSH2_VOICE_LOSE);
 		SpawnManyAmmoPacks(this.index, EggModel, 1);
 	}
-	
+
 	public void Equip() {
 		this.SetName("The Easter Bunny");
 		this.RemoveAllItems();
@@ -177,19 +177,19 @@ methodmap CBunny < BaseBoss {
 			TF2_RemoveCondition(this.index, TFCond_Taunting);
 			this.SetModel();
 		}
-		
+
 		TF2_RemoveWeaponSlot(this.index, TFWeaponSlot_Primary);
 		int weapon = this.SpawnWeapon("tf_weapon_grenadelauncher", 19, 100, 5, "2; 1.5; 6; 0.1; 411; 150.0; 413; 1.0; 37; 0.0; 280; 17; 477; 1.0; 467; 1.0; 181; 2.0; 252; 0.7");
 		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", weapon);
 		SetEntProp(weapon, Prop_Send, "m_iClip1", 50);
 		SetWeaponAmmo(weapon, 0);
-		
+
 		this.DoGenericStun(VAGRAGEDIST);
 		char rage_snd[PLATFORM_MAX_PATH];
 		strcopy(rage_snd, PLATFORM_MAX_PATH, BunnyRage[GetRandomInt(1, sizeof(BunnyRage)-1)]);
 		this.PlayVoiceClip(rage_snd, VSH2_VOICE_RAGE);
 	}
-	
+
 	public void KilledPlayer(const BaseBoss victim, Event event) {
 		if( GetRandomInt(0, 3) ) {
 			char kill_snd[PLATFORM_MAX_PATH];
@@ -201,7 +201,7 @@ methodmap CBunny < BaseBoss {
 		if( curtime <= this.flKillSpree )
 			this.iKills++;
 		else this.iKills = 0;
-		
+
 		if( this.iKills == 3 && GetLivingPlayers(VSH2Team_Red) != 1 ) {
 			char spree_snd[PLATFORM_MAX_PATH];
 			strcopy(spree_snd, PLATFORM_MAX_PATH, BunnySpree[GetRandomInt(0, sizeof(BunnySpree)-1)]);
@@ -210,20 +210,22 @@ methodmap CBunny < BaseBoss {
 		}
 		else this.flKillSpree = curtime+5;
 	}
-	
+
 	public void Stabbed() {
 		char stab_snd[PLATFORM_MAX_PATH];
 		strcopy(stab_snd, PLATFORM_MAX_PATH, BunnyPain[GetRandomInt(0, sizeof(BunnyPain)-1)]);
 		this.PlayVoiceClip(stab_snd, VSH2_VOICE_STABBED);
 	}
-	
+
 	public void Help() {
 		if( IsVoteInProgress() )
 			return;
 		char helpstr[] = "The Easter Bunny:\nI think he wants to give out candy? Maybe?\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Happy Easter, Fools): taunt when Rage Meter is full.\nNearby enemies are stunned.";
 		Panel panel = new Panel();
 		panel.SetTitle(helpstr);
-		panel.DrawItem("Exit");
+		char ExitText[64];
+		Format(ExitText, 64, "%T", "Exit", this.index);
+		panel.DrawItem(ExitText);
 		panel.Send(this.index, HintPanel, 10);
 		delete panel;
 	}
@@ -248,11 +250,11 @@ public void AddBunnyToDownloads()
 {
 	PrepareModel(BunnyModel);
 	PrepareModel(EggModel);
-	
+
 	DownloadMaterialList(BunnyMaterials, sizeof(BunnyMaterials));
 	PrepareMaterial("materials/models/props_easteregg/c_easteregg");
 	CheckDownload("materials/models/props_easteregg/c_easteregg_gold.vmt");
-	
+
 	PrecacheSoundList(BunnyWin, sizeof(BunnyWin));
 	PrecacheSoundList(BunnyJump, sizeof(BunnyJump));
 	PrecacheSoundList(BunnyRage, sizeof(BunnyRage));
