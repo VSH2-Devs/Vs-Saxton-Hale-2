@@ -192,7 +192,7 @@ public void ManageBossHelp(const BaseBoss base)
 		case VSH2Boss_CBS:      ToCChristian(base).Help();
 		case VSH2Boss_HHHjr:    ToCHHHJr(base).Help();
 		case VSH2Boss_Bunny:    ToCBunny(base).Help();
-		default:				Call_OnBossHelp(base);
+		default:                Call_OnBossHelp(base);
 	}
 }
 

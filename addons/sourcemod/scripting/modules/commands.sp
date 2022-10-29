@@ -224,6 +224,7 @@ public int MenuHandler_PickBosses(Menu menu, MenuAction action, int client, int 
 		BaseBoss player = BaseBoss(client);
 		player.iPresetType = StringToInt(info1);
 		CPrintToChat(client, "{olive}[VSH 2]{default} %t", "bossmenu_pick_boss", bossname);
+		ManageBossHelp(player);
 	} else if( action == MenuAction_End ) {
 		delete menu;
 	}

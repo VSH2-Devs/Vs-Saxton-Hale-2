@@ -48,7 +48,7 @@ jobs:
       - name: Fetch optional dependencies
         if: matrix.use_optional_dependencies
         run: |
-          wget https://raw.githubusercontent.com/FlaminSarge/tf2attributes/master/tf2attributes.inc -P addons/sourcemod/scripting/include
+          wget https://raw.githubusercontent.com/FlaminSarge/tf2attributes/master/scripting/include/tf2attributes.inc -P addons/sourcemod/scripting/include
           wget https://raw.githubusercontent.com/asherkin/SteamTools/master/plugin/steamtools.inc -P addons/sourcemod/scripting/include
           wget https://raw.githubusercontent.com/Flyflo/SM-Goomba-Stomp/master/addons/sourcemod/scripting/include/goomba.inc -P addons/sourcemod/scripting/include
           wget https://raw.githubusercontent.com/JoinedSenses/SourceMod-IncludeLibrary/master/include/updater.inc -P addons/sourcemod/scripting/include
