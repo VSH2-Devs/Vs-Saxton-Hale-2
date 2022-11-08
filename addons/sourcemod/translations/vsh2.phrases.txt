@@ -215,7 +215,8 @@
   }
   "set_boss_menu_title"
   {
-    "en"      "Set Boss Menu: "
+    "#format" "{1:s}"
+    "en"      "Set Boss Menu: \nCurrent Selected Boss: {1}"
   }
   "bossmenu_pick_boss"
   {
