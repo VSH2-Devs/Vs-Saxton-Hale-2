@@ -709,7 +709,7 @@ public void OnClientPostAdminCheck(int client) {
 public void ConnectionMessage(const int userid)
 {
 	int client = GetClientOfUserId(userid);
-	if( IsValidClient(client) ) {
+	if( IsValidClient(client) && g_vsh2.m_hCvars.Enabled.BoolValue) {
 		CPrintToChat(client, "{olive}[VSH 2]{default} %t", "vsh2_welcome");
 		if( g_vsh2.m_hGamemode.iRoundState==StateRunning ) {
 			BaseBoss player = BaseBoss(userid, true);
