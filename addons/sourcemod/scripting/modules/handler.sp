@@ -76,7 +76,7 @@ public void ManageDisconnect(const int client)
 			BaseBoss[] bosses = new BaseBoss[MaxClients];
 			int numbosses = VSHGameMode.GetBosses(bosses, false);
 			if( numbosses-1 > 0 ) { /// Exclude leaver, this is why CountBosses() can't be used
-				for( int i=0; i<numbosses; i++ ) {
+				for( int i=0; i < numbosses; i++ ) {
 					if( bosses[i]==leaver || (IsClientValid(bosses[i].index) && IsPlayerAlive(bosses[i].index)) ) {
 						continue;
 					}
@@ -135,11 +135,13 @@ public void ManageDisconnect(const int client)
 		}
 	} else {
 		RequestFrame(CheckAlivePlayers, 0);
-		if( client == VSHGameMode.FindNextBoss().index )
+		if( client == VSHGameMode.FindNextBoss().index ) {
 			SetPawnTimer(_SkipBossPanel, 1.0);
+		}
 
-		if( leaver.userid == g_vsh2.m_hGamemode.hNextBoss.userid )
+		if( leaver.userid == g_vsh2.m_hGamemode.hNextBoss.userid ) {
 			g_vsh2.m_hGamemode.hNextBoss = view_as< BaseBoss >(0);
+		}
 	}
 }
 
@@ -147,8 +149,9 @@ public void ManageOnBossSelected(const BaseBoss base)
 {
 	SetPawnTimer(_SkipBossPanel, 4.0);
 	Action act = Call_OnBossSelected(base);
-	if( act > Plugin_Changed )
+	if( act > Plugin_Changed ) {
 		return;
+	}
 
 	ManageBossHelp(base);
 
@@ -163,7 +166,7 @@ public void ManageOnBossSelected(const BaseBoss base)
 	if( extra_bosses > max_random_bosses ) {
 		extra_bosses = max_random_bosses;
 	}
-	for( int i; i<extra_bosses; i++ ) {
+	for( int i; i < extra_bosses; i++ ) {
 		BaseBoss partner = VSHGameMode.FindNextBoss();
 		int preset_boss_type = partner.iPresetType;
 		if( preset_boss_type == -1 ) {
@@ -1050,7 +1053,7 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 		&& attacker.iTFClass == TFClass_DemoMan )
 	{
 		int iReqDmg = g_vsh2.m_hCvars.ShieldRegenDmgReq.IntValue;
-		if( iReqDmg>0 ) {
+		if( iReqDmg > 0 ) {
 			attacker.iShieldDmg += damage;
 			if( attacker.iShieldDmg >= iReqDmg ) {
 				/// TODO: figure out a better way to regenerate shield.
@@ -1107,14 +1110,14 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 	/// Medics now count as 3/5 of a backstab, similar to telefrag assists.
 	int healers = GetEntProp(attacker.index, Prop_Send, "m_nNumHealers");
 	int healercount;
-	for( int i=0; i<healers; i++ ) {
+	for( int i=0; i < healers; i++ ) {
 		if( 0 < GetHealerByIndex(attacker.index, i) <= MaxClients ) {
 			healercount++;
 		}
 	}
 
 	BaseBoss medic;
-	for( int r; r<healers; r++ ) {
+	for( int r; r < healers; r++ ) {
 		medic = BaseBoss(GetHealerByIndex(attacker.index, r));
 		if( 0 < medic.index <= MaxClients ) {
 			if( damage < 10 || medic.iUberTarget == attacker.userid ) {
@@ -1183,10 +1186,12 @@ public void TF2_OnConditionAdded(int client, TFCond condition)
 	if( !player.bIsBoss ) {
 		return;
 	}
+	
 	bool remove;
 	switch( condition ) {
-		case TFCond_Disguised, TFCond_Jarated, TFCond_MarkedForDeath:
+		case TFCond_Disguised, TFCond_Jarated, TFCond_MarkedForDeath: {
 			remove = true;
+		}
 	}
 
 	if( Call_OnBossConditionChange(player, condition, remove) <= Plugin_Changed && remove ) {
@@ -1362,7 +1367,7 @@ public void ManageMessageIntro(BaseBoss[] bosses, const int len)
 
 	char intro_msg[MAXMESSAGE];
 	int i;
-	for( i=0; i<len; ++i ) {
+	for( i=0; i < len; ++i ) {
 		BaseBoss base = bosses[i];
 		if( base==view_as< BaseBoss >(0) )
 			continue;
@@ -1539,7 +1544,7 @@ public void ManageRoundEndBossInfo(BaseBoss[] bosses, const int len, const bool 
 {
 	char round_end_msg[MAXMESSAGE];
 	BaseBoss base;
-	for( int i; i<len; i++ ) {
+	for( int i; i < len; i++ ) {
 		base = bosses[i];
 		if( base==view_as< BaseBoss >(0) )
 			continue;
@@ -1705,7 +1710,7 @@ public void _SkipBossPanel()
 {
 	BaseBoss[] upnext = new BaseBoss[MaxClients];
 	VSHGameMode.GetQueue(upnext);
-	for( int j; j<3; j++ ) {
+	for( int j; j < 3; j++ ) {
 		if( !upnext[j] ) {
 			continue;
 		}
@@ -1762,7 +1767,7 @@ public void PrepPlayers(const BaseBoss player)
 	replacer = g_vsh2.m_hCfg.GetSection("weapon overrides.replace");
 	if( replacer != null ) {
 		int entries = replacer.Size;
-		for( int i; i<entries; i++ ) {
+		for( int i; i < entries; i++ ) {
 			entry_sect = replacer.GetIntSection(i);
 			if( entry_sect != null ) {
 				int classes_len = entry_sect.GetSize("classes");
@@ -1792,14 +1797,14 @@ public void PrepPlayers(const BaseBoss player)
 				char index_strs[20][10];
 				int index_count = ExplodeString(indices, ", ", index_strs, 20, 10);
 				int[] indexes = new int[index_count];
-				for( int n; n<index_count; n++ ) {
+				for( int n; n < index_count; n++ ) {
 					indexes[n] = StringToInt(index_strs[n]);
 				}
 				/// O(n^2)...
-				for( int slot=TFWeaponSlot_Primary; slot<=TFWeaponSlot_Item2; slot++ ) {
+				for( int slot=TFWeaponSlot_Primary; slot <= TFWeaponSlot_Item2; slot++ ) {
 					int weapon = GetPlayerWeaponSlot(client, slot);
 					int index = GetItemIndex(weapon);
-					for( int n; n<index_count; n++ ) {
+					for( int n; n < index_count; n++ ) {
 						if( index==indexes[n] ) {
 							int classname_len = entry_sect.GetSize("classname");
 							char[] wep_classname = new char[classname_len];
@@ -1862,7 +1867,7 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		"weapon overrides.override"
 	};
 
-	for( int i; i<sizeof(override_keys); i++ ) {
+	for( int i; i < sizeof(override_keys); i++ ) {
 		ConfigMap override_map = g_vsh2.m_hCfg.GetSection(override_keys[i]);
 		if( override_map != null ) {
 			char itemdef_path[15]; IntToString(iItemDefinitionIndex, itemdef_path, sizeof itemdef_path);
@@ -1910,7 +1915,7 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		"weapon overrides.classname override"
 	};
 
-	for( int i; i<sizeof(classname_keys); i++ ) {
+	for( int i; i < sizeof(classname_keys); i++ ) {
 		ConfigMap override_map = g_vsh2.m_hCfg.GetSection(classname_keys[i]);
 		if( override_map != null ) {
 			KeyValType kvt = override_map.GetKeyValType(classname);
@@ -2015,7 +2020,7 @@ public void ManageFighterCrits(const BaseBoss fighter) {
 	}
 
 	int healers = GetEntProp(i, Prop_Send, "m_nNumHealers");
-	for( int u; u<healers; u++ ) {
+	for( int u; u < healers; u++ ) {
 		if( 0 < GetHealerByIndex(i, u) <= MaxClients ) {
 			crit_flags |= CRITFLAG_STACK;
 			break;
