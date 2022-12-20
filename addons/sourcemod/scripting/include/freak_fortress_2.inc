@@ -1428,6 +1428,7 @@ stock void FF2_ShowSyncHudText(int client, Handle sync, const char[] buffer, any
  */
 stock void FF2_ShowHudText(int client, int channel, const char[] buffer, any ...)
 {
+	FF2Player player = FF2Player(client);
 	if( player.Valid && !player.GetPropInt("bHideHUD") && !(GetClientButtons(client) & IN_SCORE) ) {
 		char message[256];
 		VFormat(message, sizeof(message), buffer, 4);
@@ -1689,4 +1690,4 @@ public void FF2_OnAbility(int boss, const char[] pluginName, const char[] abilit
 
 #endif // FF2_USING_AUTO_PLUGIN || FF2_USING_AUTO_PLUGIN__OLD
 
-#file "Freak Fortress 2 Include"
+//#file "Freak Fortress 2 Include"
