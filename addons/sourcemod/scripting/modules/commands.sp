@@ -110,6 +110,7 @@ public int TurnToZeroPanelH(Menu menu, MenuAction action, int param1, int param2
 			}
 		}
 	}
+	return 0;
 }
 
 /** FINALLY THE PANEL TRAIN HAS ENDED! */
@@ -122,6 +123,7 @@ public int SkipHalePanelH(Menu menu, MenuAction action, int client, int param2)
 		CommandSetSkill(client, -1);
 	}
 	*/
+	return 0;
 }
 
 public Action SetNextSpecial(int client, int args)
@@ -144,11 +146,12 @@ public int MenuHandler_PickBossSpecial(Menu menu, MenuAction action, int client,
 	char bossname[MAX_BOSS_NAME_SIZE];
 	char info1[16]; menu.GetItem(select, info1, sizeof(info1), _, bossname, sizeof(bossname));
 	if( action == MenuAction_Select ) {
-		g_vsh2.m_hGamemode.iSpecial = StringToInt(info1);
+		g_vshgm.iSpecial = StringToInt(info1);
 		CPrintToChat(client, "{olive}[VSH 2]{default} %t", "bossmenu_pick_boss_special", bossname);
 	} else if( action == MenuAction_End ) {
 		delete menu;
 	}
+	return 0;
 }
 
 
@@ -157,8 +160,8 @@ public Action ChangeHealthBarColor(int client, int args)
 	if( g_vsh2.m_hCvars.Enabled.BoolValue ) {
 		char number[4]; GetCmdArg( 1, number, sizeof(number) );
 		int type = StringToInt(number);
-		g_vsh2.m_hGamemode.iHealthBar.iState = type;
-		PrintToChat(client, "iHealthBar.iState = %i", g_vsh2.m_hGamemode.iHealthBar.iState);
+		g_vshgm.iHealthBar.iState = type;
+		PrintToChat(client, "iHealthBar.iState = %i", g_vshgm.iHealthBar.iState);
 	}
 	return Plugin_Handled;
 }
@@ -167,7 +170,7 @@ public Action Command_GetHPCmd(int client, int args)
 {
 	if( !g_vsh2.m_hCvars.Enabled.BoolValue ) {
 		return Plugin_Continue;
-	} else if( g_vsh2.m_hGamemode.iRoundState != StateRunning ) {
+	} else if( g_vshgm.iRoundState != StateRunning ) {
 		return Plugin_Handled;
 	}
 	BaseBoss player = BaseBoss(client);
@@ -186,15 +189,15 @@ public Action CommandBossSelect(int client, int args)
 
 	char targetname[32]; GetCmdArg(1, targetname, sizeof(targetname));
 	if( !strcmp(targetname, "@me", false) && IsValidClient(client) ) {
-		g_vsh2.m_hGamemode.hNextBoss = BaseBoss(client);
+		g_vshgm.hNextBoss = BaseBoss(client);
 		CReplyToCommand(client, "{olive}[VSH 2]{default} %t", "command_boss_select_yourself");
 	} else {
 		int target = FindTarget(client, targetname);
 		if( IsValidClient(target) ) {
-			g_vsh2.m_hGamemode.hNextBoss = BaseBoss(target);
-			CReplyToCommand(client, "{olive}[VSH 2]{default} %t", "command_boss_select_someone", g_vsh2.m_hGamemode.hNextBoss.index);
+			g_vshgm.hNextBoss = BaseBoss(target);
+			CReplyToCommand(client, "{olive}[VSH 2]{default} %t", "command_boss_select_someone", g_vshgm.hNextBoss.index);
 		} else {
-			g_vsh2.m_hGamemode.hNextBoss = view_as< BaseBoss >(0);
+			g_vshgm.hNextBoss = view_as< BaseBoss >(0);
 		}
 	}
 	return Plugin_Handled;
@@ -227,6 +230,7 @@ public int MenuHandler_PickBosses(Menu menu, MenuAction action, int client, int 
 	} else if( action == MenuAction_End ) {
 		delete menu;
 	}
+	return 0;
 }
 
 public Action MusicTogglePanelCmd(int client, int args)
@@ -270,6 +274,7 @@ public int MusicTogglePanelH(Menu menu, MenuAction action, int param1, int param
 			}
 		}
 	}
+	return 0;
 }
 
 public Action ForceBossRealtime(int client, int args)
@@ -284,7 +289,7 @@ public Action ForceBossRealtime(int client, int args)
 	} else if( args < 2 ) {
 		CReplyToCommand(client, "{olive}[VSH 2]{default} Usage: boss_force <target> <boss id>");
 		return Plugin_Handled;
-	} else if( g_vsh2.m_hGamemode.iRoundState > StateStarting ) {
+	} else if( g_vshgm.iRoundState > StateStarting ) {
 		CReplyToCommand(client, "{olive}[VSH 2]{default} %t", "force_cant_after_round_started");
 		return Plugin_Handled;
 	}
@@ -440,7 +445,7 @@ public int HelpMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 		BaseBoss player = BaseBoss(param1);
 		switch( param2+1 ) {
 			case 1: {
-				if( g_vsh2.m_hGamemode.iRoundState==StateRunning ) {
+				if( g_vshgm.iRoundState==StateRunning ) {
 					ManageBossCheckHealth(player);
 				} else {
 					CPrintToChat(param1, "{olive}[VSH 2]{default} %t", "helpmenu_no_active_bosses");
@@ -462,6 +467,7 @@ public int HelpMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 	} else if( action==MenuAction_End ) {
 		delete menu;
 	}
+	return 0;
 }
 
 public Action MenuDoClassRush(int client, int args)
@@ -519,4 +525,5 @@ public int MenuHandler_ClassRush(Menu menu, MenuAction action, int client, int p
 	} else if( action == MenuAction_End ) {
 		delete menu;
 	}
+	return 0;
 }

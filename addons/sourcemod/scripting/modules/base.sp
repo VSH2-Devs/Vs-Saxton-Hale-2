@@ -635,7 +635,7 @@ methodmap BaseFighter {
 	public bool AddTempAttrib(const int attrib, const float val, const float dur=-1.0) {
 		bool res;
 #if defined _tf2attributes_included
-		bool tf2attribs; view_as< StringMap >(g_vsh2.m_hGamemode).GetValue("bTF2Attribs", tf2attribs);
+		bool tf2attribs; view_as< StringMap >(g_vshgm).GetValue("bTF2Attribs", tf2attribs);
 		if( tf2attribs ) {
 			res = TF2Attrib_SetByDefIndex(this.index, attrib, val);
 			if( res && dur > -1.0 ) {
@@ -1017,7 +1017,7 @@ methodmap BaseBoss < BaseFighter {
 
 
 public int HintPanel(Menu menu, MenuAction action, int param1, int param2) {
-	return;
+	return 0;
 }
 
 public void SetGravityNormal(const BaseBoss b)

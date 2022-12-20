@@ -604,7 +604,7 @@ methodmap ConfigMap < StringMap {
 		IntToString(key, key_str, sizeof(key_str));
 		return this.GetKeyValType(key_str);
 	}
-
+	
 	public int GetIntKeyInt(int key, int& i, int base=10) {
 		if( key < 0 ) {
 			return 0;

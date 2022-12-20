@@ -655,7 +655,7 @@ void PackItem(any key, char buffer[6]);
 stock char[] PackCellToStr(any key);
 
 /// Runs a function after a certain amount of time has elapsed with any amount of arguments.
-void MakePawnTimer(Function func, float thinktime=0.1, const any[] args=0, const int len, bool as_array=false);
+void MakePawnTimer(Function func, float thinktime=0.1, const any[] args, const int len, bool as_array=false);
 
 /// useful for cooldowns & stuff that happens in a certain period of time.
 bool IsPastSavedTime(float last_time);

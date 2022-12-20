@@ -51,7 +51,7 @@ public void OnLibraryRemoved(const char[] name) {
 	}
 }
 
-public Action VSH_OnBossSuperJump(const VSH2Player player)
+public void VSH_OnBossSuperJump(const VSH2Player player)
 {
 	Action act = Plugin_Continue;
 	bool super = player.GetPropAny("bSuperCharge");
@@ -74,7 +74,7 @@ public Action VSH_OnBossDoRageStun(VSH2Player player, float& distance)
 	return Plugin_Continue;
 }
 
-public Action VSH_OnBossWeighDown(const VSH2Player player)
+public void VSH_OnBossWeighDown(const VSH2Player player)
 {
 	Action act = Plugin_Continue;
 	Call_StartForward(g_vsh_fwds.OnHaleWeighdown);
@@ -97,7 +97,7 @@ public void VSH_OnStartMusic(char song[PLATFORM_MAX_PATH], float& time, const VS
 	}
 }
 
-public Action VSH_OnNextHale(const VSH2Player player)
+public void VSH_OnNextHale(const VSH2Player player)
 {
 	if( vsh2_gm.hNextBoss==player ) {
 		Action act = Plugin_Continue;

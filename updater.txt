@@ -4,34 +4,10 @@
 	{
 		"Version"
 		{
-			"Latest"	"2.12.0"
+			"Latest"	"2.12.1"
 		}
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.12.0:"
-		"Notes"	"Added plugin map for faster plugin lookups."
-		"Notes"	"Added cvar on time delays for the late spawn blocker."
-		"Notes"	"Added 'flRoundStartTime' property for the Gamemode manager."
-		"Notes"	"Removed 'IntHash'."
-		"Notes"	"Fixed Jarate not removing rage."
-		"Notes"	"Some formatting changes."
-		"Notes"	"Added internal API doc."
-		"Notes"	"Changed 'GetTFClass()' from method into property."
-		"Notes"	"Replaced ArrayList param in manager functions with local-dynamic boss arrays."
-		"Notes"	"Replaced ArrayList where local-dynamic arrays can be used."
-		"Notes"	"Added new cvars: 'vsh2_sword_max_overheal', 'vsh2_sword_health_add', 'vsh2_late_spawn_delay', 'vsh2_trigger_hurt_threshold', 'vsh2_max_trigger_hurt_damage', 'vsh2_max_boss_glow_time', 'vsh2_phlog_taunt_dmg_mult', 'vsh2_spy_headshot_dmg_mult', 'vsh2_diamondback_mannmelter_dmg', 'vsh2_katana_max_overheal_add', 'vsh2_katana_health_add', 'vsh2_powerjack_max_overheal_add', 'vsh2_powerjack_health_add', 'vsh2_battalions_backup_dmg_mult', 'vsh2_kunai_health_add', 'vsh2_kunai_health_guard', 'vsh2_kunai_health_cap', 'vsh2_telefrag_logic', 'vsh2_telefrag_dmg', 'vsh2_mantreads_stomp_logic', 'vsh2_mantreads_stomp_dmg'."
-		"Notes"	"Exposed more options for 'IncreaseHeadCount' player method."
-		"Notes"	"Exposed more options for 'Heal' player method."
-		"Notes"	"Changed plugin registrar to check for conflicts via plugin map."
-		"Notes"	"Updated 'StopMusic' to work for player-sided music."
-		"Notes"	"Decoupled player crit logic and HUD logic from red player think."
-		"Notes"	"Fixed last player total boss health message covering boss intro messages."
-		"Notes" "Added new native 'VSH2_GetBossNameByIndex'."
-		"Notes" "Added new forward hooks 'OnRedPlayerThinkPost', 'OnRedPlayerHUD', 'OnRedPlayerCrits', and 'OnShowStats'."
-		"Notes" "Cvar 'vsh2_permanent_overheal' is no longer functional."
-		"Notes" "Added the ability to preserve/override weapons based on either indexes or classnames and both types lets you filter by class or do all class as a default, etc."
-		"Notes" "Added property 'hHealTarget' as wrapper over `GetHealPatient`."
-		"Notes" "Added ConfigMap-based helpers for custom bosses and addons."
-		"Notes" "Updated minion-based gamemode methods to filter with an owner boss."
-		"Notes" "Updated Plague Doctor example boss code."
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.12.1:"
+		"Notes"	"Fixed mod for compatibility with SM 1.11"
 	}
 	
 	"Files"
@@ -58,11 +34,11 @@
 		"Source"	"Path_SM/scripting/modules/bosses/hhh.sp"
 		"Source"	"Path_SM/scripting/modules/bosses/vagineer.sp"
 		
-		"Source"	"Path_SM/scripting/include/vsh2.inc"
+		"Source"	"Path_SM/scripting/include/cfgmap.inc"
 		"Source"	"Path_SM/scripting/include/freak_fortress_2.inc"
 		"Source"	"Path_SM/scripting/include/morecolors.inc"
-		"Source"	"Path_SM/scripting/include/cfgmap.inc"
 		"Source"	"Path_SM/scripting/include/steamtools.inc"
 		"Source"	"Path_SM/scripting/include/tf2items_stocks.inc"
+		"Source"	"Path_SM/scripting/include/vsh2.inc"
 	}
 }
