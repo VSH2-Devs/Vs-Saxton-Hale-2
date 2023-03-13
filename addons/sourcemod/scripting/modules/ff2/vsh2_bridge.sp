@@ -202,7 +202,7 @@ Action OnBossSelectedFF2(const VSH2Player player)
 		}
 	}
 
-	ff2.m_plugins.LoadPlugins(identity.abilityList);
+	subplugins.LoadPlugins(identity.abilityList);
 
 	/// Process Set Companion
 	{
@@ -372,9 +372,14 @@ void OnBossThinkFF2(const VSH2Player vsh2player)
 		{
 			ConfigMap color_section = hud_section.GetSection("color");
 			ConfigMap offset_section = hud_section.GetSection("offset");
-			for( int i; i<4; i++ )
-				if( !color_section.GetIntKeyInt(i, view_as<int>(text_color[i])) )
+			for( int i; i < 4; i++ ) {
+				int text_color_val = text_color[i];
+				if( !color_section.GetIntKeyInt(i, text_color_val) ) {
 					text_color[i] = 255;
+				} else {
+					text_color[i] = text_color_val;
+				}
+			}
 
 			if( !offset_section.GetIntKeyFloat(0, text_offset[0]) )
 				text_offset[0] = -1.0;
@@ -569,7 +574,7 @@ void OnPlayerKilledFF2(const VSH2Player attacker, const VSH2Player victim, Event
 		} else {
 			/// play sounn_hit*
 			{
-				static const char tf_classes[] =  { "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer" };
+				static const char tf_classes[][] =  { "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer" };
 
 				int cls = view_as< int >(victim.iTFClass) - 1;
 				char _key[36];
@@ -885,7 +890,7 @@ void FinishQueueArray()
 		}
 	}
 
-	ff2.m_plugins.UnloadAllSubPlugins();
+	subplugins.UnloadAllSubPlugins();
 }
 
 Action OnPlayerHurtFF2(Event event, const char[] name, bool dontBroadcast)
@@ -986,5 +991,5 @@ void OnVariablesResetFF2(const VSH2Player vsh2player)
 
 int DummyHintPanel(Menu menu, MenuAction action, int param1, int param2)
 {
-	return;
+	return 0;
 }

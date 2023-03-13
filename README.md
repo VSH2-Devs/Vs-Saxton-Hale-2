@@ -2,7 +2,7 @@
 
 #### Current STABLE Version: *2.0.5*
 [![Master Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=master)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
-#### Current DEVELOPMENT Version: *2.12.0*
+#### Current DEVELOPMENT Version: *2.12.1*
 [![Develop Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=develop)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
 
 #### Current DEVELOPMENT STATUS updated 4/12/22

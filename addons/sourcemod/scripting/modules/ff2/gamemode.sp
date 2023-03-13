@@ -24,7 +24,7 @@ methodmap FF2GameMode < VSH2GameMode {
 			}
 		}
 
-		ff2.m_plugins = new FF2PluginList();
+		subplugins = new FF2PluginList();
 		FF2PluginList.ForceUnloadAllSubPlugins();
 		FF2PluginList.FixSubPlugins();
 	}
@@ -39,19 +39,19 @@ methodmap FF2GameMode < VSH2GameMode {
 				player = bosses[i];	
 				FF2AbilityList list = player.HookedAbilities;
 				if( list ) {
-					ff2.m_plugins.LoadPlugins(list);
+					subplugins.LoadPlugins(list);
 				}
 			}
 		}
 	}
 
 	public static void RemoveSubPlugins(bool do_delete=false) {
-		if( !do_delete && ff2.m_plugins ) {
-			ff2.m_plugins.UnloadAllSubPlugins();
+		if( !do_delete && subplugins ) {
+			subplugins.UnloadAllSubPlugins();
 		}
-		else if( ff2.m_plugins ) {
+		else if( subplugins ) {
 			FF2PluginList.ForceUnloadAllSubPlugins();
-			delete ff2.m_plugins;
+			delete subplugins;
 		}
 	}
 

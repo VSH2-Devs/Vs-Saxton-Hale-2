@@ -193,6 +193,7 @@ any Native_FF2Version(Handle plugin, int numParams)
 	int version[3];
 	FF2_GetFF2Version(version);
 	SetNativeArray(1, version, sizeof(version));
+	return 0;
 }
 
 any Native_IsVersus(Handle plugin, int numParams)
@@ -257,6 +258,7 @@ any Native_GetBossHealth(Handle plugin, int numParams)
 any Native_SetBossHealth(Handle plugin, int numParams)
 {
 	FF2_SetBossHealth(GetNativeCell(1), GetNativeCell(2));
+	return 0;
 }
 
 any Native_GetBossMaxHealth(Handle plugin, int numParams)
@@ -267,6 +269,7 @@ any Native_GetBossMaxHealth(Handle plugin, int numParams)
 any Native_SetBossMaxHealth(Handle plugin, int numParams)
 {
 	FF2_SetBossMaxHealth(GetNativeCell(1), GetNativeCell(2));
+	return 0;
 }
 
 any Native_GetBossLives(Handle plugin, int numParams)
@@ -277,6 +280,7 @@ any Native_GetBossLives(Handle plugin, int numParams)
 any Native_SetBossLives(Handle plugin, int numParams)
 {
 	FF2_SetBossLives(GetNativeCell(1), GetNativeCell(2));
+	return 0;
 }
 
 any Native_GetBossMaxLives(Handle plugin, int numParams)
@@ -287,16 +291,19 @@ any Native_GetBossMaxLives(Handle plugin, int numParams)
 any Native_SetBossMaxLives(Handle plugin, int numParams)
 {
 	FF2_SetBossMaxLives(GetNativeCell(1), GetNativeCell(2));
+	return 0;
 }
 
 any Native_GetBossCharge(Handle plugin, int numParams)
 {
 	FF2_GetBossCharge(GetNativeCell(1), GetNativeCell(2));
+	return 0;
 }
 
 any Native_SetBossCharge(Handle plugin, int numParams)
 {
 	FF2_SetBossCharge(GetNativeCell(1), GetNativeCell(2), GetNativeCell(3));
+	return 0;
 }
 
 any Native_GetBossRageDamage(Handle plugin, int numParams)
@@ -311,6 +318,7 @@ any Native_SetBossRageDamage(Handle plugin, int numParams)
 	int boss = GetNativeCell(1);
 	FF2Player player = boss ? FF2Player(boss) : FF2_ZeroBossToFF2Player();
 	player.SetPropFloat("flRageDamage", GetNativeCell(2));
+	return 0;
 }
 
 any Native_GetDamage(Handle plugin, int numParams)
@@ -338,11 +346,13 @@ any Native_StartMusic(Handle plugin, int numParams)
 	char bgm[PLATFORM_MAX_PATH];
 	GetNativeString(2, bgm, sizeof(bgm));
 	FF2_StartMusic(GetNativeCell(1), bgm);
+	return 0;
 }
 
 any Native_StopMusic(Handle plugin, int numParams)
 {
 	FF2_StopMusic(GetNativeCell(1));
+	return 0;
 }
 
 any Native_GetRageDist(Handle plugin, int numParams)
@@ -370,6 +380,7 @@ any Native_DoAbility(Handle plugin, int numParams)
 	GetNativeString(2, pl_name, sizeof(pl_name));
 	GetNativeString(3, ab_name, sizeof(ab_name));
 	FF2_DoAbility(GetNativeCell(1), pl_name, ab_name, GetNativeCell(4));
+	return 0;
 }
 
 any Native_GetAbilityArgument(Handle plugin, int numParams)
@@ -401,6 +412,7 @@ any Native_GetAbilityArgumentString(Handle plugin, int numParams)
 	char[] buf = new char[buflen];
 	FF2_GetAbilityArgumentString(GetNativeCell(1), pl_name, ab_name, GetNativeCell(4), buf, buflen);
 	SetNativeString(5, buf, buflen);
+	return 0;
 }
 
 any Native_GetArgNamedI(Handle plugin, int numParams)
@@ -447,6 +459,7 @@ any Native_GetArgNamedS(Handle plugin, int numParams)
 	char[] buf = new char[buflen];
 	FF2_GetArgNamedS(GetNativeCell(1), pl_name, ab_name, key, buf, buflen);
 	SetNativeString(5, buf, buflen);
+	return 0;
 }
 
 any Native_RandomSound(Handle plugin, int numParams)
@@ -472,6 +485,7 @@ any Native_GetFF2flags(Handle plugin, int numParams)
 any Native_SetFF2flags(Handle plugin, int numParams)
 {
 	FF2_SetFF2flags(GetNativeCell(1), GetNativeCell(2));
+	return 0;
 }
 
 any Native_GetQueuePoints(Handle plugin, int numParams)
@@ -482,6 +496,7 @@ any Native_GetQueuePoints(Handle plugin, int numParams)
 any Native_SetQueuePoints(Handle plugin, int numParams)
 {
 	FF2_SetQueuePoints(GetNativeCell(1), GetNativeCell(2));
+	return 0;
 }
 
 any Native_GetClientGlow(Handle plugin, int numParams)
@@ -492,6 +507,7 @@ any Native_GetClientGlow(Handle plugin, int numParams)
 any Native_SetClientGlow(Handle plugin, int numParams)
 {
 	FF2_SetClientGlow(GetNativeCell(1), GetNativeCell(2));
+	return 0;
 }
 
 any Native_LogError(Handle plugin, int numParams)
@@ -501,6 +517,7 @@ any Native_LogError(Handle plugin, int numParams)
 	if (error != SP_ERROR_NONE)
 		ThrowNativeError(error, "Failed to format.");
 	else FF2GameMode.LogError(buffer);
+	return 0;
 }
 
 any Native_Debug(Handle plugin, int numParams)
@@ -516,6 +533,7 @@ any Native_GetCheats(Handle plugin, int numParams)
 any Native_SetCheats(Handle plugin, int numParams)
 {
 	FF2_SetCheats(GetNativeCell(1));
+	return 0;
 }
 
 any Native_MakeBoss(Handle plugin, int numParams)
@@ -535,6 +553,7 @@ any Native_ReportError(Handle plugin, int numParams)
 	if (error != SP_ERROR_NONE)
 		ThrowNativeError(error, "Failed to format.");
 	else FF2GameMode.ReportError(FF2Player(GetNativeCell(1)), buffer);
+	return 0;
 }
 
 static FF2Player FF2_ZeroBossToFF2Player()

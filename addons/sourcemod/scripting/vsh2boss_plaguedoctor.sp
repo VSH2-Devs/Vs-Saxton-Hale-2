@@ -531,5 +531,5 @@ public Action DoThink(Handle hTimer, DataPack hndl) {
 }
 
 public int HintPanel(Menu menu, MenuAction action, int param1, int param2) {
-	return;
+	return 0;
 }

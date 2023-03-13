@@ -10,6 +10,15 @@ stock int GetHealingTarget(const int client)
 	return -1;
 }
 
+public Action RemoveEnt(Handle timer, any entid)
+{
+	int ent = EntRefToEntIndex(entid);
+	if( ent > 0 && IsValidEntity(ent) ) {
+		AcceptEntityInput(ent, "Kill");
+	}
+	return Plugin_Continue;
+}
+
 stock int GetActiveWep(const int client)
 {
 	int weapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
@@ -592,7 +601,7 @@ stock bool CanFitHere(float origin[3], const float mins[3], const float maxs[3])
 	return false;
 }
 
-stock void SpawnRandomAmmo(int maxlimit, int minlimit)
+stock void SpawnRandomAmmo(int maxlimit, int minlimit, ConVar enabled)
 {
 	int iEnt = MaxClients+1;
 	int spawned;
@@ -609,11 +618,11 @@ stock void SpawnRandomAmmo(int maxlimit, int minlimit)
 		int ammo = CreateEntityByName("item_ammopack_small");
 		TeleportEntity(ammo, vPos, vAng, NULL_VECTOR);
 		DispatchSpawn(ammo);
-		SetEntProp(ammo, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars.Enabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+		SetEntProp(ammo, Prop_Send, "m_iTeamNum", enabled.BoolValue? VSH2Team_Red : VSH2Team_Neutral, 4);
 		++spawned;
 	}
 }
-stock void SpawnRandomHealth(int maxlimit, int minlimit)
+stock void SpawnRandomHealth(int maxlimit, int minlimit, ConVar enabled)
 {
 	int iEnt = MaxClients+1;
 	int spawned;
@@ -629,7 +638,7 @@ stock void SpawnRandomHealth(int maxlimit, int minlimit)
 		int healthkit = CreateEntityByName("item_healthkit_small");
 		TeleportEntity(healthkit, vPos, vAng, NULL_VECTOR);
 		DispatchSpawn(healthkit);
-		SetEntProp(healthkit, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars.Enabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+		SetEntProp(healthkit, Prop_Send, "m_iTeamNum", enabled.BoolValue? VSH2Team_Red : VSH2Team_Neutral, 4);
 		++spawned;
 	}
 }
@@ -1045,8 +1054,7 @@ stock void PrepareSoundDir(bool valve = false, char[] dir = "sound")
 			AddFileToDownloadsTable(buffer);
 
 			/// Offsets 'sound/'
-			if( !IsSoundPrecached(buffer[6]) )
-				PrecacheSound(buffer[6]);
+			PrecacheSound(buffer[6]);
 		}
 	}
 	delete l;
@@ -1117,7 +1125,6 @@ stock char[] TF2_GetPlayerClassname(const int client, bool capitalize = false)
 		case TFClass_DemoMan: s = "demoman";
 		case TFClass_Medic: s = "medic";
 		case TFClass_Heavy: s = "heavy";
-		case TFClass_Pyro: s = "pyro";
 		case TFClass_Spy: s = "spy";
 		case TFClass_Engineer: s = "engineer";
 	}
@@ -1129,7 +1136,7 @@ stock char[] TF2_GetPlayerClassname(const int client, bool capitalize = false)
 stock int FindMatchingTeleporter(const int tele)
 {
 	if( !HasEntProp(tele, Prop_Send, "m_bMatchBuilding") )
-		return;
+		return 0;
 	
 	int offset = FindSendPropInfo("CObjectTeleporter", "m_bMatchBuilding")+4;
 	return GetEntDataEnt2(tele, offset);
@@ -1153,7 +1160,7 @@ stock bool TF2_IsKillable(const int entity)
 	return res;
 }
 
-stock int SetMetal(const int client, const int amount)
+stock void SetMetal(const int client, const int amount)
 {
 	int iMetalTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
 	SetEntData(client, iMetalTable + (4*3), amount, 4, true);

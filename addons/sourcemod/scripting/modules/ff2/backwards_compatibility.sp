@@ -197,27 +197,27 @@ static bool FF2Resolve_GenericInfo(ArrayList delete_list, const ConfigMapAllocat
 {
 	char generic_info_keys[][][] = {
 		///{ old section,		new section,		enumeration for <enum> }
-		{ "name", 				"info.name",		'0' },	///	0
-		{ "model", 				"info.model",		'0' },	///	1
+		{ "name", 				"info.name",		"0" },	///	0
+		{ "model", 				"info.model",		"0" },	///	1
 
-		{ "class", 				"info.class",		'0' },	///	2
-		{ "lives",				"info.lives",		'0' },	///	3
+		{ "class", 				"info.class",		"0" },	///	2
+		{ "lives",				"info.lives",		"0" },	///	3
 
-		{ "health_formula",		"info.health",		'0' },	///	4
-		{ "ragedist",			"info.ragedist",	'0' },	///	4
+		{ "health_formula",		"info.health",		"0" },	///	4
+		{ "ragedist",			"info.ragedist",	"0" },	///	4
 
-		{ "nofirst",			"info.nofirst",		'0' },	///	5
-		{ "permission",			"info.permission",	'0' },	///	6
-		{ "blocked",			"info.blocked",		'0' },	///	7
+		{ "nofirst",			"info.nofirst",		"0" },	///	5
+		{ "permission",			"info.permission",	"0" },	///	6
+		{ "blocked",			"info.blocked",		"0" },	///	7
 
-		{ "speed",				"info.speed.min",	'0' },	///	8
-		{ "minspeed",			"info.speed.min",	'0' },	///	9
-		{ "maxspeed",			"info.speed.max",	'0' },	///	10
+		{ "speed",				"info.speed.min",	"0" },	///	8
+		{ "minspeed",			"info.speed.min",	"0" },	///	9
+		{ "maxspeed",			"info.speed.max",	"0" },	///	10
 
-		{ "companion",			"info.companion",	'1' },	/// 11
+		{ "companion",			"info.companion",	"0" },	/// 11
 
-		{ "sound_block_vo",		"info.mute",		'0' },	/// 12
-		{ "version",			"info.version",		'0' },	/// 13
+		{ "sound_block_vo",		"info.mute",		"0" },	/// 12
+		{ "version",			"info.version",		"0" },	/// 13
 	};
 	const int size_of_skips = sizeof(generic_info_keys);
 

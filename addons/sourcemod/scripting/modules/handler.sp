@@ -71,49 +71,49 @@ public void ManageDisconnect(const int client)
 {
 	BaseBoss leaver = BaseBoss(client);
 	if( leaver.index && leaver.bIsBoss ) {
-		if( g_vsh2.m_hGamemode.iRoundState >= StateRunning ) {
+		if( g_vshgm.iRoundState >= StateRunning ) {
 			/// Arena mode flips out when no one is on the other team
 			BaseBoss[] bosses = new BaseBoss[MaxClients];
 			int numbosses = VSHGameMode.GetBosses(bosses, false);
 			if( numbosses-1 > 0 ) { /// Exclude leaver, this is why CountBosses() can't be used
-				for( int i=0; i<numbosses; i++ ) {
+				for( int i=0; i < numbosses; i++ ) {
 					if( bosses[i]==leaver || (IsClientValid(bosses[i].index) && IsPlayerAlive(bosses[i].index)) ) {
 						continue;
 					}
 					BaseBoss next = VSHGameMode.FindNextBoss();
-					if( g_vsh2.m_hGamemode.hNextBoss ) {
-						next = g_vsh2.m_hGamemode.hNextBoss;
-						g_vsh2.m_hGamemode.hNextBoss = view_as< BaseBoss >(0);
+					if( g_vshgm.hNextBoss ) {
+						next = g_vshgm.hNextBoss;
+						g_vshgm.hNextBoss = view_as< BaseBoss >(0);
 					}
 					if( IsValidClient(next.index) ) {
 						next.bIsMinion = true; /// Dumb hack, prevents spawn hook from forcing them back to red
 						next.ForceTeamChange(VSH2Team_Boss);
 					}
 
-					if( g_vsh2.m_hGamemode.iRoundState==StateRunning ) {
+					if( g_vshgm.iRoundState==StateRunning ) {
 						ForceTeamWin(VSH2Team_Red);
 					}
 					break;
 				}
 			} else { /// No bosses left
 				BaseBoss next = VSHGameMode.FindNextBoss();
-				if( g_vsh2.m_hGamemode.hNextBoss ) {
-					next = g_vsh2.m_hGamemode.hNextBoss;
-					g_vsh2.m_hGamemode.hNextBoss = view_as< BaseBoss >(0);
+				if( g_vshgm.hNextBoss ) {
+					next = g_vshgm.hNextBoss;
+					g_vshgm.hNextBoss = view_as< BaseBoss >(0);
 				}
 				if( IsValidClient(next.index) ) {
 					next.bIsMinion = true;
 					next.ForceTeamChange(VSH2Team_Boss);
 				}
-				if( g_vsh2.m_hGamemode.iRoundState==StateRunning ) {
+				if( g_vshgm.iRoundState==StateRunning ) {
 					ForceTeamWin(VSH2Team_Red);
 				}
 			}
-		} else if( g_vsh2.m_hGamemode.iRoundState==StateStarting ) {
+		} else if( g_vshgm.iRoundState==StateStarting ) {
 			BaseBoss replace = VSHGameMode.FindNextBoss();
-			if( g_vsh2.m_hGamemode.hNextBoss ) {
-				replace = g_vsh2.m_hGamemode.hNextBoss;
-				g_vsh2.m_hGamemode.hNextBoss = view_as< BaseBoss >(0);
+			if( g_vshgm.hNextBoss ) {
+				replace = g_vshgm.hNextBoss;
+				g_vshgm.hNextBoss = view_as< BaseBoss >(0);
 			}
 			if( IsValidClient(replace.index) ) {
 				replace.MakeBossAndSwitch(replace.iPresetType == -1 ? leaver.iBossType : replace.iPresetType, true);
@@ -135,11 +135,13 @@ public void ManageDisconnect(const int client)
 		}
 	} else {
 		RequestFrame(CheckAlivePlayers, 0);
-		if( client == VSHGameMode.FindNextBoss().index )
+		if( client == VSHGameMode.FindNextBoss().index ) {
 			SetPawnTimer(_SkipBossPanel, 1.0);
+		}
 
-		if( leaver.userid == g_vsh2.m_hGamemode.hNextBoss.userid )
-			g_vsh2.m_hGamemode.hNextBoss = view_as< BaseBoss >(0);
+		if( leaver.userid == g_vshgm.hNextBoss.userid ) {
+			g_vshgm.hNextBoss = view_as< BaseBoss >(0);
+		}
 	}
 }
 
@@ -147,8 +149,9 @@ public void ManageOnBossSelected(const BaseBoss base)
 {
 	SetPawnTimer(_SkipBossPanel, 4.0);
 	Action act = Call_OnBossSelected(base);
-	if( act > Plugin_Changed )
+	if( act > Plugin_Changed ) {
 		return;
+	}
 
 	ManageBossHelp(base);
 
@@ -163,7 +166,7 @@ public void ManageOnBossSelected(const BaseBoss base)
 	if( extra_bosses > max_random_bosses ) {
 		extra_bosses = max_random_bosses;
 	}
-	for( int i; i<extra_bosses; i++ ) {
+	for( int i; i < extra_bosses; i++ ) {
 		BaseBoss partner = VSHGameMode.FindNextBoss();
 		int preset_boss_type = partner.iPresetType;
 		if( preset_boss_type == -1 ) {
@@ -247,7 +250,7 @@ public void ManageBossDeath(const BaseBoss base)
 		case VSH2Boss_HHHjr:    ToCHHHJr(base).Death();
 		case VSH2Boss_Bunny:    ToCBunny(base).Death();
 	}
-	g_vsh2.m_hGamemode.iHealthBar.iState ^= 1;
+	g_vshgm.iHealthBar.iState ^= 1;
 }
 
 public void ManageBossEquipment(const BaseBoss base)
@@ -271,7 +274,7 @@ public void ManageBossEquipment(const BaseBoss base)
 public void ManageBossTransition(const BaseBoss base)
 {
 #if defined _tf2attributes_included
-	if( g_vsh2.m_hGamemode.bTF2Attribs )
+	if( g_vshgm.bTF2Attribs )
 		TF2Attrib_RemoveAll(base.index);
 #endif
 	switch( base.iBossType ) {
@@ -332,7 +335,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 					return Plugin_Continue;
 				}
 
-				if( g_vsh2.m_hGamemode.bTeleToSpawn || damage >= victim.iHealth ) {
+				if( g_vshgm.bTeleToSpawn || damage >= victim.iHealth ) {
 					victim.TeleToSpawn(VSH2Team_Boss);
 				} else if( damage >= g_vsh2.m_hCvars.TriggerHurtThreshold.FloatValue ) {
 					if( victim.iBossType==VSH2Boss_HHHjr ) {
@@ -489,7 +492,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 			if( g_vsh2.m_hCvars.Anchoring.BoolValue ) {
 				int iFlags = GetEntityFlags(victim.index);
 #if defined _tf2attributes_included
-				if( g_vsh2.m_hGamemode.bTF2Attribs ) {
+				if( g_vshgm.bTF2Attribs ) {
 					/// If Hale is ducking on the ground, it's harder to knock him back
 					if( (iFlags & (FL_ONGROUND|FL_DUCKING)) == (FL_ONGROUND|FL_DUCKING) ) {
 						TF2Attrib_SetByDefIndex(victim.index, 252, 0.0);
@@ -519,7 +522,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 			/// Heavy Shotguns heal for damage dealt
 			if( StrContains(classname, "tf_weapon_shotgun", false) > -1 && hitter.iTFClass==TFClass_Heavy ) {
 				return Call_OnBossTakeDamage_OnHeavyShotgun(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
-			} else if( StrContains(classname, "tf_weapon_sniperrifle", false) > -1 && g_vsh2.m_hGamemode.iRoundState != StateEnding ) {
+			} else if( StrContains(classname, "tf_weapon_sniperrifle", false) > -1 && g_vshgm.iRoundState != StateEnding ) {
 				if( wepindex != 230 && wepindex != 526 && wepindex != 752 && wepindex != 30665 ) {
 					float bossGlow = victim.flGlowtime;
 					float chargelevel = (IsValidEntity(weapon) && weapon > MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
@@ -599,7 +602,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 				case 14, 201, 230, 402, 526, 664, 752, 792, 801, 851, 881, 890, 899, 908, 957, 966, 1098: {
 					switch( wepindex ) {	/// cleaner to read than if wepindex == || wepindex == || etc.
 						case 14, 201, 664, 792, 801, 851, 881, 890, 899, 908, 957, 966: {	/// sniper rifles
-							if( g_vsh2.m_hGamemode.iRoundState != StateEnding ) {
+							if( g_vshgm.iRoundState != StateEnding ) {
 								float bossGlow = victim.flGlowtime;
 								float chargelevel = (IsValidEntity(weapon) && weapon > MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
 								float time = (bossGlow > 10 ? 1.0 : 2.0);
@@ -615,7 +618,7 @@ public Action ManageOnBossTakeDamage(const BaseBoss victim, int& attacker, int& 
 						if( damagecustom == TF_CUSTOM_HEADSHOT )
 							hitter.IncreaseHeadCount(false);
 					}
-					if( wepindex == 752 && g_vsh2.m_hGamemode.iRoundState != StateEnding ) {
+					if( wepindex == 752 && g_vshgm.iRoundState != StateEnding ) {
 						float chargelevel = (IsValidEntity(weapon) && weapon > MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
 						float add = 10 + (chargelevel 0/ 10);
 						if( TF2_IsPlayerInCondition(attacker, view_as< TFCond >(46)) )
@@ -1051,7 +1054,7 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 		&& attacker.iTFClass == TFClass_DemoMan )
 	{
 		int iReqDmg = g_vsh2.m_hCvars.ShieldRegenDmgReq.IntValue;
-		if( iReqDmg>0 ) {
+		if( iReqDmg > 0 ) {
 			attacker.iShieldDmg += damage;
 			if( attacker.iShieldDmg >= iReqDmg ) {
 				/// TODO: figure out a better way to regenerate shield.
@@ -1108,14 +1111,14 @@ public void ManageHurtPlayer(const BaseBoss attacker, const BaseBoss victim, Eve
 	/// Medics now count as 3/5 of a backstab, similar to telefrag assists.
 	int healers = GetEntProp(attacker.index, Prop_Send, "m_nNumHealers");
 	int healercount;
-	for( int i=0; i<healers; i++ ) {
+	for( int i=0; i < healers; i++ ) {
 		if( 0 < GetHealerByIndex(attacker.index, i) <= MaxClients ) {
 			healercount++;
 		}
 	}
 
 	BaseBoss medic;
-	for( int r; r<healers; r++ ) {
+	for( int r; r < healers; r++ ) {
 		medic = BaseBoss(GetHealerByIndex(attacker.index, r));
 		if( 0 < medic.index <= MaxClients ) {
 			if( damage < 10 || medic.iUberTarget == attacker.userid ) {
@@ -1184,10 +1187,12 @@ public void TF2_OnConditionAdded(int client, TFCond condition)
 	if( !player.bIsBoss ) {
 		return;
 	}
+	
 	bool remove;
 	switch( condition ) {
-		case TFCond_Disguised, TFCond_Jarated, TFCond_MarkedForDeath:
+		case TFCond_Disguised, TFCond_Jarated, TFCond_MarkedForDeath: {
 			remove = true;
+		}
 	}
 
 	if( Call_OnBossConditionChange(player, condition, remove) <= Plugin_Changed && remove ) {
@@ -1353,7 +1358,7 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 
 public void ManageMessageIntro(BaseBoss[] bosses, const int len)
 {
-	if( g_vsh2.m_hGamemode.bDoors ) {
+	if( g_vshgm.bDoors ) {
 		int ent = -1;
 		while( (ent = FindEntityByClassname(ent, "func_door")) != -1 ) {
 			AcceptEntityInput(ent, "Open");
@@ -1363,7 +1368,7 @@ public void ManageMessageIntro(BaseBoss[] bosses, const int len)
 
 	char intro_msg[MAXMESSAGE];
 	int i;
-	for( i=0; i<len; ++i ) {
+	for( i=0; i < len; ++i ) {
 		BaseBoss base = bosses[i];
 		if( base==view_as< BaseBoss >(0) )
 			continue;
@@ -1386,7 +1391,7 @@ public void ManageMessageIntro(BaseBoss[] bosses, const int len)
 			ShowHudText(i, -1, "%s", intro_msg);
 		}
 	}
-	g_vsh2.m_hGamemode.iRoundState = StateRunning;
+	g_vshgm.iRoundState = StateRunning;
 }
 
 public void ManageBossPickUpItem(const BaseBoss base, const char item[64])
@@ -1428,7 +1433,7 @@ public void ManageResetVariables(const BaseBoss base)
 	base.flLastHit     = 0.0;
 	base.iState        = -1;
 	base.iHits         = 0;
-	base.iLives        = ((g_vsh2.m_hGamemode.bMedieval || g_vsh2.m_hCvars.ForceLives.BoolValue) ? g_vsh2.m_hCvars.MedievalLives.IntValue : 0);
+	base.iLives        = ((g_vshgm.bMedieval || g_vsh2.m_hCvars.ForceLives.BoolValue) ? g_vsh2.m_hCvars.MedievalLives.IntValue : 0);
 	base.iMaxHealth    = 0;
 	base.iShieldDmg    = 0;
 	base.iClimbs       = 0;
@@ -1444,7 +1449,7 @@ public void ManageEntityCreated(const int entity, const char[] classname)
 		AcceptEntityInput(entity, "kill");
 	} else if( !strcmp(classname, "tf_projectile_cleaver", false) ) {
 		SDKHook(entity, SDKHook_SpawnPost, OnCleaverSpawned);
-	} else if( g_vsh2.m_hGamemode.iRoundState == StateRunning ) {
+	} else if( g_vshgm.iRoundState == StateRunning ) {
 		if( !strcmp(classname, "tf_projectile_pipe", false) ) {
 			SDKHook(entity, SDKHook_SpawnPost, OnEggBombSpawned);
 		} else if( !strcmp(classname, "item_healthkit_medium", false) || !strcmp(classname, "item_healthkit_small", false) ) {
@@ -1540,7 +1545,7 @@ public void ManageRoundEndBossInfo(BaseBoss[] bosses, const int len, const bool 
 {
 	char round_end_msg[MAXMESSAGE];
 	BaseBoss base;
-	for( int i; i<len; i++ ) {
+	for( int i; i < len; i++ ) {
 		base = bosses[i];
 		if( base==view_as< BaseBoss >(0) )
 			continue;
@@ -1610,9 +1615,9 @@ public void ManageBossCheckHealth(const BaseBoss base)
 		PrintCenterTextAll("%t", "show_current_hp", name, base.iHealth, base.iMaxHealth);
 		LastBossTotalHealth = base.iHealth;
 		return;
-	} else if( currtime >= g_vsh2.m_hGamemode.flHealthTime ) {
+	} else if( currtime >= g_vshgm.flHealthTime ) {
 		/// If a non-boss is checking health, reveal all Boss' hp
-		g_vsh2.m_hGamemode.iHealthChecks++;
+		g_vshgm.iHealthChecks++;
 		int totalHealth;
 		char health_check[MAXMESSAGE];
 		for( int i=MaxClients; i; --i ) {
@@ -1639,23 +1644,23 @@ public void ManageBossCheckHealth(const BaseBoss base)
 		PrintCenterTextAll(health_check);
 		CPrintToChatAll("{olive}[VSH 2] {axis}%T", "boss_health_check", LANG_SERVER, health_check);
 		LastBossTotalHealth = totalHealth;
-		g_vsh2.m_hGamemode.flHealthTime = currtime + ((g_vsh2.m_hGamemode.iHealthChecks < 3) ? 10.0 : 60.0);
+		g_vshgm.flHealthTime = currtime + ((g_vshgm.iHealthChecks < 3) ? 10.0 : 60.0);
 	} else {
-		CPrintToChat(base.index, "{olive}[VSH 2]{default} %t", "cannot_see_hp_now", RoundFloat(g_vsh2.m_hGamemode.flHealthTime-currtime), LastBossTotalHealth);
+		CPrintToChat(base.index, "{olive}[VSH 2]{default} %t", "cannot_see_hp_now", RoundFloat(g_vshgm.flHealthTime-currtime), LastBossTotalHealth);
 	}
 }
 
 public void CheckAlivePlayers(const any nil)
 {
-	if( g_vsh2.m_hGamemode.iRoundState != StateRunning )
+	if( g_vshgm.iRoundState != StateRunning )
 		return;
 
 	int living = GetLivingPlayers(VSH2Team_Red);
 	if( !living ) {
 		ForceTeamWin(VSH2Team_Boss);
-	} else if( living == 1 && VSHGameMode.CountBosses(true) > 0 && g_vsh2.m_hGamemode.iTimeLeft <= 0 ) {
+	} else if( living == 1 && VSHGameMode.CountBosses(true) > 0 && g_vshgm.iTimeLeft <= 0 ) {
 		ManageLastPlayer(); /// in handler.sp
-		g_vsh2.m_hGamemode.iTimeLeft = g_vsh2.m_hCvars.LastPlayerTime.IntValue;
+		g_vshgm.iTimeLeft = g_vsh2.m_hCvars.LastPlayerTime.IntValue;
 
 		/// maybe some day...
 		/*
@@ -1681,7 +1686,7 @@ public void CheckAlivePlayers(const any nil)
 	}
 
 	int enable_alive = g_vsh2.m_hCvars.AliveToEnable.IntValue;
-	if( !g_vsh2.m_hCvars.PointType.BoolValue && living <= enable_alive && !g_vsh2.m_hGamemode.bPointReady ) {
+	if( !g_vsh2.m_hCvars.PointType.BoolValue && living <= enable_alive && !g_vshgm.bPointReady ) {
 		PrintHintTextToAll("%i players are left; control point enabled!", living);
 		if( living==enable_alive ) {
 			EmitSoundToAll("vo/announcer_am_capenabled02.mp3");
@@ -1693,7 +1698,7 @@ public void CheckAlivePlayers(const any nil)
 			EmitSoundToAll(cap_incite_snd[GetRandomInt(0, 1)]);
 		}
 		SetControlPoint(true);
-		g_vsh2.m_hGamemode.bPointReady = true;
+		g_vshgm.bPointReady = true;
 	}
 }
 
@@ -1706,7 +1711,7 @@ public void _SkipBossPanel()
 {
 	BaseBoss[] upnext = new BaseBoss[MaxClients];
 	VSHGameMode.GetQueue(upnext);
-	for( int j; j<3; j++ ) {
+	for( int j; j < 3; j++ ) {
 		if( !upnext[j] ) {
 			continue;
 		}
@@ -1724,11 +1729,11 @@ public void _SkipBossPanel()
 public void PrepPlayers(const BaseBoss player)
 {
 	int client = player.index;
-	if( g_vsh2.m_hGamemode.iRoundState == StateEnding || !IsValidClient(client) || !IsPlayerAlive(client) || player.bIsBoss )
+	if( g_vshgm.iRoundState == StateEnding || !IsValidClient(client) || !IsPlayerAlive(client) || player.bIsBoss )
 		return;
 
 #if defined _tf2attributes_included
-	if( g_vsh2.m_hGamemode.bTF2Attribs )
+	if( g_vshgm.bTF2Attribs )
 		TF2Attrib_RemoveAll(client);
 #endif
 
@@ -1750,7 +1755,7 @@ public void PrepPlayers(const BaseBoss player)
 
 #if defined _tf2attributes_included
 	/// Fixes mantreads to have jump height again
-	if( g_vsh2.m_hGamemode.bTF2Attribs ) {
+	if( g_vshgm.bTF2Attribs ) {
 		/// Patch: Equipping mantreads then equipping gunboats allows you to keep the push force increase.
 		TF2Attrib_RemoveByDefIndex(client, 58);
 		if( IsValidEntity(FindPlayerBack(client, { 444 }, 1)) ) {
@@ -1763,7 +1768,7 @@ public void PrepPlayers(const BaseBoss player)
 	replacer = g_vsh2.m_hCfg.GetSection("weapon overrides.replace");
 	if( replacer != null ) {
 		int entries = replacer.Size;
-		for( int i; i<entries; i++ ) {
+		for( int i; i < entries; i++ ) {
 			entry_sect = replacer.GetIntSection(i);
 			if( entry_sect != null ) {
 				int classes_len = entry_sect.GetSize("classes");
@@ -1793,14 +1798,14 @@ public void PrepPlayers(const BaseBoss player)
 				char index_strs[20][10];
 				int index_count = ExplodeString(indices, ", ", index_strs, 20, 10);
 				int[] indexes = new int[index_count];
-				for( int n; n<index_count; n++ ) {
+				for( int n; n < index_count; n++ ) {
 					indexes[n] = StringToInt(index_strs[n]);
 				}
 				/// O(n^2)...
-				for( int slot=TFWeaponSlot_Primary; slot<=TFWeaponSlot_Item2; slot++ ) {
+				for( int slot=TFWeaponSlot_Primary; slot <= TFWeaponSlot_Item2; slot++ ) {
 					int weapon = GetPlayerWeaponSlot(client, slot);
 					int index = GetItemIndex(weapon);
-					for( int n; n<index_count; n++ ) {
+					for( int n; n < index_count; n++ ) {
 						if( index==indexes[n] ) {
 							int classname_len = entry_sect.GetSize("classname");
 							char[] wep_classname = new char[classname_len];
@@ -1842,7 +1847,7 @@ public void PrepPlayers(const BaseBoss player)
 		}
 	}
 #if defined _tf2attributes_included
-	if( g_vsh2.m_hGamemode.bTF2Attribs && g_vsh2.m_hCvars.HealthRegenForPlayers.BoolValue ) {
+	if( g_vshgm.bTF2Attribs && g_vsh2.m_hCvars.HealthRegenForPlayers.BoolValue ) {
 		int max_health = GetEntProp(client, Prop_Data, "m_iMaxHealth");
 		TF2Attrib_SetByDefIndex(client, 57, max_health / 50.0 + g_vsh2.m_hCvars.HealthRegenAmount.FloatValue);
 	}
@@ -1863,7 +1868,7 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		"weapon overrides.override"
 	};
 
-	for( int i; i<sizeof(override_keys); i++ ) {
+	for( int i; i < sizeof(override_keys); i++ ) {
 		ConfigMap override_map = g_vsh2.m_hCfg.GetSection(override_keys[i]);
 		if( override_map != null ) {
 			char itemdef_path[15]; IntToString(iItemDefinitionIndex, itemdef_path, sizeof itemdef_path);
@@ -1911,7 +1916,7 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		"weapon overrides.classname override"
 	};
 
-	for( int i; i<sizeof(classname_keys); i++ ) {
+	for( int i; i < sizeof(classname_keys); i++ ) {
 		ConfigMap override_map = g_vsh2.m_hCfg.GetSection(classname_keys[i]);
 		if( override_map != null ) {
 			KeyValType kvt = override_map.GetKeyValType(classname);
@@ -2016,7 +2021,7 @@ public void ManageFighterCrits(const BaseBoss fighter) {
 	}
 
 	int healers = GetEntProp(i, Prop_Send, "m_nNumHealers");
-	for( int u; u<healers; u++ ) {
+	for( int u; u < healers; u++ ) {
 		if( 0 < GetHealerByIndex(i, u) <= MaxClients ) {
 			crit_flags |= CRITFLAG_STACK;
 			break;
@@ -2157,7 +2162,7 @@ public void ManageFighterHUD(const BaseBoss fighter) {
 			BaseBoss observ = BaseBoss(obstarget);
 			Format(HUDText, sizeof(HUDText), "%T", "hud_others_damage", i, HUDText, obstarget, observ.iDamage);
 		}
-	} else if( g_vsh2.m_hGamemode.bMedieval || g_vsh2.m_hCvars.ForceLives.BoolValue ) {
+	} else if( g_vshgm.bMedieval || g_vsh2.m_hCvars.ForceLives.BoolValue ) {
 		Format(HUDText, sizeof(HUDText), "%T", "hud_lives", i,HUDText, fighter.iLives);
 	}
 
@@ -2240,7 +2245,7 @@ public void ManageFighterHUD(const BaseBoss fighter) {
 
 /// too many temp funcs just to call as a timer. No wonder sourcepawn needs lambda funcs...
 public void _RespawnPlayer(const int userid) {
-	if( g_vsh2.m_hGamemode.iRoundState==StateRunning ) {
+	if( g_vshgm.iRoundState==StateRunning ) {
 		TF2_RespawnPlayer(GetClientOfUserId(userid));
 	}
 }

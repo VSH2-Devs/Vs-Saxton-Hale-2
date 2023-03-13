@@ -132,6 +132,7 @@ any Native_FF2Player_DoAbility(Handle plugin, int numParams)
 	Call_PushString(ability_name);
 	Call_PushCell(slot);
 	Call_Finish();
+	return 0;
 }
 
 any Native_FF2Player_ForceAbility(Handle plugin, int numParams)
@@ -139,6 +140,7 @@ any Native_FF2Player_ForceAbility(Handle plugin, int numParams)
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 	FF2CallType_t type = GetNativeCell(2);
 	Call_FF2OnAbility(player, type);
+	return 0;
 }
 
 any Native_FF2Player_RandomSound(Handle plugin, int numParams)
@@ -266,6 +268,7 @@ any Native_FF2Player_PlayBGM(Handle plugin, int numParams)
 	FF2Player player = ToFF2Player(GetNativeCell(1));
 	char bgm[PLATFORM_MAX_PATH]; GetNativeString(2, bgm, sizeof(bgm));
 	player.PlayBGM(bgm);
+	return 0;
 }
 
 /** End of FF2Player methodmaps */
@@ -394,12 +397,12 @@ any Native_FF2GameMode_LoadAbility(Handle plugins, int numParams)
 	char pl_name[FF2_MAX_PLUGIN_NAME];
 	GetNativeString(1, pl_name, sizeof(pl_name));
 
-	return ff2.m_plugins.TryLoadSubPlugin(pl_name);
+	return subplugins.TryLoadSubPlugin(pl_name);
 }
 
 any Native_FF2GameMode_SubPlugins(Handle plugins, int numParams)
 {
-	FF2PluginList list = ff2.m_plugins;
+	FF2PluginList list = subplugins;
 	if( !list.Length )
 		return 0;
 

@@ -355,7 +355,7 @@ public void Template_Music(char song[PLATFORM_MAX_PATH], float &time, const VSH2
 	int size = (music_sect.Size > music_time_sect.Size)? music_time_sect.Size : music_sect.Size;
 	static int index;
 	index = ShuffleIndex(size, index);
-	sect.GetIntKey(index, song, sizeof(song));
+	music_sect.GetIntKey(index, song, sizeof(song));
 	music_time_sect.GetIntKeyFloat(index, time);
 }
 
@@ -443,15 +443,14 @@ public Action DoPawnTimer(Handle t, DataPack pack) {
 	return Plugin_Continue;
 }
 
-stock int SetWeaponClip(const int weapon, const int ammo) {
+stock void SetWeaponClip(const int weapon, const int ammo) {
 	if( IsValidEntity(weapon) ) {
 		int iAmmoTable = FindSendPropInfo("CTFWeaponBase", "m_iClip1");
 		SetEntData(weapon, iAmmoTable, ammo, 4, true);
 	}
-	return 0;
 }
 
 
 public int HintPanel(Menu menu, MenuAction action, int param1, int param2) {
-	return;
+	return 0;
 }
