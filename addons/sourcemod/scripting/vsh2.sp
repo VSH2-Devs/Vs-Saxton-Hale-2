@@ -28,7 +28,7 @@
 
 
 enum {
-	PLYR = 35,
+	PLYR = 62,
 	PATH = 64
 };
 
