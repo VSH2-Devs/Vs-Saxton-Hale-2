@@ -6,7 +6,7 @@
 #define REQUIRE_PLUGIN
 #include <sdkhooks>
 
-#define PLYR           35
+#define PLYR           62
 #define PLUGIN_VERSION "1.1.3"
 
 #include <cfgmap>
