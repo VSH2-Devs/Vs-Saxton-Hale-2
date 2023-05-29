@@ -14,16 +14,17 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build_linux:
-    name: (Linux) Compile SourcePawn ${{matrix.sm_version}}
+    name: (Linux) Compile SourcePawn ${{matrix.sm_version}} ${{ matrix.use_optional_dependencies && '(optionals enabled)' || '(optionals disabled)' 
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
         # Set up Sourcemod versions to compile against
-        # sm_version: ['1.10', '1.11'] # TODO: uncomment when SM 1.11 becomes stable
-        sm_version: ['1.10']
+        sm_version: ['1.11']
         use_optional_dependencies: [false, true]
+        # TODO: uncomment when pipeline for backwards compatibility has been set up
+        # use_backwards_compatibility: [false, true]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
