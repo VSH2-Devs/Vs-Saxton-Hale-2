@@ -86,19 +86,19 @@ methodmap FF2Player < VSH2Player {
 
 	property float flRageRatio {
 		public get() {
-			return this.GetPropAny("flRageRatio");
+			return this.GetPropFloat("flRageRatio");
 		}
 		public set(float val) {
-			this.SetPropAny("flRageRatio", val);
+			this.SetPropFloat("flRageRatio", val);
 		}
 	}
 
 	property float flRageDamage {
 		public get() {
-			return this.GetPropAny("flRageDamage");
+			return this.GetPropFloat("flRageDamage");
 		}
 		public set(float val) {
-			this.SetPropAny("flRageDamage", val);
+			this.SetPropFloat("flRageDamage", val);
 		}
 	}
 
