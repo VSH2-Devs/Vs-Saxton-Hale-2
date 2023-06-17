@@ -93,6 +93,15 @@ methodmap FF2Player < VSH2Player {
 		}
 	}
 
+	property float flRageDamage {
+		public get() {
+			return this.GetPropAny("flRageDamage");
+		}
+		public set(float val) {
+			this.SetPropAny("flRageDamage", val);
+		}
+	}
+
 	public void PlayBGM(const char[] music) {
 		this.PlayMusic(ff2.m_cvars.m_flmusicvol.FloatValue, music);
 	}
