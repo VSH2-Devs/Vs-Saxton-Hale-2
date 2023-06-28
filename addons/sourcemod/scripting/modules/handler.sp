@@ -2223,9 +2223,9 @@ public void ManageFighterHUD(const BaseBoss fighter) {
 			int shield = GetPlayerWeaponSlot(i, TFWeaponSlot_Secondary);
 			if( shield <= 0 ) {
 				if( GetEntProp(i, Prop_Send, "m_bShieldEquipped") ) {
-					Format(HUDText, sizeof(HUDText), "%s\n%T", "shield_active", i, HUDText);
+					Format(HUDText, sizeof(HUDText), "%s\n%T", HUDText, "shield_active", i);
 				} else {
-					Format(HUDText, sizeof(HUDText), "%s\n%T", "shield_gone", i, HUDText);
+					Format(HUDText, sizeof(HUDText), "%s\n%T", HUDText, "shield_gone", i);
 				}
 			}
 		}
