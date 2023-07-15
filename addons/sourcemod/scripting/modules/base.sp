@@ -323,7 +323,7 @@ methodmap BaseFighter {
 		hWep.iLevel = level;
 		hWep.iQuality = qual;
 		char atts[32][32];
-		int count = ExplodeString(att, "; ", atts, 32, 32);
+		int count = ExplodeString(att, ";", atts, 32, 32);
 
 		/// odd numbered attributes result in an error, remove the 1st bit so count will always be even.
 		count &= ~1;
