@@ -601,7 +601,7 @@ stock bool CanFitHere(float origin[3], const float mins[3], const float maxs[3])
 	return false;
 }
 
-stock void SpawnRandomAmmo(int maxlimit, int minlimit, ConVar enabled)
+stock void SpawnRandomAmmo(int maxlimit, int minlimit, bool enabled)
 {
 	int iEnt = MaxClients+1;
 	int spawned;
@@ -618,11 +618,11 @@ stock void SpawnRandomAmmo(int maxlimit, int minlimit, ConVar enabled)
 		int ammo = CreateEntityByName("item_ammopack_small");
 		TeleportEntity(ammo, vPos, vAng, NULL_VECTOR);
 		DispatchSpawn(ammo);
-		SetEntProp(ammo, Prop_Send, "m_iTeamNum", enabled.BoolValue? VSH2Team_Red : VSH2Team_Neutral, 4);
+		SetEntProp(ammo, Prop_Send, "m_iTeamNum", enabled? VSH2Team_Red : VSH2Team_Neutral, 4);
 		++spawned;
 	}
 }
-stock void SpawnRandomHealth(int maxlimit, int minlimit, ConVar enabled)
+stock void SpawnRandomHealth(int maxlimit, int minlimit, bool enabled)
 {
 	int iEnt = MaxClients+1;
 	int spawned;
@@ -638,7 +638,7 @@ stock void SpawnRandomHealth(int maxlimit, int minlimit, ConVar enabled)
 		int healthkit = CreateEntityByName("item_healthkit_small");
 		TeleportEntity(healthkit, vPos, vAng, NULL_VECTOR);
 		DispatchSpawn(healthkit);
-		SetEntProp(healthkit, Prop_Send, "m_iTeamNum", enabled.BoolValue? VSH2Team_Red : VSH2Team_Neutral, 4);
+		SetEntProp(healthkit, Prop_Send, "m_iTeamNum", enabled? VSH2Team_Red : VSH2Team_Neutral, 4);
 		++spawned;
 	}
 }
