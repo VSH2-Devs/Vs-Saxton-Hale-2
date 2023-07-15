@@ -78,7 +78,7 @@ stock TF2Item TF2Item_PrepareItemHandle(TF2Item hItem, char[] name = "", int ind
 {
 	static TF2Item hWeapon = null;
 	char weaponAttribsArray[32][32];
-	int attribCount = ExplodeString(att, "; ", weaponAttribsArray, 32, 32);
+	int attribCount = ExplodeString(att, ";", weaponAttribsArray, 32, 32);
 	int flags = OVERRIDE_ATTRIBUTES;
 	if( !dontpreserve ) {
 		flags |= PRESERVE_ATTRIBUTES;
