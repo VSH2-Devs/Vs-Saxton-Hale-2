@@ -362,14 +362,14 @@ methodmap VSHGameMode < StringMap {
 			SpawnRandomAmmo(
 				g_vsh2.m_hCvars.AmmoKitLimitMax.IntValue,
 				g_vsh2.m_hCvars.AmmoKitLimitMin.IntValue,
-				g_vsh2.m_hCvars.Enabled
+				g_vsh2.m_hCvars.Enabled.BoolValue
 			);
 		}
 		if( !foundHealth ) {
 			SpawnRandomHealth(
 				g_vsh2.m_hCvars.HealthKitLimitMax.IntValue,
 				g_vsh2.m_hCvars.HealthKitLimitMin.IntValue,
-				g_vsh2.m_hCvars.Enabled
+				g_vsh2.m_hCvars.Enabled.BoolValue
 			);
 		}
 	}
