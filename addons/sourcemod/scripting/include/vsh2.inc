@@ -1238,7 +1238,7 @@ stock char[] PackCellToStr(any key) {
 }
 
 
-stock void MakePawnTimer(Function func, float thinktime=0.1, const any[] args=0, const int len, bool as_array=false)
+stock void MakePawnTimer(Function func, float thinktime=0.1, const any[] args, const int len, bool as_array=false)
 {
 	DataPack thinkpack = new DataPack();
 	thinkpack.WriteFunction(func);

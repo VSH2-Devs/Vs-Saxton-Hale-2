@@ -109,6 +109,7 @@ public int TurnToZeroPanelH(Menu menu, MenuAction action, int param1, int param2
 			}
 		}
 	}
+	return true;
 }
 
 /** FINALLY THE PANEL TRAIN HAS ENDED! */
@@ -121,6 +122,7 @@ public int SkipHalePanelH(Menu menu, MenuAction action, int client, int param2)
 		CommandSetSkill(client, -1);
 	}
 	*/
+	return 0;
 }
 
 public Action SetNextSpecial(int client, int args)
@@ -145,6 +147,7 @@ public int MenuHandler_PickBossSpecial(Menu menu, MenuAction action, int client,
 	} else if( action == MenuAction_End ) {
 		delete menu;
 	}
+	return true;
 }
 
 
@@ -220,6 +223,7 @@ public int MenuHandler_PickBosses(Menu menu, MenuAction action, int client, int 
 	} else if( action == MenuAction_End ) {
 		delete menu;
 	}
+	return true;
 }
 
 public Action MusicTogglePanelCmd(int client, int args)
@@ -259,6 +263,7 @@ public int MusicTogglePanelH(Menu menu, MenuAction action, int param1, int param
 			}
 		}
 	}
+	return true;
 }
 
 public Action ForceBossRealtime(int client, int args)
@@ -429,7 +434,14 @@ public int HelpMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 			}
 			case 2: {
 				if( !player.bIsBoss && !player.bIsMinion && GetClientTeam(param1)==VSH2Team_Red ) {
-					player.HelpPanelClass();
+					//player.HelpPanelClass();
+					if(!IsPlayerAlive(player.index)) {
+						CPrintToChat(player.index, "{olive}[VSH 2]{default} You haven't spawned in yet. Use the {red}!wepstats{default} command to view all weapon stats.");
+					}
+					else if (IsPlayerAlive(player.index)){
+						LoadoutPanel(player.index);
+					}
+					//LoadoutPanel(player.index);
 				}
 			}
 			case 3:  QueuePanel(param1);
@@ -441,6 +453,7 @@ public int HelpMenuHandler(Menu menu, MenuAction action, int param1, int param2)
 	} else if( action==MenuAction_End ) {
 		delete menu;
 	}
+	return true;
 }
 
 public Action MenuDoClassRush(int client, int args)
@@ -487,6 +500,13 @@ public int MenuHandler_ClassRush(Menu menu, MenuAction action, int client, int p
 	} else if( action == MenuAction_End ) {
 		delete menu;
 	}
+	return true;
+}
+
+public Action WepStats(int client, int args)
+{
+	WepStatsMenu_Root(client);
+	return Plugin_Handled;
 }
 
 

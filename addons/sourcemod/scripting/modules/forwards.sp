@@ -837,6 +837,7 @@ Action Call_OnBossTakeDamage_OnSwordTaunt(const BaseBoss player, int& attacker, 
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
+/** 
 Action Call_OnBossTakeDamage_OnHeavyShotgun(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];
@@ -858,6 +859,7 @@ Action Call_OnBossTakeDamage_OnHeavyShotgun(const BaseBoss player, int& attacker
 	}
 	return act[0] > act[1] ? act[0] : act[1];
 }
+**/
 Action Call_OnBossTakeDamage_OnSniped(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	Action act[2];

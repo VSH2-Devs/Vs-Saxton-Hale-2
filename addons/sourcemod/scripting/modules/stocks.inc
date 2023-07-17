@@ -1045,9 +1045,12 @@ stock void PrepareSoundDir(bool valve = false, char[] dir = "sound")
 			Format(buffer, sizeof(buffer), "%s/%s", dir, buffer);
 			AddFileToDownloadsTable(buffer);
 			
+			/*		'IsSoundPrecached' is Deprecated in SM 1.11
 			/// Offsets 'sound/'
 			if( !IsSoundPrecached(buffer[6]) )
 				PrecacheSound(buffer[6]);
+			*/
+			PrecacheSound(buffer[6]);	///Brute force is the best way for now,
 		}
 	}
 	delete l;
@@ -1122,7 +1125,7 @@ stock char[] TF2_GetPlayerClassname(const int client, bool capitalize = false)
 		case TFClass_DemoMan:  s = "demoman";
 		case TFClass_Medic:    s = "medic";
 		case TFClass_Heavy:    s = "heavy";
-		case TFClass_Pyro:     s = "pyro";
+		case TFClass_Sniper:   s = "sniper";    ///Pyro was here twice?
 		case TFClass_Spy:      s = "spy";
 		case TFClass_Engineer: s = "engineer";
 	}
@@ -1134,7 +1137,7 @@ stock char[] TF2_GetPlayerClassname(const int client, bool capitalize = false)
 stock int FindMatchingTeleporter(const int tele)
 {
 	if( !HasEntProp(tele, Prop_Send, "m_bMatchBuilding") )
-		return;
+		return false;
 	
 	int offset = FindSendPropInfo("CObjectTeleporter", "m_bMatchBuilding")+4;
 	return GetEntDataEnt2(tele, offset);
@@ -1162,6 +1165,7 @@ stock int SetMetal(const int client, const int amount)
 {
 	int iMetalTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
 	SetEntData(client, iMetalTable + (4*3), amount, 4, true);
+	return true;
 }
 
 stock void SetActiveWep(const int client, const int wep)
@@ -1299,4 +1303,110 @@ stock int TF2_GetNumObjects(int client, TFObjectMode objmode, TFObjectType objty
 		}
 	}
 	return objects;
+}
+
+stock void TF2_GetClassName(TFClassType class, char[] name, int size, bool capitalize)
+{
+	switch (class)
+	{
+		case TFClass_Unknown: strcopy(name, size, "none");
+		case TFClass_Scout: strcopy(name, size, "scout");
+		case TFClass_Sniper: strcopy(name, size, "sniper");
+		case TFClass_Soldier: strcopy(name, size, "soldier");
+		case TFClass_DemoMan: strcopy(name, size, "demoman");
+		case TFClass_Medic: strcopy(name, size, "medic");
+		case TFClass_Heavy: strcopy(name, size, "heavy");
+		case TFClass_Pyro: strcopy(name, size, "pyro");
+		case TFClass_Spy: strcopy(name, size, "spy");
+		case TFClass_Engineer: strcopy(name, size, "engineer");
+	}
+
+	if (capitalize)
+	{
+		name[0] = CharToUpper(name[0]);
+	}
+}
+
+//From Scags fork of VSH2. 
+stock void LoadoutPanel(const int client)
+{
+	if ( IsVoteInProgress() )
+		return;
+	Panel panel = new Panel();
+	panel.SetTitle("[VSH 2] Your Loadout:")
+	char buffer[512] = "";
+	char buffercpy[256];
+
+
+	TFClassType preclass = TF2_GetPlayerClass(client);
+	int class;
+	//Because the config stuff is strange. End me
+	switch (preclass){
+		case TFClass_Scout:
+			class = 0;
+		case TFClass_Sniper:
+			class = 1;
+		case TFClass_Soldier:
+			class = 2;
+		case TFClass_DemoMan:
+			class = 3;
+		case TFClass_Medic:
+			class = 4;
+		case TFClass_Heavy:
+			class = 5;
+		case TFClass_Pyro:
+			class = 6;
+		case TFClass_Spy:
+			class = 7;
+		case TFClass_Engineer:
+			class = 8;
+	}
+	GetWeaponStatCfg(20230211, buffercpy, sizeof(buffercpy), class);
+	if (buffercpy[0] != '\0')
+		Format(buffer, sizeof(buffer), "%s\n%s", buffer, buffercpy);
+
+	int wep = GetItemIndex(GetPlayerWeaponSlot(client, 0));
+	GetWeaponStatCfg(wep, buffercpy, sizeof(buffercpy), class);
+	if (buffercpy[0] != '\0')
+		Format(buffer, sizeof(buffer), "%s\n%s", buffer, buffercpy);
+
+	wep = GetItemIndex(GetPlayerWeaponSlot(client, 1));
+	GetWeaponStatCfg(wep, buffercpy, sizeof(buffercpy), class);
+	if (buffercpy[0] != '\0')
+		Format(buffer, sizeof(buffer), "%s\n%s", buffer, buffercpy);
+
+	wep = GetItemIndex(FindPlayerBack(client, { 133, 405, 57, 231, 444, 608}, 6));
+	GetWeaponStatCfg(wep, buffercpy, sizeof(buffercpy), class);
+	if (buffercpy[0] != '\0')
+		Format(buffer, sizeof(buffer), "%s\n%s", buffer, buffercpy);
+
+	wep = GetItemIndex(FindPlayerBack(client, { 131, 1144, 406, 1099 }, 4));
+	GetWeaponStatCfg(wep, buffercpy, sizeof(buffercpy), class);
+	if (buffercpy[0] != '\0')
+		Format(buffer, sizeof(buffer), "%s\n%s", buffer, buffercpy);
+
+	wep = GetItemIndex(GetPlayerWeaponSlot(client, 2));
+	GetWeaponStatCfg(wep, buffercpy, sizeof(buffercpy), class);
+	if (buffercpy[0] != '\0')
+		Format(buffer, sizeof(buffer), "%s\n%s", buffer, buffercpy);
+
+	//if (preclass == TFClass_Sniper)
+		//Format(buffer, sizeof(buffer), "%s: Climb walls by hitting them. No healing allowed while climbing", buffer);
+//	else if (preclass == TFClass_Medic)
+//		Format(buffer, sizeof(buffer), "%s\nIf you have at least 90%% ubercharge, you can block 1 hit by Hale.", buffer);
+	//else if (preclass == TFClass_Pyro && GetIndexOfWeaponSlot(client, 0) != 30474)
+		//Format(buffer, sizeof(buffer), "%s\nYou can airblast jump!", buffer);
+	//else if (preclass == TFClass_Medic && GetIndexOfWeaponSlot(client, 1) != 411)
+		//Format(buffer, sizeof(buffer), "%s\nGain ubershield with >= 100%% charge", buffer);
+	else if (preclass == TFClass_Spy) {
+	    wep = GetItemIndex(GetPlayerWeaponSlot(client, 4));
+	    GetWeaponStatCfg(wep, buffercpy, sizeof(buffercpy), class);
+	    if (buffercpy[0] != '\0')
+		    Format(buffer, sizeof(buffer), "%s\n%s", buffer, buffercpy);
+	}
+	panel.SetTitle(buffer);
+
+	panel.DrawItem( "Exit" );
+	panel.Send(client, HintPanel, 20);
+	delete panel;
 }

@@ -40,16 +40,18 @@
 		"Plugin"	"Path_SM/plugins/vsh2.smx"
 		//"Plugin"	"Path_SM/plugins/vsh2boss_plaguedoctor.smx"
 		"Plugin"	"Path_SM/plugins/vsh2bosses_default.smx"
-		
+		"Plugin"	"Path_SM/plugins/vsh2_dlc.smx"
+
+
 		"Source"	"Path_SM/scripting/vsh2.sp"
-		
+		"Source"	"Path_SM/scripting/vsh2_dlc.sp"
 		"Source"	"Path_SM/scripting/freak_fortress_2.sp"
 		"Source"	"Path_SM/scripting/saxtonhale.sp"
 		
 		"Source"	"Path_SM/scripting/vsh2boss_plaguedoctor.sp"
 		"Source"	"Path_SM/scripting/vsh2boss_template.sp"
 		"Source"	"Path_SM/scripting/vsh2bosses_default.sp"
-		
+
 		"Source"	"Path_SM/scripting/modules/base.sp"
 		"Source"	"Path_SM/scripting/modules/bosses.sp"
 		"Source"	"Path_SM/scripting/modules/commands.sp"
@@ -57,6 +59,7 @@
 		"Source"	"Path_SM/scripting/modules/forwards.sp"
 		"Source"	"Path_SM/scripting/modules/gamemode.sp"
 		"Source"	"Path_SM/scripting/modules/handler.sp"
+		"Source"	"Path_SM/scripting/modules/wepstats.sp"
 		"Source"	"Path_SM/scripting/modules/stocks.inc"
 		
 		"Source"	"Path_SM/scripting/include/cfgmap.inc"

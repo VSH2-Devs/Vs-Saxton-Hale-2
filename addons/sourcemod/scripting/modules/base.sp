@@ -329,8 +329,9 @@ methodmap BaseFighter {
 		count &= ~1;
 		if( count > 0 ) {
 			hWep.iNumAttribs = count / 2;
-			for( int i, att_index; i<count; i+=2, att_index++ ) {
+			for( int i, att_index; i<count; i+=2 ) {
 				hWep.SetAttribute(att_index, StringToInt(atts[i]), StringToFloat(atts[i+1]));
+				att_index++;
 			}
 		} else {
 			hWep.iNumAttribs = 0;
@@ -409,9 +410,11 @@ methodmap BaseFighter {
 		int spawn = -1;
 		float pos[3], mins[3], maxs[3];
 		int spawn_len;
-		int[] spawns = new int[MaxClients];
+		int[] spawns = new int[MaxClients+1];
 		while( (spawn = FindEntityByClassname(spawn, "info_player_teamspawn")) != -1 ) {
 			/// skip disabled spawns.
+			if( spawn_len >= MaxClients+1 )
+				break;
 			if( GetEntProp(spawn, Prop_Data, "m_bDisabled") )
 				continue;
 			
@@ -961,6 +964,13 @@ methodmap BaseBoss < BaseFighter {
 	
 	public void SpeedThink(const float iota, const float minspeed=100.0) {
 		float speed = iota + 0.7 * (100 - this.iHealth * 100 / this.iMaxHealth);
+		if ( TF2_IsPlayerInCondition(this.index, view_as< TFCond >(32)))
+		{
+			PrintToChatAll("Speed Boost");
+			PrintToChatAll("Pre Speed %f", speed);
+			speed += 125.0;
+			PrintToChatAll("Post Speed %f", speed);
+		}
 		SetEntPropFloat(this.index, Prop_Send, "m_flMaxspeed", (speed < minspeed) ? minspeed : speed);
 	}
 	public void GlowThink(const float decrease) {
@@ -979,9 +989,11 @@ methodmap BaseBoss < BaseFighter {
 			} else {
 				this.flCharge = jumpcharge;
 			}
-		} else if( this.flCharge < 0.0 ) {
+		}
+		else if( this.flCharge < 0.0 ) {
 			this.flCharge += charging;
-		} else {
+		} 
+		else {
 			float EyeAngles[3]; GetClientEyeAngles(this.index, EyeAngles);
 			if( this.flCharge > 1.0 && EyeAngles[0] < -5.0 ) {
 				return true;
@@ -1012,7 +1024,7 @@ methodmap BaseBoss < BaseFighter {
 
 
 public int HintPanel(Menu menu, MenuAction action, int param1, int param2) {
-	return;
+	return 0;
 }
 
 public void SetGravityNormal(const BaseBoss b)

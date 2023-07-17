@@ -202,6 +202,20 @@ enum struct VSH2ModuleSys {
 	}
 }
 
+
+///Rearranged due to some strange SM behaviour during compile time... Sourcemod 1.11, wtf...
+
+
+VSH2Globals   g_vsh2;
+VSH2ModuleSys g_modsys;
+
+#include "modules/gamemode.sp"
+#include "modules/stocks.inc" /// include stocks first.
+#include "modules/handler.sp" /// Contains the game mode logic as well
+#include "modules/events.sp"
+#include "modules/commands.sp"
+#include "modules/wepstats.sp"		///Weapon stats command
+
 enum struct VSH2Globals {
 	Handle      m_hHUDs[MaxVSH2HUDs];
 	Cookie      m_hCookies[MaxVSH2Cookies];
@@ -214,14 +228,6 @@ enum struct VSH2Globals {
 	/// AND do NOT forget to initialize it in 'OnClientPutInServer'.
 	StringMap   m_hPlayerFields[PLYR];
 }
-
-VSH2Globals   g_vsh2;
-VSH2ModuleSys g_modsys;
-
-#include "modules/stocks.inc" /// include stocks first.
-#include "modules/handler.sp" /// Contains the game mode logic as well
-#include "modules/events.sp"
-#include "modules/commands.sp"
 
 public void OnPluginStart()
 {
@@ -302,11 +308,14 @@ public void OnPluginStart()
 	RegAdminCmd("sm_hale_classrush", MenuDoClassRush, ADMFLAG_GENERIC, "forces all red players to a class.");
 	RegAdminCmd("sm_vsh2_classrush", MenuDoClassRush, ADMFLAG_GENERIC, "forces all red players to a class.");
 
+	RegConsoleCmd("sm_wepstats", WepStats);		//Ported from Scags VSH2 Fork, all props to him for this code
+	RegConsoleCmd("sm_weaponstats", WepStats);
+
 	AddCommandListener(BlockSuicide,   "explode");
 	AddCommandListener(BlockSuicide,   "kill");
 	AddCommandListener(BlockSuicide,   "jointeam");
-	AddCommandListener(CheckLateSpawn, "joinclass");
-	AddCommandListener(CheckLateSpawn, "join_class");
+	//AddCommandListener(CheckLateSpawn, "joinclass");
+	//AddCommandListener(CheckLateSpawn, "join_class");
 	//AddCommandListener(DoTaunt,        "taunt");
 	//AddCommandListener(DoTaunt,        "+taunt");
 	
@@ -413,7 +422,7 @@ public void OnPluginStart()
 	g_vsh2.m_hCvars.PowerJackMaxOverheal = CreateConVar("vsh2_powerjack_max_overheal_add", "50", "highest overheal amount from health added from the powerjack.", FCVAR_NONE, true, 0.0, true, 9999.0);
 	g_vsh2.m_hCvars.PowerJackHealth = CreateConVar("vsh2_powerjack_health_add", "25", "how much health to give to a player for every successful powerjack hit.", FCVAR_NONE, true, 0.0, true, 9999.0);
 	
-	g_vsh2.m_hCvars.OnHitBattalions = CreateConVar("vsh2_battalions_backup_dmg_mult", "0.3", "how much damage is applied to players under battalion's backup banner effect.", FCVAR_NONE, true, 0.0, true, 9999.0);
+	g_vsh2.m_hCvars.OnHitBattalions = CreateConVar("vsh2_battalions_backup_dmg_mult", "0.3", "Multiplier value for the damage taken during Batallion’s Backup Banner effect, multiplied to the stock value of 0.65 (example; value 1 gives 35% damage resist, value 0.77 gives 50% resist, value 0.5 gives 66% damage resist)", FCVAR_NONE, true, 0.0, true, 9999.0);
 
 	g_vsh2.m_hCvars.KunaiHealthAdd = CreateConVar("vsh2_kunai_health_add", "180", "how much health is added to the players health after a successful kunai backstab.", FCVAR_NONE, true, 0.0, true, 9999.0);
 	g_vsh2.m_hCvars.KunaiHealthGuard = CreateConVar("vsh2_kunai_health_guard", "195", "the higher health guard cap for when a player executes a successful kunai backstab.", FCVAR_NONE, true, 0.0, true, 9999.0);
@@ -484,6 +493,7 @@ public void OnPluginStart()
 	AddMultiTargetFilter("@nextboss", NextHaleTargetFilter, "the Next Boss", false);
 	
 	g_vsh2.m_hPlayerFields[0]    = new StringMap();   /// This will be freed when plugin is unloaded again
+	BuildWepMenus();
 }
 
 public bool HaleTargetFilter(const char[] pattern, ArrayList clients) {
@@ -532,7 +542,7 @@ public bool NextHaleTargetFilter(const char[] pattern, ArrayList clients) {
 	}
 	return true;
 }
-
+/*
 public Action CheckLateSpawn(int client, const char[] command, int argc)
 {
 	if( !g_vsh2.m_hCvars.Enabled.BoolValue || g_vsh2.m_hGamemode.iRoundState != StateRunning )
@@ -552,7 +562,7 @@ public Action CheckLateSpawn(int client, const char[] command, int argc)
 	}
 	return Plugin_Continue;
 }
-
+*/
 public Action BlockSuicide(int client, const char[] command, int argc)
 {
 	if( g_vsh2.m_hCvars.Enabled.BoolValue && g_vsh2.m_hGamemode.iRoundState == StateRunning ) {
@@ -791,7 +801,6 @@ public void OnMapStart()
 	g_vsh2.m_hGamemode.iRoundCount = 0;
 	g_vsh2.m_hGamemode.iRoundState = StateDisabled;
 	g_vsh2.m_hGamemode.hNextBoss = view_as< BaseBoss >(0);
-	
 	if( g_vsh2.m_hCfg != null ) {
 		DeleteCfg(g_vsh2.m_hCfg);
 	}
@@ -1222,9 +1231,9 @@ public Action Timer_UberLoop(Handle timer, any medigunid)
 			if( act==Plugin_Stop )
 				return act;
 			
-			TF2_AddCondition(medic, TFCond_CritOnWin, 0.5);
+			//TF2_AddCondition(medic, TFCond_CritOnWin, 0.5);
 			if( IsClientValid(target) && IsPlayerAlive(target) ) {
-				TF2_AddCondition(target, TFCond_CritOnWin, 0.5);
+				//TF2_AddCondition(target, TFCond_CritOnWin, 0.5);
 				med.iUberTarget = GetClientUserId(target);
 			} else {
 				med.iUberTarget = 0;

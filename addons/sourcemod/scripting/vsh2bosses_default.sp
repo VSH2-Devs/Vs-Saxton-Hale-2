@@ -4,15 +4,20 @@
 #include <vsh2>
 #include <sdkhooks>
 
-
 public Plugin myinfo = {
 	name             = "VSH2 Default Bosses Module",
-	author           = "Nergal/Assyrian",
+	author           = "Nergal/Assyrian, DatOpb",
 	description      = "",
-	version          = "1.0",
+	version          = "1.1-dev-d",
 	url              = "https://github.com/VSH2-Devs/Vs-Saxton-Hale-2"
 };
-
+///Hale Boss Themes (Reverted due to Configmap issues reading data).
+static const char CBSTheme[] = "saxton_hale/the_millionaires_holiday.mp3";
+static const char HHHTheme[] = "ui/holiday/gamestartup_halloween.mp3";
+static const char HaleTheme[] = "saxton_hale/hale-theme.mp3";
+static const char VagTheme[] = "saxton_hale/vag-theme.mp3";
+#define EggModel		"models/player/saxton_hale/w_easteregg.mdl"
+///static const char EBTheme[] = "";
 
 static const char boss_names[][] = {
 	"saxton_hale",
@@ -40,6 +45,7 @@ enum struct DefVSH2Bosses {
 	ConVar       cbs_max_arrows;
 	ConVar       bunny_max_eggs;
 	ConVar       no_random_crits;
+	ConVar       hale_scout_speed;
 	
 	ConVar       move_speed[MaxDefaultVSH2Bosses];
 	ConVar       glow_time[MaxDefaultVSH2Bosses];
@@ -90,7 +96,7 @@ public void OnLibraryAdded(const char[] name) {
 		g_defbosses.cbs_max_arrows    = CreateConVar("vsh2_cbs_max_arrows", "9", "the maximum amount of arrows Christian Brutal Sniper can get for his bow rage.", FCVAR_NOTIFY, true, 1.0, true, 999999.0);
 		g_defbosses.bunny_max_eggs    = CreateConVar("vsh2_bunny_max_eggs", "50", "amount of eggs Bunny's autogrenader spews.", FCVAR_NOTIFY, true, 1.0, true, 999999.0);
 		g_defbosses.no_random_crits   = CreateConVar("vsh2_default_bosses_no_random_crits", "1", "Blocks the default bosses from being able to randomly crit.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-		
+		g_defbosses.hale_scout_speed   = CreateConVar("vsh2_hale_scouts_left_speed", "520.0", "How fast should a Hale move (in HU) when scouts are last alive.", FCVAR_NOTIFY, true, 0.0, true, 1000.0);
 		bool got_one;
 		for( int i; i<MaxDefaultVSH2Bosses; i++ ) {
 			char cvar_name[1024];
@@ -354,17 +360,35 @@ public void DefaultBosses_OnDownloads() {
 				PrepareSound(songs[song_offsets[n]]);
 			}
 		}
-		
-		if( i==VSH2Boss_Bunny ) {
+
+		if( StrEqual(boss_names[i], "easter_bunny" )) {
 			int egg_mdl_len = g_defbosses.cfgs[i].GetSize("boss.egg model");
-			if( g_defbosses.cfgs[i].Get("boss.egg model", g_defbosses.egg_model, egg_mdl_len) > 0 ) {
-				PrepareModel(g_defbosses.egg_model);
+			if( egg_mdl_len > 0 ) {
+				g_defbosses.cfgs[i].Get("boss.egg model", g_defbosses.egg_model, egg_mdl_len)
+				PrepareModel(EggModel);
+				PrecacheModel(EggModel);
+				//PrintToServer("EB Egg Model: %s", g_defbosses.egg_model);
 			}
 			PrepareMaterial("materials/models/props_easteregg/c_easteregg");
 			CheckDownload("materials/models/props_easteregg/c_easteregg_gold.vmt");
 		}
+		PrepareModel(EggModel);
+		PrecacheModel(EggModel);
+		PrepareMaterial("materials/models/props_easteregg/c_easteregg");
+		CheckDownload("materials/models/props_easteregg/c_easteregg_gold.vmt");
+		//PrintToServer("The I value is %i", i)
+		PrintToServer("The boss cfg processed is %s", boss_names[i])
 	}
+	PrepareModel(EggModel);
+	PrecacheModel(EggModel);
+	PrepareMaterial("materials/models/props_easteregg/c_easteregg");
+	CheckDownload("materials/models/props_easteregg/c_easteregg_gold.vmt");
+	PrecacheSound("saxton_hale/9000.wav", true); //Why wasnt this cached before?
 	PrecacheSound("misc/halloween/spell_teleport.wav", true);
+	PrepareSound(CBSTheme);			///Default Theme
+	PrepareSound(HHHTheme);			///Default Theme
+	PrepareSound(HaleTheme);		///Custom Theme
+	PrepareSound(VagTheme);			///Custom Theme
 }
 
 
@@ -393,6 +417,7 @@ public void DefaultBosses_OnThink(VSH2Player player) {
 			ConfigMap jmp_sect = g_defbosses.cfgs[id].GetSection("boss.sounds.jump");
 			player.PlayRandVoiceClipCfgMap(jmp_sect, VSH2_VOICE_ABILITY);
 			player.SuperJump(player.GetPropFloat("flCharge"), g_defbosses.jmp_reset[id].FloatValue);
+			TF2_AddCondition(player.index, TFCond_MarkedForDeathSilent, 3.0);
 		}
 	} else {
 		float EyeAngles[3]; GetClientEyeAngles(player.index, EyeAngles);
@@ -402,11 +427,13 @@ public void DefaultBosses_OnThink(VSH2Player player) {
 		bool cond_to_tele = (cur_charge==max_charge || player.GetPropAny("bSuperCharge")) && EyeAngles[0] < -5.0;
 		if( player.ChargeThink(charge_rate, "flCharge", max_charge, jmp_button, cond_to_tele) ) {
 			TeleToRandomPlayer(player);
+			TF2_AddCondition(player.index, TFCond_MarkedForDeathSilent, 3.0);
 		}
 	}
 	
 	if( VSH2GameMode.AreScoutsLeft() ) {
 		player.SetPropFloat("flRAGE", player.GetPropFloat("flRAGE") + g_defbosses.scout_rage_gen.FloatValue);
+		player.SpeedThink(g_defbosses.hale_scout_speed.FloatValue);
 	}
 	
 	player.WeighDownThink(g_defbosses.wghdwn_time[id].FloatValue, g_defbosses.wghdwn_iota[id].FloatValue);
@@ -496,7 +523,6 @@ public void DefaultBosses_OnInit(VSH2Player player) {
 	int id = g_defbosses.GetDefBoss(player);
 	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null )
 		return;
-	
 	int client = player.index;
 	switch( id ) {
 		case VSH2Boss_Hale:
@@ -528,9 +554,12 @@ public void DefaultBosses_OnKill(VSH2Player attacker, VSH2Player victim, Event e
 		return;
 	
 	if( id==VSH2Boss_Bunny ) {
+		/*
 		if( g_defbosses.egg_model[0] != 0 ) {
-			SpawnManyAmmoPacks(victim.index, g_defbosses.egg_model, 1);
+			SpawnManyAmmoPacks(victim.index, EggModel, 1);
 		}
+		*/
+		SpawnManyAmmoPacks(victim.index, EggModel, 1);
 	}
 	
 	float curtime = GetGameTime();
@@ -708,6 +737,7 @@ public void DefaultBosses_OnRoundEnd(VSH2Player player, bool boss_win, char mess
 }
 
 public void DefaultBosses_OnMusic(char song[PLATFORM_MAX_PATH], float& time, VSH2Player player) {
+	/**			TO BE FIXED (16/12/2021)
 	int id = g_defbosses.GetDefBoss(player);
 	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null ) {
 		return;
@@ -742,6 +772,32 @@ public void DefaultBosses_OnMusic(char song[PLATFORM_MAX_PATH], float& time, VSH
 	strcopy(song, sizeof(song), songs[song_offsets[index]]);
 	time = StringToFloat(times[times_offset[index]]);
 	LogToFile("vsh2bosses_default", "index: '%i' | time: '%f'", index, time);
+	**/
+	int id = g_defbosses.GetDefBoss(player);
+	switch( id ) {
+		case -1: {song = "\0"; time = -1.0;}
+		case VSH2Boss_Hale: {
+			strcopy(song, sizeof(song), HaleTheme),
+			time = 324.0;
+		}
+		case VSH2Boss_Bunny: {
+			song = "\0";
+			time = -1.0;
+		}
+		case VSH2Boss_CBS: {
+			strcopy(song, sizeof(song), CBSTheme),
+			time = 140.0;
+		}
+		case VSH2Boss_HHHjr: {
+			strcopy(song, sizeof(song), HHHTheme);
+			time = 90.0;
+		}
+		case VSH2Boss_Vagineer: {
+			strcopy(song, sizeof(song), VagTheme);
+			time = 300.0;
+		}
+	}
+	//LogToFile("vsh2bosses_default", "index: '%s' | time: '%f'", song, time);
 }
 
 public void DefaultBosses_OnDeath(VSH2Player player) {
@@ -856,11 +912,14 @@ public void OnEggBombSpawned(int entity) {
 	if( IsClientValid(owner) ) {
 		VSH2Player boss = VSH2Player(owner);
 		if( boss.bIsBoss && g_defbosses.GetDefBoss(boss)==VSH2Boss_Bunny ) {
-			SetEntityModel(entity, g_defbosses.egg_model);
-			//int att = AttachProjectileModel(entity, g_defbosses.egg_model);
-			//SetEntProp(att, Prop_Send, "m_nSkin", 0);
-			//SetEntityRenderMode(entity, RENDER_TRANSCOLOR);
-			//SetEntityRenderColor(entity, 255, 255, 255, 0);
+			//PrintToChatAll("EB Model %s", g_defbosses.egg_model);
+			//SetEntityModel(entity, EggModel);
+			
+			int att = AttachProjectileModel(entity, EggModel);
+			SetEntProp(att, Prop_Send, "m_nSkin", 0);
+			SetEntityRenderMode(entity, RENDER_TRANSCOLOR);
+			SetEntityRenderColor(entity, 255, 255, 255, 0);
+			
 		}
 	}
 }
@@ -931,7 +990,8 @@ stock void TeleToRandomPlayer(VSH2Player boss) {
 	if( unlucky_fuck ) {
 		int target = unlucky_fuck.index;
 		/// Chdata's HHH teleport rework
-		TFClassType tfclass = unlucky_fuck.iTFClass;
+		//TFClassType tfclass = unlucky_fuck.iTFClass;
+		/**
 		if( tfclass != TFClass_Scout && tfclass != TFClass_Soldier ) {
 			/// Makes HHH clipping go away for player and some projectiles
 			SetEntProp(client, Prop_Send, "m_CollisionGroup", 2);
@@ -939,7 +999,11 @@ stock void TeleToRandomPlayer(VSH2Player boss) {
 			any args[1]; args[0] = boss.userid;
 			MakePawnTimer(TeleCollisionReset, 2.0, args, sizeof(args), false);
 		}
-		
+		**/
+		SetEntProp(client, Prop_Send, "m_CollisionGroup", 2);
+			
+		any args2[1]; args2[0] = boss.userid;
+		MakePawnTimer(TeleCollisionReset, 2.0, args2, sizeof(args2), false);
 		CreateTimer(3.0, RemoveEnt, EntIndexToEntRef(AttachParticle(client, "ghost_appearation", _, false)));
 		float pos[3]; GetClientAbsOrigin(target, pos);
 		float currtime = GetGameTime();

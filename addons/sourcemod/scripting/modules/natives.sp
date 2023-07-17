@@ -159,6 +159,7 @@ public int Native_VSH2_setProperty(Handle plugin, int numParams)
 		player.iQueue = view_as< int >(item);
 	}
 	else g_vsh2.m_hPlayerFields[player.index].SetValue(prop_name, item);
+	return 0;
 }
 
 public int Native_VSH2_getIntProp(Handle plugin, int numParams)
@@ -238,6 +239,7 @@ public int Native_Hook(Handle plugin, int numParams)
 	PrivateForward pw = g_modsys.GetPrivFwd(is_boss_module, vsh2Hook);
 	if( pw != null )
 		pw.AddFunction(plugin, func);
+	return 0;
 }
 
 public int Native_HookEx(Handle plugin, int numParams)
@@ -248,7 +250,7 @@ public int Native_HookEx(Handle plugin, int numParams)
 	PrivateForward pw = g_modsys.GetPrivFwd(is_boss_module, vsh2Hook);
 	if( pw != null )
 		return pw.AddFunction(plugin, func);
-	return 0;
+	return false;
 }
 
 public int Native_Unhook(Handle plugin, int numParams)
@@ -259,6 +261,7 @@ public int Native_Unhook(Handle plugin, int numParams)
 	PrivateForward pw = g_modsys.GetPrivFwd(is_boss_module, vsh2Hook);
 	if( pw != null )
 		pw.RemoveFunction(plugin, func);
+	return false;
 }
 public int Native_UnhookEx(Handle plugin, int numParams)
 {
@@ -268,7 +271,7 @@ public int Native_UnhookEx(Handle plugin, int numParams)
 	PrivateForward pw = g_modsys.GetPrivFwd(is_boss_module, vsh2Hook);
 	if( pw != null )
 		return pw.RemoveFunction(plugin, func);
-	return 0;
+	return false;
 }
 
 public int Native_GetRandomBossType(Handle plugin, int numParams)
@@ -356,6 +359,7 @@ public int Native_VSH2_ConvertToMinion(Handle plugin, int numParams)
 	BaseBoss player = GetNativeCell(1);
 	float spawntime = GetNativeCell(2);
 	player.ConvertToMinion(spawntime);
+	return true;
 }
 
 public int Native_VSH2_SpawnWep(Handle plugin, int numParams)
@@ -381,6 +385,7 @@ public int Native_VSH2_SetWepInvis(Handle plugin, int numParams)
 	BaseBoss player = GetNativeCell(1);
 	int alpha = GetNativeCell(2);
 	player.SetWepInvis(alpha);
+	return 0;
 }
 
 public int Native_VSH2_SetOverlay(Handle plugin, int numParams)
@@ -388,6 +393,7 @@ public int Native_VSH2_SetOverlay(Handle plugin, int numParams)
 	BaseBoss player = GetNativeCell(1);
 	char overlay[256]; GetNativeString(2, overlay, 256);
 	player.SetOverlay(overlay);
+	return 0;
 }
 
 public int Native_VSH2_TeleToSpawn(Handle plugin, int numParams)
@@ -404,6 +410,7 @@ public int Native_VSH2_IncreaseHeadCount(Handle plugin, int numParams)
 	bool addhealth = GetNativeCell(2);
 	int head_count = GetNativeCell(3);
 	player.IncreaseHeadCount(addhealth, head_count);
+	return 0;
 }
 
 public int Native_VSH2_SpawnSmallHealthPack(Handle plugin, int numParams)
@@ -411,6 +418,7 @@ public int Native_VSH2_SpawnSmallHealthPack(Handle plugin, int numParams)
 	BaseBoss player = GetNativeCell(1);
 	int team = GetNativeCell(2);
 	player.SpawnSmallHealthPack(team);
+	return 0;
 }
 
 public int Native_VSH2_ForceTeamChange(Handle plugin, int numParams)
@@ -418,6 +426,7 @@ public int Native_VSH2_ForceTeamChange(Handle plugin, int numParams)
 	BaseBoss player = GetNativeCell(1);
 	int team = GetNativeCell(2);
 	player.ForceTeamChange(team);
+	return 0;
 }
 
 public any Native_VSH2_ClimbWall(Handle plugin, int numParams)
@@ -434,6 +443,7 @@ public int Native_VSH2_HelpPanelClass(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
 	player.HelpPanelClass();
+	return 0;
 }
 
 public int Native_VSH2_GetAmmoTable(Handle plugin, int numParams)
@@ -447,6 +457,7 @@ public int Native_VSH2_SetAmmoTable(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
 	player.setAmmotable(GetNativeCell(2), GetNativeCell(3));
+	return 0;
 }
 
 public int Native_VSH2_GetClipTable(Handle plugin, int numParams)
@@ -460,6 +471,7 @@ public int Native_VSH2_SetClipTable(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
 	player.setCliptable(GetNativeCell(2), GetNativeCell(3));
+	return 0;
 }
 
 public int Native_VSH2_GetHealTarget(Handle plugin, int numParams)
@@ -488,6 +500,7 @@ public int Native_VSH2_RemoveBack(Handle plugin, int numParams)
 	int[] data = new int[length];
 	GetNativeArray(2, data, length);
 	player.RemoveBack(data, length);
+	return 0;
 }
 
 public int Native_VSH2_FindBack(Handle plugin, int numParams)
@@ -537,6 +550,7 @@ public int Native_VSH2_ConvertToBoss(Handle plugin, int numParams)
 {
 	BaseBoss player = GetNativeCell(1);
 	player.ConvertToBoss();
+	return 0;
 }
 
 public int Native_VSH2_GiveRage(Handle plugin, int numParams)
@@ -544,6 +558,7 @@ public int Native_VSH2_GiveRage(Handle plugin, int numParams)
 	BaseBoss player = GetNativeCell(1);
 	int dmg = GetNativeCell(2);
 	player.GiveRage(dmg);
+	return 0;
 }
 
 public int Native_VSH2_MakeBossAndSwitch(Handle plugin, int numParams)
@@ -553,6 +568,7 @@ public int Native_VSH2_MakeBossAndSwitch(Handle plugin, int numParams)
 	bool run_event = GetNativeCell(2);
 	bool friendly = GetNativeCell(3);
 	player.MakeBossAndSwitch(bossid, run_event, friendly);
+	return 0;
 }
 
 public int Native_VSH2_DoGenericStun(Handle plugin, int numParams)
@@ -560,6 +576,7 @@ public int Native_VSH2_DoGenericStun(Handle plugin, int numParams)
 	BaseBoss player = GetNativeCell(1);
 	float rage_radius = GetNativeCell(2);
 	player.DoGenericStun(rage_radius);
+	return 0;
 }
 
 public int Native_VSH2_StunPlayers(Handle plugin, int numParams)
@@ -568,6 +585,7 @@ public int Native_VSH2_StunPlayers(Handle plugin, int numParams)
 	float rage_radius = GetNativeCell(2);
 	float stun_time = GetNativeCell(3);
 	player.StunPlayers(rage_radius, stun_time);
+	return 0;
 }
 
 public int Native_VSH2_StunBuildings(Handle plugin, int numParams)
@@ -576,6 +594,7 @@ public int Native_VSH2_StunBuildings(Handle plugin, int numParams)
 	float rage_radius = GetNativeCell(2);
 	float sentry_stun_time = GetNativeCell(3);
 	player.StunBuildings(rage_radius, sentry_stun_time);
+	return 1;
 }
 
 
@@ -585,6 +604,7 @@ public int Native_VSH2_RemoveAllItems(Handle plugin, int numParams)
 	BaseBoss player = GetNativeCell(1);
 	bool weps = numParams <= 1 ? true : GetNativeCell(2);
 	player.RemoveAllItems(weps);
+	return 1;
 }
 
 public any Native_VSH2_GetName(Handle plugin, int numParams)
@@ -660,6 +680,7 @@ public int Native_VSH2GameMode_SetProperty(Handle plugin, int numParams)
 	char prop_name[64]; GetNativeString(1, prop_name, sizeof(prop_name));
 	any item = GetNativeCell(2);
 	g_vsh2.m_hGamemode.SetValue(prop_name, item);
+	return 0;
 }
 public any Native_VSH2GameMode_GetRandomBoss(Handle plugin, int numParams)
 {
@@ -694,14 +715,17 @@ public int Native_VSH2GameMode_GetTotalBossHealth(Handle plugin, int numParams)
 public int Native_VSH2GameMode_SearchForItemPacks(Handle plugin, int numParams)
 {
 	VSHGameMode.SearchForItemPacks();
+	return 1;
 }
 public int Native_VSH2GameMode_UpdateBossHealth(Handle plugin, int numParams)
 {
 	g_vsh2.m_hGamemode.UpdateBossHealth();
+	return 1;
 }
 public int Native_VSH2GameMode_GetBossType(Handle plugin, int numParams)
 {
 	g_vsh2.m_hGamemode.GetBossType();
+	return 1;
 }
 
 public int Native_VSH2GameMode_GetTotalRedPlayers(Handle plugin, int numParams)
