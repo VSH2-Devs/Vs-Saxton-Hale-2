@@ -1,5 +1,5 @@
 # General Boss and Player API
-## methodmap BaseFighter - applies to both bosses and non-bosses
+## methodmap BasePlayer - applies to both bosses and non-bosses
 ### Properties
 ```c++
 int userid
@@ -118,47 +118,47 @@ float flMusicTime
 
 ### Methods
 ```c++
-BaseFighter(const int ind, bool uid=false)
+BasePlayer(int ind, bool uid=false)
 ```
-- constructor for `BaseFighter`, gives you the option to make an instance using a player's entity index or, if uid is set to true, a player's userid.
+- constructor for `BasePlayer`, gives you the option to make an instance using a player's entity index or, if uid is set to true, a player's userid.
 
 ```c++
-void ConvertToMinion(const float time)
+void ConvertToMinion(float time)
 ```
 - converts a player to a minion, automatically sets `bIsMinion` to true
 
 ```c++
-int SpawnWeapon(char[] name, const int index, const int level, const int qual, char[] att)
+int SpawnWeapon(char[] name, int index, int level, int qual, char[] att)
 ```
 - spawns a weapon to a player
 
 ```c++
-int getAmmotable(const int wepslot)
+int getAmmotable(int wepslot)
 ```
 - gets the ammo table for a player's weapon in a weapon slot
 
 ```c++
- void setAmmotable(const int wepslot, const int val)
+ void setAmmotable(int wepslot, int val)
 ```
 - sets the ammo table for a player's weapon in a weapon slot
 
 ```c++
- int getCliptable(const int wepslot)
+ int getCliptable(int wepslot)
 ```
 - gets the clip table for a player's weapon in a weapon slot
 
 ```c++
- void setCliptable(const int wepslot, const int val)
+ void setCliptable(int wepslot, int val)
 ```
 - sets the clip table for a player's weapon in a weapon slot
 
 ```c++
- int GetWeaponSlotIndex(const int slot)
+ int GetWeaponSlotIndex(int slot)
 ```
 - gets the item index of a weapon by weapon slot
 
 ```c++
- void SetWepInvis(const int alpha)
+ void SetWepInvis(int alpha)
 ```
 - sets the alpha of a weapon so it can be transparent (255 for no transparent, 0 for completely invisible)
 
@@ -183,12 +183,12 @@ int getAmmotable(const int wepslot)
 - spawns a health pack at a player's origin
 
 ```c++
- void ForceTeamChange(const int team)
+ void ForceTeamChange(int team)
 ```
 - forces a player to change to a different team
 
 ```c++
- void ClimbWall(const int weapon, const float upwardvel, const float health, const bool attackdelay)
+ void ClimbWall(int weapon, float upwardvel, float health, bool attackdelay)
 ```
 - makes a player climb a wall as long the wall is 90 degrees (more or less).
 
@@ -208,32 +208,32 @@ int getAmmotable(const int wepslot)
 - checks if the player is being healed/supplied by a dispenser.
 
 ```c++
-bool IsInRange(const int target, const float dist, bool pTrace=false)
+bool IsInRange(int target, float dist, bool pTrace=false)
 ```
 - checks if the player is in range of a specific entity, `pTrace` being false means ignoring objects between the entities.
 
 ```c++
-void RemoveBack(int[] indices, const int len)
+void RemoveBack(int[] indices, int len)
 ```
 - Removes a set/array of cosmetic-based items from the player (like mantreads for instance).
 
 ```c++
-int FindBack(int[] indices, const int len)
+int FindBack(int[] indices, int len)
 ```
 - finds an item within a set/array of cosmetic-based items from the player (like mantreads for instance).
 
 ```c++
-int ShootRocket(bool bCrit=false, float vPosition[3], float vAngles[3], const float flSpeed, const float dmg, const char[] model, bool arc=false)
+int ShootRocket(bool bCrit=false, float vPosition[3], float vAngles[3], float flSpeed, float dmg, const char[] model, bool arc=false)
 ```
 - shoots a rocket-like, arc-able projectile from the player.
 
 ```c++
-void Heal(const int health, bool on_hud=false, bool overridehp=false, int overheal_limit=0)
+void Heal(int health, bool on_hud=false, bool overridehp=false, int overheal_limit=0)
 ```
 - heals the player with option to show the health gained on the hud.
 
 ```c++
-void PlayMusic(const float vol, const char[] override="");
+void PlayMusic(float vol, const char[] override="");
 ```
 - starts playing music to the player, `vol` for volume.
 
@@ -242,7 +242,7 @@ void void StopMusic();
 ```
 - stop music that is playing to the player.
 
-## methodmap BaseBoss - derives from `BaseFigher`, this is the methodmap all bosses (must) inherit from
+## methodmap BasePlayer - derives from `BaseFigher`, this is the methodmap all bosses (must) inherit from
 ### Properties
 ```c++
 int iHealth
@@ -318,9 +318,9 @@ You can actually use `flWeighDown` or any others to control a completely differe
 Or even better, make your own if necessary.
 ### Methods
 ```c++
- BaseBoss(const int ind, bool uid = false)
+ BasePlayer(int ind, bool uid = false)
 ```
-- constructor to make a player as an instance of `BaseBoss`, works the same as the constructor for `BaseFighter` see ` BaseFighter(const int ind, bool uid=false)` on how to use.
+- constructor to make a player as an instance of `BasePlayer`, works the same as the constructor for `BasePlayer` see ` BasePlayer(int ind, bool uid=false)` on how to use.
 
 ```c++
  void ConvertToBoss()
@@ -328,17 +328,17 @@ Or even better, make your own if necessary.
 - this method sets the `bIsBoss` property depending what `bSetOnSpawn` is set to, sets `flRAGE` to 0.0 and calls `_MakePlayerBoss`. It's preferred to use `MakeBossAndSwitch` over this method.
 
 ```c++
- void GiveRage(const int damage)
+ void GiveRage(int damage)
 ```
 - generic health based calculated method to give rage to the boss, the formula works as `damage/sqrt(currentHealth)*1.76`. If necessary, you can make your own for your custom bosses
 
 ```c++
- void MakeBossAndSwitch(const int type, bool callEvent)
+ void MakeBossAndSwitch(int type, bool callEvent)
 ```
 - This function sets `bSetOnSpawn` to true, sets the boss type based on what `type` is, calls `ConvertToBoss()`, and forces the player to be team switched to BLU. Use this method over `ConvertToBoss()`. New in 1.3.0 Beta - `callEvent` let's you control if you want `MakeBossAndSwitch` to call the `OnBossSelected` event.
 
 ```c++
- void DoGenericStun(const float rageDist)
+ void DoGenericStun(float rageDist)
 ```
 - generic rage stun that's commonly used by many VSH/FF2 bosses but as a function. `rageDist` specifies the max distance radius, anyone (players, buildings) within the radius will be stunned.
 
@@ -358,17 +358,17 @@ bool SetName(char name[MAX_BOSS_NAME_SIZE])
 - Sets the name of the boss, `MAX_BOSS_NAME_SIZE` is 64 bytes large.
 
 ```c++
-void SuperJump(const float power, const float reset)
+void SuperJump(float power, float reset)
 ```
 - performs the generic super jump ability.
 
 ```c++
-void WeighDown(const float reset)
+void WeighDown(float reset)
 ```
 - performs the generic weighdown ability.
 
 ```c++
-void PlayVoiceClip(const char[] vclip, const int flags)
+void PlayVoiceClip(const char[] vclip, int flags)
 ```
 - player a boss specific voice clip, using different voice flags for effects.
 
@@ -405,7 +405,7 @@ enum /** VSH2 Round States */ {
 ```c++
 int iSpecial
 ```
-- get/set the predetermined boss type to be used when a player becomes a boss (this is overrode if the player set their boss OR if the admin used the set special commands to forcefully change it. If `iSpecial` is -1, then it'll pick a random boss between 0 and `MAXBOSS` define)
+- get/set the predetermined boss type to be used when a player becomes a boss (this is overrode if the player set their boss OR if the admin used the set special commands to forcefully change it. If `iSpecial` is -1, then it'll pick a random boss between 0 and `g_vshgm.MAXBOSS` define)
 
 ```c++
 int iPrevSpecial
@@ -497,43 +497,43 @@ float flRoundStartTime
 - gets the time when the round started. Unchanged until next round starts.
 
 ```c++
-BaseBoss hNextBoss
+BasePlayer hNextBoss
 ```
-- get/set the handle of a `BaseBoss` instance to be the next chosen boss player (**ALWAYS CHECK IF THIS IS 0**). **THIS IS NOT A HANDLE TYPE**.
+- get/set the handle of a `BasePlayer` instance to be the next chosen boss player (**ALWAYS CHECK IF THIS IS 0**). **THIS IS NOT A HANDLE TYPE**.
 
 ### Methods
 ```c++
-BaseBoss GetRandomBoss(const bool balive)
+BasePlayer GetRandomBoss(bool balive)
 ```
 - gets a random boss and allows you to get a living or dead boss
 
 ```c++
-BaseBoss GetBossByType(const bool balive, const int type)
+BasePlayer GetBossByType(bool balive, int type)
 ```
 - this is the same as `GetRandomBoss` but it allows you to also get a random boss by type.
 
 ```c++
-void CheckArena(const bool type)
+void CheckArena(bool type)
 ```
 - presets the Arena control point enable time.
 
 ```c++
-int GetQueue(BaseBoss[] players)
+int GetQueue(BasePlayer[] players)
 ```
 - populates a player array and sorts it by queue points.
 
 ```c++
-BaseBoss FindNextBoss()
+BasePlayer FindNextBoss()
 ```
 - gets the player that will become the next boss via queue points.
 
 ```c++
-int CountMinions(const bool balive, BaseBoss ownerboss=0)
+int CountMinions(bool balive, BasePlayer ownerboss=0)
 ```
 - counts all players that have `bIsMinion` set to true and allows you to count living or dead.
 
 ```c++
-int CountBosses(const bool balive)
+int CountBosses(bool balive)
 ```
 - same as `CountMinions` but for bosses, you check if you want to count only living bosses.
 
@@ -573,16 +573,16 @@ void CheckTeleToSpawn()
 - checks if the map requires that bosses be teleported to spawn if they hit a `trigger_hurt`.
 
 ```c++
-static int GetBosses(BaseBoss[] bossarray, const bool balive)
+static int GetBosses(BasePlayer[] bossarray, bool balive)
 ```
 - gets bosses by filling in a buffer and returns the amount of bosses filled into the buffer, can also filter by living bosses.
 
 ```c++
-static int GetFighters(BaseBoss[] redarray, const bool balive)
+static int GetFighters(BasePlayer[] redarray, bool balive)
 ```
 - gets the RED players by filling in a buffer and returns the amount of RED players filled into the buffer, can also filter by living players.
 
 ```c++
-static int GetMinions(BaseBoss[] marray, const bool balive, BaseBoss ownerboss=0)
+static int GetMinions(BasePlayer[] marray, bool balive, BasePlayer ownerboss=0)
 ```
 - gets the minions by filling in a buffer and returns the amount of minions filled into the buffer, can also filter by living minions.

@@ -110,42 +110,34 @@ char BunnyRandomVoice[][] = {
 };
 
 
-methodmap CBunny < BaseBoss {
-	public CBunny(const int ind, bool uid=false) {
-		return view_as< CBunny >( BaseBoss(ind, uid) );
+methodmap CBunny < BasePlayer {
+	public CBunny(int ind, bool uid=false) {
+		return view_as< CBunny >( BasePlayer(ind, uid) );
 	}
-
+	
 	public void PlaySpawnClip() {
 		char spawn_snd[PLATFORM_MAX_PATH];
 		strcopy(spawn_snd, PLATFORM_MAX_PATH, BunnyStart[GetRandomInt(0, sizeof(BunnyStart)-1)]);
 		this.PlayVoiceClip(spawn_snd, VSH2_VOICE_INTRO);
 	}
-
-	public void Think()
-	{
-		if( !IsPlayerAlive(this.index) )
+	
+	public void Think() {
+		if( !IsPlayerAlive(this.index) ) {
 			return;
-
+		}
+		
 		this.SpeedThink(HALESPEED);
 		this.GlowThink(0.1);
-
 		if( this.SuperJumpThink(2.5, HALE_JUMPCHARGE) ) {
 			this.SuperJump(this.flCharge, -100.0);
 			char jump_snd[PLATFORM_MAX_PATH];
 			strcopy(jump_snd, PLATFORM_MAX_PATH, BunnyJump[GetRandomInt(0, sizeof(BunnyJump)-1)]);
 			this.PlayVoiceClip(jump_snd, VSH2_VOICE_ABILITY);
 		}
-
-		if( OnlyScoutsLeft(VSH2Team_Red) )
+		if( this.HasAbility(ABILITY_RAGE) && OnlyScoutsLeft(VSH2Team_Red) ) {
 			this.flRAGE += g_vsh2.m_hCvars.ScoutRageGen.FloatValue;
-
+		}
 		this.WeighDownThink(HALE_WEIGHDOWN_TIME);
-
-		SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
-		float jmp = this.flCharge;
-		if( this.flRAGE >= 100.0 )
-			ShowSyncHudText(this.index, g_vsh2.m_hHUDs[PlayerHUD], "Jump: %i%% | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 4);
-		else ShowSyncHudText(this.index, g_vsh2.m_hHUDs[PlayerHUD], "Jump: %i%% | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 4, this.flRAGE);
 	}
 	public void SetModel() {
 		SetVariantString(BunnyModel);
@@ -153,79 +145,89 @@ methodmap CBunny < BaseBoss {
 		SetEntProp(this.index, Prop_Send, "m_bUseClassAnimations", 1);
 		//SetEntPropFloat(client, Prop_Send, "m_flModelScale", 1.25);
 	}
-
+	
 	public void Death() {
 		char death_snd[PLATFORM_MAX_PATH];
 		strcopy(death_snd, PLATFORM_MAX_PATH, BunnyFail[GetRandomInt(0, sizeof(BunnyFail)-1)]);
 		this.PlayVoiceClip(death_snd, VSH2_VOICE_LOSE);
 		SpawnManyAmmoPacks(this.index, EggModel, 1);
 	}
-
+	
 	public void Equip() {
 		this.SetName("The Easter Bunny");
 		this.RemoveAllItems();
 		char attribs[128];
 		Format(attribs, sizeof(attribs), "68 ; 2.0; 2 ; 3.0; 259 ; 1.0; 326 ; 1.3; 252 ; 0.6");
-		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_bottle", 609, 100, 5, attribs);
-		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
+		int boss_weap = this.SpawnWeapon("tf_weapon_bottle", 609, 100, 5, attribs);
+		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", boss_weap);
+		
+		this.GiveAbility(ABILITY_ESCAPE_PLAN);
+		this.GiveAbility(ABILITY_GLOW);
+		this.GiveAbility(ABILITY_WEIGHDOWN);
+		this.GiveAbility(ABILITY_SUPERJUMP);
+		this.GiveAbility(ABILITY_AUTO_FIRE);
+		this.GiveAbility(ABILITY_STUN_PLYRS);
+		this.GiveAbility(ABILITY_STUN_BUILDS);
+		this.GiveAbility(ABILITY_ANCHOR);
+		this.GiveAbility(ABILITY_RAGE);
+		this.GiveAbility(ABILITY_EXPLODE_AMMO);
 	}
 	public void RageAbility() {
-		TF2_AddCondition(this.index, view_as< TFCond >(42), 4.0);
+		TF2_AddCondition(this.index, TFCond_DefenseBuffNoCritBlock, 4.0);
 		if( !GetEntProp(this.index, Prop_Send, "m_bIsReadyToHighFive")
-			&& !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
-		{
+			&& !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) ) {
 			TF2_RemoveCondition(this.index, TFCond_Taunting);
 			this.SetModel();
 		}
-
-		TF2_RemoveWeaponSlot(this.index, TFWeaponSlot_Primary);
-		int weapon = this.SpawnWeapon("tf_weapon_grenadelauncher", 19, 100, 5, "2; 1.5; 6; 0.1; 411; 150.0; 413; 1.0; 37; 0.0; 280; 17; 477; 1.0; 467; 1.0; 181; 2.0; 252; 0.7");
-		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", weapon);
-		SetEntProp(weapon, Prop_Send, "m_iClip1", 50);
-		SetWeaponAmmo(weapon, 0);
-
 		this.DoGenericStun(VAGRAGEDIST);
+		
 		char rage_snd[PLATFORM_MAX_PATH];
 		strcopy(rage_snd, PLATFORM_MAX_PATH, BunnyRage[GetRandomInt(1, sizeof(BunnyRage)-1)]);
 		this.PlayVoiceClip(rage_snd, VSH2_VOICE_RAGE);
 	}
-
-	public void KilledPlayer(const BaseBoss victim, Event event) {
+	
+	public void KilledPlayer(BasePlayer victim, Event event) {
 		if( GetRandomInt(0, 3) ) {
 			char kill_snd[PLATFORM_MAX_PATH];
 			strcopy(kill_snd, PLATFORM_MAX_PATH, BunnyKill[GetRandomInt(0, sizeof(BunnyKill)-1)]);
 			this.PlayVoiceClip(kill_snd, VSH2_VOICE_SPREE);
 		}
 		SpawnManyAmmoPacks(victim.index, EggModel, 1);
+		
 		float curtime = GetGameTime();
-		if( curtime <= this.flKillSpree )
+		if( curtime <= this.flKillSpree ) {
 			this.iKills++;
-		else this.iKills = 0;
-
+		} else {
+			this.iKills = 0;
+		}
+		
 		if( this.iKills == 3 && GetLivingPlayers(VSH2Team_Red) != 1 ) {
 			char spree_snd[PLATFORM_MAX_PATH];
 			strcopy(spree_snd, PLATFORM_MAX_PATH, BunnySpree[GetRandomInt(0, sizeof(BunnySpree)-1)]);
 			this.PlayVoiceClip(spree_snd, VSH2_VOICE_SPREE);
 			this.iKills = 0;
+		} else {
+			/// TODO: add cvars/config for killing spree amounts. 
+			this.flKillSpree = curtime+5;
 		}
-		else this.flKillSpree = curtime+5;
 	}
-
+	
 	public void Stabbed() {
 		char stab_snd[PLATFORM_MAX_PATH];
 		strcopy(stab_snd, PLATFORM_MAX_PATH, BunnyPain[GetRandomInt(0, sizeof(BunnyPain)-1)]);
 		this.PlayVoiceClip(stab_snd, VSH2_VOICE_STABBED);
 	}
-
+	
 	public void Help() {
-		if( IsVoteInProgress() )
+		if( IsVoteInProgress() ) {
 			return;
+		}
 		char helpstr[] = "The Easter Bunny:\nI think he wants to give out candy? Maybe?\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Happy Easter, Fools): taunt when Rage Meter is full.\nNearby enemies are stunned.";
 		Panel panel = new Panel();
 		panel.SetTitle(helpstr);
-		char ExitText[64];
-		Format(ExitText, 64, "%T", "Exit", this.index);
-		panel.DrawItem(ExitText);
+		char exit_test[64];
+		Format(exit_test, 64, "%T", "Exit", this.index);
+		panel.DrawItem(exit_test);
 		panel.Send(this.index, HintPanel, 10);
 		delete panel;
 	}
@@ -241,13 +243,11 @@ methodmap CBunny < BaseBoss {
 	}
 };
 
-public CBunny ToCBunny (const BaseBoss guy)
-{
+public CBunny ToCBunny (BasePlayer guy) {
 	return view_as< CBunny >(guy);
 }
 
-public void AddBunnyToDownloads()
-{
+public void AddBunnyToDownloads() {
 	PrepareModel(BunnyModel);
 	PrepareModel(EggModel);
 
@@ -267,29 +267,30 @@ public void AddBunnyToDownloads()
 	PrecacheSoundList(BunnyRandomVoice, sizeof(BunnyRandomVoice));
 }
 
-public void AddBunnyToMenu(Menu& menu)
-{
+public void AddBunnyToMenu(Menu& menu) {
 	char bossid[5]; IntToString(VSH2Boss_Bunny, bossid, sizeof(bossid));
 	menu.AddItem(bossid, "Easter Bunny Demoman");
 }
 
-stock void SpawnManyAmmoPacks(const int client, const char[] model, int skin=0, int num=14, float offsz = 30.0)
-{
+stock void SpawnManyAmmoPacks(int client, const char[] model, int skin=0, int num=14, float offsz = 30.0) {
 	float pos[3], vel[3], ang[3];
 	ang[0] = 90.0;
 	ang[1] = 0.0;
 	ang[2] = 0.0;
 	GetClientAbsOrigin(client, pos);
 	pos[2] += offsz;
-	for( int i=0; i<num; i++ ) {
+	for( int i=0; i < num; i++ ) {
 		vel[0] = GetRandomFloat(-400.0, 400.0);
 		vel[1] = GetRandomFloat(-400.0, 400.0);
 		vel[2] = GetRandomFloat(300.0, 500.0);
 		pos[0] += GetRandomFloat(-5.0, 5.0);
 		pos[1] += GetRandomFloat(-5.0, 5.0);
+		
 		int ent = CreateEntityByName("tf_ammo_pack");
-		if( !IsValidEntity(ent) )
+		if( !IsValidEntity(ent) ) {
 			continue;
+		}
+		
 		SetEntityModel(ent, model);
 		DispatchKeyValue(ent, "OnPlayerTouch", "!self,Kill,,0,-1"); /// for safety, but it shouldn't act like a normal ammopack
 		SetEntProp(ent, Prop_Send, "m_nSkin", skin);
@@ -308,8 +309,7 @@ stock void SpawnManyAmmoPacks(const int client, const char[] model, int skin=0, 
 	}
 }
 
-public Action Timer_SetEggBomb(Handle timer, any ref)
-{
+public Action Timer_SetEggBomb(Handle timer, any ref) {
 	int entity = EntRefToEntIndex(ref);
 	if( FileExists(EggModel, true) && IsModelPrecached(EggModel) && IsValidEntity(entity) ) {
 		int att = AttachProjectileModel(entity, EggModel);

@@ -30,7 +30,7 @@ public void OnLibraryAdded(const char[] name) {
 			return;
 		}
 		char plugin_name_str[MAX_BOSS_NAME_SIZE];
-		my_boss.cfg.Get("boss.plugin name", plugin_name_str, sizeof(plugin_name_str));
+		my_boss.cfg.Get("plugin name", plugin_name_str, sizeof(plugin_name_str));
 		my_boss.id = VSH2_RegisterPlugin(plugin_name_str);
 	}
 }
@@ -52,7 +52,7 @@ The important step to making your boss module (or addon) work is you need to hoo
 
 To hook to a function, we use the `VSH2_Hook`/`VSH2_Unhook` functions in the API.
 ```c
-native void VSH2_Hook(const int callbacktype, VSH2HookCB callback);
+native void VSH2_Hook(int callbacktype, VSH2HookCB callback);
 ```
 Within our example boss module, let's say we wanted to hook `OnBossThink` so that we can run boss specific code every 0.1 seconds.
 We look at `VSH2HookCB` for the typeset that `OnBossThink` uses:
@@ -60,7 +60,7 @@ We look at `VSH2HookCB` for the typeset that `OnBossThink` uses:
 /**
 	OnBossThink
  */
-function void (const VSH2Player Player);
+function void (VSH2Player Player);
 ```
 So to use the `OnBossThink` forward, we need to implement a function that follows the typeset function signature for `OnBossThink`.
 
@@ -81,12 +81,12 @@ public void OnLibraryAdded(const char[] name) {
 			return;
 		}
 		char plugin_name_str[MAX_BOSS_NAME_SIZE];
-		my_boss.cfg.Get("boss.plugin name", plugin_name_str, sizeof(plugin_name_str));
+		my_boss.cfg.Get("plugin name", plugin_name_str, sizeof(plugin_name_str));
 		my_boss.id = VSH2_RegisterPlugin(plugin_name_str);
 	}
 }
 
-public void MyBoss_OnBossThink(const VSH2Player player) {
+public void MyBoss_OnBossThink(VSH2Player player) {
 	int client = player.index;
 	if( !IsPlayerAlive(client) || player.GetPropInt("iBossType") != my_boss.id )
 		return;
@@ -99,14 +99,14 @@ In the above example, we use `VSH2_HookEx` to make sure that the hook was succes
 
 For multiple boss event hooks where you need to constantly check if the boss type of the player is equal to the boss ID of your boss module, it's recommended that you make a stock function that does this for you:
 ```c
-stock bool IsMyBoss(const VSH2Player player) {
+stock bool IsMyBoss(VSH2Player player) {
 	return player.GetPropInt("iBossType") == my_boss.id;
 }
 ```
 
 Now the above boss think code can be revamped like so:
 ```c
-public void MyBoss_OnBossThink(const VSH2Player player) {
+public void MyBoss_OnBossThink(VSH2Player player) {
 	int client = player.index;
 	if( !IsPlayerAlive(client) || !IsMyBoss(player) )
 		return;
@@ -131,9 +131,9 @@ To actually make our boss available from the boss menu, we use a method that use
 ```c
 public void MyBoss_OnBossMenu(Menu& menu) {
 	char tostr[10]; IntToString(my_boss.id, tostr, sizeof(tostr));
-	int menu_name_len = my_boss.cfg.GetSize("boss.menu name");
+	int menu_name_len = my_boss.cfg.GetSize("menu name");
 	char[] menu_name_str = new char[menu_name_len];
-	my_boss.cfg.Get("boss.menu name", menu_name_str, menu_name_len);
+	my_boss.cfg.Get("menu name", menu_name_str, menu_name_len);
 	menu.AddItem(tostr, menu_name_str);
 }
 ```
@@ -153,17 +153,17 @@ if( !VSH2_HookEx(OnCallDownloads, MyBoss_OnCallDownloads) )
 ...
 
 public void MyBoss_OnCallDownloads() {
-	int boss_mdl_len = my_boss.cfg.GetSize("boss.model");
+	int boss_mdl_len = my_boss.cfg.GetSize("model");
 	char[] boss_mdl_str = new char[boss_mdl_len];
-	if( my_boss.cfg.Get("boss.model", boss_mdl_str, boss_mdl_len) > 0 ) {
+	if( my_boss.cfg.Get("model", boss_mdl_str, boss_mdl_len) > 0 ) {
 		PrepareModel(boss_mdl_str);
 	}
 	
 	/// model skins.
-	ConfigMap skins = my_boss.cfg.GetSection("boss.skins");
+	ConfigMap skins = my_boss.cfg.GetSection("skins");
 	PrepareAssetsFromCfgMap(skins, ResourceMaterial);
 	
-	ConfigMap sounds_sect = my_boss.cfg.GetSection("boss.sounds");
+	ConfigMap sounds_sect = my_boss.cfg.GetSection("sounds");
 	if( sounds_sect != null ) {
 		PrepareAssetsFromCfgMap(sounds_sect.GetSection("intro"),      ResourceSound);
 		PrepareAssetsFromCfgMap(sounds_sect.GetSection("rage"),       ResourceSound);
@@ -202,9 +202,9 @@ In the code, we're getting the entire `sounds` subsection and then getting each 
 
 If you have files that aren't enumerated (boss with only a single, simple model), then you'll have to set it up for download by hand:
 ```c
-int boss_mdl_len = my_boss.cfg.GetSize("boss.model");
+int boss_mdl_len = my_boss.cfg.GetSize("model");
 char[] boss_mdl_str = new char[boss_mdl_len];
-if( my_boss.cfg.Get("boss.model", boss_mdl_str, boss_mdl_len) > 0 ) {
+if( my_boss.cfg.Get("model", boss_mdl_str, boss_mdl_len) > 0 ) {
 	PrepareModel(boss_mdl_str);
 }
 ```
@@ -232,14 +232,15 @@ if( !VSH2_HookEx(OnBossModelTimer, MyBoss_OnBossModelTimer) )
 
 ...
 
-public void MyBoss_OnBossModelTimer(const VSH2Player player) {
-	if( !IsMyBoss(player) )
+public void MyBoss_OnBossModelTimer(VSH2Player player) {
+	if( !IsMyBoss(player) ) {
 		return;
+	}
 	
 	int client = player.index;
-	int boss_mdl_len = my_boss.cfg.GetSize("boss.model");
+	int boss_mdl_len = my_boss.cfg.GetSize("model");
 	char[] boss_mdl = new char[boss_mdl_len];
-	my_boss.cfg.Get("boss.model", boss_mdl, boss_mdl_len);
+	my_boss.cfg.Get("model", boss_mdl, boss_mdl_len);
 	SetVariantString(boss_mdl);
 	AcceptEntityInput(client, "SetCustomModel");
 	SetEntProp(client, Prop_Send, "m_bUseClassAnimations", 1);

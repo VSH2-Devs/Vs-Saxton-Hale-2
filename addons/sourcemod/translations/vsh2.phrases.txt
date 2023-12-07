@@ -1,363 +1,394 @@
-"Phrases"
-{
-  "late_spawn_blocked"
-  {
-    "en"     "Late Spawn Blocked"
-  }
-  "cant_suicide_as_boss"
-  {
-    "en"     "You cannot suicide yet as a boss. Please Use '!resetq' instead."
-  }
-  "vsh2_welcome"
-  {
-    "en"      "Welcome to VSH2, type /bosshelp for help!"
-  }
-  "cant_find_vsh2cfg"
-  {
-    "en"     "**** {axis}couldn't find 'configs/saxton_hale/vsh2.cfg'{default} ****"
-  }
-  "vsh2_config_reloaded"
-  {
-    "en"     "**** Reloaded VSH2 Config ****"
-  }
-  "top_3"
-  {
-    "en"     "Most damage dealt by: "
-  }
-  "damage_dealt"
-  {
-    "en"     "Damage Dealt: "
-  }
-  "gained_points"
-  {
-    "#format" "{1:i}"
-    "en"      "You gained {1} queue points."
-  }
-  "scored_points"
-  {
-    "#format" "{1:i}"
-    "en"      "You scored {1} queue points."
-  }
-  "total_boss_health"
-  {
-    "en"      "Total Boss Health: "
-  }
-  "start_boss_replacer"
-  {
-    "en"      "Surprise! You're on NOW!"
-  }
-  "start_boss_disconnected"
-  {
-    "en"      "A Boss Just Disconnected!"
-  }
-  "player_backstab"
-  {
-    "#format" "{1:s}"
-    "en"      "You Tickled {1}!"
-  }
-  "boss_got_backstabbed"
-  {
-    "en"      "You Were Just Tickled!"
-  }
-  "player_market_garden"
-  {
-    "#format" "{1:s}"
-    "en"      "You Market Gardened {1}!"
-  }
-  "boss_got_market_gardened"
-  {
-    "en"      "You Were Just Market Gardened!"
-  }
-  "goomba_stomp"
-  {
-    "#format" "{1:N},{2:N}"
-    "en"      "{olive}>> {teamcolor}{1} {default}just goomba stomped {unique}{2}{default}!"
-  }
-  "become_boss"
-  {
-    "#format" "{1:N},{2:s},{3:i}"
-    "en"      "{1} has become {2} with {3} Health"
-  }
-  "health_left"
-  {
-    "#format" "{1:s},{2:N},{3:i},{4:i}"
-    "en"      "{1} ({2}) had {3} (of {4}) health left."
-  }
-  "end_of_round"
-  {
-    "#format" "{1:s}"
-    "en"      "{olive}[VSH 2] End of Round{default} {1}"
-  }
-  "show_current_hp"
-  {
-    "#format" "{1:s},{2:i},{3:i}"
-    "en"      "{1} showed his current HP: {2} of {3}"
-  }
-  "current_health"
-  {
-    "#format" "{1:s},{2:i},{3:i}"
-    "en"      "{1}'s current health is: {2} of {3}"
-  }
-  "boss_health_check"
-  {
-    "#format" "{1:s}"
-    "en"      "Boss Health Check{default} {1}"
-  }
-  "cannot_see_hp_now"
-  {
-    "#format" "{1:i},{2:i}"
-    "en"      "You cannot see the Boss HP now (wait {1} seconds). Last known total boss health was {2}."
-  }
-  "be_boss_soon"
-  {
-    "en"      "You are going to be a Boss soon! Type {olive}/halenext{default} to check/reset your queue points & !setboss to set your boss."
-  }
-  "hud_damage"
-  {
-    "#format" "{1:d}"
-    "en"      "Damage: {1}"
-  }
-  "hud_others_damage"
-  {
-    "#format" "{1:s},{2:N},{3:d}"
-    "en"      "{1} - {2}'s Damage: {3}"
-  }
-  "hud_lives"
-  {
-    "#format" "{1:s},{2:d}"
-    "en"      "{1} | Lives: {2}"
-  }
-  "dead_ringer_ready"
-  {
-    "en"      "Status: Feign-Death Ready"
-  }
-  "dead_ringer_active"
-  {
-    "en"      "Status: Dead-Ringered"
-  }
-  "dead_ringer_inactive"
-  {
-    "en"      "Status: Inactive"
-  }
-  "kunai_ready"
-  {
-    "#format" "{1:s}"
-    "en"      "{1} | Kunai: Ready"
-  }
-  "kunai_none"
-  {
-    "#format" "{1:s}"
-    "en"      "{1} | Kunai: None"
-  }
-  "air_strike_damage"
-  {
-    "#format" "{1:i}"
-    "en"      "Air Strike Damage: {1}"
-  }
-  "shield_active"
-  {
-    "en"      "Shield: Active"
-  }
-  "shield_gone"
-  {
-    "en"      "Shield: Gone"
-  }
-  "be_boss_soon_panel_title"
-  {
-    "en"      "You're The Next Boss!"
-  }
-  "be_boss_soon_panel_text"
-  {
-    "en"      "You are going to be a Boss soon! Type /halenext to check/reset your queue points.\nAlternatively, use !resetq.\nDon't forget to use !setboss to set your boss."
-  }
-  "queue_set_0"
-  {
-    "en"      "Your Queue has been set to 0!"
-  }
-  "queue_panel_title"
-  {
-    "en"      "VSH2 Boss Queue:"
-  }
-  "queue_panel_set_0"
-  {
-    "#format" "{1:i}"
-    "en"      "Your queue points: {1} (select to set to 0)"
-  }
-  "queue_set_0_confirm"
-  {
-    "en"      "Are you sure you want to set your queue points to 0?"
-  }
-  "queue_points_reset"
-  {
-    "en"      "You have reset your queue points to {olive}0{default}"
-  }
-  "bossmenu_title"
-  {
-    "en"      "Set Next Boss Type Menu: "
-  }
-  "bossmenu_none"
-  {
-    "en"      "None (Random Boss)"
-  }
-  "bossmenu_pick_boss_special"
-  {
-    "#format" "{1:s}"
-    "en"      "Next Boss will be {olive}{1}{default}!"
-  }
-  "command_boss_select_yourself"
-  {
-    "en"      "You've set yourself as the next Boss!"
-  }
-  "command_boss_select_someone"
-  {
-    "#format" "{1:N}"
-    "en"      "{1} is set as next Boss!"
-  }
-  "set_boss_menu_title"
-  {
-    "#format" "{1:s}"
-    "en"      "Set Boss Menu: \nCurrent Selected Boss: {1}"
-  }
-  "bossmenu_pick_boss"
-  {
-    "#format" "{1:s}"
-    "en"      "Your boss is set to {olive}{1}{default}!"
-  }
-  "music_panel_title"
-  {
-    "en"      "Turn the VS Saxton Hale 2 Music..."
-  }
-  "music_on"
-  {
-    "en"      "You've turned On the VS Saxton Hale 2 Music."
-  }
-  "music_off"
-  {
-    "en"      "You've turned Off the VS Saxton Hale 2 Music."
-  }
-  "force_cant_after_round_started"
-  {
-    "en"      "You can't force a boss after a round started..."
-  }
-  "force_player_notify"
-  {
-    "en"      "an Admin has forced you to be a Boss!"
-  }
-  "force_admin_forced"
-  {
-    "#format" "{1:s}"
-    "en"      "Forced {1} as a Boss"
-  }
-  "addpoints_usage"
-  {
-    "en"      "Usage: hale_addpoints <target> <points>"
-  }
-  "addpoints_added"
-  {
-    "#format" "{1:d},{2:s}"
-    "en"      "Added {1} queue points to {2}"
-  }
-  "setpoints_usage"
-  {
-    "en"      "Usage: hale_setpoints <target> <points>"
-  }
-  "setpoints_added"
-  {
-    "#format" "{1:d},{2:s}"
-    "en"      "Added {1} queue points to {2}"
-  }
-  "helpmenu_title"
-  {
-    "en"      "Welcome to the VSH2 Menu, how can I help you?"
-  }
-  "helpmenu_halehp"
-  {
-    "en"      "Show Boss health. (/halehp)"
-  }
-  "helpmenu_showclass"
-  {
-    "en"      "Show help about my class."
-  }
-  "helpmenu_halenext"
-  {
-    "en"      "Who is the next Boss? (/halenext)"
-  }
-  "helpmenu_resetq"
-  {
-    "en"      "Reset my Queue Points. (/resetq)"
-  }
-  "helpmenu_setboss"
-  {
-    "en"      "Set My Preferred Boss. (/setboss)"
-  }
-  "helpmenu_halemusic"
-  {
-    "en"      "Turn Off/On the Background Music. (/halemusic)"
-  }
-  "helpmenu_no_active_bosses"
-  {
-    "en"      "There are no active bosses..."
-  }
-  "classrushmenu_title"
-  {
-    "en"      "VSH2 Class Rush Menu"
-  }
-  "scout" //Why can't sourcemod just read the translation in the game?
-  {
-    "en"      "Scout"
-  }
-  "sniper"
-  {
-    "en"      "Sniper"
-  }
-  "soldier"
-  {
-    "en"      "Soldier"
-  }
-  "demoman"
-  {
-    "en"      "Demoman"
-  }
-  "medic"
-  {
-    "en"      "Medic"
-  }
-  "heavy"
-  {
-    "en"      "Heavy"
-  }
-  "pyro"
-  {
-    "en"      "Pyro"
-  }
-  "spy"
-  {
-    "en"      "Spy"
-  }
-  "engineer"
-  {
-    "en"      "Engineer"
-  }
-  "classrushmenu_force_notify"
-  {
-    "#format" "{1:s}"
-    "en"      "You've been forced to {orange}{1}{default}."
-  }
-  "classrushmenu_forced"
-  {
-    "#format" "{1:s}"
-    "en"      "Forced everybody to {orange}{1}{default}."
-  }
-  "start_need_more_players"
-  {
-    "en"      "Need more Players to Start."
-  }
-  "start_preround"
-  {
-    "en"      "Normal Round while Everybody is Loading"
-  }
-  "start_bad_boss"
-  {
-    "en"      "Boss client index was Invalid. Need more Players to Commence"
-  }
+"Phrases" {
+	"server_descriptor" {
+		"en"     "VS Saxton Hale 2"
+	}
+	"late_spawn_blocked" {
+		"en"     "Late Spawn Blocked"
+	}
+	"cant_suicide_as_boss" {
+		"en"     "You cannot suicide yet as a boss. Please Use '!resetq' instead."
+	}
+	"vsh2_welcome" {
+		"en"      "Welcome to VSH2, type /bosshelp for help!"
+	}
+	"cant_find_vsh2cfg" {
+		"en"     "**** {axis}couldn't find 'configs/saxton_hale/vsh2.cfg'{default} ****"
+	}
+	"vsh2_config_reloaded" {
+		"en"     "**** Reloaded VSH2 Config ****"
+	}
+	"top_3" {
+		"en"     "Most damage dealt by: "
+	}
+	"damage_dealt" {
+		"en"     "Damage Dealt: "
+	}
+	"gained_points" {
+		"#format" "{1:i}"
+		"en"      "You gained {1} queue points."
+	}
+	"scored_points" {
+		"#format" "{1:i}"
+		"en"      "You scored {1} queue points."
+	}
+	"total_boss_health" {
+		"en"      "Total Boss Health: "
+	}
+	"start_boss_replacer" {
+		"en"      "Surprise! You're on NOW!"
+	}
+	"start_boss_disconnected" {
+		"en"      "A Boss Just Disconnected!"
+	}
+	"player_backstab" {
+		"#format" "{1:s}"
+		"en"      "You Tickled {1}!"
+	}
+	"boss_got_backstabbed" {
+		"en"      "You Were Just Tickled!"
+	}
+	"player_market_garden" {
+		"#format" "{1:s}"
+		"en"      "You Market Gardened {1}!"
+	}
+	"boss_got_market_gardened" {
+		"en"      "You Were Just Market Gardened!"
+	}
+	"goomba_stomp" {
+		"#format" "{1:N},{2:N}"
+		"en"      "{olive}>> {teamcolor}{1} {default}just goomba stomped {unique}{2}{default}!"
+	}
+	"become_boss" {
+		"#format" "{1:N},{2:s},{3:i}"
+		"en"      "{1} has become {2} with {3} Health"
+	}
+	"health_left" {
+		"#format" "{1:s},{2:N},{3:i},{4:i}"
+		"en"      "{1} ({2}) had {3} (of {4}) health left."
+	}
+	"boss_defeated" {
+		"#format" "{1:s},{2:N}"
+		"en"      "{1} ({2}) was defeated."
+	}
+	"end_of_round" {
+		"#format" "{1:s}"
+		"en"      "{olive}[VSH 2] End of Round{default} {1}"
+	}
+	"show_current_hp" {
+		"#format" "{1:s},{2:i},{3:i}"
+		"en"      "{1} showed his current HP: {2} of {3}"
+	}
+	"current_health" {
+		"#format" "{1:s},{2:i},{3:i}"
+		"en"      "{1}'s current health is: {2} of {3}"
+	}
+	"boss_health_check" {
+		"#format" "{1:s}"
+		"en"      "Boss Health Check{default} {1}"
+	}
+	"cannot_see_hp_now" {
+		"#format" "{1:i},{2:i}"
+		"en"      "You cannot see the Boss HP now (wait {1} seconds). Last known total boss health was {2}."
+	}
+	"be_boss_soon" {
+		"en"      "You are going to be a Boss soon! Type {olive}/halenext{default} to check/reset your queue points & !setboss to set your boss."
+	}
+	"hud_damage" {
+		"#format" "{1:d}"
+		"en"      "Damage: {1}"
+	}
+	"hud_others_damage" {
+		"#format" "{1:s},{2:N},{3:d}"
+		"en"      "{1} - {2}'s Damage: {3}"
+	}
+	"hud_lives" {
+		"#format" "{1:s},{2:d}"
+		"en"      "{1} | Lives: {2}"
+	}
+	"dead_ringer_ready" {
+		"en"      "Status: Feign-Death Ready"
+	}
+	"dead_ringer_active" {
+		"en"      "Status: Dead-Ringered"
+	}
+	"dead_ringer_inactive" {
+		"en"      "Status: Inactive"
+	}
+	"kunai_ready" {
+		"#format" "{1:s}"
+		"en"      "{1} | Kunai: READY"
+	}
+	"kunai_none" {
+		"#format" "{1:s}"
+		"en"      "{1} | Kunai: _"
+	}
+	"air_strike_damage" {
+		"#format" "{1:i}"
+		"en"      "Air Strike Damage: {1}"
+	}
+	"shield_active" {
+		"en"      "Shield: ACTIVE"
+	}
+	"shield_gone" {
+		"en"      "Shield: _"
+	}
+	"be_boss_soon_panel_title" {
+		"en"      "You're The Next Boss!"
+	}
+	"be_boss_soon_panel_text" {
+		"en"      "You are going to be a Boss soon! Type /halenext to check/reset your queue points.\nAlternatively, use !resetq.\nDon't forget to use !setboss to set your boss."
+	}
+	"queue_set_0" {
+		"en"      "Your Queue has been set to 0!"
+	}
+	"queue_panel_title" {
+		"en"      "VSH2 Boss Queue:"
+	}
+	"queue_panel_set_0" {
+		"#format" "{1:i}"
+		"en"      "Your queue points: {1} (select to set to 0)"
+	}
+	"queue_set_0_confirm" {
+		"en"      "Are you sure you want to set your queue points to 0?"
+	}
+	"queue_points_reset" {
+		"en"      "You have reset your queue points to {olive}0{default}"
+	}
+	"bossmenu_title" {
+		"en"      "Set Next Boss Type Menu: "
+	}
+	"bossmenu_none" {
+		"en"      "None (Random Boss)"
+	}
+	"bossmenu_pick_boss_special" {
+		"#format" "{1:s}"
+		"en"      "Next Boss will be {olive}{1}{default}!"
+	}
+	"command_boss_select_yourself" {
+		"en"      "You've set yourself as the next Boss!"
+	}
+	"command_boss_select_someone" {
+		"#format" "{1:N}"
+		"en"      "{1} is set as next Boss!"
+	}
+	"set_boss_menu_title" {
+		"#format" "{1:s}"
+		"en"      "Set Boss Menu: \nCurrent Selected Boss: {1}"
+	}
+	"bossmenu_pick_boss" {
+		"#format" "{1:s}"
+		"en"      "Your boss is set to {olive}{1}{default}!"
+	}
+	"music_panel_title" {
+		"en"      "Turn the VS Saxton Hale 2 Music..."
+	}
+	"music_turn_on" {
+		"en"      "On"
+	}
+	"music_turn_off" {
+		"en"      "Off"
+	}
+	"music_on" {
+		"en"      "You've turned On the VS Saxton Hale 2 Music."
+	}
+	"music_off" {
+		"en"      "You've turned Off the VS Saxton Hale 2 Music."
+	}
+	"force_cant_after_round_started" {
+		"en"      "You can't force a boss after a round started..."
+	}
+	"force_player_notify" {
+		"en"      "an Admin has forced you to be a Boss!"
+	}
+	"force_admin_forced" {
+		"#format" "{1:s}"
+		"en"      "Forced {1} as a Boss"
+	}
+	"addpoints_usage" {
+		"en"      "Usage: hale_addpoints <target> <points>"
+	}
+	"addpoints_added" {
+		"#format" "{1:d},{2:s}"
+		"en"      "Added {1} queue points to {2}"
+	}
+	"setpoints_usage" {
+		"en"      "Usage: hale_setpoints <target> <points>"
+	}
+	"setpoints_added" {
+		"#format" "{1:d},{2:s}"
+		"en"      "Added {1} queue points to {2}"
+	}
+	"helpmenu_title" {
+		"en"      "Welcome to the VSH2 Menu, how can I help you?"
+	}
+	"helpmenu_halehp" {
+		"en"      "Show Boss health. (/halehp)"
+	}
+	"helpmenu_showclass" {
+		"en"      "Show help about my class."
+	}
+	"helpmenu_halenext" {
+		"en"      "Who is the next Boss? (/halenext)"
+	}
+	"helpmenu_resetq" {
+		"en"      "Reset my Queue Points. (/resetq)"
+	}
+	"helpmenu_setboss" {
+		"en"      "Set My Preferred Boss. (/setboss)"
+	}
+	"helpmenu_halemusic" {
+		"en"      "Turn Off/On the Background Music. (/halemusic)"
+	}
+	"helpmenu_bosspartner" {
+		"en"      "Enable/Disable being a boss partner. (/halepartner)"
+	}
+	"helpmenu_no_active_bosses" {
+		"en"      "There are no active bosses..."
+	}
+	"classrushmenu_title" {
+		"en"      "VSH2 Class Rush Menu"
+	}
+	"scout" {
+		"en"      "Scout"
+	}
+	"sniper" {
+		"en"      "Sniper"
+	}
+	"soldier" {
+		"en"      "Soldier"
+	}
+	"demoman" {
+		"en"      "Demoman"
+	}
+	"medic" {
+		"en"      "Medic"
+	}
+	"heavy" {
+		"en"      "Heavy"
+	}
+	"pyro" {
+		"en"      "Pyro"
+	}
+	"spy" {
+		"en"      "Spy"
+	}
+	"engineer" {
+		"en"      "Engineer"
+	}
+	"classrushmenu_force_notify" {
+		"#format" "{1:s}"
+		"en"      "You've been forced to {orange}{1}{default}."
+	}
+	"classrushmenu_forced" {
+		"#format" "{1:s}"
+		"en"      "Forced everybody to {orange}{1}{default}."
+	}
+	"start_need_more_players" {
+		"en"      "Need more Players to Start."
+	}
+	"start_preround" {
+		"en"      "Normal Round while Everybody is Loading"
+	}
+	"start_bad_boss" {
+		"en"      "Boss client index was Invalid. Need more Players to Commence"
+	}
+	"superjump_hud_text" {
+		"#format" "{1:i}"
+		"en"      "Jump: {1}%"
+	}
+	"rage_hud_text" {
+		"en"      "Rage"
+	}
+	"rage_hud_text_full" {
+		"en"      "FULL - Call Medic (default: E) to activate"
+	}
+	"rage_hud_text_percent" {
+		"#format" "{1:0.1f}"
+		"en"      "{1}"
+	}
+	"uber_hud_text" {
+		"#format" "{1:0.1f}"
+		"en"      "Uber Time: {1}s"
+	}
+	"cbs_arrow_hud_text" {
+		"#format" "{1:i}"
+		"en"      "Arrows: {1}"
+	}
+	"teleport_hud_text" {
+		"#format" "{1:i}"
+		"en"      "Teleport: {1}%"
+	}
+	"hhh_climb_hud_text" {
+		"#format" "{1:i},{2:i}"
+		"en"      "Climbs: {1} / {2}"
+	}
+	
+	"abilitycmd_usage" {
+		"en"      "Usage: sm_vsh2_ability <target> <ability name> <+/-/0> (+ gives | - removes | 0 removes all)"
+	}
+	
+	/// needs translating.
+	"hale_name" {
+		"en"      "Saxton Hale"
+	}
+	"vagineer_name" {
+		"en"      "The Vagineer"
+	}
+	"cbs_name" {
+		"en"      "The Christian Brutal Sniper"
+	}
+	"hhh_name" {
+		"en"      "The Horseless Headless Horseman Jr"
+	}
+	"bunny_name" {
+		"en"      "The Easter Bunny"
+	}
+	
+	"hale_menu_name" {
+		"en"      "Saxton Hale"
+	}
+	"vagineer_menu_name" {
+		"en"      "Vagineer"
+	}
+	"cbs_menu_name" {
+		"en"      "Christian Brutal Sniper"
+	}
+	"hhh_menu_name" {
+		"en"      "HHH Jr"
+	}
+	"bunny_menu_name" {
+		"en"      "Easter Bunny"
+	}
+	
+	"hale_panel" {
+		"en"      "Saxton Hale:\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (stun): taunt when the Rage is full to stun nearby enemies."
+	}
+	"vagineer_panel" {
+		"en"      "Vagineer:\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (Uber): taunt when the Rage Meter is full to stun fairly close-by enemies."
+	}
+	"cbs_panel" {
+		"en"      "Christian Brutal Sniper:\nSuper Jump: right click + hold, look up, then release right click.\nWeigh-down: in midair, look down & crouch\nRage (Huntsman Bow): call medic when Rage meter is full.\nVery close-by enemies are stunned."
+	}
+	"hhh_panel" {
+		"en"      "Horseless Headless Horsemann Jr.:\nTeleporter: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (stun): taunt when Rage is full to stun nearby enemies."
+	}
+	"bunny_panel" {
+		"en"      "The Easter Bunny:\nI think he wants to give out candy? Maybe?\nSuper Jump: right click + hold, look up, then release right click.\nWeigh-down: in midair, look down and crouch\nRage (Happy Easter, Fools): call medic when Rage Meter is full.\nNearby enemies are stunned."
+	}
+	"command_boss_select_ingame_only" {
+		"en" "command can only be used in-game."
+	}
+	"boss_cookie_reset" {
+		"en" "Your Set-Boss data has been reset."
+	}
+	
+	"be_partner_panel_title" {
+		"en" "Allow being chosen to be a boss partner."
+	}
+	"be_partner_turn_on" {
+		"en" "Yes - I want to be chosen to be a random boss partner."
+	}
+	"be_partner_turn_off" {
+		"en" "No - I do NOT want to become a random boss partner"
+	}
 }

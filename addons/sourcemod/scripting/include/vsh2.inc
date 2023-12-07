@@ -6,6 +6,7 @@
 #include <tf2_stocks>
 #include <tf2items_stocks>
 #include <cfgmap>
+#include <ecs_helper>
 
 
 enum {
@@ -13,7 +14,7 @@ enum {
 	MAX_PANEL_MSG      = 512,
 	PLAYER_HUD_SIZE    = 512,
 	MAX_BOSS_NAME_SIZE = 64,
-	PLAYER_NAME_SIZE   = 64
+	PLAYER_NAME_SIZE   = 64,
 };
 
 
@@ -38,7 +39,7 @@ enum { /** VSH2 Default Bosses */
 	VSH2Boss_CBS,
 	VSH2Boss_HHHjr,
 	VSH2Boss_Bunny,
-	MaxDefaultVSH2Bosses
+	MaxDefaultVSH2Bosses,
 };
 
 
@@ -52,22 +53,22 @@ enum { /** Voice Clip Flags */
 
 enum {
 	VSH2_VOICE_ALL     = VSH2_VOICE_BOSSENT|VSH2_VOICE_BOSSPOS|VSH2_VOICE_TOALL|VSH2_VOICE_ALLCHAN|VSH2_VOICE_ONCE,
-
+	
 	/// For when boss does something like a superjump, etc.
 	VSH2_VOICE_ABILITY = VSH2_VOICE_BOSSENT|VSH2_VOICE_BOSSPOS|VSH2_VOICE_TOALL,
-
+	
 	/// For when boss does something like rage or special ability.
 	VSH2_VOICE_RAGE    = VSH2_VOICE_BOSSENT|VSH2_VOICE_BOSSPOS|VSH2_VOICE_TOALL|VSH2_VOICE_ALLCHAN,
-
+	
 	/// For when boss gets stabbed or goes on a killing spree.
 	VSH2_VOICE_SPREE   = 0,
 	VSH2_VOICE_STABBED = 0,
-
+	
 	/// For when boss loses, wins, or introduces themselves like the mentlegen they are.
 	VSH2_VOICE_WIN     = VSH2_VOICE_ONCE|VSH2_VOICE_ALLCHAN,
 	VSH2_VOICE_LOSE    = VSH2_VOICE_ONCE|VSH2_VOICE_ALLCHAN,
 	VSH2_VOICE_INTRO   = VSH2_VOICE_ONCE|VSH2_VOICE_ALLCHAN,
-
+	
 	/// For when there's only one target left!
 	VSH2_VOICE_LASTGUY = VSH2_VOICE_BOSSPOS,
 };
@@ -100,17 +101,66 @@ enum { /** VSH2 Resource Types */
 	MaxResourceTypes
 };
 
+/// WHY did the round end?
+enum { /** VSH2RoundResult */
+	RoundResInvalid,  /// round didn't even end yet.
+	RoundResBossWin,  /// boss successfully killed ALL players.
+	RoundResBossDied, /// last/only boss died.
+	RoundResBossDisc, /// last/only boss disconnected.
+	RoundResTimer,    /// timer ran out.
+	RoundResCap,      /// control point was captured.
+};
+
+enum { /** Builtin Abilities */
+	Ability_Rage,                  /// taking damage increases a rage meter.
+	Ability_MeleeClimbWalls,       /// hitting a wall with melee makes you climb it.
+	Ability_MakeHealthKitOnHit,    /// hit something, health spawns
+	Ability_SuperJump,             /// superjump mechanic.
+	Ability_Weighdown,             /// weighdown mechanic.
+	Ability_GlowOnDmg,             /// player is outlined when hurt [by specific things].
+	Ability_EscapePlanEffect,      /// move faster as health gets lower.
+	Ability_StunRagePlayers,       /// saxton hale stun rage on players.
+	Ability_StunRageBuildings,     /// saxton hale stun rage on buildings.
+	Ability_TeleToRandomPlayer,    /// HHH right-click/duck teleport.
+	Ability_EggBombs,              /// Easter Bunny egg rage.
+	Ability_PowerUber,             /// Vagineer-like Uber (uber + no knockback)
+	Ability_Anchor,                /// crouch walking takes no knock-back.
+	MaxDefaultAblities,
+	
+	MAX_ABILITIES = COMPONENT_BIT_LEN,
+};
+
+/// Builtin Abilities string name.
+/// Please arrange these by sets of five.
+#define ABILITY_RAGE            "rage"              /// taking damage increases a rage meter.
+#define ABILITY_CLIMB_WALLS     "melee_climb_walls" /// hitting a wall with melee makes you climb it.
+#define ABILITY_SPAWN_HEALTH    "spawn_health"      /// hit something, health spawns
+#define ABILITY_SUPERJUMP       "superjump"         /// superjump mechanic.
+#define ABILITY_WEIGHDOWN       "weighdown"         /// weighdown mechanic.
+
+#define ABILITY_GLOW            "glow"              /// player is outlined when hurt [by specific things].
+#define ABILITY_ESCAPE_PLAN     "escape_plan"       /// move faster as health gets lower.
+#define ABILITY_STUN_PLYRS      "stun_players"      /// saxton hale stun rage on players.
+#define ABILITY_STUN_BUILDS     "stun_building"     /// saxton hale stun rage on buildings.
+#define ABILITY_TELEPORT        "teleport"          /// HHH right-click/duck teleport.
+
+#define ABILITY_AUTO_FIRE       "auto_fire"         /// Easter Bunny egg rage.
+#define ABILITY_POWER_UBER      "power_uber"        /// Vagineer-like Uber. (uber + no knockback)
+#define ABILITY_ANCHOR          "anchor"            /// crouch walking takes no knock-back.
+#define ABILITY_GET_WEP         "get_weapon"        /// CBS-style rage where you just gain a weapon.
+#define ABILITY_EXPLODE_AMMO    "explode_ammo"      /// Easter Bunny ammo eggs burst on kill/death.
+
 
 methodmap VSH2Player {
 	/** [ C O N S T R U C T O R ]
-	 * Constructs an instance of the BaseBoss internal methodmap
+	 * Constructs an instance of the BasePlayer internal methodmap
 	 * @param index - index (or the userid) of a player
 	 * @param userid - if using userid instead of player index, set this param to true
 	 * @return    a player instance of the VSH2Player methodmap
 	 */
-	public native VSH2Player(const int index, bool userid=false);
-
-
+	public native VSH2Player(int index, bool userid=false);
+	
+	
 	/** **** **** [ P R O P E R T I E S ] **** **** **/
 	/**
 	 * gets the userid of the vsh2 player instance
@@ -119,7 +169,7 @@ methodmap VSH2Player {
 	property int userid {
 		public native get();
 	}
-
+	
 	/**
 	 * gets the index of the vsh2 player instance
 	 * @return    the bare player index integer
@@ -127,7 +177,7 @@ methodmap VSH2Player {
 	property int index {
 		public native get();
 	}
-
+	
 	/**
 	 * sets the property of the internal VSH2 methodmap
 	 * NOTE: You can use this to create new properties which GetProperty can access!
@@ -137,7 +187,7 @@ methodmap VSH2Player {
 	 */
 	#pragma deprecated Use GetPropInt, GetPropFloat, or GetPropAny instead.
 	public native any GetProperty(const char prop_name[64]);
-
+	
 	/**
 	 * sets the property of the internal VSH2 methodmap
 	 * NOTE: You can use this to create new properties which GetProperty can access!
@@ -147,15 +197,17 @@ methodmap VSH2Player {
 	 */
 	#pragma deprecated Use SetPropInt, SetPropFloat, or SetPropAny instead.
 	public native void  SetProperty(const char prop_name[64], any value);
-
+	
 	public native int   GetPropInt(const char prop_name[64]);
 	public native float GetPropFloat(const char prop_name[64]);
 	public native any   GetPropAny(const char prop_name[64]);
-
+	
 	public native bool  SetPropInt(const char prop_name[64], int value);
 	public native bool  SetPropFloat(const char prop_name[64], float value);
 	public native bool  SetPropAny(const char prop_name[64], any value);
-
+	
+	public native bool  HasProp(const char prop_name[64]);
+	
 	/** AVAILABLE PROPERTIES
 	 * int iQueue
 	 * int iPresetType
@@ -165,15 +217,15 @@ methodmap VSH2Player {
 	 * int iAirDamage
 	 * int iSongPick
 	 * int iClimbs
-	 * int iOwnerBoss **** use 'hOwnerBoss' instead of this. ****
-	 * int iUberTarget **** Use 'hUberTarget' property instead this. ****
+	 * int iOwnerBoss  **** Use 'hOwnerBoss'  property instead of this. ****
+	 * int iUberTarget **** Use 'hUberTarget' property instead of this. ****
 	 * bool bIsMinion
 	 * bool bInJump
 	 * float flGlowtime
 	 * float flLastHit
 	 * float flLastShot
-
-	** ALL PROPERTIES AFTER THIS COMMENT ONLY ACCOUNT FOR BOSSES BUT CAN STILL APPLY ON NON-BOSSES AND MINIONS **
+	 * 
+	 * ALL PROPERTIES AFTER THIS COMMENT ONLY ACCOUNT FOR BOSSES BUT CAN STILL APPLY TO NON-BOSSES AND MINIONS **
 	 * int iHealth
 	 * int iMaxHealth
 	 * int iBossType
@@ -189,8 +241,9 @@ methodmap VSH2Player {
 	 * float flKillSpree
 	 * float flWeighDown
 	 * float flMusicTime
+	 * ConfigMap hConfig
 	 */
-
+	
 	property int iHealth {
 		public get() {
 			return GetClientHealth(this.index);
@@ -199,7 +252,7 @@ methodmap VSH2Player {
 			SetEntityHealth(this.index, val);
 		}
 	}
-
+	
 	property VSH2Player hOwnerBoss {
 		public get() {
 			return VSH2Player(this.GetPropInt("iOwnerBoss"), true);
@@ -208,7 +261,7 @@ methodmap VSH2Player {
 			this.SetPropInt("iOwnerBoss", val.userid);
 		}
 	}
-
+	
 	property VSH2Player hUberTarget {
 		public get() {
 			return VSH2Player(this.GetPropInt("iUberTarget"), true);
@@ -222,47 +275,56 @@ methodmap VSH2Player {
 			return this.GetPropAny("bIsMinion");
 		}
 	}
-
-	public native void ConvertToMinion(const float spawntime);
-	public native int  SpawnWeapon(char[] name, const int index, const int level, const int qual, char[] att);
-	public native int  GetWeaponSlotIndex(const int slot);
-	public native void SetWepInvis(const int alpha);
+	
+	public native void ConvertToMinion(float spawntime);
+	public native int  SpawnWeapon(const char[] name, int index, int level, int qual, const char[] att);
+	public native int  GetWeaponSlotIndex(int slot);
+	public native void SetWepInvis(int alpha);
+	public        int  GetSlotIdxFromWep(int wep) {
+		int client = this.index;
+		for( int i = TFWeaponSlot_Primary; i <= TFWeaponSlot_Item2; i++ ) {
+			if( wep==GetPlayerWeaponSlot(client, i) ) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
 	public native void SetOverlay(const char[] strOverlay);
 	public native bool TeleToSpawn(int team=0);
 	public native void IncreaseHeadCount(bool addhealth=true, int head_count=1);
 	public native void SpawnSmallHealthPack(int ownerteam=0);
-	public native void ForceTeamChange(const int team);
-	public native bool ClimbWall(const int weapon, const float upwardVel, const float health, const bool attackdelay);
+	public native void ForceTeamChange(int team);
+	public native bool ClimbWall(int weapon, float upwardVel, float health, bool attackdelay);
 	public native void HelpPanelClass();
-	public native int  GetAmmoTable(const int wepslot);
-	public native void SetAmmoTable(const int wepslot, const int amount);
-	public native int  GetClipTable(const int wepslot);
-	public native void SetClipTable(const int wepslot, const int amount);
-
+	public native int  GetAmmoTable(int wepslot);
+	public native void SetAmmoTable(int wepslot, int amount);
+	public native int  GetClipTable(int wepslot);
+	public native void SetClipTable(int wepslot, int amount);
+	
 	public native int  GetHealTarget();
 	public VSH2Player  GetHealPatient() {
 		return VSH2Player(this.GetHealTarget());
 	}
-
+	
 	property VSH2Player hHealTarget {
 		public get() {
 			return this.GetHealPatient();
 		}
 	}
-
+	
 	public native bool IsNearDispenser();
-	public native bool IsInRange(const int target, const float dist, bool pTrace=false);
-	public bool        IsPlayerInRange(VSH2Player target, const float dist, bool pTrace=false) {
+	public native bool IsInRange(int target, float dist, bool pTrace=false);
+	public bool        IsPlayerInRange(VSH2Player target, float dist, bool pTrace=false) {
 		return this.IsInRange(target.index, dist, pTrace);
 	}
-
-	public int GetPlayersInRange(VSH2Player[] players, const float dist, bool trace=false) {
+	
+	public int GetPlayersInRange(VSH2Player[/** MaxClients */] players, float dist, bool trace=false) {
 		int count;
-		for( int i=MaxClients; i; --i ) {
-			if( i <= 0 || i > MaxClients || !IsClientInGame(i) || !IsPlayerAlive(i) ) {
+		for( int i=1; i<=MaxClients; i++ ) {
+			if( !(0 < i <= MaxClients) || !IsClientInGame(i) || !IsPlayerAlive(i) ) {
 				continue;
 			}
-
 			VSH2Player player = VSH2Player(i);
 			if( player==this ) {
 				continue;
@@ -272,29 +334,47 @@ methodmap VSH2Player {
 		}
 		return count;
 	}
-
-	public native void RemoveBack(int[] indices, const int len);
-
-	public native int  FindBack(int[] indices, const int len);
-
-	public native int  ShootRocket(bool bCrit=false, float vPosition[3], float vAngles[3], const float flSpeed, const float dmg, const char[] model, bool arc=false);
-
-	public native void Heal(const int health, bool on_hud=false, bool overridehp=false, int overheal_limit=0);
-
+	
+	public native void RemoveBack(const int[] indices, int len);
+	
+	public native int  FindBack(const int[] indices, int len);
+	
+	public native int  ShootRocket(bool bCrit=false, const float vPosition[3], const float vAngles[3], float flSpeed, float dmg, const char[] model, bool arc=false);
+	
+	public native void Heal(int health, bool on_hud=false, bool overridehp=false, int overheal_limit=0);
+	
+	#pragma deprecated Use iTFClass property instead.
 	public TFClassType GetTFClass() {
 		return TF2_GetPlayerClass(this.index);
 	}
-
+	
 	/// why didn't I make it a property in the first place?
 	property TFClassType iTFClass {
 		public get() {
 			return TF2_GetPlayerClass(this.index);
 		}
 	}
-
-	public native bool AddTempAttrib(const int attrib, const float val, const float dur = -1.0);
-
-
+	
+	public native bool AddTempAttrib(int attrib, float val, float dur=(-1.0));
+	
+	/// Ability stuff.
+	/// works on bosses and non-bosses alike.
+	public native bool GiveAbility(const char[] name);
+	public native bool RemoveAbility(const char[] name);
+	public native bool HasAbility(const char[] name);
+	public native bool RemoveAllAbilities();
+	
+	/**
+	 * For ability-making devs to allow addons and boss modules to intercept ability data.
+	 * 
+	 * @param ability_name - name of the ability about to be run.
+	 * @param args         - ability arguments in an ArrayList.
+	 * @return             - Action, Plugin_Changed result will set 'was_changed' to true for 'RunPostAbility'.
+	 */
+	public native Action RunPreAbility(const char[] ability_name, any[] args, int len);
+	public native void   RunPostAbility(const char[] ability_name, const any[] args, int len, bool was_changed);
+	
+	
 	/// Boss oriented methods & properties.
 	property bool bIsBoss {
 		public get() {
@@ -302,49 +382,55 @@ methodmap VSH2Player {
 		}
 	}
 	public native void ConvertToBoss();
-	public native void GiveRage(const int damage);
-	public native void MakeBossAndSwitch(const int type, const bool run_event);
-	public native void DoGenericStun(const float rageDist);
+	public native void GiveRage(int damage);
+	public native void MakeBossAndSwitch(int type, bool run_event);
+	public native void DoGenericStun(float rageDist);
 	public native void StunPlayers(float rage_dist, float stun_time=5.0);
 	public native void StunBuildings(float rage_dist, float sentry_stun_time=8.0);
 	public native void RemoveAllItems(bool weps=true);
-
+	
 	public native bool GetName(char buffer[MAX_BOSS_NAME_SIZE]);
 	public native bool SetName(const char name[MAX_BOSS_NAME_SIZE]);
-
-	public native void SuperJump(const float power, const float reset);
-	public native void WeighDown(const float reset);
-
+	
+	public native void SuperJump(float power, float reset);
+	public native void WeighDown(float reset);
+	
 	/** use the VSH2_VOICE_* flags above^^^. */
-	public native void PlayVoiceClip(const char[] voiceclip, const int flags);
-
-	public native void PlayMusic(const float vol=100.0, const char[] override="");
+	public native void PlayVoiceClip(const char[] voiceclip, int flags);
+	
+	public native void PlayMusic(float vol=100.0, const char[] override="");
 	public native void StopMusic();
-
-	public void SpeedThink(const float iota, const float minspeed=100.0) {
+	
+	public void SpeedThink(float iota, float minspeed=100.0) {
 		VSH2_SpeedThink(this, iota, minspeed);
 	}
-	public void GlowThink(const float decrease) {
+	public void GlowThink(float decrease) {
 		VSH2_GlowThink(this, decrease);
 	}
-	public bool SuperJumpThink(const float charging, const float jumpcharge, int buttons = (IN_ATTACK2|IN_DUCK)) {
+	public bool SuperJumpThink(float charging, float jumpcharge, int buttons = (IN_ATTACK2|IN_DUCK)) {
 		return VSH2_SuperJumpThink(this, charging, jumpcharge, buttons);
 	}
-	public void WeighDownThink(const float weighdown_time, const float incr, int buttons = IN_DUCK) {
+	public void WeighDownThink(float weighdown_time, float incr, int buttons = IN_DUCK) {
 		VSH2_WeighDownThink(this, weighdown_time, incr, buttons);
 	}
-
-	public void PlayRandVoiceClipCfgMap(ConfigMap sect, int voice_flags, int& idx=0) {
-		if( sect==null )
+	
+	public void PlayRandVoiceClipCfgMap(ConfigMap sect, int voice_flags) {
+		if( sect==null ) {
 			return;
-
-		int sound_idx = ShuffleIndex(sect.Size, idx);
-		int sound_len = sect.GetIntKeySize(sound_idx);
+		}
+		static int curr_sound_idx;
+		curr_sound_idx = ShuffleIndex(sect.Size, curr_sound_idx);
+		int sound_len = sect.GetIntKeySize(curr_sound_idx);
 		char[] sound_str = new char[sound_len];
-		if( sect.GetIntKey(sound_idx, sound_str, sound_len) > 0 ) {
+		if( sect.GetIntKey(curr_sound_idx, sound_str, sound_len) > 0 ) {
 			this.PlayVoiceClip(sound_str, voice_flags);
 		}
 	}
+	
+	public native bool ChargedThink(float charge_rate, float &charge, float max_charge, float min_charge, int req_buttons, bool cond, bool &super_charged=false);
+	
+	/// HHH Jr teleport.
+	public native void TeleToRandomPlayer(float charge_reset, bool supercharge_reset);
 };
 
 
@@ -357,12 +443,18 @@ methodmap VSH2Player {
  * WeighDownThink -> handles weighdown charging
  */
 
-stock void VSH2_SpeedThink(VSH2Player boss, const float iota, const float minspeed=100.0) {
+stock void VSH2_SpeedThink(VSH2Player boss, float iota, float minspeed=100.0) {
+	if( !boss.HasAbility(ABILITY_ESCAPE_PLAN) ) {
+		return;
+	}
 	float speed = iota + 0.7 * (100 - boss.iHealth * 100 / boss.GetPropInt("iMaxHealth"));
-	SetEntPropFloat(boss.index, Prop_Send, "m_flMaxspeed", (speed < minspeed) ? minspeed : speed);
+	SetEntPropFloat(boss.index, Prop_Send, "m_flMaxspeed", (speed < minspeed)? minspeed : speed);
 }
 
-stock void VSH2_GlowThink(VSH2Player boss, const float decrease) {
+stock void VSH2_GlowThink(VSH2Player boss, float decrease) {
+	if( !boss.HasAbility(ABILITY_GLOW) ) {
+		return;
+	}
 	float glowtime = boss.GetPropFloat("flGlowtime");
 	if( glowtime > 0.0 ) {
 		SetEntProp(boss.index, Prop_Send, "m_bGlowEnabled", 1);
@@ -372,11 +464,14 @@ stock void VSH2_GlowThink(VSH2Player boss, const float decrease) {
 	}
 }
 
-stock bool VSH2_SuperJumpThink(VSH2Player boss, const float charging, const float jumpcharge, int button=(IN_ATTACK2|IN_DUCK)) {
-	int player = boss.index;
-	int buttons = GetClientButtons(player);
+stock bool VSH2_SuperJumpThink(VSH2Player boss, float charging, float jumpcharge, int button=(IN_ATTACK2|IN_DUCK)) {
+	if( !boss.HasAbility(ABILITY_SUPERJUMP) ) {
+		return false;
+	}
+	int player   = boss.index;
+	int buttons  = GetClientButtons(player);
 	float charge = boss.GetPropFloat("flCharge");
-	if( (buttons & button) && (charge >= 0.0) ) {
+	if( (buttons & button) && charge >= 0.0 ) {
 		if( charge + charging < jumpcharge ) {
 			boss.SetPropFloat("flCharge", charge + charging);
 		} else {
@@ -395,10 +490,13 @@ stock bool VSH2_SuperJumpThink(VSH2Player boss, const float charging, const floa
 	return false;
 }
 
-stock void VSH2_WeighDownThink(VSH2Player boss, const float weighdown_time, const float incr, int button=IN_DUCK) {
-	int player = boss.index;
+stock void VSH2_WeighDownThink(VSH2Player boss, float weighdown_time, float incr, int button=IN_DUCK) {
+	if( !boss.HasAbility(ABILITY_WEIGHDOWN) ) {
+		return;
+	}
+	int player  = boss.index;
 	int buttons = GetClientButtons(player);
-	int flags = GetEntityFlags(player);
+	int flags   = GetEntityFlags(player);
 	if( flags & FL_ONGROUND ) {
 		boss.SetPropFloat("flWeighDown", 0.0);
 	} else {
@@ -416,11 +514,29 @@ stock void VSH2_WeighDownThink(VSH2Player boss, const float weighdown_time, cons
 /**
  * Registers a boss module/subplugin.
  * NOTE: The purpose of this native is to register boss modules/subplugins, you don't need to register add-on plugins to use forwards, simply hook what forward(s) you need.
- *
+ * 
  * @param     plugin_name -> module name you want your calling plugin to be identified under
  * @return    integer of the plugin array index, -1 if error.
  */
 native int VSH2_RegisterPlugin(const char plugin_name[64]);
+
+/**
+ * Returns the single, internal hash map that is intended to be shared with addons and boss modules.
+ * NOTE: **** DO NOT DELETE THE STRINGMAP GIVEN FROM THIS NATIVE. ****
+ * 
+ * @return    shareable hashmap.
+ */
+native StringMap VSH2_GetSharedMap();
+
+
+/**
+ * Registers an ability which is defines as any passive or active mechanic
+ * that a player, minion and/or boss is allowed to use such as Wall-Climbing Melee.
+ *
+ * @param     ability_name -> Name of the ability, some are already preregistered.
+ * @return    true if successful, false otherwise.
+ */
+native bool VSH2_RegisterAbility(const char[] ability_name);
 
 
 enum { /// VSH2HookType
@@ -467,7 +583,7 @@ enum { /// VSH2HookType
 	OnBossDealDamage_OnHitDeadRinger,
 	OnBossDealDamage_OnHitCloakedSpy,
 	OnBossDealDamage_OnHitShield,
-
+	
 	OnBossTakeDamage_OnStabbed,
 	OnBossTakeDamage_OnTelefragged,
 	OnBossTakeDamage_OnSwordTaunt,
@@ -483,7 +599,7 @@ enum { /// VSH2HookType
 	OnBossTakeDamage_OnAmbassadorHeadshot,
 	OnBossTakeDamage_OnDiamondbackManmelterCrit,
 	OnBossTakeDamage_OnHolidayPunch,
-
+	
 	OnBossSuperJump,
 	OnBossDoRageStun,
 	OnBossWeighDown,
@@ -512,36 +628,13 @@ enum { /// VSH2HookType
 	OnRedPlayerHUD,
 	OnRedPlayerCrits,
 	OnShowStats,
+	OnPreAbility,
+	OnPostAbility,
+	OnBossHUD,
+	OnTeamsSeparate,
+	OnMapObsPrep,
 	MaxVSH2Forwards
 };
-
-/*
-enum { /// OnBossTakeDamage (OBTD) & OnBossDealDamage (OBDD) bits.
-	OBDD_OnStomp                    = 1<<0,
-	OBDD_OnHitDefBuff               = 1<<1,
-	OBDD_OnHitCritMmmph             = 1<<2,
-	OBDD_OnHitMedic                 = 1<<3,
-	OBDD_OnHitDeadRinger            = 1<<4,
-	OBDD_OnHitCloakedSpy            = 1<<5,
-	OBDD_OnHitShield                = 1<<6,
-
-	OBTD_OnStabbed                  = 1<<0,
-	OBTD_OnTelefragged              = 1<<1,
-	OBTD_OnSwordTaunt               = 1<<2,
-	OBTD_OnHeavyShotgun             = 1<<3,
-	OBTD_OnSniped                   = 1<<4,
-	OBTD_OnThirdDegreed             = 1<<5,
-	OBTD_OnHitSword                 = 1<<6,
-	OBTD_OnHitFanOWar               = 1<<7,
-	OBTD_OnHitCandyCane             = 1<<8,
-	OBTD_OnMarketGardened           = 1<<9,
-	OBTD_OnPowerJack                = 1<<10,
-	OBTD_OnKatana                   = 1<<11,
-	OBTD_OnAmbassadorHeadshot       = 1<<12,
-	OBTD_OnDiamondbackManmelterCrit = 1<<13,
-	OBTD_OnHolidayPunch             = 1<<14
-};
-*/
 
 
 /**
@@ -571,9 +664,9 @@ typeset VSH2HookCB {
 	 * OnBossThinkPost -> Action has no effect on this forward.
 	 * OnRedPlayerThinkPost -> Action has no effect on this forward.
 	 */
-	function Action (const VSH2Player player);
-	function void   (const VSH2Player player);
-
+	function Action (VSH2Player player);
+	function void   (VSH2Player player);
+	
 	/**
 	 * OnTouchPlayer - victim is boss, attacker is other player.
 	 * OnBossJarated
@@ -583,17 +676,17 @@ typeset VSH2HookCB {
 	 * OnMinionInitialized - victim is minion, attacker is the owner/master boss.
 	 * OnLastPlayer - "victim" is a boss, "attacker" is the last fighter/player.
 	 */
-	function Action (const VSH2Player victim, const VSH2Player attacker);
-	function void   (const VSH2Player victim, const VSH2Player attacker);
-
+	function Action (VSH2Player victim, VSH2Player attacker);
+	function void   (VSH2Player victim, VSH2Player attacker);
+	
 	/// OnTouchBuilding
-	function Action (const VSH2Player attacker, const int BuildingRef);
-	function void   (const VSH2Player attacker, const int BuildingRef);
-
+	function Action (VSH2Player attacker, int BuildingRef);
+	function void   (VSH2Player attacker, int BuildingRef);
+	
 	/// OnBossKillBuilding
-	function Action (const VSH2Player attacker, const int building, Event event);
-	function void   (const VSH2Player attacker, const int building, Event event);
-
+	function Action (VSH2Player attacker, int building, Event event);
+	function void   (VSH2Player attacker, int building, Event event);
+	
 	/** Boss Specific OnTakeDamage hooks
 	 * OnBossTakeDamage -> use if your boss requires completely custom take damage code.
 	 * OnBossDealDamage -> use if your boss requires completely custom deal damage code.
@@ -604,7 +697,7 @@ typeset VSH2HookCB {
 	 * OnBossDealDamage_OnHitDeadRinger -> hitting a spy that has Dead Ringer.
 	 * OnBossDealDamage_OnHitCloakedSpy -> hitting a spy that is cloaked.
 	 * OnBossDealDamage_OnHitShield -> hitting a player equipped with demoknight shield or razorback.
-	 *
+	 * 
 	 * OnBossTakeDamage_OnStabbed -> boss got backstabbed!
 	 * OnBossTakeDamage_OnTelefragged -> boss got telefragged
 	 * OnBossTakeDamage_OnSwordTaunt -> boss got hit by a demo sword swing taunt.
@@ -627,137 +720,151 @@ typeset VSH2HookCB {
 	 * OnPlayerTakeFallDamage -> when a red takes fall dmg.
 	 */
 	function Action (VSH2Player victim, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom);
-
+	
 	/**
 	 * PlayerKilled
 	 * PlayerAirblasted - player is the airblaster
 	 * PlayerHurt
 	 */
-	function Action (const VSH2Player player, const VSH2Player victim, Event event);
-	function void   (const VSH2Player player, const VSH2Player victim, Event event);
-
+	function Action (VSH2Player player, VSH2Player victim, Event event);
+	function void   (VSH2Player player, VSH2Player victim, Event event);
+	
 	/// OnTraceAttack
-	function Action (const VSH2Player victim, const VSH2Player attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup);
-	function void   (const VSH2Player victim, const VSH2Player attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup);
-
+	function Action (VSH2Player victim, VSH2Player attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup);
+	function void   (VSH2Player victim, VSH2Player attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup);
+	
 	/// OnMessageIntro
-	function Action (const VSH2Player player, char message[MAXMESSAGE]);
-	function void   (const VSH2Player player, char message[MAXMESSAGE]);
-
+	function Action (VSH2Player player, char message[MAXMESSAGE]);
+	function void   (VSH2Player player, char message[MAXMESSAGE]);
+	
 	/**
 	 * BossHealthCheck - bossBool determines if command user was the boss
 	 * RoundEndInfo - bossBool determines if boss won the round
 	 */
-	function Action (const VSH2Player player, bool bossBool, char message[MAXMESSAGE]);
-	function void   (const VSH2Player player, bool bossBool, char message[MAXMESSAGE]);
-
+	function Action (VSH2Player player, bool bossBool, char message[MAXMESSAGE]);
+	function void   (VSH2Player player, bool bossBool, char message[MAXMESSAGE]);
+	
 	/// OnMusic
-	function Action (char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player);
-	function void   (char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player);
-	function Action (char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player, float& volume);
-	function void   (char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player, float& volume);
-
+	function Action (char song[PLATFORM_MAX_PATH], float& time, VSH2Player player);
+	function void   (char song[PLATFORM_MAX_PATH], float& time, VSH2Player player);
+	function Action (char song[PLATFORM_MAX_PATH], float& time, VSH2Player player, float& volume);
+	function void   (char song[PLATFORM_MAX_PATH], float& time, VSH2Player player, float& volume);
+	
 	/// OnControlPointCapped
-	function Action (char cappers[MAXPLAYERS+1], const int team);
-	function void   (char cappers[MAXPLAYERS+1], const int team);
-	function Action (char cappers[MAXPLAYERS+1], const int team, VSH2Player[] pcappers, const int capper_count);
-	function void   (char cappers[MAXPLAYERS+1], const int team, VSH2Player[] pcappers, const int capper_count);
-
+	function Action (char cappers[MAXPLAYERS+1], int team);
+	function void   (char cappers[MAXPLAYERS+1], int team);
+	/// Use these VVVVVVVVV forward signatures instead for 'OnControlPointCapped'.
+	function Action (char cappers[MAXPLAYERS+1], int team, VSH2Player[] pcappers, int capper_count);
+	function void   (char cappers[MAXPLAYERS+1], int team, VSH2Player[] pcappers, int capper_count);
+	
 	/// OnCallDownloads
+	/// OnTeamsSeparate
 	function Action ();
 	function void   ();
-
+	
 	/// OnBossPickUpItem -> player may or may not actually be a boss in this forward.
-	function Action (const VSH2Player player, const char item[64]);
-	function void   (const VSH2Player player, const char item[64]);
-
+	function Action (VSH2Player player, const char item[64]);
+	function void   (VSH2Player player, const char item[64]);
+	
 	/// OnBossMenu
 	function void   (Menu& menu);
-	function void   (Menu& menu, const VSH2Player player);
-
+	function void   (Menu& menu, VSH2Player player);
+	
 	/// OnScoreTally
-	function Action (const VSH2Player player, int& points_earned, int& queue_earned);
-	function void   (const VSH2Player player, int& points_earned, int& queue_earned);
-
+	function Action (VSH2Player player, int& points_earned, int& queue_earned);
+	function void   (VSH2Player player, int& points_earned, int& queue_earned);
+	
 	/// OnItemOverride
-	function Action (const VSH2Player player, const char[] classname, int itemdef, Handle& item);
-	function void   (const VSH2Player player, const char[] classname, int itemdef, Handle& item);
-	function Action (const VSH2Player player, const char[] classname, int itemdef, TF2Item& item);
-	function void   (const VSH2Player player, const char[] classname, int itemdef, TF2Item& item);
-
+	function Action (VSH2Player player, const char[] classname, int itemdef, Handle& item);
+	function void   (VSH2Player player, const char[] classname, int itemdef, Handle& item);
+	function Action (VSH2Player player, const char[] classname, int itemdef, TF2Item& item);
+	function void   (VSH2Player player, const char[] classname, int itemdef, TF2Item& item);
+	
 	/// OnBossDoRageStun
-	function Action (const VSH2Player player, float& distance);
-	function void   (const VSH2Player player, float& distance);
-
+	function Action (VSH2Player player, float& distance);
+	function void   (VSH2Player player, float& distance);
+	
 	/// OnBossGiveRage
-	function Action (const VSH2Player player, const int damage, float& calcd_rage);
-	function void   (const VSH2Player player, const int damage, float& calcd_rage);
-
+	function Action (VSH2Player player, int damage, float& calcd_rage);
+	function void   (VSH2Player player, int damage, float& calcd_rage);
+	
 	/// OnBossCalcHealth
 	/// It's preferred that you use/modify the 'iMaxHealth' property instead.
-	function Action (const VSH2Player player, int& max_health, const int boss_count, const int red_players);
-	function void   (const VSH2Player player, int& max_health, const int boss_count, const int red_players);
-
+	function Action (VSH2Player player, int& max_health, int boss_count, int red_players);
+	function void   (VSH2Player player, int& max_health, int boss_count, int red_players);
+	
 	/// OnSoundHook
-	function Action (const VSH2Player player, char sample[PLATFORM_MAX_PATH], int& channel, float& volume, int& level, int& pitch, int& flags);
-	function void   (const VSH2Player player, char sample[PLATFORM_MAX_PATH], int& channel, float& volume, int& level, int& pitch, int& flags);
-
+	function Action (VSH2Player player, char sample[PLATFORM_MAX_PATH], int& channel, float& volume, int& level, int& pitch, int& flags);
+	function void   (VSH2Player player, char sample[PLATFORM_MAX_PATH], int& channel, float& volume, int& level, int& pitch, int& flags);
+	
 	/// OnRoundStart
-	function void   (const VSH2Player[] bosses, const int boss_count, const VSH2Player[] red_players, const int red_count);
-
+	function void   (VSH2Player[] bosses, int boss_count, VSH2Player[] red_players, int red_count);
+	
 	/// OnHelpMenu
-	function void   (const VSH2Player player, Menu menu);
-
+	function void   (VSH2Player player, Menu menu);
+	
 	/// OnHelpMenuSelect
-	function void   (const VSH2Player player, Menu menu, int selection);
-
+	function void   (VSH2Player player, Menu menu, int selection);
+	
 	/// OnDrawGameTimer
 	function Action (int& seconds);
 	function void   (int& seconds);
-
+	
 	/// OnPlayerClimb
-	function Action (const VSH2Player player, const int weapon, float& upwardvel, float& health, bool& attackdelay);
-	function void   (const VSH2Player player, const int weapon, float& upwardvel, float& health, bool& attackdelay);
-
+	function Action (VSH2Player player, int weapon, float& upwardvel, float& health, bool& attackdelay);
+	function void   (VSH2Player player, int weapon, float& upwardvel, float& health, bool& attackdelay);
+	
 	/// OnBossConditionChange
-	function Action (const VSH2Player player, const TFCond cond, const bool removing);
-
+	function Action (VSH2Player player, TFCond cond, bool removing);
+	function Action (VSH2Player player, TFCond cond, bool removing, bool& remove);
+	
 	/// OnBannerDeployed
 	/// 'owner' is the owner of the banner.
 	/// Returning other than `Plugin_Continue` has no effect
 	/// except preventing boss modules from getting this event.
-	function Action (const VSH2Player owner, const BannerType banner);
-
+	function Action (VSH2Player owner, BannerType banner);
+	
 	/// OnBannerEffect
 	/// 'owner' is the owner of the banner.
 	/// 'player' is buffed by the banner.
 	/// Returning other than `Plugin_Continue` has no effect
 	/// except preventing boss modules from getting this event.
-	function Action (const VSH2Player player, const VSH2Player owner, const BannerType banner);
-
+	function Action (VSH2Player player, VSH2Player owner, BannerType banner);
+	
 	/// OnUberLoopEnd
 	/// target can be invalid so be careful.
-	function Action (const VSH2Player medic, const VSH2Player target, float& reset_charge);
-
+	function Action (VSH2Player medic, VSH2Player target, float& reset_charge);
+	
 	/// OnRedPlayerHUD
-	function Action (const VSH2Player player, char hud_text[PLAYER_HUD_SIZE]);
-	function void   (const VSH2Player player, char hud_text[PLAYER_HUD_SIZE]);
-
+	/// OnBossHUD
+	function Action (VSH2Player player, char hud_text[PLAYER_HUD_SIZE]);
+	function void   (VSH2Player player, char hud_text[PLAYER_HUD_SIZE]);
+	
 	/// OnRedPlayerCrits
-	function Action (const VSH2Player player, int& crit_flags);
-	function void   (const VSH2Player player, int& crit_flags);
-
+	function Action (VSH2Player player, int& crit_flags);
+	function void   (VSH2Player player, int& crit_flags);
+	
 	/// OnShowStats
-	function Action (const VSH2Player top_players[3]);
-	function void   (const VSH2Player top_players[3]);
+	function Action (VSH2Player top_players[3]);
+	function void   (VSH2Player top_players[3]);
+	
+	/// OnPreAbility
+	function Action (VSH2Player player, const char[] ability_name, any[] args, int len);
+	
+	/// OnPostAbility
+	function void   (VSH2Player player, const char[] ability_name, any[] args, int len, bool was_changed);
+	
+	/// OnMapObsPrep
+	function Action (const char[] map_obj_name);
+	function void   (const char[] map_obj_name);
 };
 
 /// Use hooktype enum on these.
-native void VSH2_Hook(const int callbacktype, VSH2HookCB callback);
-native bool VSH2_HookEx(const int callbacktype, VSH2HookCB callback);
+native void VSH2_Hook(int callbacktype, VSH2HookCB callback);
+native bool VSH2_HookEx(int callbacktype, VSH2HookCB callback);
 
-native void VSH2_Unhook(const int callbacktype, VSH2HookCB callback);
-native bool VSH2_UnhookEx(const int callbacktype, VSH2HookCB callback);
+native void VSH2_Unhook(int callbacktype, VSH2HookCB callback);
+native bool VSH2_UnhookEx(int callbacktype, VSH2HookCB callback);
 
 native int  VSH2_GetMaxBosses();
 native int  VSH2_GetRandomBossType(int[] boss_filter, int filter_size=0);
@@ -817,13 +924,13 @@ methodmap VSHHealthBar {
 		}
 		return view_as< VSHHealthBar >(healthbar);
 	}
-
+	
 	property int entity {
 		public get() {
 			return view_as< int >(this);
 		}
 	}
-
+	
 	property int iState {
 		public get() {
 			return GetEntProp(this.entity, Prop_Send, "m_iBossState");
@@ -849,6 +956,7 @@ methodmap VSHHealthBar {
 
 native any  VSH2GameMode_GetProperty(const char prop_name[64]);
 native void VSH2GameMode_SetProperty(const char prop_name[64], any value);
+native bool VSH2GameMode_HasProperty(const char prop_name[64]);
 
 /**
  * Available Properties:
@@ -901,17 +1009,17 @@ stock void VSH2GameMode_SetPropAny(const char prop_name[64], any value) {
 
 
 native VSH2Player VSH2GameMode_FindNextBoss();
-native VSH2Player VSH2GameMode_GetRandomBoss(const bool IsAlive);
-native VSH2Player VSH2GameMode_GetBossByType(const bool IsAlive, const int BossType);
+native VSH2Player VSH2GameMode_GetRandomBoss(bool IsAlive);
+native VSH2Player VSH2GameMode_GetBossByType(bool IsAlive, int BossType);
 
-native int VSH2GameMode_CountMinions(const bool IsAlive, VSH2Player ownerboss=view_as< VSH2Player >(0));
-native int VSH2GameMode_CountBosses(const bool IsAlive);
+native int VSH2GameMode_CountMinions(bool IsAlive, VSH2Player ownerboss=view_as< VSH2Player >(0));
+native int VSH2GameMode_CountBosses(bool IsAlive);
 native int VSH2GameMode_GetTotalBossHealth();
 native int VSH2GameMode_GetTotalRedPlayers();
 native int VSH2GameMode_GetBosses(VSH2Player[] bosses, bool balive=true);
 native int VSH2GameMode_GetFighters(VSH2Player[] redplayers, bool balive=true);
 native int VSH2GameMode_GetMinions(VSH2Player[] minions, bool balive=true, VSH2Player ownerboss=view_as< VSH2Player >(0));
-native int VSH2GameMode_GetBossesByType(VSH2Player[] bosses, const int type, bool balive=true);
+native int VSH2GameMode_GetBossesByType(VSH2Player[] bosses, int type, bool balive=true);
 
 /// has the `players` array sorted by DESCENDING order (first index is highest queue).
 native int VSH2GameMode_GetQueue(VSH2Player[] players);
@@ -927,13 +1035,13 @@ native bool VSH2GameMode_IsVSHMap();
 
 methodmap VSH2GameMode {
 	public VSH2GameMode() { return view_as< VSH2GameMode >(0); }
-
+	
 	property VSH2Player hNextBoss {
 		public get() {
 			return VSH2GameMode_FindNextBoss();
 		}
 	}
-
+	
 	property int iTotalBossHealth {
 		public get() {
 			return VSH2GameMode_GetTotalBossHealth();
@@ -944,13 +1052,13 @@ methodmap VSH2GameMode {
 			return VSH2GameMode_GetTotalRedPlayers();
 		}
 	}
-
+	
 	property Handle hHUD {
 		public get() {
 			return VSH2GameMode_GetHUDHandle();
 		}
 	}
-
+	
 	public static int GetPropInt(const char prop_name[64]) {
 		return VSH2GameMode_GetProperty(prop_name);
 	}
@@ -961,28 +1069,38 @@ methodmap VSH2GameMode {
 		float f = VSH2GameMode_GetProperty(prop_name);
 		return f;
 	}
-
-	public static void SetProp(const char prop_name[64], any value) {
+	
+	public static void SetPropInt(const char prop_name[64], int value) {
 		VSH2GameMode_SetProperty(prop_name, value);
 	}
-
+	public static void SetPropAny(const char prop_name[64], any value) {
+		VSH2GameMode_SetProperty(prop_name, value);
+	}
+	public static void SetPropFloat(const char prop_name[64], float value) {
+		VSH2GameMode_SetProperty(prop_name, value);
+	}
+	
+	public static bool HasProp(const char prop_name[64]) {
+		return VSH2GameMode_HasProperty(prop_name);
+	}
+	
 	property VSHHealthBar hHealthBar {
 		public get() {
 			return VSH2GameMode.GetPropAny("iHealthBar");
 		}
 	}
-
-	public static VSH2Player GetRandomBoss(const bool is_alive) {
+	
+	public static VSH2Player GetRandomBoss(bool is_alive) {
 		return VSH2GameMode_GetRandomBoss(is_alive);
 	}
-	public static VSH2Player GetBossByType(const bool is_alive, const int boss_type) {
+	public static VSH2Player GetBossByType(bool is_alive, int boss_type) {
 		return VSH2GameMode_GetBossByType(is_alive, boss_type);
 	}
-
-	public static int CountMinions(const bool is_alive, VSH2Player ownerboss=view_as< VSH2Player >(0)) {
+	
+	public static int CountMinions(bool is_alive, VSH2Player ownerboss=view_as< VSH2Player >(0)) {
 		return VSH2GameMode_CountMinions(is_alive, ownerboss);
 	}
-	public static int CountBosses(const bool is_alive) {
+	public static int CountBosses(bool is_alive) {
 		return VSH2GameMode_CountBosses(is_alive);
 	}
 	public static int GetBosses(VSH2Player[] bosses, bool balive=true) {
@@ -994,13 +1112,13 @@ methodmap VSH2GameMode {
 	public static int GetMinions(VSH2Player[] minions, bool balive=true, VSH2Player ownerboss=view_as< VSH2Player >(0)) {
 		return VSH2GameMode_GetMinions(minions, balive, ownerboss);
 	}
-	public static int GetBossesByType(VSH2Player[] bosses, const int type, bool balive=true) {
+	public static int GetBossesByType(VSH2Player[] bosses, int type, bool balive=true) {
 		return VSH2GameMode_GetBossesByType(bosses, type, balive);
 	}
 	public static int GetQueue(VSH2Player[] players) {
 		return VSH2GameMode_GetQueue(players);
 	}
-
+	
 	public static void SearchForItemPacks() {
 		VSH2GameMode_SearchForItemPacks();
 	}
@@ -1013,53 +1131,80 @@ methodmap VSH2GameMode {
 	public static bool IsVSHMap() {
 		return VSH2GameMode_IsVSHMap();
 	}
+	
+	public static bool AreScoutsLeft() {
+		VSH2Player[] players = new VSH2Player[MaxClients];
+		int reds = VSH2GameMode.GetFighters(players);
+		/// make sure friendly bosses and minions are excluded.
+		for( int i; i < reds; i++ ) {
+			if( players[i].bIsBoss || players[i].GetPropInt("bIsMinion") || players[i].iTFClass != TFClass_Scout ) {
+				return false;
+			}
+		}
+		return true;
+	}
+	public static VSH2Player GetRandomFighter(bool friendly_bosses=true, bool is_alive=true) {
+		VSH2Player[] players = new VSH2Player[MaxClients];
+		int count;
+		for( int i=1; i <= MaxClients; i++ ) {
+			if( !IsClientInGame(i) || GetClientTeam(i) != VSH2Team_Red || (is_alive && !IsPlayerAlive(i)) ) {
+				continue;
+			}
+			
+			VSH2Player p = VSH2Player(i);
+			if( !friendly_bosses && p.bIsBoss ) {
+				continue;
+			}
+			players[count++] = p;
+		}
+		return( !count )? VSH2Player(0) : players[GetRandomInt(0, count-1)];
+	}
+	public static int GetRandomBossType(bool multibosses=false, bool red_only=false) {
+		int boss_filter[1];
+		return VSH2_GetRandomBossType(boss_filter, sizeof(boss_filter) /*, multibosses, red_only*/);
+	}
 };
 
 
 /**
  * VSH2 Misc. Useful stocks.
  */
-stock bool CheckDownload(const char[] file)
-{
+stock bool CheckDownload(const char[] file) {
 	if( FileExists(file, true) ) {
 		AddFileToDownloadsTable(file);
 		return true;
 	}
+	LogError("CheckDownload :: File not found: '%s'", file);
 	return false;
 }
 
-stock void PrepareSound(const char[] sound_path)
-{
+stock void PrepareSound(const char[] sound_path) {
 	PrecacheSound(sound_path, true);
 	char s[PLATFORM_MAX_PATH];
 	Format(s, sizeof(s), "sound/%s", sound_path);
 	CheckDownload(s);
 }
 
-stock void DownloadSoundList(const char[][] file_list, int size)
-{
-	for( int i; i<size; i++ ) {
+stock void DownloadSoundList(const char[][] file_list, int size) {
+	for( int i; i < size; i++ ) {
 		PrepareSound(file_list[i]);
 	}
 }
 
-stock void PrecacheSoundList(const char[][] file_list, int size)
-{
-	for( int i; i<size; i++ ) {
+stock void PrecacheSoundList(const char[][] file_list, int size) {
+	for( int i; i < size; i++ ) {
 		PrecacheSound(file_list[i], true);
 	}
 }
 
-stock void PrecacheScriptList(const char[][] file_list, int size)
-{
-	for( int i; i<size; i++ ) {
+stock void PrecacheScriptList(const char[][] file_list, int size) {
+	for( int i; i < size; i++ ) {
 		PrecacheScriptSound(file_list[i]);
 	}
 }
 
 /// For single custom materials, omit file extensions as it prepares VMT + VTF
-stock void PrepareMaterial(const char[] matpath)
-{
+stock void PrepareMaterial(const char[] matpath) {
 	char s[PLATFORM_MAX_PATH];
 	Format(s, sizeof(s), "%s%s", matpath, ".vtf");
 	CheckDownload(s);
@@ -1067,18 +1212,16 @@ stock void PrepareMaterial(const char[] matpath)
 	CheckDownload(s);
 }
 
-stock void DownloadMaterialList(const char[][] file_list, int size)
-{
+stock void DownloadMaterialList(const char[][] file_list, int size) {
 	char s[PLATFORM_MAX_PATH];
-	for( int i; i<size; i++ ) {
+	for( int i; i < size; i++ ) {
 		strcopy(s, sizeof(s), file_list[i]);
 		CheckDownload(s);
 	}
 }
 
 /// For custom models, do NOT omit .MDL extension
-stock int PrepareModel(const char[] model_path, bool model_only=false)
-{
+stock int PrepareModel(const char[] model_path, bool model_only=false) {
 	char extensions[][] = { ".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd", ".phy" };
 	char model_base[PLATFORM_MAX_PATH];
 	char path[PLATFORM_MAX_PATH];
@@ -1086,7 +1229,7 @@ stock int PrepareModel(const char[] model_path, bool model_only=false)
 	strcopy(model_base, sizeof(model_base), model_path);
 	SplitString(model_base, ".mdl", model_base, sizeof(model_base)); /// Kind of redundant, but eh.
 	if( !model_only ) {
-		for( int i; i<sizeof(extensions); i++ ) {
+		for( int i; i < sizeof(extensions); i++ ) {
 			Format(path, PLATFORM_MAX_PATH, "%s%s", model_base, extensions[i]);
 			CheckDownload(path);
 		}
@@ -1097,15 +1240,13 @@ stock int PrepareModel(const char[] model_path, bool model_only=false)
 }
 
 /// Contributed by ScaleFace
-stock bool IsStockSound(const char sample[PLATFORM_MAX_PATH])
-{
+stock bool IsStockSound(const char sample[PLATFORM_MAX_PATH]) {
 	char exclusions[][] = {
 		"_pain","_medic","_battlecry","_pain","_auto","_activatecharge","_jeers","_cheers","_help",
 		"_incoming","_goodjob","_head","_fight","_cloaked","_melee","_move","_positive","_negative","_need",
 		"_nice","_thanks", "_yes","_no","_go","_sentry"
 	};
-
-	for( int i; i<sizeof(exclusions); i++ ) {
+	for( int i; i < sizeof(exclusions); i++ ) {
 		if( StrContains(sample, exclusions[i], false) != -1 ) {
 			return true;
 		}
@@ -1117,14 +1258,15 @@ stock bool IsVoiceLine(const char sample[PLATFORM_MAX_PATH]) {
 	return !strncmp(sample, "vo", 2, false);
 }
 
-stock int ShuffleIndex(const int size, int curr_index) {
+stock int ShuffleIndex(int size, int curr_index) {
 	if( size < 2 ) {
 		return 0;
 	}
-	curr_index = IntClamp(curr_index, size-1, 0);
-	int new_index = GetRandomInt(0, size-1);
+	int t = size - 1;
+	curr_index = IntClamp(curr_index, t, 0);
+	int new_index = GetRandomInt(0, t);
 	while( new_index==curr_index ) {
-		new_index = GetRandomInt(0, size-1);
+		new_index = GetRandomInt(0, t);
 	}
 	return new_index;
 }
@@ -1157,8 +1299,7 @@ stock char[] PackCellToStr(any key) {
 }
 
 
-stock void MakePawnTimer(Function func, float thinktime=0.1, const any[] args, const int len, bool as_array=false)
-{
+stock void MakePawnTimer(Function func, float thinktime=0.1, const any[] args, int len, bool as_array=false) {
 	DataPack thinkpack = new DataPack();
 	thinkpack.WriteFunction(func);
 	thinkpack.WriteCell(len);
@@ -1169,8 +1310,7 @@ stock void MakePawnTimer(Function func, float thinktime=0.1, const any[] args, c
 	CreateTimer(thinktime, RunPawnFunc, thinkpack, TIMER_DATA_HNDL_CLOSE);
 }
 
-public Action RunPawnFunc(Handle t, DataPack pack)
-{
+public Action RunPawnFunc(Handle t, DataPack pack) {
 	pack.Reset();
 	Function fn = pack.ReadFunction();
 	Call_StartFunction(null, fn);
@@ -1179,12 +1319,12 @@ public Action RunPawnFunc(Handle t, DataPack pack)
 	bool as_array = pack.ReadCell();
 	if( as_array ) {
 		any[] parms = new any[len];
-		for( int i; i<len; i++ ) {
+		for( int i; i < len; i++ ) {
 			parms[i] = pack.ReadCell();
 		}
 		Call_PushArray(parms, len);
 	} else {
-		for( int i; i<len; i++ ) {
+		for( int i; i < len; i++ ) {
 			Call_PushCell(pack.ReadCell());
 		}
 	}
@@ -1269,9 +1409,10 @@ stock int IntClamp(int val, int max, int min) {
  * }
  */
 stock void PrepareAssetsFromCfgMap(ConfigMap sect, int resrc_type) {
-	if( sect==null )
+	if( sect==null ) {
 		return;
-
+	}
+	
 	int size = sect.Size;
 	for( int i; i < size; i++ ) {
 		int len = sect.GetIntKeySize(i);
@@ -1298,25 +1439,26 @@ public SharedPlugin __pl_vsh2 = {
 };
 
 #if !defined REQUIRE_PLUGIN
-public void __pl_vsh2_SetNTVOptional()
-{
+public void __pl_vsh2_SetNTVOptional() {
 	MarkNativeAsOptional("VSH2_RegisterPlugin");
+	MarkNativeAsOptional("VSH2_GetSharedMap");
 	MarkNativeAsOptional("VSH2Player.VSH2Player");
-
+	
 	MarkNativeAsOptional("VSH2Player.userid.get");
 	MarkNativeAsOptional("VSH2Player.index.get");
-
+	
 	MarkNativeAsOptional("VSH2Player.GetProperty");
 	MarkNativeAsOptional("VSH2Player.SetProperty");
-
+	
 	MarkNativeAsOptional("VSH2Player.GetPropInt");
 	MarkNativeAsOptional("VSH2Player.GetPropFloat");
 	MarkNativeAsOptional("VSH2Player.GetPropAny");
-
+	
 	MarkNativeAsOptional("VSH2Player.SetPropInt");
 	MarkNativeAsOptional("VSH2Player.SetPropFloat");
 	MarkNativeAsOptional("VSH2Player.SetPropAny");
-
+	MarkNativeAsOptional("VSH2Player.HasProp");
+	
 	MarkNativeAsOptional("VSH2Player.ConvertToMinion");
 	MarkNativeAsOptional("VSH2Player.SpawnWeapon");
 	MarkNativeAsOptional("VSH2Player.GetWeaponSlotIndex");
@@ -1332,7 +1474,7 @@ public void __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2Player.SetAmmoTable");
 	MarkNativeAsOptional("VSH2Player.GetClipTable");
 	MarkNativeAsOptional("VSH2Player.SetClipTable");
-
+	
 	MarkNativeAsOptional("VSH2Player.GetHealTarget");
 	MarkNativeAsOptional("VSH2Player.IsNearDispenser");
 	MarkNativeAsOptional("VSH2Player.IsInRange");
@@ -1341,7 +1483,14 @@ public void __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2Player.ShootRocket");
 	MarkNativeAsOptional("VSH2Player.Heal");
 	MarkNativeAsOptional("VSH2Player.AddTempAttrib");
-
+	
+	MarkNativeAsOptional("VSH2Player.GiveAbility");
+	MarkNativeAsOptional("VSH2Player.RemoveAbility");
+	MarkNativeAsOptional("VSH2Player.HasAbility");
+	MarkNativeAsOptional("VSH2Player.RemoveAllAbilities");
+	MarkNativeAsOptional("VSH2Player.RunPreAbility");
+	MarkNativeAsOptional("VSH2Player.RunPostAbility");
+	
 	MarkNativeAsOptional("VSH2Player.ConvertToBoss");
 	MarkNativeAsOptional("VSH2Player.GiveRage");
 	MarkNativeAsOptional("VSH2Player.MakeBossAndSwitch");
@@ -1349,16 +1498,20 @@ public void __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2Player.StunPlayers");
 	MarkNativeAsOptional("VSH2Player.StunBuildings");
 	MarkNativeAsOptional("VSH2Player.RemoveAllItems");
-
+	
 	MarkNativeAsOptional("VSH2Player.GetName");
 	MarkNativeAsOptional("VSH2Player.SetName");
-
+	
 	MarkNativeAsOptional("VSH2Player.SuperJump");
 	MarkNativeAsOptional("VSH2Player.WeighDown");
 	MarkNativeAsOptional("VSH2Player.PlayVoiceClip");
 	MarkNativeAsOptional("VSH2Player.PlayMusic");
 	MarkNativeAsOptional("VSH2Player.StopMusic");
-
+	
+	MarkNativeAsOptional("VSH2Player.TeleToRandomPlayer");
+	MarkNativeAsOptional("VSH2Player.ChargedThink");
+	
+	
 	MarkNativeAsOptional("VSH2_Hook");
 	MarkNativeAsOptional("VSH2_HookEx");
 	MarkNativeAsOptional("VSH2_Unhook");
@@ -1370,9 +1523,10 @@ public void __pl_vsh2_SetNTVOptional()
 	MarkNativeAsOptional("VSH2_GetBossNameByIndex");
 	MarkNativeAsOptional("VSH2_StopMusic");
 	MarkNativeAsOptional("VSH2_GetConfigMap");
-
+	
 	MarkNativeAsOptional("VSH2GameMode_GetProperty");
 	MarkNativeAsOptional("VSH2GameMode_SetProperty");
+	MarkNativeAsOptional("VSH2GameMode_HasProperty");
 	MarkNativeAsOptional("VSH2GameMode_FindNextBoss");
 	MarkNativeAsOptional("VSH2GameMode_GetRandomBoss");
 	MarkNativeAsOptional("VSH2GameMode_GetBossByType");

@@ -1,17 +1,47 @@
-"Updater"
-{
-	"Information"
-	{
-		"Version"
-		{
-			"Latest"	"2.12.1"
+"Updater" {
+	"Information" {
+		"Version" {
+			"Latest"	"2.13.0"
 		}
-		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.12.1:"
-		"Notes"	"Fixed mod for compatibility with SM 1.11"
+		"Notes"	"More info @ https://forums.alliedmods.net/showthread.php?t=293218. Changes in 2.13.0:"
+		"Notes"	"Merged `BaseFighter` and `BaseBoss` into one class: `BasePlayer`."
+		"Notes"	"Corrected `OnLastPlayer` not having the last living player as part of the event."
+		"Notes"	"Added new properties for the gamemode: `iStartingReds`, `iRoundResult`."
+		"Notes"	"Added new properties for players: `hConfig`, `iMaxLives`, `iBossWins`, `iBossLosses`, and `iBossKills`."
+		"Notes"	"Added ECS Helper lib to aid with Entity-Component Systems in SourcePawn."
+		"Notes"	"Updated 'cfgmap.inc' to address inter-plugin communication issues with `DataPack`."
+		"Notes"	"Added Ability system to VSH2."
+		"Notes"	"Added server title descriptors in the translation files."
+		"Notes"	"Added new forwards: `OnPreAbility`, `OnPostAbility`, `OnBossHUD`."
+		"Notes"	"Made `CalcBossHealth` in `stocks.inc` more readable."
+		"Notes"	"Added a bool reference to `OnBossConditionChange` for removing other conditions."
+		"Notes"	"Improved Queue points sorting algorithm."
+		"Notes"	"Merged `SpawnRandomAmmo` & `SpawnRamdomHealth` into `SpawnRandomPickups`."
+		"Notes"	"Removed `plague.sp` from the internal boss list."
+		"Notes"	"Added `VSH2Player::GetSlotIdxFromWep`, `VSH2GameMode::AreScoutsLeft`, `VSH2GameMode::GetRandomFighter`, and `VSH2GameMode::GetRandomBossType` methods."
+		"Notes"	"Added `RoundResult` enum."
+		"Notes"	"Replaced the 'messages' section in the vsh2.cfg with translations instead."
+		"Notes"	"Made boss configs work for internal bosses!!!."
+		"Notes"	"Made abilities system functional for non-boss players."
+		"Notes"	"Made PLYR constant set to 256 to support any possible future increases to server maxplayers."
+		"Notes"	"At round end, LOADED player-based config files will be reloaded IF the files were changed."
+		"Notes"	"Reworked Demo Shield crit logic code."
+		"Notes"	"Changed ConfigMap keys and values to allow other text alongside enum and iota."
+		"Notes"	"Updated ConfigMap with string interpolation and math parsing."
+		"Notes"	"Round Ending timer will cancel if there's more than one Merc alive [TFF]."
+		"Notes"	"Added fallback `iMaxHealth` read in case `iMaxHealth` wasn't set [TFF]."
+		"Notes"	"Added error logging for `CheckDownload` if a file wasn't found [TFF]."
+		"Notes"	"Added warning messages if trying to retrieve int/float values from a property that has a mismatched type prefix."
+		"Notes"	"Added `HasProp` native for player-based props."
+		"Notes"	"Added `VSH2GameMode_HasProperty` native for gamemode props."
+		"Notes"	"Added `VSH2_GetSharedMap` native to allow modules to share data between one another."
+		"Notes"	"Added Cookie for players who want to be a partner boss at random, can be disabled via menu."
+		"Notes"	"Made `bCanBossPartner` player property as fallback for the partner boss cookie."
+		"Notes"	"Added two new Events: `OnMapObsPrep` and `OnTeamsSeparate`."
+		"Notes"	"DOCUMENTS ARE OUT OF DATE, use vsh2.inc and/or code dive."
 	}
 	
-	"Files"
-	{
+	"Files" {
 		"Plugin"	"Path_SM/plugins/vsh2.smx"
 		
 		"Source"	"Path_SM/scripting/vsh2.sp"
@@ -27,7 +57,9 @@
 		"Source"	"Path_SM/scripting/modules/forwards.sp"
 		"Source"	"Path_SM/scripting/modules/gamemode.sp"
 		"Source"	"Path_SM/scripting/modules/handler.sp"
+		"Source"	"Path_SM/scripting/modules/natives.sp"
 		"Source"	"Path_SM/scripting/modules/stocks.inc"
+		
 		"Source"	"Path_SM/scripting/modules/bosses/bunny.sp"
 		"Source"	"Path_SM/scripting/modules/bosses/cbs.sp"
 		"Source"	"Path_SM/scripting/modules/bosses/hale.sp"
@@ -40,5 +72,6 @@
 		"Source"	"Path_SM/scripting/include/steamtools.inc"
 		"Source"	"Path_SM/scripting/include/tf2items_stocks.inc"
 		"Source"	"Path_SM/scripting/include/vsh2.inc"
+		"Source"	"Path_SM/scripting/include/ecs_helper.inc"
 	}
 }

@@ -2,20 +2,22 @@
 In some cases, you want your boss to have music in order to spice up the action a little or just to add more personality to your boss; in any case, adding music to your boss is easy BUT this page assumes you know how to make a boss from scratch and know about the VSH2 API, if not then please read [how to make your own boss](https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki/Creating-or-Adding-Bosses-(VSH2-Boss-Subplugin-Tutorial))
 
 
-
 For the example codes, I will use the Christian Brutal Sniper's single theme song.
 
 ## Setting up the Music and Files
 In order to install music to play for our boss' round, we first need to (literally) define the song(s) that we want to play. CBS's theme song of The Millionaire's Holiday by Combustible Edison is defined through a macro.
-```c++
-// cbs.sp
-#define CBSTheme    "saxton_hale/the_millionaires_holiday.mp3"
+```ini
+// cbs.cfg
+"sounds" {
+	"music" {
+		"saxton_hale/the_millionaires_holiday.mp3"    "140.0"
+	}
+}
 ```
 
 After we've defined all the music we need, we then set the file to be downloaded by prepping the sound which will precache and add the file to the downloads table.
 ```c++
-public void AddCBSToDownloads()
-{
+public void AddCBSToDownloads() {
 	...
 	PrepareSound(CBSTheme);
 	...
@@ -28,11 +30,10 @@ Alright, our files are in place and we've defined our song, how do we get it to 
 For example's sake, we want CBS's theme song to play for 140 seconds, which is longer than the actual song but the extra seconds are to leave some moment of silence. Setting up CBS's music looks exactly like this.
 
 ```c++
-public void ManageMusic(char song[PLATFORM_MAX_PATH], float& time)
-{
+public void ManageMusic(char song[PLATFORM_MAX_PATH], float& time) {
 	/// UNFORTUNATELY, we have to get a random boss so we can set our music, tragic I know...
 	/// Remember that you can get a random boss filtered by type as well!
-	BaseBoss currBoss = gamemode.GetRandomBoss(true);
+	BasePlayer currBoss = gamemode.GetRandomBoss(true);
 	if( currBoss ) {
 		switch( currBoss.iBossType ) {
 			case -1: { song = ""; time = -1.0; }
@@ -77,8 +78,7 @@ VSH2_Hook(OnMusic, MyBoss_OnMusic);
 
 ...
 
-public void MyBoss_OnMusic(char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player)
-{
+public void MyBoss_OnMusic(char song[PLATFORM_MAX_PATH], float& time, VSH2Player player) {
 	int picked_song = player.GetPropInt("iSongPick");
 	int pick = ( picked_song == -1 || picked_song > 2 )
 		? GetRandomInt(0, sizeof(MyBossThemes))
@@ -99,14 +99,11 @@ VSH2_Hook(OnMusic, MyBoss_OnMusic);
 
 ...
 
-public void MyBoss_OnMusic(char song[PLATFORM_MAX_PATH], float& time, const VSH2Player player)
-{
+public void MyBoss_OnMusic(char song[PLATFORM_MAX_PATH], float& time, VSH2Player player) {
 	static int curr_index = -1;
 	int picked_song = player.GetPropInt("iSongPick");
 	int num_songs = sizeof(MyBossThemes) - 1;
-	int pick = ( picked_song < 0 || picked_song > num_songs )
-					? ShuffleIndex(sizeof(MyBossThemes), curr_index)
-					: picked_song;
+	int pick = ( picked_song < 0 || picked_song > num_songs )? ShuffleIndex(sizeof(MyBossThemes), curr_index) : picked_song;
 	strcopy(song, sizeof(song), MyBossThemes[pick]);
 	time = MyBossThemesTime[pick];
 	curr_index = pick;

@@ -101,44 +101,37 @@ static const char HaleMatsV2[][] = {
 #define HALE_WEIGHDOWN_TIME	3.0
 
 
-methodmap CHale < BaseBoss {
-	public CHale(const int ind, bool uid=false) {
-		return view_as< CHale >( BaseBoss(ind, uid) );
+methodmap CHale < BasePlayer {
+	public CHale(int ind, bool uid=false) {
+		return view_as< CHale >( BasePlayer(ind, uid) );
 	}
-
+	
 	public void PlaySpawnClip() {
 		char start_snd[PLATFORM_MAX_PATH];
-		if( !GetRandomInt(0, 1) )
+		if( !GetRandomInt(0, 1) ) {
 			Format(start_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleRoundStart, GetRandomInt(1, 5));
-		else Format(start_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleStart132, GetRandomInt(1, 5));
+		} else {
+			Format(start_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleStart132, GetRandomInt(1, 5));
+		}
 		this.PlayVoiceClip(start_snd, VSH2_VOICE_INTRO);
 	}
 
-	public void Think()
-	{
-		if( !IsPlayerAlive(this.index) )
+	public void Think() {
+		if( !IsPlayerAlive(this.index) ) {
 			return;
-
+		}
 		this.SpeedThink(HALESPEED);
 		this.GlowThink(0.1);
-
 		if( this.SuperJumpThink(2.5, HALE_JUMPCHARGE) ) {
 			this.SuperJump(this.flCharge, -100.0);
 			char jump_snd[PLATFORM_MAX_PATH];
-			Format(jump_snd, PLATFORM_MAX_PATH, "%s%i.wav", GetRandomInt(0, 1) ? HaleJump : HaleJump132, GetRandomInt(1, 2));
+			Format(jump_snd, PLATFORM_MAX_PATH, "%s%i.wav", GetRandomInt(0, 1)? HaleJump : HaleJump132, GetRandomInt(1, 2));
 			this.PlayVoiceClip(jump_snd, VSH2_VOICE_ABILITY);
 		}
-
-		if( OnlyScoutsLeft(VSH2Team_Red) )
+		if( this.HasAbility(ABILITY_RAGE) && OnlyScoutsLeft(VSH2Team_Red) ) {
 			this.flRAGE += g_vsh2.m_hCvars.ScoutRageGen.FloatValue;
-
+		}
 		this.WeighDownThink(HALE_WEIGHDOWN_TIME);
-
-		SetHudTextParams(-1.0, 0.77, 0.35, 255, 255, 255, 255);
-		float jmp = this.flCharge;
-		if( this.flRAGE >= 100.0 )
-			ShowSyncHudText(this.index, g_vsh2.m_hHUDs[PlayerHUD], "Jump: %i%% | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 4);
-		else ShowSyncHudText(this.index, g_vsh2.m_hHUDs[PlayerHUD], "Jump: %i%% | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp) * 4, this.flRAGE);
 	}
 	public void SetModel() {
 		SetVariantString(HaleModel);
@@ -146,26 +139,33 @@ methodmap CHale < BaseBoss {
 		SetEntProp(this.index, Prop_Send, "m_bUseClassAnimations", 1);
 		//SetEntPropFloat(client, Prop_Send, "m_flModelScale", 1.25);
 	}
-
+	
 	public void Death() {
 		char ded_snd[PLATFORM_MAX_PATH];
 		Format(ded_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleFail, GetRandomInt(1, 3));
 		this.PlayVoiceClip(ded_snd, VSH2_VOICE_LOSE);
 	}
-
+	
 	public void Equip() {
 		this.SetName("Saxton Hale");
 		this.RemoveAllItems();
 		char attribs[128];
-		Format(attribs, sizeof(attribs), "68; 2.0; 2; 3.1; 259; 1.0; 252; 0.6; 214; %d", GetRandomInt(999, 9999));
-		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_shovel", 5, 100, 5, attribs);
-		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
+		Format(attribs, sizeof(attribs), "68 ; 2.0; 2 ; 3.1; 259 ; 1.0; 252 ; 0.6; 214 ; %d", GetRandomInt(999, 9999));
+		int boss_weap = this.SpawnWeapon("tf_weapon_shovel", 5, 100, 5, attribs);
+		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", boss_weap);
+		this.GiveAbility(ABILITY_ESCAPE_PLAN);
+		this.GiveAbility(ABILITY_GLOW);
+		this.GiveAbility(ABILITY_WEIGHDOWN);
+		this.GiveAbility(ABILITY_SUPERJUMP);
+		this.GiveAbility(ABILITY_STUN_BUILDS);
+		this.GiveAbility(ABILITY_STUN_PLYRS);
+		this.GiveAbility(ABILITY_ANCHOR);
+		this.GiveAbility(ABILITY_RAGE);
 	}
 	public void RageAbility() {
-		TF2_AddCondition(this.index, view_as< TFCond >(42), 4.0);
+		TF2_AddCondition(this.index, TFCond_DefenseBuffNoCritBlock, 4.0);
 		if( !GetEntProp(this.index, Prop_Send, "m_bIsReadyToHighFive")
-			&& !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) )
-		{
+			&& !IsValidEntity(GetEntPropEnt(this.index, Prop_Send, "m_hHighFivePartner")) ) {
 			TF2_RemoveCondition(this.index, TFCond_Taunting);
 			this.SetModel(); /// should reset Hale's animation
 		}
@@ -174,91 +174,93 @@ methodmap CHale < BaseBoss {
 		Format(rage_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleRageSound, GetRandomInt(1, 4));
 		this.PlayVoiceClip(rage_snd, VSH2_VOICE_RAGE);
 	}
-	public void KilledPlayer(const BaseBoss victim, Event event)
-	{
-		event.SetString("weapon", "fists");
+	public void KilledPlayer(BasePlayer victim, Event event) {
 		if( !GetRandomInt(0, 2) ) {
 			char kill_snd[PLATFORM_MAX_PATH];
-			TFClassType playerclass = victim.iTFClass;
-			switch( playerclass ) {
-				case TFClass_Scout: strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillScout132);
-				case TFClass_Pyro: strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillPyro132);
+			switch( victim.iTFClass ) {
+				case TFClass_Scout:   strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillScout132);
+				case TFClass_Pyro:    strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillPyro132);
 				case TFClass_DemoMan: strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillDemo132);
-				case TFClass_Heavy: strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillHeavy132);
-				case TFClass_Medic: strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillMedic);
-				case TFClass_Sniper: strcopy(kill_snd, PLATFORM_MAX_PATH, GetRandomInt(0, 1) ? HaleKillSniper1 : HaleKillSniper2);
-
+				case TFClass_Heavy:   strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillHeavy132);
+				case TFClass_Medic:   strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillMedic);
+				case TFClass_Sniper:  strcopy(kill_snd, PLATFORM_MAX_PATH, GetRandomInt(0, 1)? HaleKillSniper1 : HaleKillSniper2);
 				case TFClass_Spy: {
-					int see = GetRandomInt(0, 2);
-					if( see )
-						strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillSpy1);
-					else if( see == 1 )
-						strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillSpy2);
-					else strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillSpy132);
+					switch( GetRandomInt(0, 2) ) {
+						case 0: strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillSpy132);
+						case 1: strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillSpy2);
+						case 2: strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillSpy1);
+					}
 				}
 				case TFClass_Engineer: {
-					int see = GetRandomInt(0, 3);
-					if( !see )
-						strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillEngie1);
-					else if( see == 1 )
-						strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillEngie2);
-					else Format(kill_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillEngie132, GetRandomInt(1, 2));
+					switch( GetRandomInt(0, 3) ) {
+						case 0: strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillEngie1);
+						case 1: strcopy(kill_snd, PLATFORM_MAX_PATH, HaleKillEngie2);
+						default: {
+							Format(kill_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillEngie132, GetRandomInt(1, 2));
+						}
+					}
 				}
 			}
-			if( kill_snd[0] != '\0' )
+			if( kill_snd[0] != '\0' ) {
 				this.PlayVoiceClip(kill_snd, VSH2_VOICE_SPREE);
+			}
 		}
-
+		
 		float curtime = GetGameTime();
-		if( curtime <= this.flKillSpree )
+		if( curtime <= this.flKillSpree ) {
 			this.iKills++;
-		else this.iKills = 0;
-
-		if( this.iKills == 3 && GetLivingPlayers(VSH2Team_Red) != 1 ) {
-			char spree_snd[PLATFORM_MAX_PATH];
-			int randsound = GetRandomInt(0, 7);
-			if( !randsound || randsound == 1 )
-				strcopy(spree_snd, PLATFORM_MAX_PATH, HaleKSpree);
-			else if( randsound < 5 && randsound > 1 )
-				Format(spree_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKSpreeNew, GetRandomInt(1, 5));
-			else Format(spree_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillKSpree132, GetRandomInt(1, 2));
-
-			this.PlayVoiceClip(spree_snd, VSH2_VOICE_SPREE);
+		} else {
 			this.iKills = 0;
 		}
-		else this.flKillSpree = curtime+5;
+		if( this.iKills==3 && GetLivingPlayers(VSH2Team_Red) != 1 ) {
+			char spree_snd[PLATFORM_MAX_PATH];
+			int randsound = GetRandomInt(0, 7);
+			if( !randsound || randsound == 1 ) {
+				strcopy(spree_snd, PLATFORM_MAX_PATH, HaleKSpree);
+			} else if( randsound < 5 && randsound > 1 ) {
+				Format(spree_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKSpreeNew, GetRandomInt(1, 5));
+			} else {
+				Format(spree_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleKillKSpree132, GetRandomInt(1, 2));
+			}
+			this.PlayVoiceClip(spree_snd, VSH2_VOICE_SPREE);
+			this.iKills = 0;
+		} else {
+			this.flKillSpree = curtime + 5;
+		}
 	}
-
+	
 	public void Stabbed() {
 		char stab_snd[PLATFORM_MAX_PATH];
 		Format(stab_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleStubbed132, GetRandomInt(1, 4));
 		this.PlayVoiceClip(stab_snd, VSH2_VOICE_STABBED);
 	}
 	public void Help() {
-		if( IsVoteInProgress() )
+		if( IsVoteInProgress() ) {
 			return;
+		}
 		char helpstr[] = "Saxton Hale:\nSuper Jump: crouch, look up and stand up.\nWeigh-down: in midair, look down and crouch\nRage (stun): taunt when the Rage is full to stun nearby enemies.";
 		Panel panel = new Panel();
 		panel.SetTitle(helpstr);
-		char ExitText[64];
-		Format(ExitText, 64, "%T", "Exit", this.index);
-		panel.DrawItem(ExitText);
+		char exit_test[64];
+		Format(exit_test, 64, "%T", "Exit", this.index);
+		panel.DrawItem(exit_test);
 		panel.Send(this.index, HintPanel, 10);
 		delete panel;
 	}
 	public void LastPlayerSoundClip() {
 		char lastguy_snd[PLATFORM_MAX_PATH];
 		switch( GetRandomInt(0, 5) ) {
-			case 0: strcopy(lastguy_snd, PLATFORM_MAX_PATH, HaleComicArmsFallSound);
-			case 1: Format(lastguy_snd, PLATFORM_MAX_PATH, "%s0%i.wav", HaleLastB, GetRandomInt(1, 4));
-			case 2: strcopy(lastguy_snd, PLATFORM_MAX_PATH, HaleKillLast132);
+			case 0:  strcopy(lastguy_snd, PLATFORM_MAX_PATH, HaleComicArmsFallSound);
+			case 1:  Format(lastguy_snd, PLATFORM_MAX_PATH, "%s0%i.wav", HaleLastB, GetRandomInt(1, 4));
+			case 2:  strcopy(lastguy_snd, PLATFORM_MAX_PATH, HaleKillLast132);
 			default: Format(lastguy_snd, PLATFORM_MAX_PATH, "%s%i.wav", HaleLastMan, GetRandomInt(1, 5));
 		}
 		this.PlayVoiceClip(lastguy_snd, VSH2_VOICE_LASTGUY);
 	}
 	public void KillToy() {
-		if( !GetRandomInt(0, 3) )
+		if( !GetRandomInt(0, 3) ) {
 			this.PlayVoiceClip(HaleSappinMahSentry132, VSH2_VOICE_SPREE);
+		}
 	}
 	public void PlayWinSound() {
 		char victory[PLATFORM_MAX_PATH];
@@ -267,16 +269,14 @@ methodmap CHale < BaseBoss {
 	}
 };
 
-public CHale ToCHale (const BaseBoss guy)
-{
+public CHale ToCHale(BasePlayer guy) {
 	return view_as< CHale >(guy);
 }
 
-public void AddHaleToDownloads()
-{
+public void AddHaleToDownloads() {
 	char s[PLATFORM_MAX_PATH];
 	int i;
-
+	
 	PrepareModel(HaleModel);
 	DownloadMaterialList(HaleMatsV2, sizeof(HaleMatsV2));
 	PrepareSound(HaleComicArmsFallSound);
@@ -285,7 +285,7 @@ public void AddHaleToDownloads()
 		Format(s, PLATFORM_MAX_PATH, "%s0%i.wav", HaleLastB, i);
 		PrecacheSound(s, true);
 	}
-
+	
 	PrepareSound(HaleKillMedic);
 	PrepareSound(HaleKillSniper1);
 	PrepareSound(HaleKillSniper2);
@@ -305,7 +305,7 @@ public void AddHaleToDownloads()
 	PrepareSound(HaleKillDemo132);
 	PrepareSound(HaleSappinMahSentry132);
 	PrepareSound(HaleKillLast132);
-
+	
 	for( i=1; i <= 5; i++ ) {
 		if( i <= 2 ) {
 			Format(s, PLATFORM_MAX_PATH, "%s%i.wav", HaleJump, i);
@@ -350,27 +350,28 @@ public void AddHaleToDownloads()
 	}
 }
 
-public void AddHaleToMenu(Menu& menu)
-{
+public void AddHaleToMenu(Menu& menu) {
 	char bossid[5]; IntToString(VSH2Boss_Hale, bossid, sizeof(bossid));
 	menu.AddItem(bossid, "Saxton Hale");
 }
 
-public void EnableSG(const int iid)
-{
-	int i = EntRefToEntIndex(iid);
-	if( IsValidEntity(i) && i > MaxClients ) {
-		char s[32]; GetEdictClassname(i, s, sizeof(s));
-		if( StrEqual(s, "obj_sentrygun") ) {
-			SetEntProp(i, Prop_Send, "m_bDisabled", 0);
-			int higher = MaxClients+1;
-			for( int ent=2048; ent>higher; --ent ) {
-				if( !IsValidEntity(ent) || ent <= 0 )
-					continue;
-
-				char s2[32]; GetEdictClassname(ent, s2, sizeof(s2));
-				if( StrEqual(s2, "info_particle_system") && GetOwner(ent) == i )
-					AcceptEntityInput(ent, "Kill");
+public void EnableSG(int sentry_ref) {
+	int i = EntRefToEntIndex(sentry_ref);
+	if( !IsValidEntity(i) ) {
+		return;
+	}
+	
+	char s[32]; GetEdictClassname(i, s, sizeof(s));
+	if( StrEqual(s, "obj_sentrygun") ) {
+		SetEntProp(i, Prop_Send, "m_bDisabled", 0);
+		int higher = MaxClients+1;
+		for( int ent=2048; ent > higher; ent-- ) {
+			if( !IsValidEntity(ent) || ent <= 0 ) {
+				continue;
+			}
+			char s2[32]; GetEdictClassname(ent, s2, sizeof(s2));
+			if( StrEqual(s2, "info_particle_system") && GetOwner(ent)==i ) {
+				AcceptEntityInput(ent, "Kill");
 			}
 		}
 	}

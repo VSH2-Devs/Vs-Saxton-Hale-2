@@ -171,7 +171,7 @@ int GetIntKeySize(int key);
 int GetIntKey(int key, char[] buffer, int buf_size);
 bool SetIntKey(int key, const char[] str);
 
-ConfigMap GetIntSection(int key);
+ConfigMap GetIntKeySection(int key);
 
 KeyValType GetIntKeyValType(int key);
 
@@ -202,10 +202,10 @@ char download_keys[][] = {
 	"downloads.materials"
 };
 
-for( int i; i<sizeof(download_keys); i++ ) {
+for( int i; i < sizeof(download_keys); i++ ) {
 	ConfigMap download_map = g_vsh2.m_hCfg.GetSection(download_keys[i]);
 	if( download_map != null ) {
-		for( int n; n<download_map.Size; n++ ) {
+		for( int n; n < download_map.Size; n++ ) {
 			char index[10];
 			Format(index, sizeof(index), "%i", n);
 			int value_size = download_map.GetSize(index);

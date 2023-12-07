@@ -74,9 +74,14 @@ methodmap TF2Item < Handle {
 	/**************************************************************/
 };
 
-stock TF2Item TF2Item_PrepareItemHandle(TF2Item hItem, char[] name = "", int index = -1, const char[] att = "", bool dontpreserve = false)
-{
-	static TF2Item hWeapon = null;
+stock TF2Item TF2Item_PrepareItemHandle(
+	TF2Item hItem,
+	char[] name       = "",
+	int index         = -1,
+	const char[] att  = "",
+	bool dontpreserve = false
+) {
+	TF2Item hWeapon = null;
 	char weaponAttribsArray[32][32];
 	int attribCount = ExplodeString(att, ";", weaponAttribsArray, 32, 32);
 	int flags = OVERRIDE_ATTRIBUTES;
@@ -111,7 +116,7 @@ stock TF2Item TF2Item_PrepareItemHandle(TF2Item hItem, char[] name = "", int ind
 		}
 		delete hItem;
 	}
-
+	
 	if( name[0] != '\0' ) {
 		flags |= OVERRIDE_CLASSNAME;
 		hWeapon.SetClassname(name);
@@ -122,7 +127,7 @@ stock TF2Item TF2Item_PrepareItemHandle(TF2Item hItem, char[] name = "", int ind
 	}
 	if( attribCount > 0 ) {
 		hWeapon.iNumAttribs = (attribCount/2);
-		for( int i, att_index; i<attribCount && i<32; i += 2, att_index++ ) {
+		for( int i, att_index; i < attribCount && i < 32; i += 2, att_index++ ) {
 			int attrib = StringToInt(weaponAttribsArray[i]);
 			if( !attrib ) {
 				continue;

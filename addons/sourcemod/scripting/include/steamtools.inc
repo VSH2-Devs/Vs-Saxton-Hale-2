@@ -160,11 +160,9 @@ native int Steam_GetClientSubscription(int client, int index);
 native int Steam_GetNumClientDLCs(int client);
 native int Steam_GetClientDLC(int client, int index);
 
-stock bool Steam_CheckClientSubscription(int client, int subid)
-{
+stock bool Steam_CheckClientSubscription(int client, int subid) {
 	int subCount = Steam_GetNumClientSubscriptions(client);
-	for (int x = 0; x < subCount; x++)
-	{
+	for (int x = 0; x < subCount; x++) {
 		if (Steam_GetClientSubscription(client, x) == subid)
 		{
 			return true;
@@ -174,17 +172,14 @@ stock bool Steam_CheckClientSubscription(int client, int subid)
 	return false;
 }
 
-stock bool Steam_CheckClientDLC(int client, int appid)
-{
+stock bool Steam_CheckClientDLC(int client, int appid) {
 	int subCount = Steam_GetNumClientDLCs(client);
-	for (int x = 0; x < subCount; x++)
-	{
+	for (int x = 0; x < subCount; x++) {
 		if (Steam_GetClientDLC(client, x) == appid)
 		{
 			return true;
 		}
 	}
-
 	return false;
 }
 
@@ -199,21 +194,18 @@ native void Steam_CSteamIDToRenderedID(const char[] steamID, char[] renderedID, 
 native void Steam_GroupIDToCSteamID(int groupID, char[] steamID, int maxlength);
 native void Steam_CSteamIDToGroupID(const char[] steamID);
 
-enum HTTPRequestHandle
-{
+enum HTTPRequestHandle {
 	INVALID_HTTP_HANDLE = 0,
 };
 
-enum HTTPMethod
-{
+enum HTTPMethod {
 	HTTPMethod_Invalid = 0,
 	HTTPMethod_GET,
 	HTTPMethod_HEAD,
 	HTTPMethod_POST,
 };
 
-enum HTTPStatusCode
-{
+enum HTTPStatusCode {
 	HTTPStatusCode_Invalid =						0,
 
 	// Informational codes
@@ -267,8 +259,7 @@ enum HTTPStatusCode
 	HTTPStatusCode_HTTPVersionNotSupported =		505,
 };
 
-typeset HTTPRequestComplete
-{
+typeset HTTPRequestComplete {
 	function void(HTTPRequestHandle HTTPRequest, bool requestSuccessful, HTTPStatusCode statusCode);
 	function void(HTTPRequestHandle HTTPRequest, bool requestSuccessful, HTTPStatusCode statusCode, any contextData);
 };
@@ -290,8 +281,7 @@ native float Steam_GetHTTPDownloadProgressPercent(HTTPRequestHandle HTTPRequest)
 native bool Steam_SetHTTPRequestRawPostBody(HTTPRequestHandle HTTPRequest, const char[] data, int dataLength, const char[] contentType="text/plain");
 native bool Steam_SetHTTPRequestRawPostBodyFile(HTTPRequestHandle HTTPRequest, const char[] filePath, const char[] contentType="text/plain");
 
-public Extension __ext_SteamTools =
-{
+public Extension __ext_SteamTools = {
 	name = "SteamTools",
 	file = "steamtools.ext",
 #if defined AUTOLOAD_EXTENSIONS

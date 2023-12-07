@@ -1,8 +1,8 @@
-void InitializeForwards()
-{
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+void InitializeForwards() {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		g_hForwards[i][OnCallDownloads] = new PrivateForward( ET_Event );
 		g_hForwards[i][OnBossSelected] = new PrivateForward( ET_Event, Param_Cell );
+		g_hForwards[i][OnBossHelp] = new PrivateForward( ET_Event, Param_Cell );
 		g_hForwards[i][OnTouchPlayer] = new PrivateForward( ET_Event, Param_Cell, Param_Cell );
 		g_hForwards[i][OnTouchBuilding] = new PrivateForward( ET_Event, Param_Cell, Param_Cell );
 		g_hForwards[i][OnBossThink] = new PrivateForward( ET_Event, Param_Cell );
@@ -28,7 +28,7 @@ void InitializeForwards()
 		g_hForwards[i][OnUberLoop] = new PrivateForward( ET_Event, Param_Cell, Param_Cell );
 		g_hForwards[i][OnMusic] = new PrivateForward( ET_Event, Param_String, Param_FloatByRef, Param_Cell, Param_FloatByRef );
 		g_hForwards[i][OnRoundEndInfo] = new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_String );
-		g_hForwards[i][OnLastPlayer] = new PrivateForward( ET_Event, Param_Cell );
+		g_hForwards[i][OnLastPlayer] = new PrivateForward( ET_Event, Param_Cell, Param_Cell );
 		g_hForwards[i][OnBossHealthCheck] = new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_String );
 		g_hForwards[i][OnControlPointCapped] = new PrivateForward( ET_Event, Param_String, Param_Cell, Param_Array, Param_Cell );
 		g_hForwards[i][OnPrepRedTeam] = new PrivateForward( ET_Event, Param_Cell );
@@ -37,7 +37,7 @@ void InitializeForwards()
 		g_hForwards[i][OnBossMenu] = new PrivateForward( ET_Ignore, Param_CellByRef, Param_Cell );
 		g_hForwards[i][OnScoreTally] = new PrivateForward( ET_Event, Param_Cell, Param_CellByRef, Param_CellByRef );
 		g_hForwards[i][OnItemOverride] = new PrivateForward( ET_Hook, Param_Cell, Param_String, Param_Cell, Param_CellByRef );
-
+		
 		/// OnBossDealDamage Specific Forwards.
 		g_hForwards[i][OnBossDealDamage_OnStomp] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossDealDamage_OnHitDefBuff] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
@@ -46,7 +46,7 @@ void InitializeForwards()
 		g_hForwards[i][OnBossDealDamage_OnHitDeadRinger] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossDealDamage_OnHitCloakedSpy] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossDealDamage_OnHitShield] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-
+		
 		/// OnBossTakeDamage Specific Forwards
 		g_hForwards[i][OnBossTakeDamage_OnStabbed] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossTakeDamage_OnTelefragged] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
@@ -63,30 +63,30 @@ void InitializeForwards()
 		g_hForwards[i][OnBossTakeDamage_OnAmbassadorHeadshot] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossTakeDamage_OnDiamondbackManmelterCrit] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossTakeDamage_OnHolidayPunch] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-
+		
 		g_hForwards[i][OnBossSuperJump] = new PrivateForward( ET_Event, Param_Cell );
 		g_hForwards[i][OnBossDoRageStun] = new PrivateForward( ET_Event, Param_Cell, Param_FloatByRef );
 		g_hForwards[i][OnBossWeighDown] = new PrivateForward( ET_Event, Param_Cell );
-
+		
 		g_hForwards[i][OnRPSTaunt] = new PrivateForward( ET_Event, Param_Cell, Param_Cell );
 		g_hForwards[i][OnBossAirShotProj] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossTakeFallDamage] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossGiveRage] = new PrivateForward( ET_Event, Param_Cell, Param_Cell, Param_FloatByRef );
 		g_hForwards[i][OnBossCalcHealth] = new PrivateForward( ET_Single, Param_Cell, Param_CellByRef, Param_Cell, Param_Cell );
-
+		
 		g_hForwards[i][OnBossTakeDamage_OnTriggerHurt] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossTakeDamage_OnMantreadsStomp] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
 		g_hForwards[i][OnBossThinkPost] = new PrivateForward( ET_Hook, Param_Cell );
 		g_hForwards[i][OnBossEquippedPost] = new PrivateForward( ET_Hook, Param_Cell );
 		g_hForwards[i][OnPlayerTakeFallDamage] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_Cell );
-
+		
 		g_hForwards[i][OnSoundHook] = new PrivateForward( ET_Event, Param_Cell, Param_String, Param_CellByRef, Param_FloatByRef, Param_CellByRef, Param_CellByRef, Param_CellByRef );
 		g_hForwards[i][OnRoundStart] = new PrivateForward( ET_Ignore, Param_Array, Param_Cell, Param_Array, Param_Cell );
 		g_hForwards[i][OnHelpMenu] = new PrivateForward( ET_Ignore, Param_Cell, Param_Cell );
 		g_hForwards[i][OnHelpMenuSelect] = new PrivateForward( ET_Ignore, Param_Cell, Param_Cell, Param_Cell );
 		g_hForwards[i][OnDrawGameTimer] = new PrivateForward( ET_Hook, Param_CellByRef );
 		g_hForwards[i][OnPlayerClimb] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef, Param_FloatByRef, Param_CellByRef );
-		g_hForwards[i][OnBossConditionChange] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_Cell );
+		g_hForwards[i][OnBossConditionChange] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_Cell, Param_CellByRef );
 		g_hForwards[i][OnBannerDeployed] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell );
 		g_hForwards[i][OnBannerEffect] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_Cell );
 		g_hForwards[i][OnUberLoopEnd] = new PrivateForward( ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef );
@@ -94,248 +94,240 @@ void InitializeForwards()
 		g_hForwards[i][OnRedPlayerHUD] = new PrivateForward( ET_Hook, Param_Cell, Param_String );
 		g_hForwards[i][OnRedPlayerCrits] = new PrivateForward( ET_Hook, Param_Cell, Param_CellByRef );
 		g_hForwards[i][OnShowStats] = new PrivateForward( ET_Hook, Param_Array );
+		g_hForwards[i][OnPreAbility] = new PrivateForward( ET_Hook, Param_Cell, Param_String, Param_Array, Param_Cell, Param_Cell );
+		g_hForwards[i][OnPostAbility] = new PrivateForward( ET_Ignore, Param_Cell, Param_String, Param_Array, Param_Cell, Param_Cell );
+		g_hForwards[i][OnBossHUD] = new PrivateForward( ET_Ignore, Param_Cell, Param_String );
+		g_hForwards[i][OnTeamsSeparate] = new PrivateForward( ET_Event );
+		g_hForwards[i][OnMapObsPrep] = new PrivateForward( ET_Event, Param_String );
 	}
 }
 
-Action Call_OnCallDownloads()
-{
+Action Call_OnCallDownloads() {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnCallDownloads]);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnBossSelected(const BaseBoss player)
-{
+Action Call_OnBossSelected(BasePlayer player) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossSelected]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnBossHelp(const BaseBoss player)
-{
+Action Call_OnBossHelp(BasePlayer player) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossHelp]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnTouchPlayer(const BaseBoss boss, const BaseBoss otherguy)
-{
+Action Call_OnTouchPlayer(BasePlayer boss, BasePlayer otherguy) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnTouchPlayer]);
 		Call_PushCell(boss);
 		Call_PushCell(otherguy);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnTouchBuilding(const BaseBoss player, const int buildRef)
-{
+Action Call_OnTouchBuilding(BasePlayer player, int buildRef) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnTouchBuilding]);
 		Call_PushCell(player);
 		Call_PushCell(buildRef);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnBossThink(const BaseBoss player)
-{
+Action Call_OnBossThink(BasePlayer player) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossThink]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnBossModelTimer(const BaseBoss player)
-{
+Action Call_OnBossModelTimer(BasePlayer player) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossModelTimer]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnBossDeath(const BaseBoss player)
-{
+Action Call_OnBossDeath(BasePlayer player) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossDeath]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnBossEquipped(const BaseBoss player)
-{
+Action Call_OnBossEquipped(BasePlayer player) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossEquipped]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnBossInitialized(const BaseBoss player)
-{
+Action Call_OnBossInitialized(BasePlayer player) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossInitialized]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnMinionInitialized(const BaseBoss player, const BaseBoss master)
-{
+Action Call_OnMinionInitialized(BasePlayer player, BasePlayer master) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnMinionInitialized]);
 		Call_PushCell(player);
 		Call_PushCell(master);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnBossPlayIntro(const BaseBoss player)
-{
+Action Call_OnBossPlayIntro(BasePlayer player) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossPlayIntro]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnBossTakeDamage(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
+Action Call_OnTakeDamageGeneric(int fwd_id, BasePlayer player, int& attacker, int& inflictor, float& damage, int& dmgType, int& weapon, float dmgForce[3], float dmgPos[3], int dmgCustom) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage]);
+	for( int i; i < sizeof(g_hForwards); i++ ) {
+		Call_StartForward(g_hForwards[i][fwd_id]);
 		Call_PushCell(player);
 		Call_PushCellRef(attacker);
 		Call_PushCellRef(inflictor);
 		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
+		Call_PushCellRef(dmgType);
 		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
+		Call_PushArrayEx(dmgForce, 3, SM_PARAM_COPYBACK);
+		Call_PushArrayEx(dmgPos,   3, SM_PARAM_COPYBACK);
+		Call_PushCell(dmgCustom);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnBossDealDamage(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossDealDamage]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+
+Action Call_OnBossTakeDamage(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossTakeDamage, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnPlayerKilled(const BaseBoss player, const BaseBoss victim, Event event)
-{
+Action Call_OnBossDealDamage(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossDealDamage, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
+}
+Action Call_OnPlayerKilled(BasePlayer player, BasePlayer victim, Event event) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnPlayerKilled]);
 		Call_PushCell(player);
 		Call_PushCell(victim);
 		Call_PushCell(event);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
+	
 }
-Action Call_OnPlayerAirblasted(const BaseBoss player, const BaseBoss victim, Event event)
-{
+Action Call_OnPlayerAirblasted(BasePlayer player, BasePlayer victim, Event event) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnPlayerAirblasted]);
 		Call_PushCell(player);
 		Call_PushCell(victim);
 		Call_PushCell(event);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnPlayerHurt(const BaseBoss player, const BaseBoss victim, Event event)
-{
+Action Call_OnPlayerHurt(BasePlayer player, BasePlayer victim, Event event) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnPlayerHurt]);
 		Call_PushCell(player);
 		Call_PushCell(victim);
 		Call_PushCell(event);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnTraceAttack(const BaseBoss player, const BaseBoss attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup)
-{
+Action Call_OnTraceAttack(BasePlayer player, BasePlayer attacker, int& inflictor, float& damage, int& damagetype, int& ammotype, int hitbox, int hitgroup) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnTraceAttack]);
 		Call_PushCell(player);
 		Call_PushCell(attacker);
@@ -346,925 +338,466 @@ Action Call_OnTraceAttack(const BaseBoss player, const BaseBoss attacker, int& i
 		Call_PushCell(hitbox);
 		Call_PushCell(hitgroup);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnBossMedicCall(const BaseBoss player)
-{
+Action Call_OnBossMedicCall(BasePlayer player) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossMedicCall]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnBossTaunt(const BaseBoss player)
-{
+Action Call_OnBossTaunt(BasePlayer player) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossTaunt]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnBossKillBuilding(const BaseBoss player, const int building, Event event)
-{
+Action Call_OnBossKillBuilding(BasePlayer player, int building, Event event) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossKillBuilding]);
 		Call_PushCell(player);
 		Call_PushCell(building);
 		Call_PushCell(event);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnBossJarated(const BaseBoss victim, const BaseBoss attacker)
-{
+Action Call_OnBossJarated(BasePlayer victim, BasePlayer attacker) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossJarated]);
 		Call_PushCell(victim);
 		Call_PushCell(attacker);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnMessageIntro(const BaseBoss player, char message[MAXMESSAGE])
-{
+Action Call_OnMessageIntro(BasePlayer player, char message[MAXMESSAGE]) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnMessageIntro]);
 		Call_PushCell(player);
 		Call_PushStringEx(message, MAXMESSAGE, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnBossPickUpItem(const BaseBoss player, const char item[64])
-{
+Action Call_OnBossPickUpItem(BasePlayer player, const char item[64]) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossPickUpItem]);
 		Call_PushCell(player);
 		Call_PushString(item);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnVariablesReset(const BaseBoss player)
-{
+Action Call_OnVariablesReset(BasePlayer player) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnVariablesReset]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnUberDeployed(const BaseBoss medic, const BaseBoss target)
-{
+Action Call_OnUberDeployed(BasePlayer medic, BasePlayer target) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnUberDeployed]);
 		Call_PushCell(medic);
 		Call_PushCell(target);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnUberLoop(const BaseBoss medic, const BaseBoss target)
-{
+Action Call_OnUberLoop(BasePlayer medic, BasePlayer target) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnUberLoop]);
 		Call_PushCell(medic);
 		Call_PushCell(target);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnMusic(char song[PLATFORM_MAX_PATH], float& time, const BaseBoss player, float& vol)
-{
+Action Call_OnMusic(char song[PLATFORM_MAX_PATH], float& time, BasePlayer player, float& vol) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnMusic]);
 		Call_PushStringEx(song, PLATFORM_MAX_PATH, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		Call_PushFloatRef(time);
 		Call_PushCell(player);
 		Call_PushFloatRef(vol);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnRoundEndInfo(const BaseBoss player, bool bosswin, char message[MAXMESSAGE])
-{
+Action Call_OnRoundEndInfo(BasePlayer player, bool bosswin, char message[MAXMESSAGE]) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnRoundEndInfo]);
 		Call_PushCell(player);
 		Call_PushCell(bosswin);
 		Call_PushStringEx(message, MAXMESSAGE, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnLastPlayer(const BaseBoss player)
-{
+Action Call_OnLastPlayer(BasePlayer player, BasePlayer last_guy) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnLastPlayer]);
 		Call_PushCell(player);
+		Call_PushCell(last_guy);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnBossHealthCheck(const BaseBoss player, const bool isBoss, char message[MAXMESSAGE])
-{
+Action Call_OnBossHealthCheck(BasePlayer player, bool isBoss, char message[MAXMESSAGE]) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossHealthCheck]);
 		Call_PushCell(player);
 		Call_PushCell(isBoss);
 		Call_PushStringEx(message, MAXMESSAGE, SM_PARAM_STRING_UTF8|SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnControlPointCapped(char cappers[MAXPLAYERS+1], const int team, BaseBoss[] bcappers, const int capper_count)
-{
+Action Call_OnControlPointCapped(char cappers[MAXPLAYERS+1], int team, BasePlayer[] bcappers, int capper_count) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnControlPointCapped]);
 		Call_PushString(cappers);
 		Call_PushCell(team);
 		Call_PushArrayEx(bcappers, capper_count, SM_PARAM_COPYBACK);
 		Call_PushCell(capper_count);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnPrepRedTeam(const BaseBoss player)
-{
+Action Call_OnPrepRedTeam(BasePlayer player) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnPrepRedTeam]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnRedPlayerThink(const BaseBoss player)
-{
+Action Call_OnRedPlayerThink(BasePlayer player) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnRedPlayerThink]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-void Call_OnBossMenu(Menu& menu, const BaseBoss player)
-{
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+void Call_OnBossMenu(Menu& menu, BasePlayer player) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossMenu]);
 		Call_PushCellRef(menu);
 		Call_PushCell(player);
 		Call_Finish();
 	}
 }
-Action Call_OnScoreTally(const BaseBoss player, int& points_earned, int& queue_earned)
-{
+Action Call_OnScoreTally(BasePlayer player, int& points_earned, int& queue_earned) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnScoreTally]);
 		Call_PushCell(player);
 		Call_PushCellRef(points_earned);
 		Call_PushCellRef(queue_earned);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnItemOverride(const BaseBoss player, const char[] classname, int itemdef, Handle& item)
-{
+Action Call_OnItemOverride(BasePlayer player, const char[] classname, int itemdef, Handle& item) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnItemOverride]);
 		Call_PushCell(player);
 		Call_PushString(classname);
 		Call_PushCell(itemdef);
 		Call_PushCellRef(item);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
-Action Call_OnBossDealDamage_OnStomp(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnStomp]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossDealDamage_OnStomp(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossDealDamage_OnStomp, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossDealDamage_OnHitDefBuff(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnHitDefBuff]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossDealDamage_OnHitDefBuff(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossDealDamage_OnHitDefBuff, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossDealDamage_OnHitCritMmmph(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnHitCritMmmph]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossDealDamage_OnHitCritMmmph(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossDealDamage_OnHitCritMmmph, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossDealDamage_OnHitMedic(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnHitMedic]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossDealDamage_OnHitMedic(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossDealDamage_OnHitMedic, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossDealDamage_OnHitDeadRinger(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnHitDeadRinger]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossDealDamage_OnHitDeadRinger(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossDealDamage_OnHitDeadRinger, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossDealDamage_OnHitCloakedSpy(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnHitCloakedSpy]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossDealDamage_OnHitCloakedSpy(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossDealDamage_OnHitCloakedSpy, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossDealDamage_OnHitShield(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossDealDamage_OnHitShield]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossDealDamage_OnHitShield(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossDealDamage_OnHitShield, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
 
 
 /// OnBossTakeDamage forwards.
-Action Call_OnBossTakeDamage_OnStabbed(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnStabbed]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossTakeDamage_OnStabbed(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossTakeDamage_OnStabbed, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossTakeDamage_OnTelefragged(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnTelefragged]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossTakeDamage_OnTelefragged(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossTakeDamage_OnTelefragged, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossTakeDamage_OnSwordTaunt(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnSwordTaunt]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossTakeDamage_OnSwordTaunt(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossTakeDamage_OnSwordTaunt, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossTakeDamage_OnHeavyShotgun(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnHeavyShotgun]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossTakeDamage_OnHeavyShotgun(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossTakeDamage_OnHeavyShotgun, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossTakeDamage_OnSniped(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnSniped]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossTakeDamage_OnSniped(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossTakeDamage_OnSniped, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossTakeDamage_OnThirdDegreed(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnThirdDegreed]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossTakeDamage_OnThirdDegreed(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossTakeDamage_OnThirdDegreed, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossTakeDamage_OnHitSword(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnHitSword]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossTakeDamage_OnHitSword(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossTakeDamage_OnHitSword, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossTakeDamage_OnHitFanOWar(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnHitFanOWar]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossTakeDamage_OnHitFanOWar(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossTakeDamage_OnHitFanOWar, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossTakeDamage_OnHitCandyCane(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnHitCandyCane]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossTakeDamage_OnHitCandyCane(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossTakeDamage_OnHitCandyCane, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossTakeDamage_OnMarketGardened(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnMarketGardened]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossTakeDamage_OnMarketGardened(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossTakeDamage_OnMarketGardened, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossTakeDamage_OnPowerJack(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnPowerJack]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossTakeDamage_OnPowerJack(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossTakeDamage_OnPowerJack, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossTakeDamage_OnKatana(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnKatana]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossTakeDamage_OnKatana(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossTakeDamage_OnKatana, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossTakeDamage_OnAmbassadorHeadshot(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnAmbassadorHeadshot]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossTakeDamage_OnAmbassadorHeadshot(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossTakeDamage_OnAmbassadorHeadshot, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossTakeDamage_OnDiamondbackManmelterCrit(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnDiamondbackManmelterCrit]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossTakeDamage_OnDiamondbackManmelterCrit(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossTakeDamage_OnDiamondbackManmelterCrit, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
-Action Call_OnBossTakeDamage_OnHolidayPunch(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnHolidayPunch]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossTakeDamage_OnHolidayPunch(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossTakeDamage_OnHolidayPunch, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
 
-Action Call_OnBossSuperJump(const BaseBoss player)
-{
+Action Call_OnBossSuperJump(BasePlayer player) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossSuperJump]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnBossDoRageStun(const BaseBoss player, float& distance)
-{
+Action Call_OnBossDoRageStun(BasePlayer player, float& distance) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossDoRageStun]);
 		Call_PushCell(player);
 		Call_PushFloatRef(distance);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnBossWeighDown(const BaseBoss player)
-{
+Action Call_OnBossWeighDown(BasePlayer player) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossWeighDown]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnRPSTaunt(const BaseBoss loser, const BaseBoss winner)
-{
+Action Call_OnRPSTaunt(BasePlayer loser, BasePlayer winner) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnRPSTaunt]);
 		Call_PushCell(loser);
 		Call_PushCell(winner);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnBossAirShotProj(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossAirShotProj]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossAirShotProj(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossAirShotProj, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
 
-Action Call_OnBossTakeFallDamage(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeFallDamage]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossTakeFallDamage(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossTakeFallDamage, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
 
-Action Call_OnBossGiveRage(const BaseBoss player, const int damage, float& calcd_rage)
-{
+Action Call_OnBossGiveRage(BasePlayer player, int damage, float& calcd_rage) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossGiveRage]);
 		Call_PushCell(player);
 		Call_PushCell(damage);
 		Call_PushFloatRef(calcd_rage);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnBossCalcHealth(const BaseBoss player, int& max_health, const int boss_count, const int red_players)
-{
+Action Call_OnBossCalcHealth(BasePlayer player, int& max_health, int boss_count, int red_players) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossCalcHealth]);
 		Call_PushCell(player);
 		Call_PushCellRef(max_health);
 		Call_PushCell(boss_count);
 		Call_PushCell(red_players);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnBossTakeDamage_OnTriggerHurt(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnTriggerHurt]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossTakeDamage_OnTriggerHurt(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossTakeDamage_OnTriggerHurt, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
 
-Action Call_OnBossTakeDamage_OnMantreadsStomp(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnBossTakeDamage_OnMantreadsStomp]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnBossTakeDamage_OnMantreadsStomp(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnBossTakeDamage_OnMantreadsStomp, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
 
-Action Call_OnBossThinkPost(const BaseBoss player)
-{
+Action Call_OnBossThinkPost(BasePlayer player) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossThinkPost]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnBossEquippedPost(const BaseBoss player)
-{
+Action Call_OnBossEquippedPost(BasePlayer player) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossEquippedPost]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnPlayerTakeFallDamage(const BaseBoss player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom)
-{
-	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
-		Call_StartForward(g_hForwards[i][OnPlayerTakeFallDamage]);
-		Call_PushCell(player);
-		Call_PushCellRef(attacker);
-		Call_PushCellRef(inflictor);
-		Call_PushFloatRef(damage);
-		Call_PushCellRef(damagetype);
-		Call_PushCellRef(weapon);
-		Call_PushArrayEx(damageForce, 3, SM_PARAM_COPYBACK);
-		Call_PushArrayEx(damagePosition, 3, SM_PARAM_COPYBACK);
-		Call_PushCell(damagecustom);
-		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
-			return act[i];
-	}
-	return act[0] > act[1] ? act[0] : act[1];
+Action Call_OnPlayerTakeFallDamage(BasePlayer player, int& attacker, int& inflictor, float& damage, int& damagetype, int& weapon, float damageForce[3], float damagePosition[3], int damagecustom) {
+	return Call_OnTakeDamageGeneric(OnPlayerTakeFallDamage, player, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom);
 }
 
-Action Call_OnSoundHook(const BaseBoss player, char sample[PLATFORM_MAX_PATH], int& channel, float& volume, int& level, int& pitch, int& flags)
-{
+Action Call_OnSoundHook(BasePlayer player, char sample[PLATFORM_MAX_PATH], int& channel, float& volume, int& level, int& pitch, int& flags) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnSoundHook]);
 		Call_PushCell(player);
 		Call_PushStringEx(sample, PLATFORM_MAX_PATH, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
@@ -1274,28 +807,26 @@ Action Call_OnSoundHook(const BaseBoss player, char sample[PLATFORM_MAX_PATH], i
 		Call_PushCellRef(pitch);
 		Call_PushCellRef(flags);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-void Call_OnRoundStart(BaseBoss[] bosses, const int boss_count, BaseBoss[] reds, const int red_count)
-{
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+void Call_OnRoundStart(BasePlayer[] bosses, int boss_count, BasePlayer[] reds, int red_count) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnRoundStart]);
 		Call_PushArrayEx(bosses, boss_count, SM_PARAM_COPYBACK);
 		Call_PushCell(boss_count);
-
 		Call_PushArrayEx(reds, red_count, SM_PARAM_COPYBACK);
 		Call_PushCell(red_count);
 		Call_Finish();
 	}
 }
 
-void Call_OnHelpMenu(const BaseBoss player, Menu menu)
-{
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+void Call_OnHelpMenu(BasePlayer player, Menu menu) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnHelpMenu]);
 		Call_PushCell(player);
 		Call_PushCell(menu);
@@ -1303,9 +834,8 @@ void Call_OnHelpMenu(const BaseBoss player, Menu menu)
 	}
 }
 
-void Call_OnHelpMenuSelect(const BaseBoss player, Menu menu, const int selection)
-{
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+void Call_OnHelpMenuSelect(BasePlayer player, Menu menu, int selection) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnHelpMenuSelect]);
 		Call_PushCell(player);
 		Call_PushCell(menu);
@@ -1314,23 +844,22 @@ void Call_OnHelpMenuSelect(const BaseBoss player, Menu menu, const int selection
 	}
 }
 
-Action Call_OnDrawGameTimer(int& time)
-{
+Action Call_OnDrawGameTimer(int& time) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnDrawGameTimer]);
 		Call_PushCellRef(time);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnPlayerClimb(const BaseBoss player, const int weapon, float& upwardvel, float& health, bool& attackdelay)
-{
+Action Call_OnPlayerClimb(BasePlayer player, int weapon, float& upwardvel, float& health, bool& attackdelay) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnPlayerClimb]);
 		Call_PushCell(player);
 		Call_PushCell(weapon);
@@ -1338,115 +867,158 @@ Action Call_OnPlayerClimb(const BaseBoss player, const int weapon, float& upward
 		Call_PushFloatRef(health);
 		Call_PushCellRef(attackdelay);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnBossConditionChange(const BaseBoss player, const TFCond cond, const bool removing)
-{
+Action Call_OnBossConditionChange(BasePlayer player, TFCond cond, bool removing, bool& remove) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnBossConditionChange]);
 		Call_PushCell(player);
 		Call_PushCell(cond);
 		Call_PushCell(removing);
+		Call_PushCellRef(remove);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-void Call_OnBannerDeployed(const BaseBoss owner, const int buff_type)
-{
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+void Call_OnBannerDeployed(BasePlayer owner, int buff_type) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Action act;
 		Call_StartForward(g_hForwards[i][OnBannerDeployed]);
 		Call_PushCell(owner);
 		Call_PushCell(buff_type);
 		Call_Finish(act);
-		if( act > Plugin_Continue )
+		if( act > Plugin_Continue ) {
 			break;
+		}
 	}
 }
 
-void Call_OnBannerEffect(const BaseBoss player, const BaseBoss owner, const int buff_type)
-{
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+void Call_OnBannerEffect(BasePlayer player, BasePlayer owner, int buff_type) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Action act;
 		Call_StartForward(g_hForwards[i][OnBannerEffect]);
 		Call_PushCell(player);
 		Call_PushCell(owner);
 		Call_PushCell(buff_type);
 		Call_Finish(act);
-		if( act > Plugin_Continue )
+		if( act > Plugin_Continue ) {
 			break;
+		}
 	}
 }
 
-void Call_OnUberLoopEnd(const BaseBoss medic, const BaseBoss target, float& reset_charge)
-{
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+void Call_OnUberLoopEnd(BasePlayer medic, BasePlayer target, float& reset_charge) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Action act;
 		Call_StartForward(g_hForwards[i][OnUberLoopEnd]);
 		Call_PushCell(medic);
 		Call_PushCell(target);
 		Call_PushFloatRef(reset_charge);
 		Call_Finish(act);
-		if( act > Plugin_Continue )
+		if( act > Plugin_Continue ) {
 			break;
+		}
 	}
 }
 
-Action Call_OnRedPlayerThinkPost(const BaseBoss player)
-{
+Action Call_OnRedPlayerThinkPost(BasePlayer player) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnRedPlayerThinkPost]);
 		Call_PushCell(player);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnRedPlayerHUD(const BaseBoss player, char playerhud[PLAYER_HUD_SIZE]) {
+Action Call_OnRedPlayerHUD(BasePlayer player, char hud_text[PLAYER_HUD_SIZE]) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnRedPlayerHUD]);
 		Call_PushCell(player);
-		Call_PushStringEx(playerhud, PLAYER_HUD_SIZE, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+		Call_PushStringEx(hud_text, PLAYER_HUD_SIZE, SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
+}
+Action Call_OnBossHUD(BasePlayer player, char hud_text[PLAYER_HUD_SIZE]) {
+	Action act[2];
+	for( int i; i < sizeof(g_hForwards); i++ ) {
+		Call_StartForward(g_hForwards[i][OnBossHUD]);
+		Call_PushCell(player);
+		Call_PushStringEx(hud_text, sizeof(hud_text), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed ) {
+			return act[i];
+		}
+	}
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnRedPlayerCrits(const BaseBoss player, int &crit_flags) {
+Action Call_OnRedPlayerCrits(BasePlayer player, int &crit_flags) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnRedPlayerCrits]);
 		Call_PushCell(player);
 		Call_PushCellRef(crit_flags);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
 }
 
-Action Call_OnShowStats(BaseBoss players[3]) {
+Action Call_OnShowStats(BasePlayer players[3]) {
 	Action act[2];
-	for( int i; i<sizeof(g_hForwards); i++ ) {
+	for( int i; i < sizeof(g_hForwards); i++ ) {
 		Call_StartForward(g_hForwards[i][OnShowStats]);
 		Call_PushArrayEx(players, 3, 0);
 		Call_Finish(act[i]);
-		if( act[i] > Plugin_Changed )
+		if( act[i] > Plugin_Changed ) {
 			return act[i];
+		}
 	}
-	return act[0] > act[1] ? act[0] : act[1];
+	return act[0] > act[1]? act[0] : act[1];
+}
+
+Action Call_OnTeamsSeparate() {
+	Action act[2];
+	for( int i; i < sizeof(g_hForwards); i++ ) {
+		Call_StartForward(g_hForwards[i][OnTeamsSeparate]);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed ) {
+			return act[i];
+		}
+	}
+	return act[0] > act[1]? act[0] : act[1];
+}
+
+Action Call_OnMapObsPrep(const char[] entity_name) {
+	Action act[2];
+	for( int i; i < sizeof(g_hForwards); i++ ) {
+		Call_StartForward(g_hForwards[i][OnMapObsPrep]);
+		Call_PushString(entity_name);
+		Call_Finish(act[i]);
+		if( act[i] > Plugin_Changed ) {
+			return act[i];
+		}
+	}
+	return act[0] > act[1]? act[0] : act[1];
 }

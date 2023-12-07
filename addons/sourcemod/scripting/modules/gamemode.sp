@@ -8,7 +8,7 @@ methodmap VSHGameMode < StringMap {
 			int i; this.GetValue("iRoundState", i);
 			return i;
 		}
-		public set(const int val) {
+		public set(int val) {
 			this.SetValue("iRoundState", val);
 		}
 	}
@@ -17,7 +17,7 @@ methodmap VSHGameMode < StringMap {
 			int i; this.GetValue("iSpecial", i);
 			return i;
 		}
-		public set(const int val) {
+		public set(int val) {
 			this.SetValue("iSpecial", val);
 		}
 	}
@@ -26,7 +26,7 @@ methodmap VSHGameMode < StringMap {
 			int i; this.GetValue("iPrevSpecial", i);
 			return i;
 		}
-		public set(const int val) {
+		public set(int val) {
 			this.SetValue("iPrevSpecial", val);
 		}
 	}
@@ -44,7 +44,7 @@ methodmap VSHGameMode < StringMap {
 			int i; this.GetValue("iTotalMaxHealth", i);
 			return i;
 		}
-		public set(const int val) {
+		public set(int val) {
 			this.SetValue("iTotalMaxHealth", val);
 		}
 	}
@@ -53,7 +53,7 @@ methodmap VSHGameMode < StringMap {
 			int i; this.GetValue("iTimeLeft", i);
 			return i;
 		}
-		public set(const int val) {
+		public set(int val) {
 			this.SetValue("iTimeLeft", val);
 		}
 	}
@@ -62,7 +62,7 @@ methodmap VSHGameMode < StringMap {
 			int i; this.GetValue("iRoundCount", i);
 			return i;
 		}
-		public set(const int val) {
+		public set(int val) {
 			this.SetValue("iRoundCount", val);
 		}
 	}
@@ -71,7 +71,7 @@ methodmap VSHGameMode < StringMap {
 			int i; this.GetValue("iHealthChecks", i);
 			return i;
 		}
-		public set(const int val) {
+		public set(int val) {
 			this.SetValue("iHealthChecks", val);
 		}
 	}
@@ -80,8 +80,31 @@ methodmap VSHGameMode < StringMap {
 			int i; this.GetValue("iCaptures", i);
 			return i;
 		}
-		public set(const int val) {
+		public set(int val) {
 			this.SetValue("iCaptures", val);
+		}
+	}
+	property int iStartingReds {
+		public get() {
+			int i; this.GetValue("iStartingReds", i);
+			return i;
+		}
+		public set(int val) {
+			this.SetValue("iStartingReds", val);
+		}
+	}
+	property int iRoundResult {
+		public get() {
+			int i; this.GetValue("iRoundResult", i);
+			return i;
+		}
+		public set(int val) {
+			this.SetValue("iRoundResult", val);
+		}
+	}
+	property int MAXBOSS {
+		public get() {
+			return MaxDefaultVSH2Bosses + (g_modsys.m_hBossesRegistered.Length - 1);
 		}
 	}
 	
@@ -90,7 +113,7 @@ methodmap VSHGameMode < StringMap {
 			bool i; this.GetValue("bSteam", i);
 			return i;
 		}
-		public set(const bool val) {
+		public set(bool val) {
 			this.SetValue("bSteam", val);
 		}
 	}
@@ -99,7 +122,7 @@ methodmap VSHGameMode < StringMap {
 			bool i; this.GetValue("bTF2Attribs", i);
 			return i;
 		}
-		public set(const bool val) {
+		public set(bool val) {
 			this.SetValue("bTF2Attribs", val);
 		}
 	}
@@ -108,7 +131,7 @@ methodmap VSHGameMode < StringMap {
 			bool i; this.GetValue("bPointReady", i);
 			return i;
 		}
-		public set(const bool val) {
+		public set(bool val) {
 			this.SetValue("bPointReady", val);
 		}
 	}
@@ -117,7 +140,7 @@ methodmap VSHGameMode < StringMap {
 			bool i; this.GetValue("bMedieval", i);
 			return i;
 		}
-		public set(const bool val) {
+		public set(bool val) {
 			this.SetValue("bMedieval", val);
 		}
 	}
@@ -126,7 +149,7 @@ methodmap VSHGameMode < StringMap {
 			bool i; this.GetValue("bDoors", i);
 			return i;
 		}
-		public set(const bool val) {
+		public set(bool val) {
 			this.SetValue("bDoors", val);
 		}
 	}
@@ -135,7 +158,7 @@ methodmap VSHGameMode < StringMap {
 			bool i; this.GetValue("bTeleToSpawn", i);
 			return i;
 		}
-		public set(const bool val) {
+		public set(bool val) {
 			this.SetValue("bTeleToSpawn", val);
 		}
 	}
@@ -145,7 +168,7 @@ methodmap VSHGameMode < StringMap {
 			float i; this.GetValue("flHealthTime", i);
 			return i;
 		}
-		public set(const float val) {
+		public set(float val) {
 			this.SetValue("flHealthTime", val);
 		}
 	}
@@ -154,7 +177,7 @@ methodmap VSHGameMode < StringMap {
 			float i; this.GetValue("flMusicTime", i);
 			return i;
 		}
-		public set(const float val) {
+		public set(float val) {
 			this.SetValue("flMusicTime", val);
 		}
 	}
@@ -164,21 +187,21 @@ methodmap VSHGameMode < StringMap {
 			float i; this.GetValue("flRoundStartTime", i);
 			return i;
 		}
-		public set(const float val) {
+		public set(float val) {
 			this.SetValue("flRoundStartTime", val);
 		}
 	}
 	
-	property BaseBoss hNextBoss {
+	property BasePlayer hNextBoss {
 		public get() {
-			BaseBoss i; this.GetValue("hNextBoss", i);
+			BasePlayer i; this.GetValue("hNextBoss", i);
 			if( i && !i.index ) {
 				this.SetValue("hNextBoss", 0);
-				i = view_as< BaseBoss >(0);
+				i = view_as< BasePlayer >(0);
 			}
 			return i;
 		}
-		public set(const BaseBoss val) {
+		public set(BasePlayer val) {
 			this.SetValue("hNextBoss", val);
 		}
 	}
@@ -194,6 +217,7 @@ methodmap VSHGameMode < StringMap {
 		this.iRoundCount = 0;
 		this.iHealthChecks = 0;
 		this.iCaptures = 0;
+		this.iStartingReds = 0;
 #if defined _steamtools_included
 		this.bSteam = false;
 #endif
@@ -204,36 +228,42 @@ methodmap VSHGameMode < StringMap {
 		this.flHealthTime = 0.0;
 		this.flMusicTime = 0.0;
 		this.flRoundStartTime = 0.0;
-		this.hNextBoss = view_as< BaseBoss >(0);
+		this.hNextBoss = view_as< BasePlayer >(0);
+		this.iRoundResult = RoundResInvalid;
 	}
 	
-	public static BaseBoss GetRandomBoss(const bool balive) {
+	public static BasePlayer GetRandomBoss(bool balive) {
 		int count;
-		BaseBoss[] bosses = new BaseBoss[MaxClients];
-		for( int i=MaxClients; i; --i ) {
-			if( !IsValidClient(i) || (balive && !IsPlayerAlive(i)) )
+		BasePlayer[] bosses = new BasePlayer[MaxClients];
+		for( int i=1; i<=MaxClients; i++ ) {
+			if( !IsClientValidExtra(i) || (balive && !IsPlayerAlive(i)) ) {
 				continue;
-			BaseBoss boss = BaseBoss(i);
-			if( !boss.bIsBoss )
+			}
+			BasePlayer boss = BasePlayer(i);
+			if( !boss.bIsBoss ) {
 				continue;
+			}
 			bosses[count++] = boss;
 		}
-		return (!count ? view_as< BaseBoss >(0) : bosses[GetRandomInt(0, count-1)]);
+		return (!count? view_as< BasePlayer >(0) : bosses[GetRandomInt(0, count-1)]);
 	}
 	
-	public static BaseBoss GetBossByType(const bool balive, const int type) {
-		for( int i=MaxClients; i; --i ) {
-			if( !IsValidClient(i) || (balive && !IsPlayerAlive(i)) )
+	public static BasePlayer GetBossByType(bool balive, int type) {
+		for( int i=1; i<=MaxClients; i++ ) {
+			if( !IsClientValidExtra(i) || (balive && !IsPlayerAlive(i)) ) {
 				continue;
-			BaseBoss boss = BaseBoss(i);
-			if( !boss.bIsBoss )
+			}
+			
+			BasePlayer boss = BasePlayer(i);
+			if( !boss.bIsBoss ) {
 				continue;
-			else if( boss.iBossType==type )
+			} else if( boss.iBossType==type ) {
 				return boss;
+			}
 		}
-		return view_as< BaseBoss >(0);
+		return view_as< BasePlayer >(0);
 	}
-	public static void CheckArena(const bool type) {
+	public static void CheckArena(bool type) {
 		if( type ) {
 			SetArenaCapEnableTime( float(45+g_vsh2.m_hCvars.PointDelay.IntValue*(GetLivingPlayers(VSH2Team_Red)-1)) );
 		} else {
@@ -242,72 +272,76 @@ methodmap VSHGameMode < StringMap {
 		}
 	}
 	
-	public static int GetQueue(BaseBoss[] players) {
+	public static int GetQueue(BasePlayer[] players) {
 		int k;
-		for( int i=MaxClients; i; --i ) {
-			if( !IsValidClient(i) || GetClientTeam(i) <= VSH2Team_Spectator )
+		for( int i=1; i<=MaxClients; i++ ) {
+			if( !IsClientValidExtra(i) || GetClientTeam(i) <= VSH2Team_Spectator ) {
 				continue;
-			
-			BaseBoss boss = BaseBoss(i);
+			}
+			BasePlayer boss = BasePlayer(i);
 			if( boss.bIsBoss ) {
 				continue;
 			}
 			players[k++] = boss;
 		}
 		
-		for( int i; i<k; i++ ) {
-			for( int n; n<k; n++ ) {
-				if( players[n].iQueue < players[i].iQueue ) {
-					BaseBoss t = players[i];
-					players[i] = players[n];
-					players[n] = t;
-				}
+		for( int i; i < k*k; i++ ) {
+			int j = i / k;
+			int n = i % k;
+			if( players[n].iQueue < players[j].iQueue ) {
+				BasePlayer t = players[j];
+				players[j] = players[n];
+				players[n] = t;
 			}
 		}
 		return k;
 	}
 	
-	public static BaseBoss FindNextBoss() {
-		BaseBoss[] players = new BaseBoss[MaxClients];
+	public static BasePlayer FindNextBoss() {
+		BasePlayer[] players = new BasePlayer[MaxClients];
 		VSHGameMode.GetQueue(players);
 		return players[0];
 	}
 	
-	public static int CountMinions(const bool balive, BaseBoss owner=view_as< BaseBoss >(0)) {
+	public static int CountMinions(bool balive, BasePlayer owner=view_as< BasePlayer >(0)) {
 		int count=0;
-		for( int i=MaxClients; i; --i ) {
-			if( !IsValidClient(i) || (balive && !IsPlayerAlive(i)) )
+		for( int i=1; i<=MaxClients; i++ ) {
+			if( !IsClientValidExtra(i) || (balive && !IsPlayerAlive(i)) ) {
 				continue;
-			BaseBoss minion = BaseBoss(i);
+			}
+			BasePlayer minion = BasePlayer(i);
 			if( !minion.bIsMinion ) {
 				continue;
 			} else if( !owner || owner.userid==minion.iOwnerBoss ) {
-				++count;
+				count++;
 			}
 		}
 		return count;
 	}
-	public static int CountBosses(const bool balive) {
+	public static int CountBosses(bool balive) {
 		int count=0;
-		for( int i=MaxClients; i; --i ) {
-			if( !IsValidClient(i) || (balive && !IsPlayerAlive(i)) )
+		for( int i=1; i<=MaxClients; i++ ) {
+			if( !IsClientValidExtra(i) || (balive && !IsPlayerAlive(i)) ) {
 				continue;
-			BaseBoss boss = BaseBoss(i);
-			if( !boss.bIsBoss )
+			}
+			BasePlayer boss = BasePlayer(i);
+			if( !boss.bIsBoss ) {
 				continue;
-			++count;
+			}
+			count++;
 		}
 		return count;
 	}
 	public static int GetTotalBossHealth() {
-		int count=0;
-		for( int i=MaxClients; i; --i ) {
-			if( !IsValidClient(i) )
+		int count;
+		for( int i=1; i<=MaxClients; i++ ) {
+			if( !IsClientValidExtra(i) ) {
 				continue;
-			
-			BaseBoss boss = BaseBoss(i);
-			if( !boss.bIsBoss )
+			}
+			BasePlayer boss = BasePlayer(i);
+			if( !boss.bIsBoss ) {
 				continue;
+			}
 			count += boss.iHealth;
 		}
 		return count;
@@ -323,108 +357,115 @@ methodmap VSHGameMode < StringMap {
 		vecPack.WriteCell(setting);
 		CreateTimer(0.2, SetAmmoPack, vecPack, TIMER_DATA_HNDL_CLOSE);
 	}
-	public static void SearchForItemPacks()
-	{
+	
+	
+	/// This is bad function design. Functions should NEVER have to use
+	/// Global variables when instead the values of the global variables be passed as parameters.
+	/// Changing this function means changing the native and ruining backwards compatibility.
+	public static void SearchForItemPacks() {
+		int ent = -1;
 		int ammo_pack_setting = g_vsh2.m_hCvars.ChangeAmmoPacks.IntValue;
 		if( ammo_pack_setting > 0 ) {
-			int ent = -1;
 			while( (ent = FindEntityByClassname(ent, "item_ammopack_*")) != -1 ) {
 				VSHGameMode.ReplaceAmmoPack(ent, ammo_pack_setting);
 			}
+			ent = -1;
 		}
 		
 		bool foundAmmo, foundHealth;
-		int ent = -1, count = 0;
+		int count = 0;
 		while( (ent = FindEntityByClassname(ent, "item_healthkit_small")) != -1 ) {
-			SetEntProp(ent, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars.Enabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+			SetEntProp(ent, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars.Enabled.BoolValue? VSH2Team_Red : VSH2Team_Neutral, 4);
 			count++;
-			if( !foundHealth )
+			/// TODO: add cvar/params for the counts above.
+			if( !foundHealth ) {
 				foundHealth = (count > 9);
+			}
 		}
 		ent = -1;
+		
 		count = 0;
 		while( (ent = FindEntityByClassname(ent, "item_healthkit_medium")) != -1 ) {
-			SetEntProp(ent, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars.Enabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+			SetEntProp(ent, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars.Enabled.BoolValue? VSH2Team_Red : VSH2Team_Neutral, 4);
 			count++;
-			if( !foundHealth )
+			if( !foundHealth ) {
 				foundHealth = (count > 6);
+			}
 		}
 		ent = -1;
+		
 		count = 0;
 		while( (ent = FindEntityByClassname(ent, "item_healthkit_full")) != -1 ) {
-			SetEntProp(ent, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars.Enabled.BoolValue ? VSH2Team_Red : VSH2Team_Neutral, 4);
+			SetEntProp(ent, Prop_Send, "m_iTeamNum", g_vsh2.m_hCvars.Enabled.BoolValue? VSH2Team_Red : VSH2Team_Neutral, 4);
 			count++;
-			if( !foundHealth )
+			if( !foundHealth ) {
 				foundHealth = (count > 3);
+			}
 		}
+		ent = -1;
 		
 		if( !foundAmmo ) {
-			SpawnRandomAmmo(
-				g_vsh2.m_hCvars.AmmoKitLimitMax.IntValue,
-				g_vsh2.m_hCvars.AmmoKitLimitMin.IntValue,
-				g_vsh2.m_hCvars.Enabled.BoolValue
-			);
+			/// TODO: add cvar for chance param?
+			SpawnRandomPickups(g_vsh2.m_hCvars.AmmoKitLimitMax.IntValue, g_vsh2.m_hCvars.AmmoKitLimitMin.IntValue, 3, g_vsh2.m_hCvars.Enabled.BoolValue, _, "item_ammopack_small");
 		}
 		if( !foundHealth ) {
-			SpawnRandomHealth(
-				g_vsh2.m_hCvars.HealthKitLimitMax.IntValue,
-				g_vsh2.m_hCvars.HealthKitLimitMin.IntValue,
-				g_vsh2.m_hCvars.Enabled.BoolValue
-			);
+			SpawnRandomPickups(g_vsh2.m_hCvars.HealthKitLimitMax.IntValue, g_vsh2.m_hCvars.HealthKitLimitMin.IntValue, 3, g_vsh2.m_hCvars.Enabled.BoolValue, _, "item_healthkit_small");
 		}
 	}
 	public void UpdateBossHealth() {
-		int totalHealth, bosscount;
-		for( int i=MaxClients; i; --i ) {
-			/// don't count dead bosses
-			if( !IsValidClient(i) || !IsPlayerAlive(i) ) {
+		int total_health, num_bosses;
+		for( int i=1; i<=MaxClients; i++ ) {
+			if( !IsClientValidExtra(i) || !IsPlayerAlive(i) ) {
 				continue;
 			}
 			
-			BaseBoss boss = BaseBoss(i);
+			BasePlayer boss = BasePlayer(i);
 			if( !boss.bIsBoss ) {
 				continue;
 			}
-			bosscount++;
-			totalHealth += boss.iHealth;
+			num_bosses++;
+			total_health += boss.iHealth;
 		}
-		if( bosscount > 0 ) {
-			this.iHealthBar.SetHealthPercent(totalHealth, this.iTotalMaxHealth);
+		if( num_bosses > 0 ) {
+			this.iHealthBar.SetHealthPercent(total_health, this.iTotalMaxHealth);
 		}
 	}
-	public void GetBossType()
-	{
+	
+	public void GetBossType() {
 		if( this.hNextBoss && this.hNextBoss.iPresetType > -1 ) {
 			this.iSpecial = this.hNextBoss.iPresetType;
-			if( this.iSpecial > MAXBOSS ) {
-				this.iSpecial = MAXBOSS;
+			if( this.iSpecial > this.MAXBOSS ) {
+				this.iSpecial = this.MAXBOSS;
 			}
 			return;
 		}
 		
-		BaseBoss boss = VSHGameMode.FindNextBoss();
+		BasePlayer boss = VSHGameMode.FindNextBoss();
 		if( boss.iPresetType > -1 && this.iSpecial == -1 ) {
 			this.iSpecial = boss.iPresetType;
-			if( this.iSpecial > MAXBOSS ) {
-				this.iSpecial = MAXBOSS;
+			if( this.iSpecial > this.MAXBOSS ) {
+				this.iSpecial = this.MAXBOSS;
 			}
 			return;
 		}
-		if( this.iSpecial > -1 ) {    /// Clamp the chosen special so we don't error out.
-			if( this.iSpecial > MAXBOSS ) {
-				this.iSpecial = MAXBOSS;
+		
+		if( this.iSpecial > -1 ) {
+			/// Clamp the chosen special so we don't error out.
+			if( this.iSpecial > this.MAXBOSS ) {
+				this.iSpecial = this.MAXBOSS;
 			}
 		} else {
-			this.iSpecial = GetRandomInt(VSH2Boss_Hale, MAXBOSS);
+			this.iSpecial = GetRandomInt(VSH2Boss_Hale, this.MAXBOSS);
 		}
 	}
+	
 	/// just use arena maps as vsh/ff2 maps
-	public static bool IsVSHMap()
-	{
+	public static bool IsVSHMap() {
 		char config[PLATFORM_MAX_PATH], currentmap[99];
 		GetCurrentMap(currentmap, sizeof(currentmap));
-		if( FileExists("bNextMapToFF2") || FileExists("bNextMapToHale") )
+		if( FileExists("bNextMapToFF2") || FileExists("bNextMapToHale") ) {
 			return true;
+		}
 		
 		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/maps.cfg");
 		if( !FileExists(config) ) {
@@ -443,16 +484,16 @@ methodmap VSHGameMode < StringMap {
 		
 		int tries;
 		while( file.ReadLine(config, sizeof(config)) && tries < 100 ) {
-			++tries;
-			if( tries == 100 ) {
+			tries++;
+			if( tries==100 ) {
 				LogError("[VSH 2] **** Breaking Loop Looking For a Map, Disabling VSH 2 ****");
 				return false;
 			}
 			
 			Format(config, strlen(config)-1, config);
-			if( !strncmp(config, "//", 2, false) )
+			if( !strncmp(config, "//", 2, false) ) {
 				continue;
-			
+			}
 			if( StrContains(currentmap, config, false) != -1 || StrContains(config, "all", false) != -1 ) {
 				file.Close();
 				return true;
@@ -467,30 +508,31 @@ methodmap VSHGameMode < StringMap {
 		//return false;
 	}
 	
-	public void CheckDoors()
-	{
+	public void CheckDoors() {
 		char config[PLATFORM_MAX_PATH], currentmap[99];
 		char lolcano[] = "vsh_lolcano_pb1";
 		GetCurrentMap(currentmap, sizeof(currentmap));
 		this.bDoors = false;
 		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/saxton_hale/saxton_hale_doors.cfg");
 		if( !FileExists(config) ) {
-			if( !strncmp(currentmap, lolcano, sizeof(lolcano), false) )
+			if( !strncmp(currentmap, lolcano, sizeof(lolcano), false) ) {
 				this.bDoors = true;
+			}
 			return;
 		}
 		
 		File file = OpenFile(config, "r");
 		if( !file ) {
-			if( !strncmp(currentmap, lolcano, sizeof(lolcano), false) )
+			if( !strncmp(currentmap, lolcano, sizeof(lolcano), false) ) {
 				this.bDoors = true;
+			}
 			return;
 		}
 		while( !file.EndOfFile() && file.ReadLine(config, sizeof(config)) ) {
 			Format(config, strlen(config)-1, config);
-			if( !strncmp(config, "//", 2, false) )
+			if( !strncmp(config, "//", 2, false) ) {
 				continue;
-			else if( StrContains(currentmap, config, false) != -1 || !StrContains(config, "all", false) ) {
+			} else if( StrContains(currentmap, config, false) != -1 || !StrContains(config, "all", false) ) {
 				delete file;
 				this.bDoors = true;
 				return;
@@ -499,19 +541,20 @@ methodmap VSHGameMode < StringMap {
 		delete file;
 	}
 	
-	public void CheckTeleToSpawn()
-	{
+	public void CheckTeleToSpawn() {
 		char config[PLATFORM_MAX_PATH], currentmap[99];
 		GetCurrentMap(currentmap, sizeof(currentmap));
 		this.bTeleToSpawn = false;
 		
 		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/saxton_hale/saxton_spawn_teleport.cfg");
-		if( !FileExists(config) )
+		if( !FileExists(config) ) {
 			return;
+		}
 		
 		File file = OpenFile(config, "r");
-		if( !file )
+		if( !file ) {
 			return;
+		}
 		
 		while( !file.EndOfFile() && file.ReadLine(config, sizeof(config)) ) {
 			Format(config, strlen(config) - 1, config);
@@ -526,89 +569,74 @@ methodmap VSHGameMode < StringMap {
 		delete file;
 	}
 	
-	public static int GetBosses(BaseBoss[] bossarray, const bool balive) {
+	public static int GetBosses(BasePlayer[] bossarray, bool balive) {
 		int count;
-		for( int i=MaxClients; i; --i ) {
-			if( !IsClientInGame(i) )
-				continue;
-			else if( balive && !IsPlayerAlive(i) )
-				continue;
-			
-			BaseBoss boss = BaseBoss(i);
-			if( boss.bIsBoss )
-				bossarray[count++] = boss;
-		}
-		return count;
-	}
-	public static int GetBossesByType(BaseBoss[] bossarray, const int type, const bool balive=true) {
-		int count;
-		for( int i=MaxClients; i; --i ) {
-			if( !IsClientInGame(i) )
-				continue;
-			else if( balive && !IsPlayerAlive(i) )
-				continue;
-			
-			BaseBoss boss = BaseBoss(i);
-			if( boss.bIsBoss && boss.iBossType==type )
-				bossarray[count++] = boss;
-		}
-		return count;
-	}
-	public static int GetFighters(BaseBoss[] redarray, const bool balive) {
-		int count;
-		for( int i=MaxClients; i; --i ) {
-			if( !IsClientInGame(i) || GetClientTeam(i) <= VSH2Team_Spectator )
-				continue;
-			else if( balive && !IsPlayerAlive(i) )
-				continue;
-			
-			BaseBoss red = BaseBoss(i);
-			if( !red.bIsBoss && !red.bIsMinion )
-				redarray[count++] = red;
-		}
-		return count;
-	}
-	public static int GetFightersByClass(BaseBoss[] redarray, TFClassType tfclass, const bool balive) {
-		int count;
-		for( int i=MaxClients; i; --i ) {
-			if( !IsClientInGame(i) || GetClientTeam(i) <= VSH2Team_Spectator ) {
-				continue;
-			} else if( balive && !IsPlayerAlive(i) ) {
+		for( int i=1; i<=MaxClients; i++ ) {
+			if( !IsClientInGame(i) || (balive && !IsPlayerAlive(i)) ) {
 				continue;
 			}
-			BaseBoss red = BaseBoss(i);
+			
+			BasePlayer boss = BasePlayer(i);
+			if( boss.bIsBoss ) {
+				bossarray[count++] = boss;
+			}
+		}
+		return count;
+	}
+	public static int GetBossesByType(BasePlayer[] bossarray, int type, bool balive=true) {
+		int count;
+		for( int i=1; i<=MaxClients; i++ ) {
+			if( !IsClientInGame(i) || (balive && !IsPlayerAlive(i)) ) {
+				continue;
+			}
+			
+			BasePlayer boss = BasePlayer(i);
+			if( boss.bIsBoss && boss.iBossType==type ) {
+				bossarray[count++] = boss;
+			}
+		}
+		return count;
+	}
+	public static int GetFighters(BasePlayer[] redarray, bool balive) {
+		int count;
+		for( int i=1; i<=MaxClients; i++ ) {
+			if( !IsClientInGame(i) || GetClientTeam(i) <= VSH2Team_Spectator || (balive && !IsPlayerAlive(i)) ) {
+				continue;
+			}
+			
+			BasePlayer red = BasePlayer(i);
+			if( !red.bIsBoss && !red.bIsMinion ) {
+				redarray[count++] = red;
+			}
+		}
+		return count;
+	}
+	public static int GetFightersByClass(BasePlayer[] redarray, TFClassType tfclass, bool balive) {
+		int count;
+		for( int i=1; i<=MaxClients; i++ ) {
+			if( !IsClientInGame(i) || GetClientTeam(i) <= VSH2Team_Spectator || (balive && !IsPlayerAlive(i)) ) {
+				continue;
+			}
+			
+			BasePlayer red = BasePlayer(i);
 			if( !red.bIsBoss && !red.bIsMinion && red.iTFClass==tfclass ) {
 				redarray[count++] = red;
 			}
 		}
 		return count;
 	}
-	public static int GetMinions(BaseBoss[] marray, const bool balive, BaseBoss owner=view_as< BaseBoss >(0)) {
+	public static int GetMinions(BasePlayer[] marray, bool balive, BasePlayer owner=view_as< BasePlayer >(0)) {
 		int count;
-		for( int i=MaxClients; i; --i ) {
-			if( !IsClientInGame(i) ) {
-				continue;
-			} else if( balive && !IsPlayerAlive(i) ) {
+		for( int i=1; i<=MaxClients; i++ ) {
+			if( !IsClientInGame(i) || (balive && !IsPlayerAlive(i)) ) {
 				continue;
 			}
-			BaseBoss minion = BaseBoss(i);
+			BasePlayer minion = BasePlayer(i);
 			if( minion.bIsMinion && (!owner || owner.userid==minion.iOwnerBoss) ) {
 				marray[count++] = minion;
 			}
 		}
 		return count;
-	}
-	
-	public static int CalcBossMaxHP(int red_players, int boss_count) {
-		/// In stocks.sp
-		int max_health = CalcBossHealth(760.8, red_players, 1.0, 1.0341, 2046.0) / (boss_count);
-		if( max_health < 3000 && boss_count==1 ) {
-			max_health = 3000;
-		} else if( max_health > 3000 && boss_count > 1 ) {
-			/// Putting in multiboss Handicap from complaints of fighting multiple bosses being too overpowered since teamwork itself is overpowered :)
-			max_health -= g_vsh2.m_hCvars.MultiBossHandicap.IntValue;
-		}
-		return max_health;
 	}
 };
 
@@ -619,22 +647,20 @@ public Action SetAmmoPack(Handle timer, DataPack pack) {
 	vecPos[1] = pack.ReadFloat();
 	vecPos[2] = pack.ReadFloat();
 	int setting = pack.ReadCell();
-	
 	char ammopack_names[][] = {
 		"item_ammopack_small",
 		"item_ammopack_medium",
 		"item_ammopack_large"
 	};
-	
 	int ammopack_ent = -1;
 	switch( setting ) {
-		case 1: ammopack_ent = CreateEntityByName(ammopack_names[setting-1]);
-		case 2: ammopack_ent = CreateEntityByName(ammopack_names[setting-1]);
-		case 3: ammopack_ent = CreateEntityByName(ammopack_names[setting-1]);
+		case 1:  ammopack_ent = CreateEntityByName(ammopack_names[setting-1]);
+		case 2:  ammopack_ent = CreateEntityByName(ammopack_names[setting-1]);
+		case 3:  ammopack_ent = CreateEntityByName(ammopack_names[setting-1]);
 		default: ammopack_ent = CreateEntityByName(ammopack_names[GetRandomInt(0, sizeof(ammopack_names)-1)]);
 	}
 	TeleportEntity(ammopack_ent, vecPos, NULL_VECTOR, NULL_VECTOR);
 	DispatchSpawn(ammopack_ent);
-	//SetEntProp(ammopack_ent, Prop_Send, "m_iTeamNum", manager.bMainEnable ? manager.iRedTeam : 0, 4);
+	//SetEntProp(ammopack_ent, Prop_Send, "m_iTeamNum", manager.bMainEnable? manager.iRedTeam : 0, 4);
 	return Plugin_Continue;
 }

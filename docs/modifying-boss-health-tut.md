@@ -15,8 +15,7 @@ Boss' health formula is as follows...
 This formula is better represented by the stock function `CalcBossHealth`
 
 ```cpp
-stock int CalcBossHealth(const float initial, const int playing, const float subtract, const float exponent, const float additional)
-{
+stock int CalcBossHealth(float initial, int playing, float subtract, float exponent, float additional) {
 	return RoundFloat( Pow((((initial)+playing)*(playing-subtract)), exponent)+additional );
 }
 ```
@@ -39,18 +38,18 @@ VSH2_Hook(OnBossCalcHealth, MyCustomBoss_OnBossCalcHealth);
 ```
 
 For our purposes, the hook `OnBossCalcHealth` will use the function prototype:
-```c
-function void (const VSH2Player player, int& max_health, const int boss_count, const int red_players);
+```cpp
+function void (VSH2Player player, int& max_health, int boss_count, int red_players);
 ```
 
 So it would look like this in our addon plugin:
 ```cpp
-public void MyCustomBoss_OnBossCalcHealth(const VSH2Player player, int& max_health, const int boss_count, const int red_players)
-{
+public void MyCustomBoss_OnBossCalcHealth(VSH2Player player, int& max_health, int boss_count, int red_players) {
 	int new_health;
-	for( int n=MaxClients; n; n-- ) {
-		if( !IsClientValid(n) || !IsPlayerAlive(n) || IsClientObserver(n) || VSH2Player(n).bIsBoss )
+	for( int n=1; n <= MaxClients; n++ ) {
+		if( !IsClientValid(n) || !IsPlayerAlive(n) || IsClientObserver(n) || VSH2Player(n).bIsBoss ) {
 			continue;
+		}
 		new_health += GetEntProp(n, Prop_Data, "m_iMaxHealth");
 	}
 	max_health = new_health;

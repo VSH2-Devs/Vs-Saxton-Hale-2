@@ -2,10 +2,10 @@
 
 #### Current STABLE Version: *2.0.5*
 [![Master Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=master)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
-#### Current DEVELOPMENT Version: *2.12.1*
+#### Current DEVELOPMENT Version: *2.13.0*
 [![Develop Build Status](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2.svg?branch=develop)](https://travis-ci.org/VSH2-Devs/Vs-Saxton-Hale-2)
 
-#### Current DEVELOPMENT STATUS updated 4/12/22
+#### Current DEVELOPMENT STATUS updated 12/6/23
 Transitioning devs, documenting and testing 2.13 for final fixes for release.
 
 **[VSH2 Addons Repository](https://github.com/VSH2-Devs/VSH2-Addons)**
@@ -30,23 +30,25 @@ If you do require help in setting up the bosses or at least need some info on th
 * VSH2 has a vast API to build bosses as wide reaching as your imagination and TF2's limitations!
 * 'ConfigMap' allows you to not only have the power of VSH2's API but have FF2-like configuration for a powerful combination of customization through code and config alike.
 
+
 ### How do I get set up?
 
 * VSH2 uses the same map configurations as FF2 and VSH1 and this is for compatibility reasons.
 * Dependencies: [TF2Items](https://builds.limetech.io/?project=tf2items), MoreColors, ConfigMap (MoreColors + ConfigMap are part of VSH2 repo).
 * Optional Dependencies: [TF2Attributes](https://github.com/FlaminSarge/tf2attributes), [SteamTools](https://forums.alliedmods.net/showthread.php?t=170630)
 * Compile the VSH2 script code with spcomp or upload the prebuild SMX binaries; which ever method you use, move the SMX binaries to your server's SourceMod 'plugins' directory (addons/sourcemod/plugins).
+* Move the config files into `addons/sourcemod/configs`. Make sure to keep the folder structure that's in the configs.
+* Move the translations folder into the server translation folder.
 * Read the [Wiki](https://github.com/VSH2-Devs/Vs-Saxton-Hale-2/wiki) to get started making your own boss!
 * If you're moving from FF2 to VSH2, we also have the VSH2-FF2 Compatibility Engine, [use this FF2 subplugin library, courtesy of 01Pollux](https://github.com/01Pollux/FF2-Library)
 
 ### Credits
 
 * **Owner:** *Nergal the Ashurian/Assyrian* - https://forums.alliedmods.net/member.php?u=176545
-* **Current Lead, Gameplay:** *mub* - https://steamcommunity.com/profiles/76561197961943948/
-* **Current Lead, Code:** *Pringles* 
+* **Current Project Lead:** *mub* - https://steamcommunity.com/profiles/76561197961943948/
 * **Repository Manager & Contributor:** *Starblaster 64* - https://forums.alliedmods.net/member.php?u=261662
-* **Contributors:** *Scags/RageNewb* , *BatFoxKid* , *01Pollux/WhiteFalcon* 
-* **Special thanks to** the communities and servers who currently use this mod!
+* **Contributors:** *Scags/RageNewb* , *BatFoxKid* , *01Pollux/WhiteFalcon* , *Bottiger* .
+* **Special thanks to** the communities and servers who used or currently use this mod!
 
 ### Contribution Rules
 #### Code Format:
@@ -59,3 +61,17 @@ If you do require help in setting up the bosses or at least need some info on th
 * Property names must have a single-letter prefix of their type.
 * Functions, methods, methodmaps, enums, enum values, must be named in PascalCase. Pascal_Case is also acceptable.
 * Enum values used as flags may be upper-case.
+* Named constants rules:
+	* Integer constants should be placed in an enum, anonymous enum is fine.
+	* Float constants that __don't__ have a fractional part (like: `1.0`) should be enum constants that are added with `0.0` at their location(s) of use.
+	* Float constants that __do__ have a fraction part (like: `3.14`) should be preprocessor defines.
+	* string literals should be preprocessor defines.
+
+* Chained `if` statements aren't bad but if the data is only ever be one thing at a time, use `if-else if` statements.
+	* if you do `if-else if` statements on a single piece of data, use a `switch` statement.
+
+* Bit fields/flags lets you use a single int as 32 bools. Useful if an element can be multiple aspects at once.
+	* `1 << n` where `n` is from 0 to 31.
+	* To reverse the above operation. use `IntLog2` in `int_log.inc`: `n == IntLog2(1 << n)`
+
+* **No** pre-increments `++i, i--`, Post-Increments __only__ `i++, i--`

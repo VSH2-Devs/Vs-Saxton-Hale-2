@@ -1,335 +1,311 @@
-"Phrases"
-{
-  "late_spawn_blocked"
-  {
-    "chi"     "延迟重生已阻止"
-  }
-  "cant_suicide_as_boss"
-  {
-    "chi"     "你作为boss还不能自杀。请使用'!resetq'。"
-  }
-  "vsh2_welcome"
-  {
-    "chi"      "欢迎来到VSH2，输入 /bosshelp 获取帮助！"
-  }
-  "cant_find_vsh2cfg"
-  {
-    "chi"     "**** {axis}找不到'configs/saxton_hale/vsh2.cfg'{default} ****"
-  }
-  "vsh2_config_reloaded"
-  {
-    "chi"     "**** VSH2配置文件已重载 ****"
-  }
-  "top_3"
-  {
-    "chi"     "造成最高伤害的玩家是："
-  }
-  "damage_dealt"
-  {
-    "chi"     "造成的伤害："
-  }
-  "gained_points"
-  {
-    "chi"      "你获得了 {1} 队列点数。"
-  }
-  "scored_points"
-  {
-    "chi"      "你得分到 {1} 队列点数。"
-  }
-  "total_boss_health"
-  {
-    "chi"      "总计Boss生命值："
-  }
-  "start_boss_replacer"
-  {
-    "chi"      "惊喜！现在该到你出场了！"
-  }
-  "start_boss_disconnected"
-  {
-    "chi"      "一个Boss刚才断开了连接！"
-  }
-  "player_backstab"
-  {
-    "chi"      "你背刺了{1}！"
-  }
-  "boss_got_backstabbed"
-  {
-    "chi"      "你刚刚被背刺了！"
-  }
-  "player_market_garden"
-  {
-    "chi"      "你花园铲了{1}！"
-  }
-  "boss_got_market_gardened"
-  {
-    "chi"      "你刚刚被花园铲了！"
-  }
-  "goomba_stomp"
-  {
-    "chi"      "{olive}>> {teamcolor}{1}{default}狠狠地踩头了{unique}{2}{default}！"
-  }
-  "become_boss"
-  {
-    "chi"      "{1}变成了{2}，拥有{3}生命值"
-  }
-  "health_left"
-  {
-    "chi"      "{1}（{2}）拥有{3}（总计 {4}）剩余的生命值。"
-  }
-  "end_of_round"
-  {
-    "chi"      "{olive}[VSH 2]回合结束{default} {1}"
-  }
-  "show_current_hp"
-  {
-    "chi"      "{1}展示了它现在的HP：{2} / {3}"
-  }
-  "current_health"
-  {
-    "chi"      "{1}的现在的HP是：{2} / {3}"
-  }
-  "boss_health_check"
-  {
-    "chi"      "Boss生命值检查{default} {1}"
-  }
-  "cannot_see_hp_now"
-  {
-    "chi"      "你现在不能检查Boss的HP（再等待 {1} 秒）。上一次查到的HP是 {2}"
-  }
-  "be_boss_soon"
-  {
-    "chi"      "你很快就会变成一个Boss了！输入 {olive}/halenext{default} 来检查/重置你的队列点数 & {olive}!setboss{default} 来设置你的boss。"
-  }
-  "hud_damage"
-  {
-    "chi"      "伤害：{1}"
-  }
-  "hud_others_damage"
-  {
-    "chi"      "{1} - {2}的伤害：{3}"
-  }
-  "hud_lives"
-  {
-    "chi"      "{1} | 生命：{2}"
-  }
-  "dead_ringer_ready"
-  {
-    "chi"      "状态：假死已准备好"
-  }
-  "dead_ringer_active"
-  {
-    "chi"      "状态：进入假死"
-  }
-  "dead_ringer_inactive"
-  {
-    "chi"      "状态：未激活"
-  }
-  "kunai_ready"
-  {
-    "chi"      "{1} | 苦无：已准备好"
-  }
-  "kunai_none"
-  {
-    "chi"      "{1} | 苦无：无"
-  }
-  "air_strike_damage"
-  {
-    "chi"      "空袭火箭筒伤害：{1}"
-  }
-  "shield_active"
-  {
-    "chi"      "盾牌：激活"
-  }
-  "shield_gone"
-  {
-    "chi"      "盾牌：耗尽"
-  }
-  "be_boss_soon_panel_title"
-  {
-    "chi"      "你是下一个Boss！"
-  }
-  "be_boss_soon_panel_text"
-  {
-    "chi"      "你就快变成一个Boss了！输入 /halenext 来检查/重置你的队列点数。\n或者，使用 !resetq 。\n别忘记使用 !setboss 来设置你的boss。"
-  }
-  "queue_set_0"
-  {
-    "chi"      "你的队列点数被设为0！"
-  }
-  "queue_panel_title"
-  {
-    "chi"      "VSH2 Boss队列："
-  }
-  "queue_panel_set_0"
-  {
-    "chi"      "你的队列点数：{1}（选择此项来设为0）"
-  }
-  "queue_set_0_confirm"
-  {
-    "chi"      "你确定要设置队列点数为0吗？"
-  }
-  "queue_points_reset"
-  {
-    "chi"      "你已重设你的队列点数为{olive}0{default}"
-  }
-  "bossmenu_title"
-  {
-    "chi"      "设置下一个Boss类型菜单："
-  }
-  "bossmenu_none"
-  {
-    "chi"      "无（随机Boss）"
-  }
-  "bossmenu_pick_boss_special"
-  {
-    "chi"      "下一个Boss将是 {olive}{1}{default}！"
-  }
-  "command_boss_select_yourself"
-  {
-    "chi"      "你设置了你自己为下一个Boss！"
-  }
-  "command_boss_select_someone"
-  {
-    "chi"      "{1} 被设置为下一个Boss！"
-  }
-  "set_boss_menu_title"
-  {
-    "chi"      "设置Boss菜单：\n已选择Boss：{1}"
-  }
-  "bossmenu_pick_boss"
-  {
-    "chi"      "你的boss被设为 {olive}{1}{default}！"
-  }
-  "music_panel_title"
-  {
-    "chi"      "开关决战霍尔2音乐..."
-  }
-  "music_on"
-  {
-    "chi"      "你打开了决战霍尔2音乐。"
-  }
-  "music_off"
-  {
-    "chi"      "你关闭了决战霍尔2音乐。"
-  }
-  "force_cant_after_round_started"
-  {
-    "chi"      "你不能在回合开始后强制设定一个boss..."
-  }
-  "force_player_notify"
-  {
-    "chi"      "一个管理员强制设定你为boss！"
-  }
-  "force_admin_forced"
-  {
-    "chi"      "强制设定 {1} 为一个boss"
-  }
-  "addpoints_usage"
-  {
-    "chi"      "用法：hale_addpoints <目标> <点数>"
-  }
-  "addpoints_added"
-  {
-    "chi"      "增加 {1} 队列点数给 {2}"
-  }
-  "setpoints_usage"
-  {
-    "chi"      "用法：hale_setpoints <目标> <点数>"
-  }
-  "setpoints_added"
-  {
-    "chi"      "设定 {1} 队列点数为 {2}"
-  }
-  "helpmenu_title"
-  {
-    "chi"      "欢迎来到VSH2菜单，我能帮你什么忙？"
-  }
-  "helpmenu_halehp"
-  {
-    "chi"      "显示Boss生命值（/halehp）"
-  }
-  "helpmenu_showclass"
-  {
-    "chi"      "显示我的兵种的帮助"
-  }
-  "helpmenu_halenext"
-  {
-    "chi"      "谁是下一个Boss？（/halenext）"
-  }
-  "helpmenu_resetq"
-  {
-    "chi"      "重设我的队列点数。（/resetq）"
-  }
-  "helpmenu_setboss"
-  {
-    "chi"      "设置我喜欢的Boss。（/setboss）"
-  }
-  "helpmenu_halemusic"
-  {
-    "chi"      "开关背景音乐。（/halemusic）"
-  }
-  "helpmenu_no_active_bosses"
-  {
-    "chi"      "没有活跃的boss..."
-  }
-  "classrushmenu_title"
-  {
-    "chi"      "VSH2 兵种大战菜单"
-  }
-  "scout" //Why can't sourcemod just read the translation in the game?
-  {
-    "chi"      "侦察兵"
-  }
-  "sniper"
-  {
-    "chi"      "狙击手"
-  }
-  "soldier"
-  {
-    "chi"      "士兵"
-  }
-  "demoman"
-  {
-    "chi"      "爆破手"
-  }
-  "medic"
-  {
-    "chi"      "医生"
-  }
-  "heavy"
-  {
-    "chi"      "机枪手"
-  }
-  "pyro"
-  {
-    "chi"      "火焰兵"
-  }
-  "spy"
-  {
-    "chi"      "间谍"
-  }
-  "engineer"
-  {
-    "chi"      "工程师"
-  }
-  "classrushmenu_force_notify"
-  {
-    "chi"      "你被强制设定为 {orange}{1}{default}。"
-  }
-  "classrushmenu_forced"
-  {
-    "chi"      "强制设定所有人为 {orange}{1}{default}。"
-  }
-  "start_need_more_players"
-  {
-    "chi"      "需要更多的玩家来开始。"
-  }
-  "start_preround"
-  {
-    "chi"      "等待其他人载入游戏，此回合为普通回合。"
-  }
-  "start_bad_boss"
-  {
-    "chi"      "Boss客户端index无效。需要更多玩家来开始"
-  }
+"Phrases" {
+	"server_descriptor" {
+		"chi"     "决战萨克斯顿·霍尔 2"
+	}
+	"late_spawn_blocked" {
+		"chi"     "延迟重生已阻止"
+	}
+	"cant_suicide_as_boss" {
+		"chi"     "你作为boss还不能自杀。请使用'!resetq'。"
+	}
+	"vsh2_welcome" {
+		"chi"      "欢迎来到VSH2，输入 /bosshelp 获取帮助！"
+	}
+	"cant_find_vsh2cfg" {
+		"chi"     "**** {axis}找不到'configs/saxton_hale/vsh2.cfg'{default} ****"
+	}
+	"vsh2_config_reloaded" {
+		"chi"     "**** VSH2配置文件已重载 ****"
+	}
+	"top_3" {
+		"chi"     "造成最高伤害的玩家是："
+	}
+	"damage_dealt" {
+		"chi"     "造成的伤害："
+	}
+	"gained_points" {
+		"chi"      "你获得了 {1} 队列点数。"
+	}
+	"scored_points" {
+		"chi"      "你得分到 {1} 队列点数。"
+	}
+	"total_boss_health" {
+		"chi"      "总计Boss生命值："
+	}
+	"start_boss_replacer" {
+		"chi"      "惊喜！现在该到你出场了！"
+	}
+	"start_boss_disconnected" {
+		"chi"      "一个Boss刚才断开了连接！"
+	}
+	"player_backstab" {
+		"chi"      "你背刺了{1}！"
+	}
+	"boss_got_backstabbed" {
+		"chi"      "你刚刚被背刺了！"
+	}
+	"player_market_garden" {
+		"chi"      "你花园铲了{1}！"
+	}
+	"boss_got_market_gardened" {
+		"chi"      "你刚刚被花园铲了！"
+	}
+	"goomba_stomp" {
+		"chi"      "{olive}>> {teamcolor}{1}{default}狠狠地踩头了{unique}{2}{default}！"
+	}
+	"become_boss" {
+		"chi"      "{1}变成了{2}，拥有{3}生命值"
+	}
+	"health_left" {
+		"chi"      "{1}（{2}）拥有{3}（总计 {4}）剩余的生命值。"
+	}
+	"end_of_round" {
+		"chi"      "{olive}[VSH 2]回合结束{default} {1}"
+	}
+	"show_current_hp" {
+		"chi"      "{1}展示了它现在的HP：{2} / {3}"
+	}
+	"current_health" {
+		"chi"      "{1}的现在的HP是：{2} / {3}"
+	}
+	"boss_health_check" {
+		"chi"      "Boss生命值检查{default} {1}"
+	}
+	"cannot_see_hp_now" {
+		"chi"      "你现在不能检查Boss的HP（再等待 {1} 秒）。上一次查到的HP是 {2}"
+	}
+	"be_boss_soon" {
+		"chi"      "你很快就会变成一个Boss了！输入 {olive}/halenext{default} 来检查/重置你的队列点数 & {olive}!setboss{default} 来设置你的boss。"
+	}
+	"hud_damage" {
+		"chi"      "伤害：{1}"
+	}
+	"hud_others_damage" {
+		"chi"      "{1} - {2}的伤害：{3}"
+	}
+	"hud_lives" {
+		"chi"      "{1} | 生命：{2}"
+	}
+	"dead_ringer_ready" {
+		"chi"      "状态：假死已准备好"
+	}
+	"dead_ringer_active" {
+		"chi"      "状态：进入假死"
+	}
+	"dead_ringer_inactive" {
+		"chi"      "状态：未激活"
+	}
+	"kunai_ready" {
+		"chi"      "{1} | 苦无：已准备好"
+	}
+	"kunai_none" {
+		"chi"      "{1} | 苦无：_"
+	}
+	"air_strike_damage" {
+		"chi"      "空袭火箭筒伤害：{1}"
+	}
+	"shield_active" {
+		"chi"      "盾牌：激活"
+	}
+	"shield_gone" {
+		"chi"      "盾牌：_"
+	}
+	"be_boss_soon_panel_title" {
+		"chi"      "你是下一个Boss！"
+	}
+	"be_boss_soon_panel_text" {
+		"chi"      "你就快变成一个Boss了！输入 /halenext 来检查/重置你的队列点数。\n或者，使用 !resetq 。\n别忘记使用 !setboss 来设置你的boss。"
+	}
+	"queue_set_0" {
+		"chi"      "你的队列点数被设为0！"
+	}
+	"queue_panel_title" {
+		"chi"      "VSH2 Boss队列："
+	}
+	"queue_panel_set_0" {
+		"chi"      "你的队列点数：{1}（选择此项来设为0）"
+	}
+	"queue_set_0_confirm" {
+		"chi"      "你确定要设置队列点数为0吗？"
+	}
+	"queue_points_reset" {
+		"chi"      "你已重设你的队列点数为{olive}0{default}"
+	}
+	"bossmenu_title" {
+		"chi"      "设置下一个Boss类型菜单："
+	}
+	"bossmenu_none" {
+		"chi"      "无（随机Boss）"
+	}
+	"bossmenu_pick_boss_special" {
+		"#format" "{1:s}"
+		"chi"      "下一个Boss将是 {olive}{1}{default}！"
+	}
+	"command_boss_select_yourself" {
+		"chi"      "你设置了你自己为下一个Boss！"
+	}
+	"command_boss_select_someone" {
+		"chi"      "{1} 被设置为下一个Boss！"
+	}
+	"set_boss_menu_title" {
+		"#format" "{1:s}"
+		"chi"      "设置Boss菜单：\n已选择Boss：{1}"
+	}
+	"bossmenu_pick_boss" {
+		"#format" "{1:s}"
+		"chi"      "你的boss被设为 {olive}{1}{default}！"
+	}
+	"music_panel_title" {
+		"chi"      "开关决战霍尔2音乐..."
+	}
+	"music_on" {
+		"chi"      "你打开了决战霍尔2音乐。"
+	}
+	"music_off" {
+		"chi"      "你关闭了决战霍尔2音乐。"
+	}
+	"force_cant_after_round_started" {
+		"chi"      "你不能在回合开始后强制设定一个boss..."
+	}
+	"force_player_notify" {
+		"chi"      "一个管理员强制设定你为boss！"
+	}
+	"force_admin_forced" {
+		"chi"      "强制设定 {1} 为一个boss"
+	}
+	"addpoints_usage" {
+		"chi"      "用法：hale_addpoints <目标> <点数>"
+	}
+	"addpoints_added" {
+		"chi"      "增加 {1} 队列点数给 {2}"
+	}
+	"setpoints_usage" {
+		"chi"      "用法：hale_setpoints <目标> <点数>"
+	}
+	"setpoints_added" {
+		"chi"      "设定 {1} 队列点数为 {2}"
+	}
+	"helpmenu_title" {
+		"chi"      "欢迎来到VSH2菜单，我能帮你什么忙？"
+	}
+	"helpmenu_halehp" {
+		"chi"      "显示Boss生命值（/halehp）"
+	}
+	"helpmenu_showclass" {
+		"chi"      "显示我的兵种的帮助"
+	}
+	"helpmenu_halenext" {
+		"chi"      "谁是下一个Boss？（/halenext）"
+	}
+	"helpmenu_resetq" {
+		"chi"      "重设我的队列点数。（/resetq）"
+	}
+	"helpmenu_setboss" {
+		"chi"      "设置我喜欢的Boss。（/setboss）"
+	}
+	"helpmenu_halemusic" {
+		"chi"      "开关背景音乐。（/halemusic）"
+	}
+	"helpmenu_bosspartner" {
+		"chi"      "Enable/Disable being a boss partner. (/halepartner)"
+	}
+	"helpmenu_no_active_bosses" {
+		"chi"      "没有活跃的boss..."
+	}
+	"classrushmenu_title" {
+		"chi"      "VSH2 兵种大战菜单"
+	}
+	"scout" {
+		"chi"      "侦察兵"
+	}
+	"sniper" {
+		"chi"      "狙击手"
+	}
+	"soldier" {
+		"chi"      "士兵"
+	}
+	"demoman" {
+		"chi"      "爆破手"
+	}
+	"medic" {
+		"chi"      "医生"
+	}
+	"heavy" {
+		"chi"      "机枪手"
+	}
+	"pyro" {
+		"chi"      "火焰兵"
+	}
+	"spy" {
+		"chi"      "间谍"
+	}
+	"engineer" {
+		"chi"      "工程师"
+	}
+	"classrushmenu_force_notify" {
+		"chi"      "你被强制设定为 {orange}{1}{default}。"
+	}
+	"classrushmenu_forced" {
+		"chi"      "强制设定所有人为 {orange}{1}{default}。"
+	}
+	"start_need_more_players" {
+		"chi"      "需要更多的玩家来开始。"
+	}
+	"start_preround" {
+		"chi"      "等待其他人载入游戏，此回合为普通回合。"
+	}
+	"start_bad_boss" {
+		"chi"      "Boss客户端index无效。需要更多玩家来开始"
+	}
+	"superjump_hud_text" {
+		"#format" "{1:i}"
+		"chi"      "超级跳：{1}%"
+	}
+	"rage_hud_text" {
+		"chi"      "愤怒"
+	}
+	"rage_hud_text_full" {
+		"chi"      "已满 - 呼叫医生（默认：E）来激活"
+	}
+	"rage_hud_text_percent" {
+		"#format" "{1:0.1f}"
+		"chi"      "{1}"
+	}
+	"uber_hud_text" {
+		"#format" "{1:0.1f}"
+		"chi"      "Uber时间：{1}秒"
+	}
+	"cbs_arrow_hud_text" {
+		"#format" "{1:i}"
+		"chi"      "弓箭：{1}"
+	}
+	"teleport_hud_text" {
+		"#format" "{1:i}"
+		"chi"      "传送：{1}%"
+	}
+	"hhh_climb_hud_text" {
+		"#format" "{1:i},{2:i}"
+		"chi"      "爬墙：{1} / {2}"
+	}
+	
+	"abilitycmd_usage" {
+		"chi"      "用法：sm_vsh2_ability <目标> <点数>"
+	}
+	
+	"command_boss_select_ingame_only" {
+		"chi" "command can only be used in-game."
+	}
+	"boss_cookie_reset" {
+		"chi" "Your Set-Boss data has been reset."
+	}
+	
+	"be_partner_panel_title" {
+		"chi" "Allow being chosen to be a boss partner."
+	}
+	"be_partner_turn_on" {
+		"chi" "Yes - I want to be chosen to be a random boss partner."
+	}
+	"be_partner_turn_off" {
+		"chi" "No - I do NOT want to become a random boss partner"
+	}
 }

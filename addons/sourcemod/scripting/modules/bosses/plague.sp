@@ -8,9 +8,9 @@
 #define PlagueRage2			"vo/medic_specialcompleted06.mp3"
 
 
-methodmap CPlague < BaseBoss {
-	public CPlague(const int ind, bool uid=false) {
-		return view_as<CPlague>( BaseBoss(ind, uid) );
+methodmap CPlague < BasePlayer {
+	public CPlague(int ind, bool uid=false) {
+		return view_as<CPlague>( BasePlayer(ind, uid) );
 	}
 
 	public void PlaySpawnClip() {
@@ -72,8 +72,8 @@ methodmap CPlague < BaseBoss {
 		if( jmp > 0.0 )
 			jmp *= 4.0;
 		if( this.flRAGE >= 100.0 )
-			ShowSyncHudText(this.index, g_vsh2.m_hHUDs[PlayerHUD], "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge ? 1000 : RoundFloat(jmp));
-		else ShowSyncHudText(this.index, g_vsh2.m_hHUDs[PlayerHUD], "Jump: %i | Rage: %0.1f", this.bSuperCharge ? 1000 : RoundFloat(jmp), this.flRAGE);
+			ShowSyncHudText(this.index, g_vsh2.m_hHUDs[PlayerHUD], "Jump: %i | Rage: FULL - Call Medic (default: E) to activate", this.bSuperCharge? 1000 : RoundFloat(jmp));
+		else ShowSyncHudText(this.index, g_vsh2.m_hHUDs[PlayerHUD], "Jump: %i | Rage: %0.1f", this.bSuperCharge? 1000 : RoundFloat(jmp), this.flRAGE);
 	}
 	public void SetModel() {
 		SetVariantString(PlagueModel);
@@ -88,11 +88,10 @@ methodmap CPlague < BaseBoss {
 		char attribs[128];
 
 		Format(attribs, sizeof(attribs), "68; 2.0; 2; 2.5; 259; 1.0; 252; 0.75; 200; 1.0; 551; 1.0");
-		int SaxtonWeapon = this.SpawnWeapon("tf_weapon_shovel", 304, 100, 5, attribs);
-		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", SaxtonWeapon);
+		int boss_weap = this.SpawnWeapon("tf_weapon_shovel", 304, 100, 5, attribs);
+		SetEntPropEnt(this.index, Prop_Send, "m_hActiveWeapon", boss_weap);
 	}
-	public void RageAbility()
-	{
+	public void RageAbility() {
 		int attribute = 0;
 		float value = 0.0;
 		TF2_AddCondition(this.index, TFCond_MegaHeal, 10.0);
@@ -101,11 +100,11 @@ methodmap CPlague < BaseBoss {
 			case 1: { attribute = 26; value = 100.0; }	/// Extra health
 			case 2: { attribute = 107; value = 2.0; }	/// Extra speed
 		}
-		BaseBoss minion;
+		BasePlayer minion;
 		for( int i=MaxClients; i; --i ) {
 			if( !IsValidClient(i) || !IsPlayerAlive(i) || GetClientTeam(i) != VSH2Team_Boss )
 				continue;
-			minion = BaseBoss(i);
+			minion = BasePlayer(i);
 			if( minion.bIsMinion ) {
 #if defined _tf2attributes_included
 				if( g_vsh2.m_hGamemode.bTF2Attribs ) {
@@ -127,7 +126,7 @@ methodmap CPlague < BaseBoss {
 			}
 		}
 	}
-	public void KilledPlayer(const BaseBoss victim, Event event) {
+	public void KilledPlayer(BasePlayer victim, Event event) {
 		/// GLITCH: suiciding allows boss to become own minion.
 		if( this.userid == victim.userid )
 			return;
@@ -140,7 +139,7 @@ methodmap CPlague < BaseBoss {
 		victim.iOwnerBoss = this.userid;
 		victim.ConvertToMinion(0.4);
 	}
-	public void RecruitMinion(const BaseBoss base) {
+	public void RecruitMinion(BasePlayer base) {
 		TF2_SetPlayerClass(base.index, TFClass_Scout, _, false);
 		TF2_RemoveAllWeapons(base.index);
 #if defined _tf2attributes_included
@@ -172,13 +171,11 @@ methodmap CPlague < BaseBoss {
 	}
 };
 
-public CPlague ToCPlague (const BaseBoss guy)
-{
+public CPlague ToCPlague (BasePlayer guy) {
 	return view_as<CPlague>(guy);
 }
 
-public void AddPlagueDocToDownloads()
-{
+public void AddPlagueDocToDownloads() {
 	//char s[PLATFORM_MAX_PATH];
 	//int i;
 
@@ -190,19 +187,16 @@ public void AddPlagueDocToDownloads()
 	PrecacheSound(PlagueRage2, true);
 }
 
-public void AddPlagueToMenu(Menu& menu)
-{
+public void AddPlagueToMenu(Menu& menu) {
 	//char bossid[5]; IntToString(VSH2Boss_PlagueDoc, bossid, sizeof(bossid));
 	//menu.AddItem(bossid, "Plague Doctor");
 }
 
-public void TF2AttribsRemove(const int iEntity)
-{
+public void TF2AttribsRemove(int iEntity) {
 #if defined _tf2attributes_included
 	TF2Attrib_RemoveAll(iEntity);
 #endif
 }
-public void RemoveWepFromSlot(const int client, const int wepslot)
-{
+public void RemoveWepFromSlot(int client, int wepslot) {
 	TF2_RemoveWeaponSlot(client, wepslot);
 }
