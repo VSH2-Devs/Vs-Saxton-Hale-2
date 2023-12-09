@@ -1,0 +1,9 @@
+"VertexLitGeneric"
+//"Modulate"
+{
+	"$basetexture" "models\player\hwm_saxton_hale\shades/null"
+	"$translucent" 1
+	"$nocull" "1"
+	"$ambientocclusion" "0"
+}
+
