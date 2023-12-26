@@ -43,7 +43,7 @@ enum struct ExtendedData {
 	float     health_boost;
 }
 
-
+/*
 enum struct Token {
 	char  lexeme[64];
 	int   size;
@@ -75,6 +75,7 @@ enum {
 	LEXEME_SIZE = 64,
 	dot_flag = 1,
 };
+*/
 //END OF VSH2CS MISC VARS
 
 int BallEnt;
@@ -165,7 +166,7 @@ public void LoadVSH2Hooks()
 		LogError("Error Hooking OnBossGiveRage forward for VSH2 DLC plugin.");
 
 
-    g_data.healthmult = CreateConVar("vsh2_bosshealth_base", "2000.0", "Hale Health Multiply Based on red player count, Def: 2000.0", FCVAR_NOTIFY, true, 1.0, true, 8000.0);
+    g_data.healthmult = CreateConVar("vsh2_bosshealth_base", "2250.0", "Hale Health Multiply Based on red player count, Def: 2000.0", FCVAR_NOTIFY, true, 1.0, true, 8000.0);
     g_data.MaxBossGlowTime = CreateConVar("vsh2_enforcer_glowtime", "5.0", "How long should enforcer glow time last, Def: 5.0", FCVAR_NOTIFY, true, 0.0, true, 150.0);
     g_data.melee_heal_building = CreateConVar("vsh2_heal_building", "50", "Pyro Heal buildings, Def: 50", FCVAR_NOTIFY, true, 0.0, true, 150.0);
     g_data.upgrademax_building = CreateConVar("vsh2_upgrademax_building", "100", "The max amount of metal a pyro can put in, Def: 100", FCVAR_NOTIFY, true, 0.0, true, 200.0);
@@ -280,29 +281,33 @@ public Action BossCalcHealth(const VSH2Player player, int& max_health, const int
 	return Plugin_Changed;
 }
 
-public void OnNormStart (const VSH2Player[] bosses, const int boss_count, const VSH2Player[] red_players, const int red_count)
+public void OnNormStart(const VSH2Player[] bosses, const int boss_count, const VSH2Player[] red_players, const int red_count)
 {
-	for(new client=1; client<=MaxClients; client++)
+	for(int client=1; client<=MaxClients; client++)
 	{
 		if ( !IsValidClient(client))
 		{
 			return;
 		}
 		VSH2Player gamer = VSH2Player(client);
-		CreateTimer(0.3, setammo, gamer);
+		if ( !gamer.bIsBoss)
+			CreateTimer(0.9, preroundsetammo, gamer);
 	}
 }
 
-public Action setammo(Handle timer, VSH2Player gamer)
+public Action preroundsetammo(Handle timer, VSH2Player gamer)
 {
 	int primary = GetPlayerWeaponSlot(gamer.index, TFWeaponSlot_Primary);
-	if ( IsValidEntity(primary) && GetItemIndex(primary) == 265)		///Check for if flamethrower is equipped.
+	int secondary = GetPlayerWeaponSlot(gamer.index, TFWeaponSlot_Secondary);
+	if ( IsValidEntity(secondary) && GetItemIndex(secondary) == 265)		///S Jumper
 	{
-		SetAmmo(gamer.index, TFWeaponSlot_Primary, g_data.jumperammo.IntValue)
+		SetAmmo(gamer.index, TFWeaponSlot_Secondary, 8);
+		//PrintToServer("Sticky Jumper ammo call. %i", g_data.jumperammo.IntValue);
 	}
-	if ( IsValidEntity(primary) && GetItemIndex(primary) == 237)		///Check for if flamethrower is equipped.
+	if ( IsValidEntity(primary) && GetItemIndex(primary) == 237)		///R Jumper
 	{
-		SetAmmo(gamer.index, TFWeaponSlot_Primary, g_data.jumperammo_nonmg.IntValue + 4)
+		SetAmmo(gamer.index, TFWeaponSlot_Primary, 8);
+		//PrintToServer("Rocket Jumper ammo call.");
 	}
 	return Plugin_Continue;
 }
@@ -1161,7 +1166,7 @@ public Action RedCritThink(const VSH2Player player, int& crit_flags)
 	bool validwep = (weapon != -1 && IsValidEntity(weapon));
 	if (validwep) {
 		switch( GetItemIndex(weapon) ) {			///Remove Crits and Give Full crits;
-			case 812, 154, 609, 232, 56, 1005, 1092, 595, 43, 24, 93, 39, 1081: 
+			case 812, 154, 232, 56, 1005, 1092, 595, 43, 24, 93, 39, 1081: 
 			{
 				crit_flags = 0;
 			}
@@ -1169,6 +1174,16 @@ public Action RedCritThink(const VSH2Player player, int& crit_flags)
 			{
 				crit_flags = CRITFLAG_FULL;
 			}
+		}
+		if ( TF2_GetPlayerClass(player.index) == TFClass_DemoMan && GetItemIndex(GetPlayerWeaponSlot(player.index, TFWeaponSlot_Melee)) == GetItemIndex(weapon) && GetItemIndex(weapon) == 609) //Check for demo melee and disable crits if not 
+		{
+			crit_flags = 0;
+			//PrintToChat(player.index, "Critflag value is %i", crit_flags);
+		}
+		else if ( TF2_GetPlayerClass(player.index) == TFClass_DemoMan && GetItemIndex(GetPlayerWeaponSlot(player.index, TFWeaponSlot_Melee)) == GetItemIndex(weapon) && GetItemIndex(weapon) != 609)
+		{
+			crit_flags = CRITFLAG_FULL;
+			//PrintToChat(player.index, "Critflag value is %i", crit_flags);
 		}
 	}
 	char cls[32];
@@ -1470,7 +1485,7 @@ public void RedPlayThink(VSH2Player player)
 		if ( TF2_IsPlayerInCondition(client, TFCond_Bonked))
 		{
 			TF2_RemoveCondition(client, TFCond_Bonked);
-			TF2_AddCondition(client, TFCond_RadiusHealOnDamage, 0.1 ) 
+			TF2_AddCondition(client, TFCond_RadiusHealOnDamage, 1.5 ) 
 			TF2_AddCondition(client, TFCond_MarkedForDeath, 8.0 ) 
 		}
 	}

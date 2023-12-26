@@ -754,7 +754,15 @@ public Action ManageOnBossDealDamage(const BaseBoss victim, int& attacker, int& 
 				if( Call_OnBossDealDamage_OnStomp(victim, attacker, inflictor, damage, damagetype, weapon, damageForce, damagePosition, damagecustom) != Plugin_Changed ) {
 					float flFallVelocity = GetEntPropFloat(inflictor, Prop_Send, "m_flFallVelocity");
 					/// TF2 Fall Damage formula, modified for VSH2
-					damage = 10.0 * (GetRandomFloat(0.8, 1.2) * (5.0 * (flFallVelocity / 300.0)));
+					if ( g_vsh2.m_hCvars.HaleStompLogic.IntValue == 1) //Give option to change between RNG based stomp dmg and flat stomp dmg
+					{
+						damage = 10.0 * (GetRandomFloat(0.8, 1.2) * (5.0 * (flFallVelocity / 300.0)));
+					}
+					else if( g_vsh2.m_hCvars.HaleStompLogic.IntValue == 0)
+					{
+						damage = g_vsh2.m_hCvars.HaleBootStompDamage.FloatValue;
+					}
+					//damage = 10.0 * (GetRandomFloat(0.8, 1.2) * (5.0 * (flFallVelocity / 300.0)));
 				}
 				return Plugin_Changed;
 			}
@@ -1453,6 +1461,7 @@ public void PrepPlayers(const BaseBoss player)
 #if defined _tf2attributes_included
 		ConfigMap player_attribs = g_vsh2.m_hCfg.GetSection("player attributes");
 		if( player_attribs != null ) {
+			/*
 			int    maxkeylen, maxvallen;
 			int    count        = player_attribs.GetCombinedKeyValLens(maxkeylen, maxvallen);
 			
@@ -1473,6 +1482,23 @@ public void PrepPlayers(const BaseBoss player)
 					
 					TF2Attrib_SetByDefIndex(client, attrib_idx, attrib_val);
 				}
+			}
+			*/
+			int attrib_sects = player_attribs.Size;
+			for( int i; i < attrib_sects; i++ ) {
+				int sect_len = player_attribs.GetKeySize(i);
+				char[] attribid = new char[sect_len + 1];
+				player_attribs.GetKey(i, attribid, sect_len); //item ID
+
+				int val_len = player_attribs.GetSize(attribid);
+				char[] attribdata = new char[val_len + 1];
+				player_attribs.Get(attribid, attribdata, val_len);	//Item Data
+
+				int   attrib_idx	= StringToInt(attribid);
+				float attrib_values = StringToFloat(attribdata);
+				if( attrib_idx == 0 || attrib_values == 0.0 )
+					continue;
+				TF2Attrib_SetByDefIndex(client, attrib_idx, attrib_values);
 			}
 		}
 		if( g_vsh2.m_hCvars.MantreadsBoost.BoolValue ) {
@@ -1506,7 +1532,7 @@ public void PrepPlayers(const BaseBoss player)
 	if( replacer != null ) {
 		int entries = replacer.Size;
 		for( int i; i<entries; i++ ) {
-			entry_sect = replacer.GetIntSection(i);
+			entry_sect = replacer.GetIntKeySection(i);
 			if( entry_sect != null ) {
 				int classes_len = entry_sect.GetSize("classes");
 				char[] classes = new char[classes_len];

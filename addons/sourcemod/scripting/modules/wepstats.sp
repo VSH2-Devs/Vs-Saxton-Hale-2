@@ -216,7 +216,7 @@ public void BuildWepMenus()
 	hWepMenus[8][2].AddItem("155", "Southern Hospitality");
 	hWepMenus[8][2].AddItem("329", "Jag");
 	hWepMenus[8][2].AddItem("589", "Eureka Effect");
-	hWepMenus[8][2].AddItem("169", "Fake Golden Wrench");
+	hWepMenus[8][2].AddItem("169", "Australium Wrench");
 }
 
 public void WepStatsMenu_Root(int client)

@@ -142,6 +142,8 @@ enum struct VSH2Cvars {
 	ConVar MantreadsBoostValue;
 	ConVar RemoveConds;
 	ConVar VersionNumber;
+	ConVar HaleBootStompDamage;
+	ConVar HaleStompLogic;
 }
 
 enum /** Cookies */ {
@@ -356,8 +358,8 @@ public void OnPluginStart()
 	g_vsh2.m_hCvars.DemoShieldCrits = CreateConVar("vsh2_demoman_shield_crits", "2", "Sets Demoman Shield crit behaviour. 0 - No crits, 1 - Mini-crits, 2 - Crits, 3 - Scale with Charge Meter (Losing the Shield results in no more (mini)crits.)", FCVAR_NOTIFY, true, 0.0, true, 3.0);
 	g_vsh2.m_hCvars.CanBossGoomba = CreateConVar("vsh2_goomba_can_boss_stomp", "1", "Can the Boss Goomba Stomp other players? (Requires Goomba Stomp plugin). NOTE: All the CVARs in VSH2 controlling Goomba damage, lifemultiplier and rebound power are for NON-BOSS PLAYERS STOMPING THE BOSS. If you enable this CVAR, use the Goomba Stomp plugin config file to control the Boss' Goomba Variables. Not recommended to enable this unless you've coded your own Goomba Stomp behaviour.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_vsh2.m_hCvars.CanMantreadsGoomba = CreateConVar("vsh2_goomba_can_mantreads_stomp", "0", "Can Soldiers/Demomen Goomba Stomp the Boss while using the Mantreads/Booties? (Requires Goomba Stomp plugin). NOTE: Enabling this may cause 'double' Stomps (Goomba Stomp and Mantreads stomp together).", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_vsh2.m_hCvars.GoombaDamageAdd = CreateConVar("vsh2_goomba_damage_add", "450.0", "How much damage to add to a Goomba Stomp on the Boss. (Requires Goomba Stomp plugin).", FCVAR_NOTIFY, true, 0.0, false);
-	g_vsh2.m_hCvars.GoombaLifeMultiplier = CreateConVar("vsh2_goomba_boss_life_multiplier", "0.025", "What percentage of the Boss' CURRENT HP to deal as damage on a Goomba Stomp. (Requires Goomba Stomp plugin).", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars.GoombaDamageAdd = CreateConVar("vsh2_goomba_damage_add", "500.0", "How much damage to add to a Goomba Stomp on the Boss. (Requires Goomba Stomp plugin).", FCVAR_NOTIFY, true, 0.0, false);
+	g_vsh2.m_hCvars.GoombaLifeMultiplier = CreateConVar("vsh2_goomba_boss_life_multiplier", "0.0", "What percentage of the Boss' CURRENT HP to deal as damage on a Goomba Stomp. (Requires Goomba Stomp plugin).", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_vsh2.m_hCvars.GoombaReboundPower = CreateConVar("vsh2_rebound_power", "300.0", "How much upwards velocity (in Hammer Units) should players recieve upon Goomba Stomping the Boss? (Requires Goomba Stomp plugin).", FCVAR_NOTIFY, true, 0.0, false);
 	g_vsh2.m_hCvars.MultiBossHandicap = CreateConVar("vsh2_multiboss_handicap", "500", "How much Health is removed on every individual boss in a multiboss round at the start of said round. 0 disables it.", FCVAR_NONE, true, 0.0, true, 99999.0);
 	g_vsh2.m_hCvars.DroppedWeapons = CreateConVar("vsh2_allow_dropped_weapons", "0", "Enables/Disables dropped weapons. Recommended to keep this disabled to avoid players having weapons they shouldn't.", FCVAR_NONE, true, 0.0, true, 1.0);
@@ -373,7 +375,7 @@ public void OnPluginStart()
 	g_vsh2.m_hCvars.AmmoKitLimitMax = CreateConVar("vsh2_spawn_ammo_kit_limit_max", "6", "max amount of ammo kits that can be produced in RED spawn. -1 for unlimited amount", FCVAR_NONE, true, -1.0, true, 50.0);
 	g_vsh2.m_hCvars.AmmoKitLimitMin = CreateConVar("vsh2_spawn_ammo_kit_limit_min", "4", "minimum amount of ammo kits that can be produced in RED spawn. -1 for no minimum limit", FCVAR_NONE, true, -1.0, true, 50.0);
 	g_vsh2.m_hCvars.ShieldRegenDmgReq = CreateConVar("vsh2_shield_regen_damage", "2000", "damage required for demoknights to regenerate their shield, put 0 to disable.", FCVAR_NONE, true, 0.0, true, 99999.0);
-	g_vsh2.m_hCvars.AllowRandomMultiBosses = CreateConVar("vsh2_allow_random_multibosses", "1", "allows VSH2 to make random combinations of various bosses.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_vsh2.m_hCvars.AllowRandomMultiBosses = CreateConVar("vsh2_allow_random_multibosses", "0", "allows VSH2 to make random combinations of various bosses.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_vsh2.m_hCvars.HHHMaxClimbs = CreateConVar("vsh2_hhhjr_max_climbs", "10", "maximum amount of climbs HHH Jr. can do.", FCVAR_NONE, true, 0.0, false);
 	g_vsh2.m_hCvars.HealthCheckInitialDelay = CreateConVar("vsh2_initial_healthcheck_delay", "30.0", "Initial health check delay when the round starts so as to prevent wasting 10-second health checks.", FCVAR_NONE, true, 0.0, true, 999.0);
 	g_vsh2.m_hCvars.ScoutRageGen = CreateConVar("vsh2_scout_rage_gen", "0.2", "rate of how much rage a boss generates when there are only scouts left.", FCVAR_NONE, true, 0.0, true, 99.0);
@@ -432,12 +434,14 @@ public void OnPluginStart()
 	g_vsh2.m_hCvars.TeleFragDamage = CreateConVar("vsh2_telefrag_dmg", "0.0", "damage done from telefrag, value given will work depending on the value of 'vsh2_telefrag_logic'.", FCVAR_NONE, true, 0.0, true, 999999.0);
 	g_vsh2.m_hCvars.TeleFragDamageCap = CreateConVar("vsh2_telefrag_dmg_cap", "9001", "highest registered damage done from telefrag.", FCVAR_NONE, true, 0.0, true, 999999.0);
 	
-	g_vsh2.m_hCvars.BootStompLogic = CreateConVar("vsh2_mantreads_stomp_logic", "3", "controller for how the mantreads stomp damage ('vsh2_mantreads_stomp_dmg') will work. 0-value is dmg | 1-mult with dmg | 2-add with dmg", FCVAR_NONE, true, 0.0, true, 2.0);
-	g_vsh2.m_hCvars.BootStompDamage = CreateConVar("vsh2_mantreads_stomp_dmg", "1024.0", "damage done from mantreads-style stomp, value given will work depending on the value of 'vsh2_mantreads_stomp_logic'.", FCVAR_NONE, true, 0.0, true, 999999.0);
+	g_vsh2.m_hCvars.BootStompLogic = CreateConVar("vsh2_mantreads_stomp_logic", "0", "controller for how the mantreads stomp damage ('vsh2_mantreads_stomp_dmg') will work. 0-value is dmg | 1-mult with dmg | 2-add with dmg", FCVAR_NONE, true, 0.0, true, 2.0);
+	g_vsh2.m_hCvars.BootStompDamage = CreateConVar("vsh2_mantreads_stomp_dmg", "1000.0", "damage done from mantreads-style stomp, value given will work depending on the value of 'vsh2_mantreads_stomp_logic'.", FCVAR_NONE, true, 0.0, true, 999999.0);
 	g_vsh2.m_hCvars.MantreadsBoost = CreateConVar("vsh2_mantreads_rocket_jump_boost", "1", "allows mantreads to have extra explosive jump when equipped.", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_vsh2.m_hCvars.MantreadsBoostValue = CreateConVar("vsh2_mantreads_rocket_jump_boost_value", "1.8", "how strong of an effect mantreads have for extra explosive jump.", FCVAR_NONE, true, 0.0, true, 999.0);
 	g_vsh2.m_hCvars.RemoveConds = CreateConVar("vsh2_remove_certain_conds", "1", "Has VSH2 remove jarate, fan-o-war, and disguise conditions from bosses as soon as they're applied'.", FCVAR_NONE, true, 0.0, true, 1.0);
-	
+	g_vsh2.m_hCvars.HaleBootStompDamage = CreateConVar("vsh2_boss_stomp_dmg", "200.0", "How much damage boss stomps should deal", FCVAR_NONE, true, 0.0, true, 999999.0);
+	g_vsh2.m_hCvars.HaleStompLogic = CreateConVar("vsh2_boss_stomp_logic", "0", "controller for how the mantreads stomp damage ('vsh2_boss_stomp_dmg') will work. 0-value is flat dmg | 1-RNG stomp dmg", FCVAR_NONE, true, 0.0, true, 1.0);
+
 	g_vsh2.m_hGamemode.bSteam      = LibraryExists("SteamTools");
 	g_vsh2.m_hGamemode.bTF2Attribs = LibraryExists("tf2attributes");
 	

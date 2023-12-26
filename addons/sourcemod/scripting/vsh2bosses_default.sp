@@ -4,6 +4,7 @@
 #include <vsh2>
 #include <sdkhooks>
 
+
 public Plugin myinfo = {
 	name             = "VSH2 Default Bosses Module",
 	author           = "Nergal/Assyrian, DatOpb",
@@ -12,10 +13,10 @@ public Plugin myinfo = {
 	url              = "https://github.com/VSH2-Devs/Vs-Saxton-Hale-2"
 };
 ///Hale Boss Themes (Reverted due to Configmap issues reading data).
-static const char CBSTheme[] = "saxton_hale/the_millionaires_holiday.mp3";
-static const char HHHTheme[] = "ui/holiday/gamestartup_halloween.mp3";
-static const char HaleTheme[] = "saxton_hale/hale-theme.mp3";
-static const char VagTheme[] = "saxton_hale/vag-theme.mp3";
+//static const char CBSTheme[] = "saxton_hale/the_millionaires_holiday.mp3";
+//static const char HHHTheme[] = "ui/holiday/gamestartup_halloween.mp3";
+//static const char HaleTheme[] = "saxton_hale/hale-theme.mp3";
+//static const char VagTheme[] = "saxton_hale/vag-theme.mp3";
 #define EggModel		"models/player/saxton_hale/w_easteregg.mdl"
 ///static const char EBTheme[] = "";
 
@@ -46,6 +47,7 @@ enum struct DefVSH2Bosses {
 	ConVar       bunny_max_eggs;
 	ConVar       no_random_crits;
 	ConVar       hale_scout_speed;
+	ConVar       BossMarkFD;
 	
 	ConVar       move_speed[MaxDefaultVSH2Bosses];
 	ConVar       glow_time[MaxDefaultVSH2Bosses];
@@ -96,7 +98,9 @@ public void OnLibraryAdded(const char[] name) {
 		g_defbosses.cbs_max_arrows    = CreateConVar("vsh2_cbs_max_arrows", "9", "the maximum amount of arrows Christian Brutal Sniper can get for his bow rage.", FCVAR_NOTIFY, true, 1.0, true, 999999.0);
 		g_defbosses.bunny_max_eggs    = CreateConVar("vsh2_bunny_max_eggs", "50", "amount of eggs Bunny's autogrenader spews.", FCVAR_NOTIFY, true, 1.0, true, 999999.0);
 		g_defbosses.no_random_crits   = CreateConVar("vsh2_default_bosses_no_random_crits", "1", "Blocks the default bosses from being able to randomly crit.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-		g_defbosses.hale_scout_speed   = CreateConVar("vsh2_hale_scouts_left_speed", "520.0", "How fast should a Hale move (in HU) when scouts are last alive.", FCVAR_NOTIFY, true, 0.0, true, 1000.0);
+		g_defbosses.hale_scout_speed   = CreateConVar("vsh2_hale_scouts_left_speed", "460.0", "How fast should a Hale move (in HU) when scouts are last alive.", FCVAR_NOTIFY, true, 0.0, true, 1000.0);
+		g_defbosses.BossMarkFD    = CreateConVar("vsh2_boss_mfd_time", "3.0", "How long should bosses be marked for death in seconds after superjump.", FCVAR_NOTIFY, true, 1.0, true, 999999.0);
+
 		bool got_one;
 		for( int i; i<MaxDefaultVSH2Bosses; i++ ) {
 			char cvar_name[1024];
@@ -347,9 +351,7 @@ public void DefaultBosses_OnDownloads() {
 		}
 		{
 			ConfigMap music_sect = g_defbosses.cfgs[i].GetSection("boss.music");
-			if( music_sect==null )
-				continue;
-			
+			/*
 			int    max_songs;
 			int    count        = music_sect.GetCombinedKeyValLens(max_songs);
 			
@@ -358,6 +360,28 @@ public void DefaultBosses_OnDownloads() {
 			int    offcount1    = music_sect.GetKeys(songs, song_offsets);
 			for( int n; n < offcount1; n++ ) {
 				PrepareSound(songs[song_offsets[n]]);
+			}
+			*/
+			if( music_sect != null ) {
+				//PrepareAssetsFromCfgMap(music_sect, ResourceSound);
+				int num_sound_sects = music_sect.Size;
+				for( int x; x < num_sound_sects; x++ ) {
+					int sect_len = music_sect.GetKeySize(x);
+					char[] sect_name = new char[sect_len + 1];
+					music_sect.GetKey(x, sect_name, sect_len);
+					if ( !StrEqual(sect_name, "")) //Check if the section we are getting is empty, failsafe in case music section does exist but contains nothing
+					{
+						PrepareSound(sect_name)
+						//PrintToServer("Section Name is %s (nonempty)", sect_name);
+					}
+					else if ( StrEqual(sect_name, ""))
+					{
+						PrintToServer("[VSH2-DefBoss]: A null name was parsed for music_sect, Discarding...")
+						//PrintToServer("Section Name is %s (Empty)", sect_name);
+					}
+					//PrintToServer("Section Name is %s", sect_name);
+					//PrepareSound(sect_name)
+				}
 			}
 		}
 
@@ -385,10 +409,10 @@ public void DefaultBosses_OnDownloads() {
 	CheckDownload("materials/models/props_easteregg/c_easteregg_gold.vmt");
 	PrecacheSound("saxton_hale/9000.wav", true); //Why wasnt this cached before?
 	PrecacheSound("misc/halloween/spell_teleport.wav", true);
-	PrepareSound(CBSTheme);			///Default Theme
-	PrepareSound(HHHTheme);			///Default Theme
-	PrepareSound(HaleTheme);		///Custom Theme
-	PrepareSound(VagTheme);			///Custom Theme
+	//PrepareSound(CBSTheme);			///Default Theme
+	//PrepareSound(HHHTheme);			///Default Theme
+	//PrepareSound(HaleTheme);		///Custom Theme
+	//PrepareSound(VagTheme);			///Custom Theme
 }
 
 
@@ -409,15 +433,17 @@ public void DefaultBosses_OnThink(VSH2Player player) {
 	switch( g_defbosses.jmp_btns[id].IntValue ) {
 		case 1:  jmp_button = IN_DUCK;
 		case 2:  jmp_button = IN_ATTACK2;
+		case 3:  jmp_button = (IN_ATTACK2|IN_RELOAD|IN_ATTACK3);
 		default: jmp_button = (IN_ATTACK2|IN_DUCK);
 	}
 	
 	if( id != VSH2Boss_HHHjr ) {
 		if( player.SuperJumpThink(g_defbosses.jmp_rate[id].FloatValue, g_defbosses.jmp_max[id].FloatValue, jmp_button) ) {
 			ConfigMap jmp_sect = g_defbosses.cfgs[id].GetSection("boss.sounds.jump");
-			player.PlayRandVoiceClipCfgMap(jmp_sect, VSH2_VOICE_ABILITY);
+			player.PlayRandVoiceClipCfgMap(jmp_sect, VSH2_VOICE_ALL);
 			player.SuperJump(player.GetPropFloat("flCharge"), g_defbosses.jmp_reset[id].FloatValue);
-			TF2_AddCondition(player.index, TFCond_MarkedForDeathSilent, 3.0);
+			//TF2_AddCondition(player.index, TFCond_MarkedForDeathSilent, 3.0);
+			TF2_AddCondition(player.index, TFCond_MarkedForDeathSilent, g_defbosses.BossMarkFD.FloatValue);
 		}
 	} else {
 		float EyeAngles[3]; GetClientEyeAngles(player.index, EyeAngles);
@@ -427,7 +453,7 @@ public void DefaultBosses_OnThink(VSH2Player player) {
 		bool cond_to_tele = (cur_charge==max_charge || player.GetPropAny("bSuperCharge")) && EyeAngles[0] < -5.0;
 		if( player.ChargeThink(charge_rate, "flCharge", max_charge, jmp_button, cond_to_tele) ) {
 			TeleToRandomPlayer(player);
-			TF2_AddCondition(player.index, TFCond_MarkedForDeathSilent, 3.0);
+			TF2_AddCondition(player.index, TFCond_MarkedForDeathSilent, g_defbosses.BossMarkFD.FloatValue);
 		}
 	}
 	
@@ -527,12 +553,16 @@ public void DefaultBosses_OnInit(VSH2Player player) {
 	switch( id ) {
 		case VSH2Boss_Hale:
 			SetEntProp(client, Prop_Send, "m_iClass", view_as< int >(TFClass_Soldier));
+			//TF2_SetPlayerClass(client, TFClass_Soldier);
 		case VSH2Boss_Vagineer:
 			SetEntProp(client, Prop_Send, "m_iClass", view_as< int >(TFClass_Engineer));
+			//TF2_SetPlayerClass(client, TFClass_Engineer);
 		case VSH2Boss_CBS:
 			SetEntProp(client, Prop_Send, "m_iClass", view_as< int >(TFClass_Sniper));
+			//TF2_SetPlayerClass(client, TFClass_Sniper);
 		case VSH2Boss_HHHjr, VSH2Boss_Bunny:
 			SetEntProp(client, Prop_Send, "m_iClass", view_as< int >(TFClass_DemoMan));
+			//TF2_SetPlayerClass(client, TFClass_DemoMan);
 	}
 }
 
@@ -703,12 +733,28 @@ public void DefaultBosses_OnMedCall(VSH2Player player) {
 			rage_wep.GetInt("level",   level);
 			rage_wep.GetInt("quality", quality);
 			
-			TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-			int weapon = player.SpawnWeapon(classname_str, index, level, quality, attribs_str);
-			SetEntPropEnt(player.index, Prop_Send, "m_hActiveWeapon", weapon);
+			//TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary); 
+			int secondary = GetPlayerWeaponSlot(player.index, TFWeaponSlot_Secondary);
 			int egg_amount = g_defbosses.bunny_max_eggs.IntValue;
-			SetEntProp(weapon, Prop_Send, "m_iClip1", egg_amount);
-			SetWeaponAmmo(weapon, 0);
+			if ( secondary == -1 )
+			{
+				int weapon = player.SpawnWeapon(classname_str, index, level, quality, attribs_str);
+				SetEntProp(weapon, Prop_Send, "m_iClip1", egg_amount);
+				SetWeaponAmmo(weapon, 0);
+			}
+			if ( secondary > 0)
+			{
+				int current_eggs = GetEntProp(secondary, Prop_Send, "m_iClip1");
+				int new_eggs = current_eggs + egg_amount;
+				SetEntProp(secondary, Prop_Send, "m_iClip1", new_eggs);
+			}
+
+
+			//int weapon = player.SpawnWeapon(classname_str, index, level, quality, attribs_str);
+			//SetEntPropEnt(player.index, Prop_Send, "m_hActiveWeapon", weapon);
+			//int egg_amount = g_defbosses.bunny_max_eggs.IntValue;
+			//SetEntProp(weapon, Prop_Send, "m_iClip1", egg_amount);
+			//SetWeaponAmmo(weapon, 0);
 		}
 	}
 	
@@ -734,45 +780,48 @@ public void DefaultBosses_OnRoundEnd(VSH2Player player, bool boss_win, char mess
 		ConfigMap win_sounds = g_defbosses.cfgs[id].GetSection("boss.sounds.win");
 		player.PlayRandVoiceClipCfgMap(win_sounds, VSH2_VOICE_WIN);
 	}
+	//HasBossBeenInit = false;		///Ugly Patch.
+	//TF2_SetPlayerClass(LocalPlayerIndex, classtype);	///Set the player's class back to what it was prior to becoming hale. (Stange fix applied due to a weird bug where a random players class is being set to something different.)
 }
 
 public void DefaultBosses_OnMusic(char song[PLATFORM_MAX_PATH], float& time, VSH2Player player) {
-	/**			TO BE FIXED (16/12/2021)
-	int id = g_defbosses.GetDefBoss(player);
-	if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null ) {
+
+    int id = g_defbosses.GetDefBoss(player);
+    if( !IsDefBoss(id) || g_defbosses.cfgs[id]==null ) {
 		return;
 	}
 	
-	ConfigMap music_sect = g_defbosses.cfgs[id].GetSection("boss.music");
-	if( music_sect==null ) {
+    ConfigMap music_sect = g_defbosses.cfgs[id].GetSection("boss.music");
+    if( music_sect==null ) {
 		LogToFile("vsh2bosses_default", "id: '%i' | music section is NULL", id);
 		return;
 	}
-	
-	int    max_songs, max_times;
-	int    count        = music_sect.GetCombinedKeyValLens(max_songs, max_times);
-	
-	char[] songs        = new char[max_songs];
-	int[]  song_offsets = new int[count];
-	int    offcount1    = music_sect.GetKeys(songs, song_offsets);
-	LogToFile("vsh2bosses_default", "count: '%i' | offcount1: '%i'", count, offcount1);
-	for( int i; i<offcount1; i++ ) {
-		LogToFile("vsh2bosses_default", "id: '%i' | song name: '%s'", id, songs[song_offsets[i]]);
+
+
+    int size = music_sect.Size;
+    if( size <= 0 ) {
+        return;
+    }
+    
+    static int index;
+    index = ShuffleIndex(size, index);
+    //int song_len = music_sect.GetKeySize(index);
+    music_sect.GetKey(index, song, PLATFORM_MAX_PATH);
+    time = music_sect.GetFloatEx(song, 0.0);
+    //FindCharInString(song, '\.');
+    if ( time == 0.0){
+		PrintToServer("MUSIC TIME IS 0, FIX!");
+		float songtime;
+		int time2 = music_sect.GetFloat(song, songtime);
+		PrintToServer("GetFloat returns %f", songtime);
+		PrintToServer("GetFloat chars used %i", time2);
+		song = "" //Nully the song to prevent earrape
 	}
-	
-	char[] times        = new char[max_times];
-	int[]  times_offset = new int[count];
-	music_sect.GetVals(times, times_offset);
-	for( int i; i<offcount1; i++ ) {
-		LogToFile("vsh2bosses_default", "id: '%i' | song time: '%s'", id, times[times_offset[i]]);
-	}
-	
-	static int index;
-	index = ShuffleIndex(offcount1, index);
-	strcopy(song, sizeof(song), songs[song_offsets[index]]);
-	time = StringToFloat(times[times_offset[index]]);
-	LogToFile("vsh2bosses_default", "index: '%i' | time: '%f'", index, time);
-	**/
+    float songtime;
+    int time2 = music_sect.GetFloat(song, songtime);
+    PrintToServer("Time GetFloat returns %f", songtime);
+    PrintToServer("GetFloat chars used %i", time2);
+	/*
 	int id = g_defbosses.GetDefBoss(player);
 	switch( id ) {
 		case -1: {song = "\0"; time = -1.0;}
@@ -797,6 +846,7 @@ public void DefaultBosses_OnMusic(char song[PLATFORM_MAX_PATH], float& time, VSH
 			time = 300.0;
 		}
 	}
+	*/
 	//LogToFile("vsh2bosses_default", "index: '%s' | time: '%f'", song, time);
 }
 
@@ -902,7 +952,7 @@ public Action DefaultBosses_OnVoice(const VSH2Player player, char sample[PLATFOR
 }
 
 public void OnEntityCreated(int entity, const char[] classname) {
-	if( !strcmp(classname, "tf_projectile_pipe", false) && g_defbosses.cfgs[VSH2Boss_Bunny] != null ) {
+	if( !strcmp(classname, "tf_projectile_pipe_remote", false) && g_defbosses.cfgs[VSH2Boss_Bunny] != null ) { //Changed from tf_projectile_pipe
 		SDKHook(entity, SDKHook_SpawnPost, OnEggBombSpawned);
 	}
 }

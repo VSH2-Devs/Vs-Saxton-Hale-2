@@ -99,7 +99,7 @@ stock void CPrintToChatEx(int client, int author, const char[] message, any ...)
 	if(!IsClientInGame(author)) {
 		ThrowError("Client %i is not in game", author);
 	}
-	char buffer[MAX_BUFFER_LENGTH], char buffer2[MAX_BUFFER_LENGTH];
+	char buffer[MAX_BUFFER_LENGTH], buffer2[MAX_BUFFER_LENGTH];
 	SetGlobalTransTarget(client);
 	Format(buffer, sizeof(buffer), "\x01%s", message);
 	VFormat(buffer2, sizeof(buffer2), buffer, 4);
@@ -396,7 +396,7 @@ stock void CShowActivity(int client, const char[] message, any ...) {
 	if(client != 0 && !IsClientInGame(client)) {
 		ThrowError("Client %d is not in game", client);
 	}
-	char buffer[MAX_BUFFER_LENGTH], char buffer2[MAX_BUFFER_LENGTH];
+	char buffer[MAX_BUFFER_LENGTH], buffer2[MAX_BUFFER_LENGTH];
 	Format(buffer, sizeof(buffer), "\x01%s", message);
 	VFormat(buffer2, sizeof(buffer2), buffer, 3);
 	CReplaceColorCodes(buffer2);
@@ -419,7 +419,7 @@ stock void CShowActivityEx(int client, const char[] tag, const char[] message, a
 	if(client != 0 && !IsClientInGame(client)) {
 		ThrowError("Client %d is not in game", client);
 	}
-	char buffer[MAX_BUFFER_LENGTH], char buffer2[MAX_BUFFER_LENGTH];
+	char buffer[MAX_BUFFER_LENGTH], buffer2[MAX_BUFFER_LENGTH];
 	Format(buffer, sizeof(buffer), "\x01%s", message);
 	VFormat(buffer2, sizeof(buffer2), buffer, 4);
 	CReplaceColorCodes(buffer2);
@@ -444,7 +444,7 @@ stock void CShowActivity2(int client, const char[] tag, const char[] message, an
 	if(client != 0 && !IsClientInGame(client)) {
 		ThrowError("Client %d is not in game", client);
 	}
-	char buffer[MAX_BUFFER_LENGTH], char buffer2[MAX_BUFFER_LENGTH];
+	char buffer[MAX_BUFFER_LENGTH], buffer2[MAX_BUFFER_LENGTH];
 	Format(buffer, sizeof(buffer), "\x01%s", message);
 	VFormat(buffer2, sizeof(buffer2), buffer, 4);
 	CReplaceColorCodes(buffer2);

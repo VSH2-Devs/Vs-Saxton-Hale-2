@@ -351,7 +351,7 @@ public int Native_StopMusic(Handle plugin, int numParams)
 
 public any Native_GetMainConfig(Handle plugin, int numParams)
 {
-	return g_vsh2.m_hCfg.Clone(plugin);
+	return g_vsh2.m_hCfg;
 }
 
 public int Native_VSH2_ConvertToMinion(Handle plugin, int numParams)
