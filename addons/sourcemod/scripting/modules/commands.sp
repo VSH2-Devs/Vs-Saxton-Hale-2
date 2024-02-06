@@ -201,7 +201,7 @@ public Action SetBossMenu(int client, int args) {
 	bossmenu.AddItem("-1", temp);
 	ManageMenu(bossmenu, client); /// in handler.sp
 	char info1[16]; bossmenu.GetItem(player.iPresetType+1, info1, sizeof(info1), _, bossname, sizeof(bossname));	//Get menu item base on iPresetType.
-	Format(temp, sizeof(temp), "%T", "set_boss_menu_title", client, client);
+	Format(temp, sizeof(temp), "%T", "set_boss_menu_title", client, info1);
 	bossmenu.SetTitle(temp);
 	bossmenu.Display(client, MENU_TIME_FOREVER);
 	return Plugin_Handled;
